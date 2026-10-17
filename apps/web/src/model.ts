@@ -1,7 +1,7 @@
 import type { RunDetail, Role, RuntimeEvent } from '../vendor/contracts/schemas';
 export const roles:Role[] = ['DATA','ANALYSIS','REPORT'];
 export const roleName = {DATA:'数据整理',ANALYSIS:'统计分析',REPORT:'报告表达'};
-export const stateName:Record<string,string> = {OPEN:'等待分工',ASSIGNED:'已指派',RUNNING:'执行中',SUBMITTED:'已提交，待验收',VERIFIED_PASS:'验收通过',VERIFIED_FAIL:'验收未通过',PENDING:'等待确认',CONFIRMED:'已确认',FAILED:'交易失败',ACCEPTED:'已接收',RETURNED:'已退回',ACTIVE:'运行开放',PAUSED:'已暂停',CANCELLED:'已取消',WAITING_MANUAL:'等待人工处理',INTERRUPTED:'已中断'};
+export const stateName:Record<string,string> = {OPEN:'等待分工',ASSIGNED:'已分配',RUNNING:'执行中',SUBMITTED:'已提交，待验收',VERIFIED_PASS:'验收通过',VERIFIED_FAIL:'验收未通过',PENDING:'等待确认',CONFIRMED:'已确认',FAILED:'记录提交失败',ACCEPTED:'已接收',RETURNED:'已退回',ACTIVE:'可继续执行',PAUSED:'已暂停',CANCELLED:'已取消',WAITING_MANUAL:'等待人工处理',INTERRUPTED:'已中断'};
 export const short = (s:string) => s.length > 20 ? `${s.slice(0,8)}…${s.slice(-6)}` : s;
 export function currentDecision(run:RunDetail,role:Role) {
   const task=run.tasks.find(t=>t.role===role);
