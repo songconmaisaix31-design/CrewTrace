@@ -7,4 +7,5 @@ import './scroll-choreography.css';
 import './experience.css';
 import './instrument.css';
 import './palette.css';
+import './board-stage.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);

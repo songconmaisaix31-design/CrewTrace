@@ -25,7 +25,7 @@ export default function CollaborationBoard({run,runId,notes,updated,error,onRole
         const waitText=runId&&!run?'尚未获取':stopped?stateName[stopped]:task?.status==='VERIFIED_FAIL'?'上游验收未通过':'等待交接';
         const links=(run?.handoffs.filter(h=>h.fromTaskId===task?.taskId&&h.toTaskId===next?.taskId&&run.artifacts.some(a=>a.artifactId===h.artifactId&&a.attempt===task?.attempt))??[]).sort((a,b)=>Date.parse(b.createdAt)-Date.parse(a.createdAt));
         return <Fragment key={role}><div className="agent-node" data-selected={focusRole===role} data-status={status??'OPEN'}>
-          <button className="node-index" aria-pressed={focusRole===role} onClick={()=>setFocusRole(focusRole===role?null:role)} aria-label={`聚焦${roleName[role]}`}>0{index+1}</button><h3>{roleName[role]}</h3>
+          <button className="node-index" onClick={()=>{if(task)onRole(role);else setFocusRole(focusRole===role?null:role);}} aria-label={`${task?'查看分工依据：':'了解'}${roleName[role]}`}>0{index+1}</button><h3>{roleName[role]}</h3>
           <button className="node-assignee" disabled={!task} onClick={()=>onRole(role)}>{task?.assignee?short(task.assignee):task?'等待分工':runId?'尚未获取':'等待开始'}</button>
           <p>{task?stateName[status!]??'状态未知':runId?'状态未知':'未执行'}</p>
           {runtime?.reason&&<span className="node-reason">{runtime.reason}</span>}
@@ -34,7 +34,8 @@ export default function CollaborationBoard({run,runId,notes,updated,error,onRole
       })}</div>
       <div className="role-inspector" key={focusRole??'all'}><span>{focusRole?roleName[focusRole]:'协作轨道'}</span><p>{focusRole?roleGuide[focusRole]:'选择一个节点，查看它负责的工作和相关公告。'}</p>{focusRole&&<div>{focusedTask&&<button onClick={()=>onRole(focusRole)}>查看分工依据 ↗</button>}<button onClick={()=>setFocusRole(null)}>显示全部角色</button></div>}</div>
     </div>
-    <aside className="announcement-board" aria-labelledby="board-title"><header><h2 id="board-title">公告板</h2><span>{updated?`更新于 ${new Date(updated).toLocaleTimeString('zh-CN',{hour12:false})}`:'暂无更新'}</span></header>
+    <aside className="announcement-board" aria-labelledby="board-title"><header><h2 id="board-title">协作公告板</h2><span>{updated?`更新于 ${new Date(updated).toLocaleTimeString('zh-CN',{hour12:false})}`:'暂无更新'}</span></header>
+      <div className="board-role-filters" role="group" aria-label="按角色筛选公告">{[null,...roles].map(role=><button key={role??'all'} aria-pressed={focusRole===role} onClick={()=>setFocusRole(role)}>{role?roleName[role]:'全部角色'}</button>)}</div>
       <div className="board-filters" role="group" aria-label="筛选公告">{[['ALL','全部'],...Object.entries(labels)].map(([value,label])=><button key={value} aria-pressed={filter===value} onClick={()=>setFilter(value)}>{label}<span className="filter-count">{value==='ALL'?roleNotes.length:roleNotes.filter(n=>n.type===value).length}</span></button>)}</div>
       <div className="board-toolbar"><span>{focusRole?roleName[focusRole]:'全部角色'} · {visible.length} 条公告</span><select aria-label="公告排序" value={order} onChange={e=>setOrder(e.target.value)}><option value="newest">最新在前</option><option value="oldest">最早在前</option></select></div>
       {error&&<p className="board-error" role="status">{error}{updated?' 当前显示上次成功读取的公告。':''}</p>}

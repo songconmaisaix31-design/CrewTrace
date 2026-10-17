@@ -1,0 +1,45 @@
+/* 公告板作为下半部分主画面，滚动效果不阻断原生滚动。 */
+.collaboration-board { display: block; border: 0; background: transparent; }
+.collaboration-map { min-height: 0; padding: 24px 0; }
+.collaboration-map .agent-path { min-height: 200px; max-width: 1100px; margin-inline: auto; }
+.role-inspector { min-height: 0; padding-bottom: 16px; }
+.announcement-board {
+  border: 1px solid #414959; border-radius: 12px;
+  padding: clamp(24px, 3vw, 48px); margin-top: 28px;
+  min-height: 560px; background: radial-gradient(ellipse at 100% 0,#b4a0ff0b,transparent 50%),#111419;
+  box-shadow: 0 24px 64px #00000030;
+}
+.announcement-board h2 { font-size: clamp(24px, 2.4vw, 34px); letter-spacing: -.6px; }
+.announcement-board header { padding-bottom: 22px; }
+.board-role-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px; }
+.board-role-filters button { color: #abb2bf; font-size: 13px; padding: 10px 16px; border-radius: 5px; }
+.board-role-filters button:hover { background: #252a34; color: #edf0f5; }
+.board-role-filters button[aria-pressed=true] { background: #b4a0ff18; color: #d3c7ff; }
+.board-filters { max-width: 720px; margin-top: 16px; }
+.board-filters button { font-size: 13px; min-height: 44px; }
+.board-toolbar { font-size: 12px; padding-block: 18px; }
+.board-feed { max-height: none; min-height: 260px; overflow: visible; }
+.board-empty { min-height: 260px; justify-content: center; }
+.board-empty p, .board-note p { font-size: 14px; }
+.board-empty span, .board-note>div, .note-author { font-size: 12px; }
+.board-note { padding: 22px 18px; }
+.board-note p { max-width: 80ch; }
+.agent-node p, .board-hint, .collaboration-board header>span { font-size: 12px; }
+.working { padding-top: 32px; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .announcement-board { animation: board-emerge linear both; animation-timeline: view(); animation-range: entry 0% entry 75%; transform-origin: center top; }
+  }
+}
+@keyframes board-emerge {
+  from { opacity: .5; transform: translateY(64px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+@media(max-width:760px) {
+  .announcement-board { padding: 22px 18px; min-height: 460px; margin-top: 16px; }
+  .board-role-filters { gap: 2px; }
+  .board-role-filters button { padding: 10px; font-size: 12px; }
+  .board-filters button { font-size: 12px; }
+  .collaboration-map .agent-path { min-height: 0; }
+}
+@media(prefers-reduced-motion:reduce) { .announcement-board { animation: none; transform: none; opacity: 1; } }
