@@ -16,4 +16,6 @@ A 原始合约已用 Hardhat 3.20.0 / solc 0.8.28 编译通过。主 Agent 已�
 
 四个 Worker 的公开身份位于 workers/identities.json，公开 manifest 的固定 URI 为 https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json，已被真实 enroll 校验字节并用于登记。私有环境文件在 Worker 轨道的 .local/ 内，由该轨道交接路径。可复制到集成工作区的忽略目录并配置真实本地部署，不打印凭证。实际 Neon 已保留这四个签名身份；同一数据库上不重复 enroll，如需更新节点凭证，使用授权 rotate 接口。原 MCP 通信进程已停止。
 
+本地链的完整验证使用同一真实 Neon 项目中的独立 PostgreSQL schema，并通过标准连接 options 设置 search_path；启动前实际查询 current_schema 确认。这样本地 chainId 31337 的任务、127.0.0.1 产物 URI 与回执独立保存，不进入之后 Monad/Vercel 实例的公开运行记录。新 schema 运行实际迁移与四钱包签名 enroll，复制节点私有配置时不沿用另一个 schema 发出的凭证；保留公开 schema 已有通信记录。验证报告写明实际 schema 与本地链范围，不降低测试网验收要求。
+
 提供可复现的 Vercel 部署配置与命令，目标仅 Dwwww/co-vibe-b。当前 Vercel 连接器创建项目返回 403，本机 CLI token 无效，用户恢复访问前不进行账号切换或其他团队部署。完成本机验证后列出部署所需配置。验证成功后提交必要衔接，push work/b-runtime，报告实际命令、结果、Commit 和真实阻塞。不要自行发布到 main。
