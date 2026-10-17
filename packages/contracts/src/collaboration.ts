@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { CountSchema, TimestampSchema } from './schemas.ts';
 
 export const CollaborationIdSchema = z.uuid();
+export const CollaborationCredentialSchema = z.string().min(32).max(512);
 export const CollaborationVersionSchema = CountSchema.min(1);
 export const CollaborationLinkSchema = z.url().max(2048).refine(value => ['http:', 'https:'].includes(new URL(value).protocol), '需要 HTTP 或 HTTPS 地址');
 export const MonAmountSchema = z.string().max(78).regex(/^(0|[1-9][0-9]*)(\.[0-9]{1,18})?$/);
@@ -15,15 +16,28 @@ const profileFields = {
 const timestamps = { createdAt: TimestampSchema, updatedAt: TimestampSchema };
 const versioned = { version: CollaborationVersionSchema, ...timestamps };
 export const RegisterCollaborationAgentRequestSchema = z.strictObject(profileFields);
+export const JoinCollaborationAgentRequestSchema = RegisterCollaborationAgentRequestSchema;
 export const CollaborationAgentSchema = z.strictObject({
   agentId: CollaborationIdSchema, ...profileFields, ...versioned,
   lastSeenAt: TimestampSchema.nullable(),
 });
 export const RegisterCollaborationAgentResponseSchema = z.strictObject({
   agent: CollaborationAgentSchema,
-  credential: z.string().min(32).max(512),
+  credential: CollaborationCredentialSchema,
 });
-export const RotateCollaborationCredentialResponseSchema = z.strictObject({ credential: z.string().min(32).max(512) });
+export const JoinCollaborationAgentResponseSchema = RegisterCollaborationAgentResponseSchema.extend({
+  onboarding: z.strictObject({
+    mcpURL: CollaborationLinkSchema,
+    transport: z.literal('streamable-http'),
+    credentialArgument: z.literal('credential'),
+    authorizationHeader: z.string().startsWith('Authorization: Bearer '),
+    nextCall: z.strictObject({
+      name: z.literal('get_collaboration_identity'),
+      arguments: z.strictObject({ credential: CollaborationCredentialSchema }),
+    }),
+  }),
+});
+export const RotateCollaborationCredentialResponseSchema = z.strictObject({ credential: CollaborationCredentialSchema });
 export const UpdateCollaborationAgentRequestSchema = z.strictObject({
   expectedVersion: CollaborationVersionSchema, ...profileFields,
 });
@@ -163,31 +177,35 @@ export const CollaborationEventSchema = z.strictObject({
 });
 export const CollaborationEventsResponseSchema = z.strictObject({ events: z.array(CollaborationEventSchema), ...cursorResponse });
 
+const mcpCredential = {
+  credential: CollaborationCredentialSchema.optional().describe('自己的私密 Agent 凭证；匿名 MCP 连接可逐次传入。不得写入公开正文；与 Authorization 同时提供时必须相同。'),
+};
 export const CollaborationToolSchemas = {
-  register_collaboration_agent: z.strictObject({ request: RegisterCollaborationAgentRequestSchema }),
-  get_collaboration_identity: z.strictObject({}),
-  rotate_collaboration_credential: z.strictObject({}),
-  update_collaboration_agent: z.strictObject({ request: UpdateCollaborationAgentRequestSchema }),
-  heartbeat_collaboration_agent: z.strictObject({}),
-  list_collaboration_agents: CollaborationPageQuerySchema,
-  get_collaboration_agent: z.strictObject({ agentId: CollaborationIdSchema }),
-  create_collaboration_task: z.strictObject({ request: CreateCollaborationTaskRequestSchema }),
-  update_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, request: UpdateCollaborationTaskRequestSchema }),
-  list_collaboration_tasks: CollaborationTasksQuerySchema,
-  get_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema }),
-  publish_collaboration_message: z.strictObject({ request: PublishCollaborationMessageRequestSchema }),
-  list_collaboration_messages: CollaborationCursorQuerySchema,
-  create_collaboration_note: z.strictObject({ request: CreateCollaborationNoteRequestSchema }),
-  update_collaboration_note: z.strictObject({ noteId: CollaborationIdSchema, request: UpdateCollaborationNoteRequestSchema }),
-  list_collaboration_notes: CollaborationNotesQuerySchema,
-  get_collaboration_note: z.strictObject({ noteId: CollaborationIdSchema }),
-  propose_collaboration_assignment: z.strictObject({ taskId: CollaborationIdSchema, request: ProposeCollaborationAssignmentRequestSchema }),
-  decide_collaboration_assignment: z.strictObject({ proposalId: CollaborationIdSchema, request: DecideCollaborationAssignmentRequestSchema }),
-  claim_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, request: ClaimCollaborationTaskRequestSchema }),
-  release_collaboration_claim: z.strictObject({ claimId: CollaborationIdSchema, request: ReleaseCollaborationClaimRequestSchema }),
-  submit_collaboration_handoff: z.strictObject({ taskId: CollaborationIdSchema, request: SubmitCollaborationHandoffRequestSchema }),
-  review_collaboration_handoff: z.strictObject({ handoffId: CollaborationIdSchema, request: ReviewCollaborationHandoffRequestSchema }),
-  get_collaboration_events: CollaborationCursorQuerySchema,
+  join_collaboration: JoinCollaborationAgentRequestSchema.extend(mcpCredential),
+  register_collaboration_agent: z.strictObject({ request: RegisterCollaborationAgentRequestSchema, ...mcpCredential }),
+  get_collaboration_identity: z.strictObject(mcpCredential),
+  rotate_collaboration_credential: z.strictObject(mcpCredential),
+  update_collaboration_agent: z.strictObject({ request: UpdateCollaborationAgentRequestSchema, ...mcpCredential }),
+  heartbeat_collaboration_agent: z.strictObject(mcpCredential),
+  list_collaboration_agents: CollaborationPageQuerySchema.extend(mcpCredential),
+  get_collaboration_agent: z.strictObject({ agentId: CollaborationIdSchema, ...mcpCredential }),
+  create_collaboration_task: z.strictObject({ request: CreateCollaborationTaskRequestSchema, ...mcpCredential }),
+  update_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, request: UpdateCollaborationTaskRequestSchema, ...mcpCredential }),
+  list_collaboration_tasks: CollaborationTasksQuerySchema.extend(mcpCredential),
+  get_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, ...mcpCredential }),
+  publish_collaboration_message: z.strictObject({ request: PublishCollaborationMessageRequestSchema, ...mcpCredential }),
+  list_collaboration_messages: CollaborationCursorQuerySchema.extend(mcpCredential),
+  create_collaboration_note: z.strictObject({ request: CreateCollaborationNoteRequestSchema, ...mcpCredential }),
+  update_collaboration_note: z.strictObject({ noteId: CollaborationIdSchema, request: UpdateCollaborationNoteRequestSchema, ...mcpCredential }),
+  list_collaboration_notes: CollaborationNotesQuerySchema.extend(mcpCredential),
+  get_collaboration_note: z.strictObject({ noteId: CollaborationIdSchema, ...mcpCredential }),
+  propose_collaboration_assignment: z.strictObject({ taskId: CollaborationIdSchema, request: ProposeCollaborationAssignmentRequestSchema, ...mcpCredential }),
+  decide_collaboration_assignment: z.strictObject({ proposalId: CollaborationIdSchema, request: DecideCollaborationAssignmentRequestSchema, ...mcpCredential }),
+  claim_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, request: ClaimCollaborationTaskRequestSchema, ...mcpCredential }),
+  release_collaboration_claim: z.strictObject({ claimId: CollaborationIdSchema, request: ReleaseCollaborationClaimRequestSchema, ...mcpCredential }),
+  submit_collaboration_handoff: z.strictObject({ taskId: CollaborationIdSchema, request: SubmitCollaborationHandoffRequestSchema, ...mcpCredential }),
+  review_collaboration_handoff: z.strictObject({ handoffId: CollaborationIdSchema, request: ReviewCollaborationHandoffRequestSchema, ...mcpCredential }),
+  get_collaboration_events: CollaborationCursorQuerySchema.extend(mcpCredential),
 } as const;
 
 export type CollaborationAgent = z.infer<typeof CollaborationAgentSchema>;
@@ -202,6 +220,8 @@ export type CollaborationHandoff = z.infer<typeof CollaborationHandoffSchema>;
 export type CollaborationEvent = z.infer<typeof CollaborationEventSchema>;
 export type RegisterCollaborationAgentRequest = z.infer<typeof RegisterCollaborationAgentRequestSchema>;
 export type RegisterCollaborationAgentResponse = z.infer<typeof RegisterCollaborationAgentResponseSchema>;
+export type JoinCollaborationAgentRequest = z.infer<typeof JoinCollaborationAgentRequestSchema>;
+export type JoinCollaborationAgentResponse = z.infer<typeof JoinCollaborationAgentResponseSchema>;
 export type UpdateCollaborationAgentRequest = z.infer<typeof UpdateCollaborationAgentRequestSchema>;
 export type CreateCollaborationTaskRequest = z.infer<typeof CreateCollaborationTaskRequestSchema>;
 export type UpdateCollaborationTaskRequest = z.infer<typeof UpdateCollaborationTaskRequestSchema>;

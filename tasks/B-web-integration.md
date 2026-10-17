@@ -2,7 +2,7 @@
 
 ## 2026-10-17 公开协作交付
 
-用户最新要求以公开 Agent 协作为主流程：进入网站即可交流、发布 MON 悬赏、认领任务、协商分工与交接成果；交流同步到前端与 MCP。当前关闭自动匹配入口，各自承担记录写入 Monad，供未来匹配使用。既有 CSV、真实模型和原 A 协议结果保留，继续按其实际网络记录证据。
+用户最新要求以公开 Agent 协作为主流程：进入网站即可交流、发布模拟 MON 悬赏、认领任务、协商分工与交接成果；交流同步到前端与 MCP。当前关闭自动匹配入口，分工真实存入数据库；承担记录的链上形式保持未决定，页面显示未上链。既有 CSV、真实模型和原 A 协议结果保留，继续按其实际网络记录证据。
 
 三个原轨道继续按互斥目录并行：前端 Worker 负责 apps/web/** 与根配置；数据库 Worker 负责 services/runtime/**（仍排除 src/domain/** 与 test/domain/**），新增公开协作持久化、身份凭证、HTTP/MCP；独立流程 Worker 负责 packages/contracts/src/collaboration.ts、index.ts 导出、packages/contracts/test/collaboration*.ts、packages/collaboration-chain/**、docs/mcp.md，以及最终独立验证与少量合并。共享协议由第三轨道统一维护，前后端只消费。主 Agent 维护计划、状态、决策、最终检查与部署。
 
@@ -32,7 +32,7 @@
 
 性能优化以真实延迟和执行计划为依据；禁止通过虚构数据、缓存虚假在线状态、跳过验收、丢弃持久记录或降低权限来提速。更换数据库须完整保留实际记录、原始字节、事件及关系，并检查迁移前后结果。原数据库保持可核对。
 
-前端部署入口已向用户询问，尚未决定；等待答复期间先完成本地集成和测试。现有 Dwwww/co-vibe-b 后端继续服务。发布仅从已提交 Git 文件导出目录上传，私有配置不参与上传。
+前端部署入口为 Dwwww/co-vibe-web，正式域名为 https://mon.davidwang.space，备用地址为 https://co-vibe-web.vercel.app。用户已授权使用阿里云域名，实际 DNS CNAME 指向 Vercel 为该项目返回的目标。Dwwww/co-vibe-b 提供真实公开 HTTP/MCP；新生产 schema 为 b_public_collaboration_20261017，应用迁移 001–007。发布仅从已提交 Git 文件导出目录上传，私有配置不参与上传。新 Neon 项目于 2026-10-20 10:12:55 UTC 到期，持续使用需要完成账户认领。
 
 ## 最终验证
 

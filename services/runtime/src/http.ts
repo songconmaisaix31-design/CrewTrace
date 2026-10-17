@@ -8,6 +8,7 @@ import type { Application } from './service.js';
 import { mcpResponse } from './mcp.js';
 import { Board } from './board.js';
 import { Execution } from './execution.js';
+import { mountCollaboration } from './collaboration-http.js';
 import {
   AcceptTaskRequestSchema, AddressSchema, AssignTaskRequestSchema, CreateRunWithInputRequestSchema,
   HandoffUpdateRequestSchema, InterruptRequestSchema, ModelCallRequestSchema, NodeEnrollmentRequestSchema,
@@ -32,6 +33,7 @@ export function createHttp(app: Application) {
   });
   http.onError((error,c) => { const body = errorBody(error); return c.json({ error: body.error }, body.status as 400); });
   http.notFound(c => c.json({ error: { code: 'NOT_FOUND', message: '端点不存在' } },404));
+  mountCollaboration(http,app);
   http.get('/health', async c => c.json(await app.health()));
   http.get('/api/template',c=>c.json(app.template()));
   http.get('/api/criteria',()=>new Response(new Uint8Array(app.criteria()),{ headers: { 'Content-Type': 'application/json; charset=utf-8' } }));

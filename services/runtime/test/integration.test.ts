@@ -121,6 +121,12 @@ test('真实进程重启、身份权限、便签并发、事件增量和 MCP 写
     assert.deepEqual(Buffer.from(await (await request('/api/criteria')).arrayBuffer()),CRITERIA_BYTES);
     await json('/api/runs','POST',makeRun(runIds[0]),undefined,403);
     const run: Run = await json('/api/runs','POST',makeRun(runIds[0]),adminToken,201);
+    const detail = await json(`/api/runs/${run.runId}`);
+    assert.equal(detail.runId,run.runId);
+    assert.deepEqual(detail.tasks,run.tasks);
+    for (const field of ['decisions','handoffs','artifacts','assessments','taskReceipts']) assert.deepEqual(detail[field],[]);
+    await json(`/api/runs/${randomUUID()}`,'GET',undefined,undefined,404);
+    await json(`/api/runs/${randomUUID()}/events?after=0`,'GET',undefined,undefined,404);
     await json('/api/runs','POST',makeRun(runIds[1]),adminToken,201);
     await json('/api/runs','POST',makeRun(runIds[2]),adminToken,429);
     assert.equal(await (await request(`/api/runs/${run.runId}/input`)).text(),source);
@@ -147,6 +153,8 @@ test('真实进程重启、身份权限、便签并发、事件增量和 MCP 写
     assert.ok(events.events.every((event: any,index: number)=>index===0 || event.seq>events.events[index-1].seq));
     const cursor = events.nextAfter;
     assert.equal((await json(`/api/runs/${run.runId}/events?after=${cursor}`)).events.length,0);
+    const emptyPage = await json(`/api/runs/${run.runId}/events?after=${Number.MAX_SAFE_INTEGER}`);
+    assert.deepEqual(emptyPage,{ events: [],nextAfter: Number.MAX_SAFE_INTEGER });
     mcp = new Client({ name: 'controlled-node-official-client',version: '1.0.0' });
     await mcp.connect(new StreamableHTTPClientTransport(new URL(`${running.url}/mcp`),{ requestInit: { headers: { Authorization: `Bearer ${nodeTokens[1]}` } } }));
     const tools = await mcp.listTools();

@@ -3,10 +3,10 @@ import { z } from 'zod';
 import { verifyMessage } from 'viem';
 import type { PoolClient } from '@neondatabase/serverless';
 import {
-  AgentProfileSchema, ArtifactSchema, AssignmentDecisionSchema, CreateRunWithInputRequestSchema, HeartbeatRequestSchema, TaskSchema, RunSchema,RunDetailSchema,WorkerJobsResponseSchema,
+  AgentProfileSchema, ArtifactSchema, AssignmentDecisionSchema, CreateRunWithInputRequestSchema, HeartbeatRequestSchema, TaskSchema,RunDetailSchema,WorkerJobsResponseSchema,
   hashUtf8, nodeBindingMessage, type AgentProfile, type Artifact, type AssessmentCheck, type ChainPort, type Task,
 } from '../../../packages/contracts/src/index.ts';
-import { createFixedRun, deriveRunStatus, assertExecutionBudget } from './domain/workflow.ts';
+import { createFixedRun, assertExecutionBudget } from './domain/workflow.ts';
 import { CRITERIA_BYTES, CRITERIA_HASH } from '../../../workers/src/criteria.ts';
 import { FIXED_WORKFLOW,TEMPLATE_VERSION } from './domain/workflow.ts';
 import type { Config } from './config.js';
@@ -15,6 +15,7 @@ import { Store } from './store.js';
 import { admin, node, sameAgent, tokenHash, type Principal } from './auth.js';
 import { AppError, requireValue } from './errors.js';
 import { encodeUtf8 } from './content.js';
+import { RUN_QUERY, RUN_DETAILS_QUERY, parseRunRecord } from './run-read.js';
 
 export interface ValidationInput {
   task: Task; artifact: Artifact; content: string; inputContent: string;
@@ -84,24 +85,17 @@ export class Application {
     return TaskSchema.parse(requireValue((await client.query('SELECT document FROM tasks WHERE id=$1',[taskId])).rows[0]).document);
   }
   async run(runId: string, client: Pick<PoolClient,'query'> = this.db.pool) {
-    const record = requireValue((await client.query('SELECT document,runtime_status FROM runs WHERE id=$1',[runId])).rows[0]);
-    const tasks = (await client.query('SELECT document,runtime_status,runtime_reason FROM tasks WHERE run_id=$1 ORDER BY id',[runId])).rows;
-    const parsed = tasks.map(row => TaskSchema.parse(row.document));
-    const run = RunSchema.parse({ ...record.document,tasks: parsed,status: deriveRunStatus(parsed) });
-    return { ...run,runtimeStatus: record.runtime_status,taskRuntime: tasks.map(row => ({ taskId: row.document.taskId,status: row.runtime_status,reason: row.runtime_reason })) };
+    return parseRunRecord(requireValue((await client.query(RUN_QUERY,[runId])).rows[0]));
   }
   async runDetails(runId: string) {
-    const run = await this.run(runId);
-    const decisions = await this.db.pool.query('SELECT document,raw_bytes,receipt FROM decisions WHERE run_id=$1 ORDER BY id',[runId]);
-    const handoffs = await this.db.pool.query('SELECT document FROM handoffs WHERE run_id=$1 ORDER BY id',[runId]);
-    const artifacts = await this.db.pool.query('SELECT document FROM artifacts WHERE run_id=$1 ORDER BY created_at',[runId]);
-    const assessments = await this.db.pool.query('SELECT a.document FROM assessments a JOIN tasks t ON t.id=a.task_id WHERE t.run_id=$1 ORDER BY task_id,attempt',[runId]);
-    const receipts = await this.db.pool.query('SELECT c.task_id,c.attempt,c.operation,c.receipt FROM chain_receipts c JOIN tasks t ON t.id=c.task_id WHERE t.run_id=$1 ORDER BY c.task_id,c.operation',[runId]);
-    const snapshots = decisions.rows.map(row=>{
-      if (!row.raw_bytes || hashUtf8(row.raw_bytes)!==row.document.decisionHash) throw new AppError(409,'ARTIFACT_MISMATCH','持久化决策摘要不匹配');
-      return AssignmentDecisionSchema.parse({ ...JSON.parse(row.raw_bytes.toString('utf8')),decisionHash: row.document.decisionHash });
+    const record = requireValue((await this.db.pool.query(RUN_DETAILS_QUERY,[runId])).rows[0]);
+    const run = parseRunRecord(record);
+    const snapshots = record.decisions.map((document: { decisionHash: string },index: number)=>{
+      const bytes: Buffer | null = record.decision_bytes[index];
+      if (!bytes || hashUtf8(bytes)!==document.decisionHash) throw new AppError(409,'ARTIFACT_MISMATCH','持久化决策摘要不匹配');
+      return AssignmentDecisionSchema.parse({ ...JSON.parse(bytes.toString('utf8')),decisionHash: document.decisionHash });
     });
-    return RunDetailSchema.parse({ ...run,inputURI: `${this.config.PUBLIC_BASE_URL}/api/runs/${encodeURIComponent(runId)}/input`,decisions: snapshots,handoffs: handoffs.rows.map(r=>r.document),artifacts: artifacts.rows.map(r=>r.document),assessments: assessments.rows.map(r=>r.document),taskReceipts: receipts.rows.map(row=>({ taskId: row.task_id,attempt: row.attempt,operation: row.operation,receipt: row.receipt })) });
+    return RunDetailSchema.parse({ ...run,inputURI: `${this.config.PUBLIC_BASE_URL}/api/runs/${encodeURIComponent(runId)}/input`,decisions: snapshots,handoffs: record.handoffs,artifacts: record.artifacts,assessments: record.assessments,taskReceipts: record.task_receipts });
   }
   async input(runId: string,client: Pick<PoolClient,'query'> = this.db.pool) {
     const record = requireValue((await client.query('SELECT document,input_bytes FROM runs WHERE id=$1',[runId])).rows[0]);
@@ -173,7 +167,7 @@ export class Application {
       if ((await client.query('SELECT id FROM runs WHERE id=$1',[request.runId])).rowCount) throw new AppError(409,'INVALID_STATE','runId 已存在');
       const run = createFixedRun(request,new Date().toISOString());
       await client.query('INSERT INTO runs(id,document,input_bytes) VALUES($1,$2,$3)',[run.runId,run,inputBytes]);
-      for (const task of run.tasks) await client.query('INSERT INTO tasks(id,run_id,document) VALUES($1,$2,$3)',[task.taskId,run.runId,task]);
+      await client.query("INSERT INTO tasks(id,run_id,document) SELECT task->>'taskId',$1,task FROM jsonb_array_elements($2::jsonb) AS task",[run.runId,JSON.stringify(run.tasks)]);
       await this.store.event(client,'RUN_CREATED',run.runId,null,null,{ inputHash: run.inputHash });
       return run;
     });
@@ -201,6 +195,8 @@ export class Application {
   async jobs(principal: Principal) {
     const identity = node(principal);
     const records = await this.db.pool.query("SELECT t.document,t.runtime_status,t.runtime_reason FROM tasks t JOIN runs r ON r.id=t.run_id WHERE t.document->>'assignee'=$1 AND t.document->>'status' IN ('ASSIGNED','RUNNING') AND t.runtime_status='ACTIVE' AND r.runtime_status='ACTIVE' ORDER BY t.id",[identity.agentId]);
-    return WorkerJobsResponseSchema.parse({ jobs: await Promise.all(records.rows.map(async row=>({ task: row.document,runtimeStatus: row.runtime_status,reason: row.runtime_reason,run: await this.runDetails(row.document.runId) }))) });
+    const details = new Map<string,ReturnType<Application['runDetails']>>();
+    for (const row of records.rows) if (!details.has(row.document.runId)) details.set(row.document.runId,this.runDetails(row.document.runId));
+    return WorkerJobsResponseSchema.parse({ jobs: await Promise.all(records.rows.map(async row=>({ task: row.document,runtimeStatus: row.runtime_status,reason: row.runtime_reason,run: await details.get(row.document.runId) }))) });
   }
 }

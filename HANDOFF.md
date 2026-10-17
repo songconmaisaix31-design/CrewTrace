@@ -15,5 +15,3 @@ B 在 work/b-runtime 交付；共享业务类型由 B 维护。A 保持链上源
 A 的 Monad Testnet 合约已完成真实只读核对；完整两轮写入验证发生在本地 chainId 31337。公网当前没有授权签名配置，健康检查准确报告 CHAIN_NOT_CONFIGURED。接入测试网前，使用 A 部署中协调者和验收者的私有配置，并为四名 Worker 准备真实 Gas；保持原部署和公开身份。
 
 Worker 为独立进程，不能放入 Vercel 请求函数长期轮询。常驻主机与两台设备安排仍待用户确认；本地验证进程已经停止。Neon 项目 snowy-voice-65085749 于 2026-10-20 08:10 UTC 前需要认领；认领后的数据库凭证须更新私有配置与 Vercel 环境，然后重新部署和检查。
-
-C 前端入口为 [apps/web/README.md](apps/web/README.md)，用户确认的页面设计见 [docs/c-web-design.md](docs/c-web-design.md)，集成验证见 [docs/b-web-integration.md](docs/b-web-integration.md)。

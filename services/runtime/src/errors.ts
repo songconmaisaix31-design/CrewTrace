@@ -7,6 +7,11 @@ export class AppError extends Error {
   }
 }
 
+export function databaseErrorCode(error: unknown): string | null {
+  if (!error || typeof error!=='object' || !('code' in error) || typeof error.code!=='string') return null;
+  return /^(?:[0-9A-Z]{5}|ECONNRESET|ECONNREFUSED|ETIMEDOUT|ENOTFOUND)$/.test(error.code) ? error.code : null;
+}
+
 export function errorBody(error: unknown) {
   if (error instanceof ApplicationError) return { status: error.status, error: error.toJSON() };
   if (error instanceof AppError) return { status: error.status, error: { code: error.code, message: error.message } };
@@ -21,7 +26,9 @@ export function errorBody(error: unknown) {
   }
   if (error instanceof ZodError) return { status: 400, error: { code: 'INVALID_INPUT', message: error.message } };
   if (error instanceof SyntaxError) return { status: 400, error: { code: 'INVALID_JSON', message: '请求 JSON 无效' } };
-  if (error instanceof Error && (['Connection terminated unexpectedly','Connection terminated due to connection timeout','timeout exceeded when trying to connect'].includes(error.message) || ['ECONNRESET','ECONNREFUSED','ETIMEDOUT','ENOTFOUND'].includes(String((error as NodeJS.ErrnoException).code)))) {
+  const databaseCode = databaseErrorCode(error);
+  if (error instanceof Error && (['Connection terminated unexpectedly','Connection terminated due to connection timeout','timeout exceeded when trying to connect'].includes(error.message) || databaseCode && /^(?:08|28|53|57P0[123]$|ECONNRESET$|ECONNREFUSED$|ETIMEDOUT$|ENOTFOUND$)/.test(databaseCode))) {
+    console.error(JSON.stringify({ event: 'database_unavailable',code: databaseCode }));
     return { status: 503,error: { code: 'DATABASE_UNAVAILABLE',message: 'PostgreSQL 连接不可用，操作已失败' } };
   }
   console.error(error instanceof Error ? error.name : 'UnknownError');
