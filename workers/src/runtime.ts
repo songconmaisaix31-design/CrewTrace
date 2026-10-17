@@ -1,8 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout } from "node:timers/promises";
-import { ArtifactSchema, ChainReceiptSchema, ChainTaskSchema, SubmissionReceiptSchema, type Artifact, type ChainPort, type Task } from "../../packages/contracts/src/index.ts";
-import { loadWorkerChain, submitToChain } from "./chain.ts";
+import { ArtifactSchema, AttemptSchema, HashSchema, ChainReceiptSchema, ChainTaskSchema, SubmissionReceiptSchema, type Address, type Artifact } from "../../packages/contracts/src/index.ts";
+import { loadWorkerChain, saveSubmission, waitForTransaction, type WorkerChain } from "./chain.ts";
 import { loadWorkerConfig } from "./config.ts";
 import { contentHash, exact, jsonBytes, utf8 } from "./content.ts";
 import { requireValue } from "./errors.ts";
@@ -28,12 +28,24 @@ async function loadParents(job: WorkerJob, http: WorkerHttp): Promise<VerifiedPa
   return parents;
 }
 
-async function ensureAssignment(chain: ChainPort, task: Task, agentId: `0x${string}`, signal: AbortSignal) {
+async function ensureAssignment(chain: WorkerChain, job: WorkerJob, agentId: `0x${string}`, signal: AbortSignal) {
+  const task = job.task;
   signal.throwIfAborted();
   const chainId = Number(process.env.CHAIN_ID);
-  const receipts = (await chain.getReceipts({ taskId: task.taskId, attempt: task.attempt })).map(receipt => ChainReceiptSchema.parse(receipt));
+  const decision = job.run.decisions.find(decision => decision.taskId === task.taskId && decision.attempt === task.attempt);
+  requireValue(decision, "CHAIN_DATA_MISSING", "缺少已保存指派决策");
+  const bindings = job.run.taskReceipts.filter(binding => binding.taskId === task.taskId && binding.attempt === task.attempt && binding.operation === "ASSIGN");
+  requireValue(bindings.length === 1, "CHAIN_DATA_MISSING", "已保存真实指派回执缺失或存在歧义");
+  const reference = bindings[0].receipt;
+  const receipts = (await chain.getReceipts({ txHash: reference.txHash })).map(receipt => ChainReceiptSchema.parse(receipt));
   const confirmed = receipts.filter(receipt => receipt.status === "CONFIRMED" && receipt.chainId === chainId && receipt.contract === process.env.CHAIN_CONTRACT_ADDRESS!.toLowerCase() && receipt.blockNumber !== null);
   requireValue(confirmed.length > 0, "CHAIN_PENDING", "指派尚无真实已确认回执");
+  requireValue(process.env.CHAIN_COORDINATOR_ADDRESS, "CHAIN_NOT_CONFIGURED", "缺少真实部署协调者地址");
+  chain.assertAssignmentReceipt(confirmed[0], {
+    runId: task.runId, taskId: task.taskId, attempt: task.attempt, role: task.role, assignee: agentId,
+    validator: task.validator, inputHash: task.inputHash, criteriaHash: task.criteriaHash, decisionHash: decision.decisionHash,
+    chainId, contract: process.env.CHAIN_CONTRACT_ADDRESS as Address, coordinator: process.env.CHAIN_COORDINATOR_ADDRESS as Address,
+  });
   const blockNumber = confirmed.reduce((maximum, receipt) => BigInt(receipt.blockNumber!) > BigInt(maximum) ? receipt.blockNumber! : maximum, "0");
   const result = await chain.getTask({ taskId: task.taskId, chainId, blockNumber });
   requireValue(result, "CHAIN_DATA_MISSING", "真实链未找到指派任务");
@@ -44,15 +56,17 @@ async function ensureAssignment(chain: ChainPort, task: Task, agentId: `0x${stri
   exact(assigned.criteriaHash, task.criteriaHash, "链上规则摘要不符");
   exact(assigned.role, task.role, "链上角色不符");
   exact(assigned.validator, task.validator, "链上验收方不符");
+  exact(assigned.decisionHash, decision.decisionHash, "链上决策摘要不符");
+  exact(assigned.chainRunId, chain.toChainRunId(task.runId), "链上运行标识不符");
   requireValue(assigned.status === "ASSIGNED", "INVALID_STATE", "链上任务不处于可执行状态");
 }
 
-async function processJob(job: WorkerJob, http: WorkerHttp, board: WorkerBoard, chain: ChainPort, config: ReturnType<typeof loadWorkerConfig>, model: StepModel, signal: AbortSignal) {
+async function processJob(job: WorkerJob, http: WorkerHttp, board: WorkerBoard, chain: WorkerChain, config: ReturnType<typeof loadWorkerConfig>, model: StepModel, signal: AbortSignal) {
   const task = job.task;
   requireValue(task.assignee === config.agentId && task.role === config.role, "UNAUTHORIZED", "任务身份或角色不符");
   exact(task.criteriaHash, CRITERIA_HASH, "任务规则摘要与当前执行器不符");
   requireValue(task.status === "ASSIGNED", "INVALID_STATE", "已运行任务需要显式恢复，不重新执行模型");
-  await ensureAssignment(chain, task, config.agentId, signal);
+  await ensureAssignment(chain, job, config.agentId, signal);
   const sourceBytes = await http.download(job.run.inputURI);
   exact(contentHash(sourceBytes), task.inputHash, "原始 CSV 下载摘要不符");
   const parents = await loadParents(job, http);
@@ -119,9 +133,11 @@ async function processJob(job: WorkerJob, http: WorkerHttp, board: WorkerBoard, 
   validateProduct({ task, artifact, content: utf8(bytes), inputContent: utf8(sourceBytes), parents });
   await writeFile(join(output, "product.json"), bytes);
   await writeFile(join(output, "artifact.json"), jsonBytes(artifact));
-  const receipt = await submitToChain(chain, task, artifact, config.agentId);
-  await writeFile(join(output, "submission-receipt.json"), jsonBytes(receipt));
-  requireValue(receipt.status === "CONFIRMED", "CHAIN_PENDING", "结果就绪，提交交易待确认；使用 reconcile 命令对账同一交易");
+  const original = await saveSubmission(chain, task, artifact, config.agentId, output);
+  const confirmed = await waitForTransaction(chain, original, signal, async receipt => {
+    await writeFile(join(output, "submission-receipt.json"), jsonBytes({ ...receipt, taskId: task.taskId, attempt: task.attempt, artifactHash: artifact.contentHash }));
+  });
+  const receipt = chain.assertSubmissionReceipt(confirmed, { taskId: task.taskId, attempt: task.attempt, artifactHash: artifact.contentHash, artifactURI: artifact.URI, producer: config.agentId, chainId: original.chainId, contract: original.contract, chainRunId: chain.toChainRunId(task.runId) });
   await http.submit(task.taskId, { attempt: task.attempt, artifactId, receipt });
   const body = `产物 ${artifactId} 已提交，原始字节摘要 ${artifact.contentHash}；schema worker-output-v1；父产物 ${artifact.parentArtifactIds.join(", ") || "无"}；限制：${artifact.limitations.join("；")}。等待独立验收确认。`;
   await board.updateNote(note.noteId, { expectedVersion: note.version, body, topic: `${task.role} 成果交接`, artifactIds: [artifactId] });
@@ -171,6 +187,8 @@ export async function startWorker(signal: AbortSignal) {
 }
 
 export async function reconcileSubmission(taskId: string, attempt: number, signal: AbortSignal) {
+  HashSchema.parse(taskId);
+  AttemptSchema.parse(attempt);
   const config = loadWorkerConfig();
   const chain = await loadWorkerChain(config.privateKey);
   const http = new WorkerHttp(config.serviceURL, config.nodeCredential, signal);
@@ -184,15 +202,14 @@ export async function reconcileSubmission(taskId: string, attempt: number, signa
   exact(original.artifactHash, artifact.contentHash, "待对账交易产物不符");
   exact(original.chainId, Number(process.env.CHAIN_ID), "待对账交易网络不符");
   exact(original.contract, process.env.CHAIN_CONTRACT_ADDRESS!.toLowerCase(), "待对账交易合约不符");
-  const receipts = await chain.getReceipts({ taskId: original.taskId, attempt });
-  const confirmed = receipts.find(receipt => receipt.txHash === original.txHash && receipt.status === "CONFIRMED");
-  requireValue(confirmed && confirmed.blockNumber, "CHAIN_PENDING", "同一提交交易尚未确认，保持等待");
+  const confirmed = await waitForTransaction(chain, original, signal, async receipt => writeFile(join(output, "submission-receipt.json"), jsonBytes({ ...receipt, taskId: original.taskId, attempt, artifactHash: artifact.contentHash })));
+  requireValue(confirmed.blockNumber, "CHAIN_PENDING", "同一提交交易尚未确认，保持等待");
   exact(confirmed.signer, config.agentId, "已确认交易签名者不符");
   exact(confirmed.chainId, original.chainId, "已确认交易网络不符");
   exact(confirmed.contract, original.contract, "已确认交易合约不符");
   const chainTask = await chain.getTask({ taskId: original.taskId, chainId: confirmed.chainId, blockNumber: confirmed.blockNumber });
   requireValue(chainTask && chainTask.artifactHash === artifact.contentHash && chainTask.assignee === config.agentId && chainTask.attempt === attempt, "ARTIFACT_MISMATCH", "链上产物或签名者不符");
-  const receipt = SubmissionReceiptSchema.parse({ ...confirmed, taskId: original.taskId, attempt, artifactHash: artifact.contentHash });
+  const receipt = chain.assertSubmissionReceipt(confirmed, { taskId: original.taskId, attempt, artifactHash: artifact.contentHash, artifactURI: artifact.URI, producer: config.agentId, chainId: original.chainId, contract: original.contract });
   await writeFile(join(output, "submission-receipt.json"), jsonBytes(receipt));
   await http.submit(taskId, { attempt, artifactId: artifact.artifactId, receipt });
   return { taskId, attempt, artifactId: artifact.artifactId, txHash: receipt.txHash, status: receipt.status };

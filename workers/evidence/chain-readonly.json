@@ -1,0 +1,23 @@
+{
+  "chainId": 10143,
+  "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+  "txHash": "0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e",
+  "blockNumber": "71765583",
+  "status": "CONFIRMED",
+  "signer": "0x408ca6f1a96a9524c9ca6c56f9ca0c9190fac50d",
+  "events": [
+    {
+      "eventId": "10143:0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e:1",
+      "logIndex": 1,
+      "blockNumber": "71765583",
+      "txHash": "0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e",
+      "eventName": "AgentRegistered",
+      "args": {
+        "agentId": "0x408ca6f1a96a9524c9ca6c56f9ca0c9190fac50d",
+        "roleMask": 1,
+        "manifestURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B6Lqr5Lu977yb5LiN5Luj6KGo5a6e6ZmFIFdvcmtlciDmiJbmqKHlnovog73lipsifQo=",
+        "manifestHash": "0x75bd5ee87402e65d9c9d2b8ac78a6b90e0b7b15feb6de2b489fec78538c12fd8"
+      }
+    }
+  ]
+}

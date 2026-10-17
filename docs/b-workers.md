@@ -19,6 +19,8 @@ node --import ./workers/node_modules/tsx/dist/loader.mjs workers/src/cli.ts vali
 
 `execute` 新建输出目录，使用实际输入执行 DATA、ANALYSIS、REPORT；`validate` 不调用模型，重新读取原始输入和产物。两者能够在无链配置时独立运行。`SIGINT`、`SIGTERM` 取消当前请求并终止进程。
 
+在线链执行另需 `npm ci --prefix packages/chain` 和 `npm ci --prefix packages/runtime-chain`，使用原始 A 库与公共桥接模块，各包管理自己的依赖和锁文件。
+
 ## 角色与产物
 
 - DATA：模型读取实际 CSV 和工具检查结果，输出清洗操作计划；工具按计划规范日期、金额和订单数，移除相同 record_id 的等价重复记录并排序。冲突立即拒绝。
@@ -60,7 +62,11 @@ node --import ./workers/node_modules/tsx/dist/loader.mjs workers/src/cli.ts --co
 
 ## 链依赖
 
-`start` 需要 A 的真实适配器 `CHAIN_ADAPTER_MODULE`，导出 `createChainPort({privateKey,rpcUrl,contractAddress,chainId})`，并提供 `CHAIN_RPC_URL/CHAIN_CONTRACT_ADDRESS/CHAIN_ID`。缺少立即报 `CHAIN_NOT_CONFIGURED`。执行前读取真实指派回执与链上任务；提交使用该 Worker 私钥签名，核对真实回执的任务、attempt、签名者和产物摘要。
+`start` 需要真实适配器 `CHAIN_ADAPTER_MODULE`，导出 `createChainPort({workerAccount,rpcUrl,contractAddress,chainId,deploymentBlock})`，并提供 `CHAIN_RPC_URL/CHAIN_CONTRACT_ADDRESS/CHAIN_ID/CHAIN_DEPLOYMENT_BLOCK`。Worker 用自己的私钥创建 LocalAccount 传入工厂。缺少立即报 `CHAIN_NOT_CONFIGURED`。执行前读取真实指派回执与链上任务；提交使用该 Worker 私钥签名，核对真实回执的任务、attempt、签名者和产物摘要。
+
+当前桥接模块为 `packages/runtime-chain/src/index.ts`。`CHAIN_COORDINATOR_ADDRESS` 为真实部署协调者地址。Worker 从服务的 `run.taskReceipts` 中读取当前任务 attempt 的 ASSIGN 回执，按原 txHash 查询真实确认，并使用桥接的 `assertAssignmentReceipt` 核对运行、决策摘要、角色、执行者、输入、规则及验收方。
+
+`register --manifest-file <path> --manifest-uri <url>` 使用节点自身钱包登记角色；`reconcile-registration` 读取已保存回执继续查询同一登记交易。正常 `start` 保存 PENDING 提交回执后，按同一 txHash 等待 finalized 确认，最长 120 秒，可被信号取消；确认后经 `assertSubmissionReceipt` 核对实际 ArtifactSubmitted 事件再向服务提交。真实 RPC 错误立即失败；超时保留原交易，等待显式对账。桥接的 `onPreparedTransaction` 在广播前保存原回执与原始签名交易，写入失败则禁止广播。广播结果未知时停止执行，保留对账入口和相同签名字节。
 
 待确认回执保存到节点私有结果目录；`reconcile --task-id <id> --attempt <number>` 对账同一交易并通过真实链读取确认产物，完成服务提交。该命令不重复调用模型或提交新链交易。
 
@@ -77,6 +83,18 @@ node --import ./workers/node_modules/tsx/dist/loader.mjs workers/src/cli.ts --co
 
 `npm test --prefix workers`：7 个测试通过；覆盖两份真实模型产物、可信重算、数据/指标/报告/Markdown 篡改、缺字段、日期错误、重复冲突、原始摘要、未配置依赖拒绝和跨源 URI 拒绝。`npm run build --prefix workers` 通过。
 
+2026-10-17 在真实 PostgreSQL、HTTP 与 MCP 服务 `http://127.0.0.1:3400` 完成四个钱包的签名登记，节点凭证由服务实际发放。`workers/identities.json` 保存公开身份；私钥和节点凭证保存在忽略目录。`enroll --identity-config <path> --manifest-file <path> --manifest-uri <url>` 校验实际公开说明文件字节，再签名登记，并将服务发放的节点凭证写入私有配置。
+
+实际已发布的角色说明文件为 `workers/identities.json`，包含 DATA 两候选、ANALYSIS、REPORT 四个真实本机钱包与各自角色。已用于上述四节点登记并通过公开原始字节核验，固定提交 URI 为：`https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea3316e0fac9f801b710ecfbc688f1cd88b/workers/identities.json`。集成 Agent 可以用该文件和 URI 直接调用 `enroll/register`；钱包仍由每个实际节点自己的私钥确定。
+
+实际 MCP 通信使用两个独立 CLI 进程 PID 40608、21776，真实运行 `worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12`。两节点均完成 initialize、tools/list、公告发布、便签创建及更新到版本 2，且各自读取到对方的真实消息。先向 40608 发送 SIGINT，21776 继续读取；随后单独终止 21776。两个进程分别保存 signal:true 的终止记录。测试运行通过真实管理端点取消，任务仍为 OPEN。原始通信记录见 `workers/evidence/communication/`。
+
+通信准备和检查命令：`node --env-file=<服务私有环境路径> --import ./workers/node_modules/tsx/dist/loader.mjs workers/test/communication-run.ts` 创建真实运行；两个终端分别运行 `communicate`；信号终止后，执行相同准备脚本并加 `--cancel` 取消运行。`node --import ./workers/node_modules/tsx/dist/loader.mjs workers/test/verify-communication.ts` 从真实服务回读消息、便签、任务与增量事件核对已保存记录。
+
+验收规则原始字节为 `workers/criteria.json`，`workers/src/criteria.ts` 导出 `CRITERIA_BYTES/CRITERIA_HASH`；当前摘要为 `0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b`。执行器与服务验收器拒绝其他规则摘要。部署打包须包含该原始文件，保持字节与换行不变。
+
+`workers/test/verify-chain-readonly.ts` 使用真实 Monad Testnet、A 原始适配器和 Worker 的 `waitForTransaction`，按 A 保存的历史交易 `0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e` 回读成功，状态 CONFIRMED，真实事件 ID 为 `10143:0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e:1`，原始响应保存在 `workers/evidence/chain-readonly.json`。来源是 A 标记为 DEV_FIXTURE 的真实历史回执；该验证没有发送 Worker 交易，不作为本轮业务完成证明。
+
 ## 剩余限制
 
-真实链适配器、部署及回执尚未取得；链上身份登记、Worker 接受指派、链提交、服务独立验收上链、两轮信誉回读均未通过。HTTP/MCP 的两个独立在线 Worker 联调仍待真实服务启动。两轮本地真实模型结果保持 `chainIntegration/serviceIntegration=NOT_VERIFIED`。常驻主机和两台设备运行待确认。
+A 的真实适配器与部署协议已通过公共 ChainPort 接入。链上身份登记、Worker 接受指派、链提交、服务独立验收上链、两轮信誉回读均待集成 Agent 使用真实部署与签名配置执行，本轨道未部署或写入本地链。两轮本地真实模型结果保持 `chainIntegration/serviceIntegration=NOT_VERIFIED`。常驻主机和两台设备运行待确认。

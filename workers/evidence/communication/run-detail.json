@@ -1,0 +1,75 @@
+{
+  "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+  "templateVersion": "csv-analysis-v1",
+  "mode": "LIVE",
+  "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+  "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+  "validator": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+  "status": "OPEN",
+  "tasks": [
+    {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xab4fe0bad034069bc81804743a08bb3a521727b5d099f9f22407269844419c06",
+      "role": "ANALYSIS",
+      "dependsOn": [
+        "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb"
+      ],
+      "attempt": 1,
+      "assignee": null,
+      "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+      "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+      "status": "OPEN",
+      "validator": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79"
+    },
+    {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xcd39529822b6e19e45cb5e3e03a73bb3d744e6eb87e0808a394c7b4c7ed7f0b8",
+      "role": "REPORT",
+      "dependsOn": [
+        "0xab4fe0bad034069bc81804743a08bb3a521727b5d099f9f22407269844419c06"
+      ],
+      "attempt": 1,
+      "assignee": null,
+      "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+      "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+      "status": "OPEN",
+      "validator": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79"
+    },
+    {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb",
+      "role": "DATA",
+      "dependsOn": [],
+      "attempt": 1,
+      "assignee": null,
+      "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+      "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+      "status": "OPEN",
+      "validator": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79"
+    }
+  ],
+  "createdAt": "2026-10-17T08:30:03.772Z",
+  "runtimeStatus": "CANCELLED",
+  "taskRuntime": [
+    {
+      "taskId": "0xab4fe0bad034069bc81804743a08bb3a521727b5d099f9f22407269844419c06",
+      "status": "CANCELLED",
+      "reason": null
+    },
+    {
+      "taskId": "0xcd39529822b6e19e45cb5e3e03a73bb3d744e6eb87e0808a394c7b4c7ed7f0b8",
+      "status": "CANCELLED",
+      "reason": null
+    },
+    {
+      "taskId": "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb",
+      "status": "CANCELLED",
+      "reason": null
+    }
+  ],
+  "inputURI": "http://127.0.0.1:3400/api/runs/worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12/input",
+  "artifacts": [],
+  "assessments": [],
+  "handoffs": [],
+  "decisions": []
+}

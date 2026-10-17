@@ -9,6 +9,7 @@ import { initializeIdentities } from "./config.ts";
 import { communicate } from "./communication.ts";
 import { reconcileSubmission, startWorker } from "./runtime.ts";
 import { enrollIdentity } from "./enrollment.ts";
+import { registerIdentity } from "./registration.ts";
 
 const controller = new AbortController();
 for (const signal of ["SIGINT", "SIGTERM"] as const) process.once(signal, () => controller.abort(new Error(signal)));
@@ -24,6 +25,12 @@ program.command("init-identities")
   .requiredOption("--service-url <url>", "实际任务服务地址")
   .action(async options => console.log(JSON.stringify(await initializeIdentities(options.directory, options.model, options.serviceUrl), null, 2)));
 program.command("start").action(async () => startWorker(controller.signal));
+for (const name of ["register", "reconcile-registration"]) {
+  program.command(name)
+    .requiredOption("--manifest-file <path>", "实际公开角色说明文件")
+    .requiredOption("--manifest-uri <uri>", "实际公开角色说明 URI")
+    .action(async options => console.log(JSON.stringify(await registerIdentity(options.manifestFile, options.manifestUri, name === "reconcile-registration", controller.signal), null, 2)));
+}
 program.command("enroll")
   .requiredOption("--identity-config <path>", "待登记的私有节点配置")
   .requiredOption("--manifest-file <path>", "实际公开角色说明文件")
