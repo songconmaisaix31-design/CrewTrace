@@ -9,9 +9,11 @@ export default function SignalScene() {
     const el = canvas.current!;
     const ctx = el.getContext('2d');
     if (!ctx) return;
+    const lens=document.createElement('canvas');
+    const lensContext=lens.getContext('2d');
     const reduced = matchMedia('(prefers-reduced-motion: reduce), (max-width: 760px)');
     let width=0, height=0, frame=0, visible=true, tick=0, last=0;
-    let mx=0, my=0, tx=0, ty=0, burst=0;
+    let mx=0, my=0, tx=0, ty=0, burst=0, pointerInside=false, px=0, py=0, lensStrength=0;
     const draw = (now:number) => {
       frame=0;
       if(now-last<30 && !paused && !reduced.matches){frame=requestAnimationFrame(draw);return;}
@@ -59,13 +61,27 @@ export default function SignalScene() {
       if(burst>.02){ctx.beginPath();ctx.arc(0,0,radius*(1.15+(1-burst)*.65),0,Math.PI*2);ctx.strokeStyle=`rgba(211,172,255,${burst*.65})`;ctx.lineWidth=1.5;ctx.stroke();}
       ctx.restore();ctx.shadowBlur=0;
       ctx.globalCompositeOperation='source-over';
+      // 对已绘制的真实光环局部采样放大，边缘渐隐，离开后平滑恢复。
+      lensStrength+=((pointerInside&&moving?1:0)-lensStrength)*.15;
+      if(lensContext&&lensStrength>.005){
+        const size=240, zoom=1+.14*lensStrength, dpr=el.width/width;
+        if(lens.width!==size){lens.width=lens.height=size;}
+        lensContext.clearRect(0,0,size,size);
+        lensContext.globalCompositeOperation='source-over';
+        lensContext.drawImage(el,(px-size/2/zoom)*dpr,(py-size/2/zoom)*dpr,size/zoom*dpr,size/zoom*dpr,0,0,size,size);
+        lensContext.globalCompositeOperation='destination-in';
+        const mask=lensContext.createRadialGradient(size/2,size/2,30,size/2,size/2,size/2);
+        mask.addColorStop(0,`rgba(0,0,0,${lensStrength})`);mask.addColorStop(.55,`rgba(0,0,0,${lensStrength*.7})`);mask.addColorStop(1,'rgba(0,0,0,0)');
+        lensContext.fillStyle=mask;lensContext.fillRect(0,0,size,size);
+        ctx.drawImage(lens,px-size/2,py-size/2,size,size);
+      }
       if(moving)frame=requestAnimationFrame(draw);
     };
     const restart=()=>{cancelAnimationFrame(frame);frame=0;if(visible&&!document.hidden)frame=requestAnimationFrame(draw);};
     const resize=new ResizeObserver(()=>{const box=el.getBoundingClientRect();width=box.width;height=box.height;const dpr=Math.min(devicePixelRatio,1.5);el.width=width*dpr;el.height=height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);restart();});
     const observer=new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;restart();});
-    const move=(e:PointerEvent)=>{const b=el.getBoundingClientRect();tx=(e.clientX-b.left)/b.width*2-1;ty=(e.clientY-b.top)/b.height*2-1;};
-    const leave=()=>{tx=ty=0;};
+    const move=(e:PointerEvent)=>{const b=el.getBoundingClientRect();px=e.clientX-b.left;py=e.clientY-b.top;tx=px/b.width*2-1;ty=py/b.height*2-1;pointerInside=e.pointerType!=='touch';};
+    const leave=()=>{tx=ty=0;pointerInside=false;};
     const pulse=()=>{if(!paused&&!reduced.matches)burst=1;};
     resize.observe(el);observer.observe(el);
     el.addEventListener('pointermove',move);el.addEventListener('pointerleave',leave);el.addEventListener('pointerdown',pulse);
