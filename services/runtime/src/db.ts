@@ -1,9 +1,9 @@
-import pg, { type PoolClient } from 'pg';
+import { Pool, type PoolClient } from '@neondatabase/serverless';
 
 export class Database {
-  readonly pool: pg.Pool;
+  readonly pool: Pool;
   constructor(connectionString: string) {
-    this.pool = new pg.Pool({ connectionString, max: 5, connectionTimeoutMillis: 10_000, idleTimeoutMillis: 10_000 });
+    this.pool = new Pool({ connectionString, max: 5, connectionTimeoutMillis: 10_000, idleTimeoutMillis: 10_000,statement_timeout: 30_000,query_timeout: 35_000 });
     this.pool.on('error', () => { console.error('PostgreSQL 空闲连接失败'); });
   }
 

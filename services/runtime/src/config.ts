@@ -6,6 +6,9 @@ const configSchema = z.object({
   PUBLIC_BASE_URL: z.url(),
   PORT: z.coerce.number().int().min(0).max(65535).default(3000),
   CHAIN_ADAPTER_MODULE: z.string().min(1).optional(),
+  CHAIN_ID: z.coerce.number().int().positive().default(10143),
+  CHAIN_CONTRACT: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
+  CHAIN_COORDINATOR: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
   VALIDATOR_MODULE: z.string().min(1).optional(),
   ALLOWED_ORIGINS: z.string().default(''),
 });

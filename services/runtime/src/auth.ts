@@ -2,7 +2,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { AppError, requireValue } from './errors.js';
 import type { Database } from './db.js';
 
-export type Principal = { kind: 'public' } | { kind: 'admin' } | { kind: 'node'; agentId: string; runtimeId: string };
+export type Principal = { kind: 'public' } | { kind: 'admin' } | { kind: 'node'; agentId: string; runtimeId: string; credentialId: string };
 export const tokenHash = (token: string) => createHash('sha256').update(token).digest('hex');
 
 export class Auth {
@@ -14,7 +14,7 @@ export class Auth {
     if (timingSafeEqual(Buffer.from(tokenHash(token)), Buffer.from(tokenHash(this.adminToken)))) return { kind: 'admin' };
     const record = (await this.db.pool.query('SELECT agent_id,runtime_id FROM node_credentials WHERE token_hash=$1 AND revoked_at IS NULL', [tokenHash(token)])).rows[0];
     if (!record) throw new AppError(401, 'UNAUTHORIZED', '节点凭证无效或已撤销');
-    return { kind: 'node', agentId: record.agent_id, runtimeId: record.runtime_id };
+    return { kind: 'node', agentId: record.agent_id, runtimeId: record.runtime_id, credentialId: tokenHash(token) };
   }
 }
 
