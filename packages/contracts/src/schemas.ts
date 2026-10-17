@@ -59,7 +59,7 @@ export const TaskSchema = z.strictObject({
   criteriaHash: HashSchema,
   status: TaskStatusSchema,
   validator: AddressSchema,
-});
+}).refine(task => task.status === "OPEN" ? task.assignee === null : task.assignee !== null, "任务状态与 assignee 不一致");
 export const RunSchema = z.strictObject({
   runId: IdSchema,
   templateVersion: z.literal("csv-analysis-v1"),
@@ -173,6 +173,10 @@ export const QualityRecordSchema = z.strictObject({
   validator: AddressSchema,
   receipt: ChainReceiptSchema.refine(receipt => receipt.status === "CONFIRMED", "质量记录需要已确认回执"),
 });
+export const OutcomeRecordSchema = QualityRecordSchema.extend({
+  verdict: VerdictSchema,
+  receipt: ChainReceiptSchema.nullable(),
+});
 export const RuntimeEventSchema = z.strictObject({
   eventId: IdSchema,
   seq: CountSchema.min(1),
@@ -227,7 +231,13 @@ export const AuthenticatedAgentSchema = z.strictObject({
 });
 
 export const HeartbeatRequestSchema = z.strictObject({ runtimeId: IdSchema, activeTasks: CountSchema, maxConcurrency: CountSchema.min(1) });
-export const CreateRunRequestSchema = z.strictObject({ runId: IdSchema, inputHash: HashSchema, criteriaHash: HashSchema, validator: AddressSchema });
+export const CreateRunRequestSchema = z.strictObject({ runId: IdSchema, inputHash: HashSchema, criteriaHash: HashSchema, validator: AddressSchema, inputContent: z.string().min(1).optional() });
+export const CreateRunWithInputRequestSchema = CreateRunRequestSchema.extend({ inputContent: z.string().min(1) });
+export const NodeEnrollmentRequestSchema = z.strictObject({ profile: AgentProfileSchema, signature: z.string().regex(/^0x[0-9a-fA-F]+$/) });
+export const AssignTaskRequestSchema = z.strictObject({ chainId: z.number().int().positive(), blockNumber: BlockNumberSchema.optional() });
+export const ModelCallRequestSchema = z.strictObject({ attempt: AttemptSchema });
+export const InterruptRequestSchema = z.strictObject({ attempt: AttemptSchema, reason: z.string().min(1) });
+export const HandoffUpdateRequestSchema = z.strictObject({ status: HandoffStatusSchema, reason: z.string().min(1) });
 export const AcceptTaskRequestSchema = z.strictObject({ attempt: AttemptSchema });
 export const SubmitTaskRequestSchema = z.strictObject({ attempt: AttemptSchema, artifactId: IdSchema, receipt: SubmissionReceiptSchema });
 export const ArtifactUploadRequestSchema = z.strictObject({
@@ -266,6 +276,7 @@ export type Handoff = z.infer<typeof HandoffSchema>;
 export type AssessmentCheck = z.infer<typeof AssessmentCheckSchema>;
 export type Assessment = z.infer<typeof AssessmentSchema>;
 export type QualityRecord = z.infer<typeof QualityRecordSchema>;
+export type OutcomeRecord = z.infer<typeof OutcomeRecordSchema>;
 export type RuntimeEvent = z.infer<typeof RuntimeEventSchema>;
 export type AnnouncementCreate = z.infer<typeof AnnouncementCreateSchema>;
 export type Announcement = z.infer<typeof AnnouncementSchema>;
@@ -275,6 +286,12 @@ export type AgentNote = z.infer<typeof AgentNoteSchema>;
 export type AuthenticatedAgent = z.infer<typeof AuthenticatedAgentSchema>;
 export type HeartbeatRequest = z.infer<typeof HeartbeatRequestSchema>;
 export type CreateRunRequest = z.infer<typeof CreateRunRequestSchema>;
+export type CreateRunWithInputRequest = z.infer<typeof CreateRunWithInputRequestSchema>;
+export type NodeEnrollmentRequest = z.infer<typeof NodeEnrollmentRequestSchema>;
+export type AssignTaskRequest = z.infer<typeof AssignTaskRequestSchema>;
+export type ModelCallRequest = z.infer<typeof ModelCallRequestSchema>;
+export type InterruptRequest = z.infer<typeof InterruptRequestSchema>;
+export type HandoffUpdateRequest = z.infer<typeof HandoffUpdateRequestSchema>;
 export type AcceptTaskRequest = z.infer<typeof AcceptTaskRequestSchema>;
 export type SubmitTaskRequest = z.infer<typeof SubmitTaskRequestSchema>;
 export type ArtifactUploadRequest = z.infer<typeof ArtifactUploadRequestSchema>;
