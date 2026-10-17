@@ -5,6 +5,7 @@ import { contentHash, exact, jsonBytes, utf8 } from "./content.ts";
 import { LIMITATIONS } from "./data.ts";
 import { requireValue, WorkerError } from "./errors.ts";
 import { validateAnalysis, validateData, validateReport } from "./validator.ts";
+import { CRITERIA_HASH } from "./criteria.ts";
 
 const FileSchema = z.strictObject({
   name: z.enum(["data.csv", "data-plan.json", "metrics.json", "report.json", "report.md"]),
@@ -73,6 +74,7 @@ function checkEnvelope(task: Task, artifact: Artifact, content: string, sourceBy
   exact(product.role, task.role, "产物角色不符");
   exact(product.sourceHash, contentHash(sourceBytes), "产物原始输入摘要不符");
   exact(task.inputHash, contentHash(sourceBytes), "任务原始输入摘要不符");
+  exact(task.criteriaHash, CRITERIA_HASH, "任务规则摘要与实际固定验收规则不符");
   exact(artifact.parentArtifactIds, product.parentArtifacts.map(parent => parent.artifactId), "交接父产物集合不符");
   exact(artifact.limitations, product.limitations, "交接限制不符");
   return product;
