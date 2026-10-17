@@ -14,7 +14,7 @@
 
 A 原始合约已用 Hardhat 3.20.0 / solc 0.8.28 编译通过。主 Agent 已启动真实本地 RPC http://127.0.0.1:18545，chainId 31337，进程 42396；已通过原生 evm_setIntervalMining 设置 100 毫秒出块，本机实际 latest/finalized 读取一致。日志位于 .local/hardhat-node.stdout.log 与 .local/hardhat-node.stderr.log，包含开发钱包信息，禁止打印或公开。集成 Agent 可以使用该本地节点，私有部署配置保存在 .local/，不得复用公开开发钱包作为产品身份；为协调者和验收者生成独立钱包，沿用 Worker 轨道已生成的四个独立 Worker 钱包并实际转账。需要缩短本地 finalized 等待时，可使用此真实节点的原生区块生成参数，保留实际交易与区块证据。不要改写 Monad RPC 或公共部署。
 
-四个 Worker 的公开身份位于 workers/identities.json，公开 manifest 的固定 URI 为 https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json，已被真实 enroll 校验字节并用于登记。私有环境文件在 Worker 轨道的 .local/ 内，由该轨道交接路径。可复制到集成工作区的忽略目录并配置真实本地部署，不打印凭证。实际 Neon 已保留这四个签名身份；同一数据库上不重复 enroll，如需更新节点凭证，使用授权 rotate 接口。原 MCP 通信进程已停止。
+四个 Worker 的公开身份位于 workers/identities.json，公开 manifest 的固定 URI 为 https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json，已被真实 enroll 校验字节并用于登记。私有环境文件在 C:/Users/DW/orca/workspaces/co-vibe/work-b-workers/workers/.local/nodes/，包含 data-a.env、data-b.env、analysis.env、report.env。可复制到集成工作区的忽略目录并配置真实本地部署，不打印凭证。实际 Neon 的公开 schema 已保留这四个签名身份；同一 schema 内不重复 enroll，如需更新节点凭证，使用授权 rotate 接口。原 MCP 通信进程已停止。
 
 本地链的完整验证使用同一真实 Neon 项目中的独立 PostgreSQL schema，并通过标准连接 options 设置 search_path；启动前实际查询 current_schema 确认。这样本地 chainId 31337 的任务、127.0.0.1 产物 URI 与回执独立保存，不进入之后 Monad/Vercel 实例的公开运行记录。新 schema 运行实际迁移与四钱包签名 enroll，复制节点私有配置时不沿用另一个 schema 发出的凭证；保留公开 schema 已有通信记录。验证报告写明实际 schema 与本地链范围，不降低测试网验收要求。
 

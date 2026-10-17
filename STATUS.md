@@ -1,7 +1,9 @@
 # B 角色状态
 
 - 已确认完整 B 角色及产品 Agent 的 MCP 公告板、便签交流范围。
-- 工作分支：work/b-runtime；类型与规则已完成，服务、Worker、A 协议接入正在隔离轨道开发，实际客户端/模型为 Orca Codex / gpt-6.1-sol。
+- 工作分支：work/b-runtime；四条开发轨道均已提交并推送，准备独立集成，实际客户端/模型为 Orca Codex / gpt-6.1-sol。
+- 各轨道最终 Commit：domain 0166de30d8d47605cea4dad3ff7b8e38eac2f8fa；chain 057d19dee7e08b0e13bed2ca276d8a8fc27afc08；workers ce116194db7eb9e52fe1f3e5aaca56b13f3e97b9；service c15dd3d53cdcbe7d4a2bbff2e962277b2546dca5。
+- 服务最终类型检查与构建通过；受影响的真实重启、权限与持久化回归修正后通过，耗时 88.438 秒；原生 Monad 注册事件在 Neon 中按原 eventId 持久化并去重通过。完整两轮链写入和四 Worker 并发尚待集成验证。
 - 类型与规则轨道已推送 work/b-domain 的 0166de30d8d47605cea4dad3ff7b8e38eac2f8fa，类型检查及 19 项纯函数测试通过。
 - Worker 已用 step-3.5-flash 对两份合成输入各调用 3 次，耗时 27.097 秒与 29.479 秒，产物独立重算校验通过；6 项产物测试与构建通过。链上两轮流程尚未验证。
 - 技术：TypeScript、PostgreSQL、HTTP/MCP 共用业务逻辑、独立 Worker、阶跃星辰模型。
