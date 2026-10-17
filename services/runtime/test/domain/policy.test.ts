@@ -4,7 +4,7 @@ import {
   ApplicationError, AssignmentDecisionSchema, RoleReputationSchema, deriveTaskId, hashUtf8,
   type AgentProfile, type DecisionInput, type RoleReputation,
 } from "../../../../packages/contracts/src/index.ts";
-import { calculateReputation, rankCandidates, verifyDecisionSnapshot } from "../../src/domain/index.ts";
+import { calculateReputation, rankCandidates, serializeDecisionBody, verifyDecisionSnapshot } from "../../src/domain/index.ts";
 
 // PRD 政策示例仅作为纯函数输入，不代表链上地址、回执或真实履历。
 const alice = "0x0000000000000000000000000000000000000001";
@@ -31,7 +31,9 @@ test("PRD 冷启动先验、样本量及 1 PASS 排名例子", () => {
   assert.equal(decision.candidateScores[0]?.sampleSize, 1);
   assert.equal(decision.candidateScores[0]?.score, 0.8 * (2 / 3) + 0.2);
   assert.equal(decision.candidateScores[1]?.sampleSize, 0);
-  assert.ok(Math.abs((decision.candidateScores[1]?.score ?? 0) - 0.6) < 1e-12);
+  const cold = decision.candidateScores[1];
+  assert.ok(cold);
+  assert.ok(Math.abs(cold.score - 0.6) < 1e-12);
 });
 
 test("REPORT 履历不会增加 DATA 分值", () => {
@@ -82,6 +84,7 @@ test("缺链快照、区块不一致及重复候选立即失败", () => {
 
 test("快照可以独立复算，篡改分值、理由、选择及摘要均拒绝", () => {
   const decision = rankCandidates(input({ reputations: [reputation(alice, 1), reputation(bob)] }));
+  assert.equal(hashUtf8(serializeDecisionBody(decision)), decision.decisionHash);
   assert.deepEqual(verifyDecisionSnapshot(JSON.parse(JSON.stringify(decision))), decision);
   const first = decision.candidateScores[0];
   assert.ok(first);

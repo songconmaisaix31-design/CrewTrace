@@ -37,6 +37,10 @@
 
 ArtifactUploadRequest 为 taskId/attempt/artifactId/parentArtifactIds/schemaVersion/limitations/content/contentHash。content 为持久化的原始 UTF-8 文字，producer、URI 由服务生成。SubmitTaskRequest 为 attempt/artifactId/receipt，receipt 必须是 SubmissionReceipt；路径中的 taskId 与回执业务字段必须一致。
 
+读取响应同步导出类型及 Schema：`RunDetail`、`TaskRuntime`、`WorkerJob`、`WorkerJobsResponse`、`AgentsResponse`、`EventsResponse`、`AnnouncementsResponse`、`NotesResponse`、`ModelCallReservation`。`RuntimeStatus/RuntimeStatusSchema` 为 ACTIVE/PAUSED/CANCELLED/WAITING_MANUAL/INTERRUPTED，仅描述运行控制与等待，不加入 TaskStatus，也不计为质量失败。
+
+`RunDetail` 为 Run 加 runtimeStatus/taskRuntime/inputURI/artifacts/assessments/handoffs/decisions；TaskRuntime 为 taskId/status/reason。`WorkerJob` 为 task/runtimeStatus/reason/run，run 为 RunDetail，reason 可为 null；GET /worker/jobs 返回 `{jobs: WorkerJob[]}`。GET /api/agents 返回 `{agents: AgentProfile[]}`；增量事件返回 `{events: RuntimeEvent[], nextAfter: number}`；公告与便签查询分别返回 `{announcements: Announcement[]}` 和 `{notes: AgentNote[]}`。模型调用预留返回 ModelCallReservation，字段 callId/modelCalls/stepCalls，计数包含本次已预留调用。
+
 ## 公告与便签
 
 AnnouncementCreate 为 runId/taskId/body/topic/type；type 为 PROGRESS/HANDOFF/BLOCKER/RESULT。Announcement 增加 announcementId/author/createdAt。NoteCreate 为 runId/taskId/body/topic/artifactIds；AgentNote 增加 noteId/author/version/createdAt/updatedAt。NoteUpdate 为 expectedVersion/body/topic/artifactIds，更新版本必须恰好匹配当前值；成功后版本加 1。
@@ -64,7 +68,7 @@ SnapshotRead 包含 chainId/blockNumber；RoleReputation 包含 agentId/role/pas
 
 上述端口数据对象均导出同名 Schema：SnapshotReadSchema、AgentRegistrationSchema、TaskAssignmentSchema、ArtifactSubmissionSchema、OutcomeSubmissionSchema、ChainTaskSchema。
 
-getSnapshot 是应用级可选读取扩展，由真实 RPC/链适配器返回已确认区块，不增加 A 的合约 ABI。未指定 blockNumber 且未配置此方法时须报告 CHAIN_DATA_MISSING。`OutcomeRecord/OutcomeRecordSchema` 支持 UNRESOLVED 与空或未确认回执；只有筛选并验证后的 `QualityRecord` 参与统计。
+getSnapshot 是应用级可选读取扩展，由真实 RPC/链适配器返回已确认区块，不增加 A 的合约 ABI。未指定 blockNumber 且未配置此方法时须报告 CHAIN_DATA_MISSING。`OutcomeRecord/OutcomeRecordSchema` 支持 UNRESOLVED、空或未确认回执，以及可选 cancelled 标记；已取消任务由服务明确标记并排除。只有筛选并验证后的 `QualityRecord` 参与统计。
 
 ## 应用错误
 
@@ -88,6 +92,7 @@ assertExecutionBudget(input: ExecutionBudgetInput): void;
 requireChainPort(port: ChainPort | null | undefined): ChainPort;
 assertConfirmedReceipt(receipt: ChainReceipt | null | undefined, expected: ChainExpectation): ChainReceipt;
 collectConfirmedQuality(records: readonly OutcomeRecord[] | null | undefined, query: QualityQuery): QualityRecord[];
+isQualityEligible(input: { verdict: Verdict; transactionStatus: TransactionStatus | null; cancelled: boolean }): boolean;
 aggregateRoleReputation(records: readonly OutcomeRecord[] | null | undefined, query: QualityQuery): RoleReputation;
 assertArtifactBinding(task: Task, artifact: Artifact): void;
 assertPassedAssessment(task: Task, assessment: Assessment, expected: ChainExpectation): void;
@@ -101,7 +106,7 @@ updateAgentNote(note: AgentNote, input: NoteUpdate, actor: AuthenticatedAgent, u
 
 `DecisionInput` 包含 decisionId/taskId/attempt/role/policyVersion/repBlockNumber/evaluatedAt/agents/reputations；policyVersion 固定 role-rep-v1。所有符合资格的候选都需要该区块的对应角色信誉，包括明确返回零历史的节点。快照内保留候选原始资料、负载、心跳和信誉分项。排名使用精确有理数比较，再按小写 agentId 升序；展示分数为 JavaScript number。输入候选和信誉按稳定顺序规范化，决策 body 按 schema 字段顺序首次序列化为 UTF-8 JSON，再计算 decisionHash；`serializeDecisionBody(decision)` 返回这份原文，服务应保存原始字节与快照对象。复算检查候选、排除理由、选择、全部分项及摘要。
 
-`ChainExpectation` 为 chainId/contract；`QualityQuery` 另含 agentId/role/blockNumber/validator。records 缺失立即报告 CHAIN_DATA_MISSING，显式空数组仅可来自真实完整区块读取。UNRESOLVED/空回执/未确认/失败回执都不计数；已确认结果按指定验收方、网络、合约、快照区块与唯一 taskId/attempt 核验。schema 只能检查业务结构，回执真实性必须由 A 的实际适配器核验后传入。
+`ChainExpectation` 为 chainId/contract；`QualityQuery` 另含 agentId/role/blockNumber/validator。records 缺失立即报告 CHAIN_DATA_MISSING，显式空数组仅可来自真实完整区块读取。取消任务、UNRESOLVED/空回执/未确认/失败回执都不计数；已确认结果按指定验收方、网络、合约、快照区块与唯一 taskId/attempt 核验。schema 只能检查业务结构，回执真实性必须由 A 的实际适配器核验后传入。
 
 `TaskTransitionContext` 必填 attempt/chainId/contract。ASSIGNED 另需 assignee/coordinator/receipt/dependencies，校验上游已验收；RUNNING 另需 actor/dependencies，校验交接已 ACCEPTED；SUBMITTED 另需 actor/artifact/submissionReceipt；VERIFIED_PASS/VERIFIED_FAIL 另需 artifact/assessment，已有终态使用 existingOutcome:true 并拒绝重复。receipt/submissionReceipt 必须来自实际链查询，依赖数组对 DATA 为 []。`UpstreamDependency` 为 task/artifact/assessment；`VerifiedDependency` 另含 handoff，要求上游已通过、验收回执已确认、同一版本交接已 ACCEPTED。下游获指派后完成交接接收，再进入 RUNNING。`HandoffValidationInput` 为 chainId/contract/upstream/downstream/artifact/assessment/content/expectedSchemaVersion，实际文件 schema 校验由 Worker 验收器负责，领域函数核对版本与原始摘要。
 

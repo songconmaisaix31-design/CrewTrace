@@ -11,45 +11,12 @@ export const ArtifactSubmissionSchema = z.strictObject({ taskId: HashSchema, att
 export const OutcomeSubmissionSchema = z.strictObject({ taskId: HashSchema, attempt: AttemptSchema, verdict: z.enum(["PASS", "FAIL"]), artifactHash: HashSchema, criteriaHash: HashSchema, evidenceHash: HashSchema, evidenceURI: UriSchema, validator: AddressSchema });
 export const ChainTaskSchema = TaskAssignmentSchema.extend({ status: z.enum(["ASSIGNED", "SUBMITTED", "VERIFIED_PASS", "VERIFIED_FAIL"]), artifactHash: HashSchema.nullable() });
 
-export interface SnapshotRead {
-  chainId: number;
-  blockNumber: string;
-}
-export interface AgentRegistration {
-  agentId: Address;
-  roles: Role[];
-  manifestURI: string;
-  manifestHash: Hash;
-}
-export interface TaskAssignment {
-  taskId: Hash;
-  attempt: number;
-  role: Role;
-  assignee: Address;
-  validator: Address;
-  inputHash: Hash;
-  criteriaHash: Hash;
-}
-export interface ArtifactSubmission {
-  taskId: Hash;
-  attempt: number;
-  artifactHash: Hash;
-  artifactURI: string;
-}
-export interface OutcomeSubmission {
-  taskId: Hash;
-  attempt: number;
-  verdict: "PASS" | "FAIL";
-  artifactHash: Hash;
-  criteriaHash: Hash;
-  evidenceHash: Hash;
-  evidenceURI: string;
-  validator: Address;
-}
-export interface ChainTask extends TaskAssignment {
-  status: "ASSIGNED" | "SUBMITTED" | "VERIFIED_PASS" | "VERIFIED_FAIL";
-  artifactHash: Hash | null;
-}
+export type SnapshotRead = z.infer<typeof SnapshotReadSchema>;
+export type AgentRegistration = z.infer<typeof AgentRegistrationSchema>;
+export type TaskAssignment = z.infer<typeof TaskAssignmentSchema>;
+export type ArtifactSubmission = z.infer<typeof ArtifactSubmissionSchema>;
+export type OutcomeSubmission = z.infer<typeof OutcomeSubmissionSchema>;
+export type ChainTask = z.infer<typeof ChainTaskSchema>;
 export interface ChainPort {
   registerAgent(input: AgentRegistration): Promise<ChainReceipt>;
   assignTask(input: TaskAssignment): Promise<ChainReceipt>;

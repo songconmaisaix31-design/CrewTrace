@@ -1,8 +1,8 @@
 import {
   AddressSchema, ApplicationError, BlockNumberSchema, ChainReceiptSchema, OutcomeRecordSchema,
-  QualityRecordSchema, RoleReputationSchema, RoleSchema,
+  QualityRecordSchema, RoleReputationSchema, RoleSchema, TransactionStatusSchema, VerdictSchema,
   type Address, type ChainPort, type ChainReceipt, type OutcomeRecord, type QualityRecord,
-  type Role, type RoleReputation,
+  type Role, type RoleReputation, type TransactionStatus, type Verdict,
 } from "../../../../packages/contracts/src/index.ts";
 
 export function requireChainPort(port: ChainPort | null | undefined): ChainPort {
@@ -34,6 +34,13 @@ export interface QualityQuery extends ChainExpectation {
   validator: Address;
 }
 
+export function isQualityEligible(input: { verdict: Verdict; transactionStatus: TransactionStatus | null; cancelled: boolean }): boolean {
+  const verdict = VerdictSchema.parse(input.verdict);
+  const status = TransactionStatusSchema.nullable().parse(input.transactionStatus);
+  if (typeof input.cancelled !== "boolean") throw new ApplicationError("INVALID_INPUT", "缺少任务取消状态");
+  return !input.cancelled && verdict !== "UNRESOLVED" && status === "CONFIRMED";
+}
+
 export function collectConfirmedQuality(records: readonly OutcomeRecord[] | null | undefined, query: QualityQuery): QualityRecord[] {
   if (!records) throw new ApplicationError("CHAIN_DATA_MISSING", "缺少指定快照区块的履约记录，不能假定为零历史");
   const block = BigInt(BlockNumberSchema.parse(query.blockNumber));
@@ -45,7 +52,8 @@ export function collectConfirmedQuality(records: readonly OutcomeRecord[] | null
   const result: QualityRecord[] = [];
   for (const value of records) {
     const record = OutcomeRecordSchema.parse(value);
-    if (record.verdict === "UNRESOLVED" || record.receipt === null || record.receipt.status !== "CONFIRMED") continue;
+    if (!isQualityEligible({ verdict: record.verdict, transactionStatus: record.receipt === null ? null : record.receipt.status, cancelled: record.cancelled === true })) continue;
+    if (record.receipt === null) throw new ApplicationError("CHAIN_DATA_MISSING", "质量记录缺少已确认回执");
     const receipt = assertConfirmedReceipt(record.receipt, { chainId: query.chainId, contract });
     if (receipt.blockNumber === null) throw new ApplicationError("CHAIN_DATA_MISSING", "已确认履约记录缺少区块号");
     if (BigInt(receipt.blockNumber) > block) continue;
@@ -55,7 +63,10 @@ export function collectConfirmedQuality(records: readonly OutcomeRecord[] | null
     const key = `${record.taskId}:${record.attempt}`;
     if (seen.has(key)) throw new ApplicationError("DUPLICATE_OUTCOME", "同一 taskId 与 attempt 出现重复结论", { key });
     seen.add(key);
-    if (record.assignee === agentId && record.role === role) result.push(QualityRecordSchema.parse(record));
+    if (record.assignee === agentId && record.role === role) {
+      const { cancelled: _cancelled, ...quality } = record;
+      result.push(QualityRecordSchema.parse(quality));
+    }
   }
   return result;
 }
