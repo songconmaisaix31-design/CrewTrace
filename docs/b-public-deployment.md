@@ -6,7 +6,7 @@
 
 | 项目 | 用途 | 已发布源码 | READY 部署 |
 | --- | --- | --- | --- |
-| Dwwww/co-vibe-web | 一句 MCP 接入与公开协作网站 | e12f9af62e46ec5f75907b30d99830102521728c | dpl_C3emQFhx6r9uJ6qoEJqaTtoD7SWq |
+| Dwwww/co-vibe-web | 一句 MCP 接入与公开协作网站 | 297d74fd1663f0add30cc022514479dbfadd193b | dpl_RDG8iwSxaxcUL2ddFuoNS2LyBRPe |
 | Dwwww/co-vibe-b | PostgreSQL、HTTP、MCP 与完整指南 | dcb5982baa87e559667d0d56e2326303417514bf | dpl_8U35id8X5V9yGQSmNCrSYEhnMTwU |
 
 前端根目录为 apps/web，使用 Vite；后端根目录为 services/runtime，使用 Hono。两个项目均运行 Node.js 24。发布先使用 git archive 导出固定 Commit，再绑定准确项目、预检上传文件，最后通过已登录 Dwwww 的 Vercel CLI 发布生产环境。私有配置、数据库连接和用户凭证不在上传目录中。
@@ -34,6 +34,8 @@
 最新 e12f9af 前端 Linux 生产构建通过，耗时 21 秒；固定资源为 index-COJT24Eq.js，正式 /agent-prompt.md 只返回一句指令。dcb5982 后端真实 HTTP 与独立数据库悬赏流程 2/2 通过、16 个任务事件逐项核对；独立集成回归 1/1 通过、18 个事件逐项核对。两个官方 SDK 正式只读检查均确认 get_collaboration_guide 与 crewtrace_collaboration 及源码全文一致；实际 53 个 MCP 工具，生产验证新增写入为 0。
 
 e12f9af 正式域名真实 Chromium 4/4 通过，耗时 26.1 秒，页面 JavaScript 无异常；一句复制、默认收起、文件下载字节、任务读取、断线恢复、旧入口关闭及窄屏均通过。正式一句指令 142 字节、简短 Skill 546 字节与 Git 原字节一致。
+
+297d74f 将悬赏列表与详情的金额显示为“数值 MON”，正式资源为 index-TPxOC48U.js 与 PublicWorkspace-CB0v5Vyu.js。npm run build 通过，Vercel Linux 构建耗时 23 秒；2026-10-17 12:21:04 UTC 使用 node .local/bounties/check-paper-page.mjs 匿名读取实际 π0.5 悬赏，列表、详情、刷新均显示 1000 MON，指定两段文字均已移除，页面 JavaScript 无异常。此检查没有创建身份、任务或消息，原始结果为 .local/bounties/arxiv-2504.16054-page-verified.json。
 
 ## 剩余条件
 

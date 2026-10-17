@@ -3,11 +3,12 @@
 ## 当前公开交付
 
 - CrewTrace 网站：https://mon.davidwang.space；备用：https://co-vibe-web.vercel.app。正式 MCP：https://mcp.davidwang.space/mcp。阿里云 CNAME、Vercel 域名验证与实际 HTTPS 均通过；旧 mon/mcp 与 co-vibe-b/mcp 继续可用。
-- 前端已发布 e12f9af62e46ec5f75907b30d99830102521728c，READY 部署为 dpl_C3emQFhx6r9uJ6qoEJqaTtoD7SWq。MCP 页主按钮只复制一句连接指令，完整 Prompt 放在 MCP；高级配置默认收起，静态指令和标准 Skill 仅提供简短引导。预置演示案例、CSV 导航、旧页面分流和旧网站网关入口已移除。
+- 前端已发布 297d74fd1663f0add30cc022514479dbfadd193b，READY 部署为 dpl_RDG8iwSxaxcUL2ddFuoNS2LyBRPe。MCP 页主按钮只复制一句连接指令，完整 Prompt 放在 MCP；高级配置默认收起，静态指令和标准 Skill 仅提供简短引导。悬赏列表与详情金额显示为“数值 MON”。预置演示案例、CSV 导航、旧页面分流和旧网站网关入口已移除。
 - 后端已发布 dcb5982baa87e559667d0d56e2326303417514bf，READY 部署为 dpl_8U35id8X5V9yGQSmNCrSYEhnMTwU。完整悬赏 Prompt 位于 MCP，匿名只读 get_collaboration_guide 与原生 crewtrace_collaboration 返回同源内容。25 个公开协作工具、1 个指南工具和 27 个原受权限限制工具共 53 个。
 - 悬赏工具说明覆盖发布、查询、改价、分工、认领、交付、退回重交、验收完成、释放与取消；使用现有真实 PostgreSQL 业务状态及事件，验收不表示付款。
 - 上链及 MONSKILLS 使用已按用户明确要求暂停。网站和 MCP 新版本均已 READY，详情见 tasks/B-public-onchain.md。
 - 模拟 MON 悬赏的 bountyMode 为 MOCK，没有真实付款。公开承担记录尚未上链，commitmentRecording 为 UNDECIDED，当前不自动匹配。
+- 用户指定的 π0.5 论文复现悬赏已真实发布，任务 ba163ef9-42fc-4a94-a798-3078c05b4903，标价 1000 MON；任务说明按用户要求更新至 version 2。这是实际业务悬赏，保留其身份和协作记录。
 - 最终交付分支为 work/b-runtime，保留 A 协议、C 的 3d7966e62b7a56ac5afe1819550ccf89e88c9722 与各 B 轨道完整合并历史。
 
 ## 已完成真实验证
@@ -19,6 +20,7 @@
 - 最新后端真实 HTTP、两个官方 SDK 客户端与独立测试数据库悬赏流程 2/2 通过，16 个任务事件逐一核对；最终 Host 与同源指南检查 1/1 通过。新前端本地真实 HTTP 2/2、匿名 Chromium 4/4、类型检查、构建与简短 Skill 校验通过。
 - 独立真实悬赏回归 1/1 通过，82806.1046 ms，18 个事件逐项查库，包含金额精度、改价、权限、分页、退回重交、验收、释放及子任务取消约束。正式 MCP 两个独立官方 SDK 检查均确认指南、原生 Prompt 和源码全文相同；生产写入为 0。
 - e12f9af 正式域名真实 Chromium 4/4 通过，26.1 秒，确认一句指令复制、默认收起、下载字节、任务读取、断线恢复、旧入口关闭及窄屏，页面 JavaScript 无异常。独立核对一句指令 142 字节、简短 Skill 546 字节与 Git 原字节一致。
+- 297d74f 的 npm run build 与 Vercel Linux 构建通过；正式域名匿名 Chromium 核对真实 π0.5 悬赏的列表、详情和刷新，金额均为 1000 MON，页面 JavaScript 无异常。命令为 node .local/bounties/check-paper-page.mjs，实际结果保存于 .local/bounties/arxiv-2504.16054-page-verified.json，无生产写入。
 
 ## 数据库及既有 B 验收限制
 
