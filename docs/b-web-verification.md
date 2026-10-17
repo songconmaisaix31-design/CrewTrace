@@ -1,6 +1,41 @@
 # B 前端真实流程验证
 
-## 最终集成与公开协作
+## 一句话接入与完整 MCP 悬赏
+
+前端候选 `e12f9af` 和后端候选 `dcb5982` 已保留完整历史合入 `work/b-runtime`。网页仅复制一句指令：连接正式 MCP，调用 `get_collaboration_guide` 获取指引，按用户需求加入协作、发布或参与悬赏。完整业务流程由服务端提供，匿名只读 guide 返回 `{promptName,text}`，正文与无参数原生提示词 `crewtrace_collaboration` 完全相同；共享响应类型提交为 `3cc25fa`。25 个领域工具和 HTTP 业务目录保持原有协议。
+
+前端始终打开公开协作页，移除旧 CSV 导航、运行入口及预置案例；网关只接受公开协作路径和方法。合入后 `npm run check`、`npm run build`、`npm test` 全部通过，实际 HTTP 与路由测试 2/2；构建入口为 `index-CfaALb1o.js`。简短 Skill 的标准格式检查通过。运行时 `npm run check --prefix services/runtime` 与 `npm run build --prefix services/runtime` 通过。
+
+前后端正式部署 READY 后，匿名官方 SDK 与 HTTPS 独立检查通过：MCP 实际提供 53 个工具，`get_collaboration_guide` 无必填参数且 `readOnlyHint=true`，正文与原生提示词及合入源码逐字符一致。正式 `/agent-prompt.md` 的一句指令为 142 字节，`/skills/crewtrace/SKILL.md` 的简短引导为 546 字节，均与 Git 原字节完全一致；没有增加生产身份或业务写入。正式前端部署资源为 `index-COJT24Eq.js`。
+
+命令为 `node --use-env-proxy --import ./services/runtime/node_modules/tsx/dist/loader.mjs .local/web-flow/review-guidance.ts --public --prompt --git-source --bounty`，代理配置与下文公开检查相同。结果保存在 `.local/web-flow/bounty-guidance-public.json`，下载原文为 `bounty-published-agent-prompt.md` 与 `bounty-published-SKILL.md`。
+
+前端原 Worker 在正式域名执行匿名 Chromium 回归，**4/4 通过，总耗时 26.1 秒**：一句指令精确复制、默认收起的配置、简短文件下载原字节、桌面与 390px 布局、筛选和断线恢复、旧页面及旧网关关闭均通过，页面异常为 0。最终前端报告 `66919b4` 与后端正式 MCP 报告 `c26f710` 已完整合入；命令和实际结果分别见 [前端报告](b-web-integration.md) 与 [后端报告](b-public-collaboration.md)。
+
+### 独立真实悬赏回归
+
+`packages/contracts/test/collaboration-bounty-live.test.ts` 首先实际核对 `current_schema()=b_public_collaboration_test_20261017`，只允许该独立测试 schema，然后在 `http://127.0.0.1:65475` 启动真实 HTTP 服务。两名独立官方 MCP 客户端通过匿名起名取得不同 UUID 与私密凭证；指引工具与原生提示词在创建身份前已核对全文一致。生产数据库未新增验证身份。
+
+2026-10-17 11:58 UTC，回归 **1/1 通过，82806.1046 ms**，进程总耗时 `101841.5939 ms`。发布者为 `535a8647-ad37-4233-8266-1c2be2499a74`，执行者为 `9d1357f4-57e6-4aa5-842e-913a431d75cf`。
+
+| 实际验证 | 结果 |
+| --- | --- |
+| 发布、分页查询和改价 | `0.010000000000000001` 修改为 `0.020000000000000001`，精度完全保留；非作者修改和旧版本被拒绝。 |
+| 分工、认领和退回重交 | 真实提议经作者批准，本人认领；实际工具名称成果被要求补充 schema，使用原 Claim 新建交接，作者通过独立连接重新读取全部工具核对。 |
+| 成果接受与完成 | 任务 `fdd167a6-d18f-40f6-85e4-755341df1228` 为 `COMPLETED`，Claim 为 `COMPLETED`，实际交接为 `ACCEPTED`。执行者自行验收被拒绝。 |
+| 释放与取消 | 待审核交接阻止释放；只有本人可释放；有效认领和未结束子任务均阻止取消。任务 `38f6932f-0bce-4c44-9c6c-5542ef9fe5f3` 在本人释放、子任务结束后为 `CANCELLED`，之后认领被拒绝。 |
+| 数据一致性 | 实际 18 个事件的 `event_id + seq` 分别查询，完整原文相同；两身份的全部库内事件与 HTTP 一致。Task、Proposal、Claim、Handoff 与真实库文档逐项相同。 |
+
+成果为实际读取的 25 个领域工具及其输入 schema，原始 JSON SHA-256 为 `5eb0ecabbfe41e48ab6d12fdd24b3abfc804356377b3f19c1c1c66dea41fa774`。证据保存在 `.local/web-flow/bounty-e7588ed2-f8d0-4b88-9ae7-50015ead5e97/summary.json`、`audit.json` 与 `actual-tool-schemas.json`；私密凭证保存于独立忽略文件。模型调用、链写入和真实付款均为 0，HTTP 服务在测试结束后实际关闭。
+
+```powershell
+node node_modules/typescript/bin/tsc --noEmit --target ES2023 --module ESNext --moduleResolution Bundler --strict --skipLibCheck --esModuleInterop --allowImportingTsExtensions packages/contracts/test/collaboration-bounty-live.test.ts
+node --env-file=C:/Users/DW/orca/workspaces/co-vibe/work-b-db-performance/services/runtime/.local/collaboration/test.env --import ./services/runtime/node_modules/tsx/dist/loader.mjs --test packages/contracts/test/collaboration-bounty-live.test.ts
+```
+
+两个命令均退出 0。上链工作已按用户要求暂停；现有公开悬赏继续使用 MOCK，验收和任务完成不表示真实付款。此前本地链核实报告 `dabc52e` 已合入，仅保留其真实历史结果；该轨道节点已停止监听，见 [本地链核实](b-chain-collaboration.md)。
+
+## 此前发布与公开协作验证
 
 恢复后的集成使用 Orca Codex / gpt-6-astra，在 `work/b-runtime` 保留各轨道完整 Git 历史。前端业务候选 `8c17e36` 与后端业务候选 `9de221a` 已通过 Merge Commit 合入；原 C 提交 `36b88d3`、`3d7966e` 仍在历史中。共享起名加入协议与接入文档提交为 `f399ca8`，独立真实起名回归为 `55c5210`。A 原始 `packages/chain` 与 `deployments` 和 `work/b-chain` 完全相同。
 
@@ -21,7 +56,7 @@
 
 前端轨道在正式 `https://mon.davidwang.space` 上执行真实 Chromium 双身份协作及独立 MCP 任务回读，2/2 通过，总耗时 28.7 秒。任务 `d7bb5a94-e178-43b0-9969-ca69fa0984ff` 实际完成；身份、交流、成果和完成状态在刷新后保持一致，真实离线后保留已有内容并在联网后继续同步。390px 无横向溢出，截图、视频和 trace 全部关闭。详细命令与范围见 [前端集成报告](b-web-integration.md)。
 
-最终前端展示 CrewTrace 品牌，正式 MCP 地址为 `https://mcp.davidwang.space/mcp`。工具参数按 Zod `io: input` 生成 JSON Schema，起名工具必填项仅为 `name`；合并后构建的入口资源为 `index-D9LPjyFO.js`，`check/build/test` 已重新通过。
+该阶段前端展示 CrewTrace 品牌，正式 MCP 地址为 `https://mcp.davidwang.space/mcp`。工具参数按 Zod `io: input` 生成 JSON Schema，起名工具必填项仅为 `name`；当时合并后构建的入口资源为 `index-D9LPjyFO.js`，`check/build/test` 通过。
 
 ### 公开提示词、Skill 与 MCP 原生提示词
 
@@ -40,7 +75,7 @@ node --use-env-proxy --import ./services/runtime/node_modules/tsx/dist/loader.mj
 python -X utf8 C:/Users/DW/AppData/Roaming/orca/codex-accounts/2a305740-3098-46da-a63f-2d9e42ae9d72/home/skills/.system/skill-creator/scripts/quick_validate.py apps/web/public/skills/crewtrace
 ```
 
-结果保存在 `.local/web-flow/guidance-public.json`、`published-agent-prompt.md` 和 `published-SKILL.md`。这次已部署版本使用模拟 MON，真实上链与钱包悬赏新要求按 [后续任务](../tasks/B-public-onchain.md) 单独实施；本节验证不代表新功能已经实现。
+结果保存在 `.local/web-flow/guidance-public.json`、`published-agent-prompt.md` 和 `published-SKILL.md`。这次已部署版本使用模拟 MON，上链工作按用户要求暂停，当前任务见 [任务记录](../tasks/B-public-onchain.md)。
 
 ## 公开协作实际验证
 

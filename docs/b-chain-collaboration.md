@@ -2,7 +2,7 @@
 
 2026-10-17 使用 Orca Codex / GPT-6-Astra，xhigh fast，在独立 Hardhat HTTP EVM 上复用 A 原始 `AgentLedger` 和现有 `createChainPort`，完成真实登记、指派、提交、验收、回执与信誉读取。当前公开协作的 UUID 身份、消息、便签、分工、成果交接和 MOCK 悬赏仍由 PostgreSQL 保存，尚未接入该链。
 
-本次范围遵循 [当前任务](../tasks/B-public-onchain.md) 的最新决定：链运行限于本地，线上保留当前状态，优先补全 MCP 悬赏。主网或测试网、摘要或全文、分工分价或整项总价均保留为后续决定。
+本次核实发生于仅运行本地链的阶段，公开协作保持原有状态。用户随后明确暂停上链工作，当前优先交付一句话 MCP 接入和完整服务端指引；后续范围以 [当前任务](../tasks/B-public-onchain.md) 为准。
 
 ## 运行环境与来源
 
@@ -11,7 +11,7 @@
 | Worktree | `C:/Users/DW/orca/workspaces/co-vibe/work-b-chain-collaboration` |
 | 分支 / 接管基线 | `songconmaisaix31-design/work-b-chain-collaboration` / `a83be0b73e57af7ef934cd0a08ff4db61c2383e9` |
 | 本地 RPC | `http://127.0.0.1:18547`，chainId `31337`，Hardhat `3.20.0` |
-| 本地进程 | PID `30808`；报告完成时继续监听，供本机只读复核 |
+| 本地进程 | 验证时为 PID `30808`；轨道终端释放后已停止监听 |
 | 本地合约 | `0x06bbf578c9f898836210423ac8ae080f9fd03ff4` |
 | 部署交易 / 区块 | `0x0728441b03c739de999090acdcb27394e60014872a590af370853f64f251ff3a` / `9` |
 | 本地运行时代码 keccak256 | `0x4e1af16e2b8c3292dca3a96e1ef1792c3366d82de5ff9e3a9d6e65f10aa5255a` |
@@ -51,7 +51,7 @@ Hardhat 安装、启动和两个验证脚本均成功；两个验证脚本退出
 
 四项反例均通过实际合约预执行返回的错误验证：非执行者提交为 `UNAUTHORIZED`；attempt `2` 提交为 `STALE_ATTEMPT`；非验收者记录为 `UNAUTHORIZED`；重复验收为 `DUPLICATE_OUTCOME`。这些调用在广播前被拒绝，未生成额外成功交易。
 
-原始完整结果、登记资料、验收规则、指派说明、成果和证据保存在本 Worktree 的 `.local/25ea5b42-ea55-4c34-aca4-d7312aad452d/`，结果文件为 `result.json`。运行脚本和证据依赖当前本机目录；节点内存状态在进程终止后不再可查询，原始文件继续保留。
+原始完整结果、登记资料、验收规则、指派说明、成果和证据保存在本 Worktree 的 `.local/25ea5b42-ea55-4c34-aca4-d7312aad452d/`，结果文件为 `result.json`。运行脚本和证据依赖当前本机目录。主 Agent 在轨道终端释放后确认 `18547` 已停止监听；原始文件继续保留，本报告记录此前的实际运行结果。
 
 ## Monad 只读核实
 
