@@ -6,6 +6,8 @@
 
 用户要求持续将实际进度同步到项目文件，并保存 Git 版本。改动先提交开发分支，合并 main 前由用户确认。版本保存与行为验证分别报告，不能把提交成功称为功能完成。
 
+最新用户已明确要求将前端上传 GitHub，允许推送 work/c-web。当前推送受本机 DNS 故障阻塞；连接器已确认 push 权限，不是权限缺失。协作关系图与分类公告板已补充，首页显示等待状态，运行页使用实际数据；后台尚未连接，真实运行交互未验证。具体进度见 STATUS.md。
+
 仓库现有 AGENTS.md 包含 Astrocyte 的历史内容。其历史 S0 状态、其他项目费用授权及专用验证对象不能作为 co-vibe 的业务事实或新增授权；本项目以当前用户指令和 PRD 为准。未在本轮改写团队共享规则。
 
 apps/web 已建立 Vite + React + TypeScript 前端，根目录 npm run dev 启动。说明见 apps/web/README.md。实际服务、链适配和公网尚未连接，不能将页面代码与本地验证写成完整真实运行。B 的 a014c46 原始 schema 暂存 apps/web/vendor/contracts（Git fetch DNS 失败），集成团队分支后改为引用 packages/contracts，C 不修改其业务定义。
