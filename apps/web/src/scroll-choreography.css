@@ -1,0 +1,32 @@
+/* 原生滚动驱动画面停留与分层移动；不改变滚轮或触摸输入。 */
+.hero-pin{position:relative;height:100%}
+@supports(animation-timeline:view()){
+  @media(prefers-reduced-motion:no-preference){
+    .landing .hero-stage{height:145svh;min-height:1000px;max-height:none;overflow:visible;view-timeline-name:--hero;view-timeline-axis:block}
+    .landing .hero-pin{position:sticky;top:0;height:100svh;min-height:660px;max-height:900px;overflow:clip}
+    .landing .intro{animation:hero-title-out linear both;animation-timeline:--hero;animation-range:contain 0% contain 100%}
+    .landing .signal-scene{animation:hero-orbit-cross linear both;animation-timeline:--hero;animation-range:contain 0% contain 100%}
+    .landing .hero-word{animation:hero-word-cross linear both;animation-timeline:--hero;animation-range:contain 0% contain 100%}
+    .landing .role-card{min-height:210px;view-timeline-name:--role;animation:role-arrive linear both;animation-timeline:view();animation-range:entry 0% entry 90%}
+    .landing .role-card:after{content:'';position:absolute;bottom:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,#f2e7ff,#ac7bf4,transparent);transform-origin:left;animation:role-trace linear both;animation-timeline:--role;animation-range:entry 0% cover 55%;box-shadow:0 0 12px #bd88ff88;pointer-events:none}
+    .landing .role-card .step{animation:role-number linear both;animation-timeline:--role;animation-range:entry 0% cover 55%}
+    .landing .task-panel{animation:analysis-arrive linear both;animation-timeline:view();animation-range:entry 0% entry 70%}
+    @media(max-width:650px){
+      .landing .hero-stage{height:1080px;min-height:0}
+      .landing .hero-pin{height:740px;min-height:0}
+      .landing .intro{animation-name:hero-title-mobile}
+      .landing .signal-scene{animation-name:hero-orbit-mobile}
+      .landing .role-card{min-height:245px}
+    }
+  }
+}
+@keyframes hero-title-out{0%{transform:none;opacity:1}100%{transform:translateY(-95px);opacity:.28}}
+@keyframes hero-orbit-cross{from{transform:none;opacity:1}to{transform:translate(-100px,35px) rotate(-32deg) scale(1.18);opacity:.7}}
+@keyframes hero-word-cross{from{transform:none;opacity:.13}to{transform:translateX(170px) translateY(-65px);opacity:.3}}
+@keyframes hero-title-mobile{to{transform:translateY(-50px);opacity:.3}}
+@keyframes hero-orbit-mobile{from{transform:none;opacity:1}to{transform:translateY(-70px) rotate(-28deg) scale(.88);opacity:.65}}
+@keyframes role-arrive{from{transform:translateY(100px);opacity:.35}to{transform:none;opacity:1}}
+@keyframes role-trace{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes role-number{from{color:#706778;transform:translateX(-16px)}to{color:#ddc5ff;transform:none}}
+@keyframes analysis-arrive{from{transform:translateY(110px);opacity:.4}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.hero-pin{position:relative}.role-card:after{display:none}}

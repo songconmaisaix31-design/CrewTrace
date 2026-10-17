@@ -20,4 +20,4 @@
 - 两个真实独立 Worker 已通过公网官方 MCP Client 发布和互读公告，将便签更新到版本 2；分别收到 SIGINT 后独立终止，第二进程在第一进程终止后继续读取。测试运行已取消；17 个事件逐个查库通过，模型调用为 0，无链写入。完整记录见 docs/b-deployment.md 与 docs/evidence/b-vercel/。
 - Worker 常驻主机、至少两台设备运行、Monad Testnet 签名与 Gas、Neon 认领仍未完成。偶发本地冷启动 CPU 增加原因尚未定位；后续新进程启动及完整重启回归通过。
 
-详细分工与验收见 tasks/B-plan.md。
+详细分工与验收见 tasks/B-plan.md。C 前端的启动与服务端配置见 [apps/web/README.md](apps/web/README.md)，用户确认的页面与动画见 [docs/c-web-design.md](docs/c-web-design.md)，集成验证见 [docs/b-web-integration.md](docs/b-web-integration.md)。
