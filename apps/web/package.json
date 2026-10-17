@@ -8,9 +8,11 @@
     "build": "tsc --noEmit && vite build",
     "check": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
+    "test:live": "node --import tsx --test test/live-http.ts",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
+    "@co-vibe/contracts": "file:../../packages/contracts",
     "lucide-react": "0.468.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",

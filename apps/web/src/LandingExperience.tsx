@@ -7,8 +7,8 @@ const stages = [
   {name:'统计分析',title:'每个数字，都能核对。',body:'从整理后的数据计算销售额、订单数等业务指标，为报告提供明确的数值依据。',input:'已验收的数据',output:'业务统计指标',check:'使用固定规则重新计算汇总值，核对分析结果与输入是否一致。'},
   {name:'报告表达',title:'从数字，读出结论。',body:'引用已确认的统计指标，生成带来源的分析报告，让你能沿着结论找到依据。',input:'已验收的统计指标',output:'带来源的分析报告',check:'检查报告中的数值结论是否引用对应指标。自由文字的表达质量仍由你判断。'},
 ];
-type Props = {sample:'round-1'|'round-2';onSample:(sample:'round-1'|'round-2')=>void;unavailable:string;onPreview:()=>void;onStart:()=>void;onHistory:()=>void;collaboration:ReactNode};
-export default function LandingExperience({sample,onSample,unavailable,onPreview,onStart,onHistory,collaboration}:Props) {
+type Props = {sample:'round-1'|'round-2';onSample:(sample:'round-1'|'round-2')=>void;unavailable:string;warning:string;onPreview:()=>void;onStart:()=>void;onHistory:()=>void;collaboration:ReactNode};
+export default function LandingExperience({sample,onSample,unavailable,warning,onPreview,onStart,onHistory,collaboration}:Props) {
   const [stage,setStage]=useState(0);
   const current=stages[stage];
   return <div className="experience">
@@ -29,6 +29,7 @@ export default function LandingExperience({sample,onSample,unavailable,onPreview
         <div className="launch-file"><FileText size={26}/><div><strong>{sample}.csv</strong><p>合成示例数据 · 不含真实经营信息</p></div><button aria-label="预览数据" onClick={onPreview}><ArrowUpRight size={21}/></button></div>
         <button className="primary launch-submit" disabled={Boolean(unavailable)} onClick={onStart}>开始分析 <ArrowRight size={20}/></button>
         <p className="launch-availability">{unavailable||'凭访问码开始，提交后等待分工。'}</p>
+        {warning&&<p className="notice" role="status">{warning}</p>}
         <button className="launch-history" onClick={onHistory}>已有分析？查看进度与结果 <ArrowUpRight size={15}/></button>
         </div>
       </section>

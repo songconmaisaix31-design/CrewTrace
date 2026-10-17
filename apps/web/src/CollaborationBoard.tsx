@@ -1,5 +1,5 @@
 import { useState, Fragment } from 'react';
-import type { Announcement, Role, RunDetail } from '../vendor/contracts/schemas';
+import type { Announcement, Role, RunDetail } from '@co-vibe/contracts';
 import { currentDecision, roles, roleName, short, stateName } from './model';
 
 const labels={PROGRESS:'进度',HANDOFF:'交接',BLOCKER:'阻塞',RESULT:'结果'};

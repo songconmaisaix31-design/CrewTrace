@@ -1,1 +1,8 @@
-{"buildCommand":"npm run build","outputDirectory":"dist"}
+{
+  "installCommand": "cd ../.. && npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/web.ts": { "includeFiles": "../../workers/fixtures/*.csv", "maxDuration": 60 }
+  }
+}
