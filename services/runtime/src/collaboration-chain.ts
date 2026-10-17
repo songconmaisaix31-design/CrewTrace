@@ -5,8 +5,8 @@ import {
 } from "../../../packages/chain/src/index.ts";
 import {
   CollaborationCommitmentKindSchema, CollaborationCommitmentSchema,
-  CollaborationCommitmentDetailSchema, CollaborationCommitmentsResponseSchema,
-  type CollaborationCommitment, type CollaborationCommitmentDetail, type CollaborationCommitmentKind,
+  CollaborationCommitmentsResponseSchema,
+  type CollaborationCommitment, type CollaborationCommitmentKind,
 } from "../../../packages/contracts/src/index.ts";
 import type { Config } from "./config.js";
 import type { Database } from "./db.js";
@@ -105,10 +105,10 @@ export class CollaborationChain {
     });
   }
 
-  async detail(recordKey: string): Promise<ReturnType<typeof CollaborationCommitmentDetailSchema.parse>> {
-    const row = (await this.db.pool.query('SELECT * FROM collaboration_commitments WHERE record_key=$1', [recordKey])).rows[0];
+  async snapshot(recordKey: string): Promise<Record<string, unknown>> {
+    const row = (await this.db.pool.query('SELECT document FROM collaboration_commitments WHERE record_key=$1', [recordKey])).rows[0];
     if (!row) throw new ChainError("NOT_FOUND", "链上承诺记录不存在");
-    return CollaborationCommitmentDetailSchema.parse({ ...this.parse(row), document: row.document });
+    return row.document;
   }
 
   async reconcile(limit = 10) {

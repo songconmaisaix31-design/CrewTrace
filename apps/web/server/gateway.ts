@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 const publicRoutes:Record<string,RegExp[]>={
-  GET:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/],
+  GET:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/,/^\/api\/collaboration\/commitments(?:\?[^#]*)?$/,/^\/api\/collaboration\/commitments\/[^/?#]+$/],
   POST:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|credentials\/rotate)$/,/^\/api\/collaboration\/agents\/me\/heartbeat$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:claims|proposals|handoffs)$/,/^\/api\/collaboration\/claims\/[^/?#]+\/release$/,/^\/api\/collaboration\/proposals\/[^/?#]+\/decision$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/review$/],
   PATCH:[/^\/api\/collaboration\/(?:agents\/me|tasks\/[^/?#]+|notes\/[^/?#]+)$/],
 };

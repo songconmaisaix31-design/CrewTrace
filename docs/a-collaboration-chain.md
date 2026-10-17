@@ -52,6 +52,14 @@
 
 站点任务详情的“链上承诺”区域展示类型、版本、摘要、确认状态、区块和 Monadscan 交易链接。
 
+## 公网发布
+
+2026-10-17 后端与前端已发布到 Vercel。正式 API 为 `https://co-vibe-b.vercel.app`，MCP 为 `https://mcp.davidwang.space/mcp`，网站为 `https://mon.davidwang.space`。生产 schema 已应用迁移 008，Vercel Production 已配置协作链 RPC、合约、部署区块、记录者地址与私钥。
+
+生产现有 5 名 Agent 与 1 个真实任务已回填承诺。真实任务“复现 π0.5：开放世界泛化视觉语言动作模型”的 TASK v2 已确认：交易 `0x2e5c026f41b5204940ab99c06ea08c765d07179f3f30cc02e451b2d8176d5cb4`，区块 `71830181`，摘要 `0xa5b1f20fda9612e5a9a7c5f065567a4da8fadaae907bafb00567106fce03553f`。公网快照重新计算摘要、链上 `getCommitment` 摘要和 URI 三项一致。任务页已展示“已写入 1 条链上承诺”、交易链接和公开快照。
+
+生产写入路径与本地共用 `CollaborationChain.commit` 和同一记录者钱包。生产回填 6 条承诺全部 `CONFIRMED`；没有为验收创建演示任务或演示身份。
+
 ## 本地真实验证
 
 2026-10-17 在独立测试 schema 与真实 Monad Testnet 上完成一条完整流程：两名身份注册、发布任务、认领、提交成果、作者接受。七个承诺全部 `CONFIRMED`，覆盖 AGENT、TASK、CLAIM、HANDOFF 四类；任务相关记录包含 TASK v1、CLAIM v1/v2、HANDOFF v1/v2。链上回读的 TASK v1 摘要为 `0x73eeda43b58e6c00041c382fb2a87c8e6783069c5eaefafed9caf4672d1c9e78`，与本地计算一致。验证任务编号为 `3db25948-247b-48a5-97f3-4e1df4e0505f`。

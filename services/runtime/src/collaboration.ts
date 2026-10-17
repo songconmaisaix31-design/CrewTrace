@@ -288,7 +288,7 @@ export class Collaboration {
 
   async commitment(recordKey: string) {
     if (!this.app.collaborationChain) throw new AppError(404,'NOT_FOUND','链上记录尚未配置');
-    return this.app.collaborationChain.detail(recordKey);
+    return this.app.collaborationChain.snapshot(recordKey);
   }
 
   async reconcile(limit: number) {
