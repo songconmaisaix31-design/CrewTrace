@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { z } from 'zod';
 import {
   CollaborationAgentSchema,CollaborationAgentsResponseSchema,RegisterCollaborationAgentRequestSchema,RegisterCollaborationAgentResponseSchema,
   CollaborationTasksResponseSchema,CollaborationTaskDetailSchema,CollaborationTaskSchema,CreateCollaborationTaskRequestSchema,UpdateCollaborationTaskRequestSchema,
   CollaborationMessagesResponseSchema,CollaborationMessageSchema,PublishCollaborationMessageRequestSchema,
   CollaborationClaimSchema,ClaimCollaborationTaskRequestSchema,ReleaseCollaborationClaimRequestSchema,
   CollaborationAssignmentProposalSchema,ProposeCollaborationAssignmentRequestSchema,DecideCollaborationAssignmentRequestSchema,
-  CollaborationHandoffSchema,SubmitCollaborationHandoffRequestSchema,ReviewCollaborationHandoffRequestSchema,CollaborationToolSchemas,
+  CollaborationHandoffSchema,SubmitCollaborationHandoffRequestSchema,ReviewCollaborationHandoffRequestSchema,
   type CollaborationAgent,type CollaborationTask,type CollaborationTaskDetail,type CollaborationMessage,
 } from '@co-vibe/contracts';
 import { ArrowLeft, ArrowRight, MessageSquare, Plus, RefreshCw } from 'lucide-react';
@@ -136,7 +135,6 @@ export default function PublicWorkspace(){
         <details><summary>恢复已有身份</summary><ActionForm label="恢复身份" onSubmit={async data=>{const value=SavedCredentialSchema.parse(field(data,'credential'));const agent=await collaboration('/agents/me',CollaborationAgentSchema,{credential:value});saveSession(agent,value);setModal(null);}}><label>个人协作凭证<input name="credential" type="password" autoComplete="off" required/></label></ActionForm></details>
       </>:modal==='create'?<ActionForm label="发布任务" onSubmit={async data=>{const result=await collaboration('/tasks',CollaborationTaskSchema,{method:'POST',credential:activeCredential,body:CreateCollaborationTaskRequestSchema.parse({title:field(data,'title'),description:field(data,'description'),requiredCapabilities:fields(data,'requiredCapabilities'),bountyMON:field(data,'bountyMON').trim()||null,parentTaskId})});setModal(null);selectTask(result.taskId);reload();}}><label>任务标题<input name="title" required maxLength={200}/></label><label>任务说明<textarea name="description" required maxLength={20000}/></label><CapabilityFields name="requiredCapabilities" label="希望具备的能力（可选）"/><label>模拟悬赏标价（MON，可选）<input name="bountyMON" inputMode="decimal" placeholder="仅作模拟展示"/></label><p className="public-muted">当前不执行真实付款；标价不代表已支付。承担记录暂无链上回执。</p></ActionForm>:<>
         {config?.mcpURL?<McpOnboarding url={config.mcpURL} credential={activeCredential}/>:<p className="notice">尚未获取 MCP 服务地址，请刷新公开协作后重试。</p>}
-        <details className="public-onboarding-details"><summary>查看全部协作工具和参数</summary><ul className="public-tools">{Object.entries(CollaborationToolSchemas).map(([tool,schema])=><li key={tool}><details><summary><code>{tool}</code></summary><pre>{JSON.stringify(z.toJSONSchema(schema,{io:'input'}),null,2)}</pre></details></li>)}</ul></details>
       </>}
     </Dialog>}
   </PublicFrame>;
