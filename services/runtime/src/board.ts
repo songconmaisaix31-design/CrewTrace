@@ -18,13 +18,14 @@ export class Board {
       if (row.run_id !== runId) throw new AppError(409,'ARTIFACT_MISMATCH','便签关联产物属于其他运行');
       await this.app.artifact(id,client);
     }
+    return task;
   }
   async publish(principal: Principal,input: unknown) {
     const identity = node(principal);
     const request = AnnouncementCreateSchema.parse(input);
     return this.app.store.write(async client => {
-      await this.context(client,request.runId,request.taskId);
-      const announcement = createAnnouncement(request,AuthenticatedAgentSchema.parse({ agentId: identity.agentId,runtimeId: identity.runtimeId,credentialId: identity.credentialId,registered: true,authenticated: true }),await this.app.task(request.taskId,client),{ announcementId: randomUUID(),createdAt: new Date().toISOString() });
+      const task = await this.context(client,request.runId,request.taskId);
+      const announcement = createAnnouncement(request,AuthenticatedAgentSchema.parse({ agentId: identity.agentId,runtimeId: identity.runtimeId,credentialId: identity.credentialId,registered: true,authenticated: true }),task,{ announcementId: randomUUID(),createdAt: new Date().toISOString() });
       await client.query('INSERT INTO announcements(id,author,run_id,task_id,document) VALUES($1,$2,$3,$4,$5)',[announcement.announcementId,announcement.author,announcement.runId,announcement.taskId,announcement]);
       await this.app.store.event(client,'ANNOUNCEMENT_PUBLISHED',announcement.runId,announcement.taskId,null,{ announcementId: announcement.announcementId });
       return announcement;
@@ -38,9 +39,9 @@ export class Board {
     const identity = node(principal);
     const request = NoteCreateSchema.parse(input);
     return this.app.store.write(async client => {
-      await this.context(client,request.runId,request.taskId,request.artifactIds);
+      const task = await this.context(client,request.runId,request.taskId,request.artifactIds);
       const now = new Date().toISOString();
-      const note = createAgentNote(request,AuthenticatedAgentSchema.parse({ agentId: identity.agentId,runtimeId: identity.runtimeId,credentialId: identity.credentialId,registered: true,authenticated: true }),await this.app.task(request.taskId,client),{ noteId: randomUUID(),createdAt: now });
+      const note = createAgentNote(request,AuthenticatedAgentSchema.parse({ agentId: identity.agentId,runtimeId: identity.runtimeId,credentialId: identity.credentialId,registered: true,authenticated: true }),task,{ noteId: randomUUID(),createdAt: now });
       await client.query('INSERT INTO notes(id,author,run_id,task_id,version,document) VALUES($1,$2,$3,$4,$5,$6)',[note.noteId,note.author,note.runId,note.taskId,note.version,note]);
       await client.query('INSERT INTO note_versions(note_id,version,document) VALUES($1,$2,$3)',[note.noteId,note.version,note]);
       await this.app.store.event(client,'NOTE_CREATED',note.runId,note.taskId,null,{ noteId: note.noteId,version: 1 });
