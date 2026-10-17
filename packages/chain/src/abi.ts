@@ -1,0 +1,26 @@
+import { parseAbi } from "viem";
+
+export const ledgerAbi = parseAbi([
+  "constructor(address coordinator_)",
+  "function coordinator() view returns (address)",
+  "function registerAgent(uint8[] roles, string manifestURI, bytes32 manifestHash)",
+  "function assignTask(bytes32 runId, bytes32 taskId, uint32 attempt, uint8 role, address assignee, bytes32 inputHash, bytes32 criteriaHash, bytes32 decisionHash, address validator)",
+  "function submitArtifact(bytes32 taskId, uint32 attempt, bytes32 artifactHash, string artifactURI)",
+  "function recordOutcome(bytes32 taskId, uint32 attempt, bool passed, bytes32 artifactHash, bytes32 evidenceHash, string evidenceURI)",
+  "function getAgent(address agentId) view returns ((bool registered, uint8 roleMask, string manifestURI, bytes32 manifestHash))",
+  "function getTask(bytes32 taskId) view returns ((bool exists, bytes32 runId, uint8 role, uint32 attempt, address assignee, bytes32 inputHash, bytes32 criteriaHash, bytes32 decisionHash, address validator, uint8 status, bytes32 artifactHash, string artifactURI, bytes32 evidenceHash, string evidenceURI))",
+  "function getRoleReputation(address agentId, uint8 role) view returns (uint256 passCount, uint256 failCount)",
+  "event AgentRegistered(address indexed agentId, uint8 roleMask, string manifestURI, bytes32 manifestHash)",
+  "event TaskAssigned(bytes32 indexed runId, bytes32 indexed taskId, uint32 indexed attempt, uint8 role, address assignee, bytes32 inputHash, bytes32 criteriaHash, bytes32 decisionHash, address validator)",
+  "event ArtifactSubmitted(bytes32 indexed runId, bytes32 indexed taskId, uint32 indexed attempt, address producer, bytes32 artifactHash, string artifactURI)",
+  "event OutcomeRecorded(bytes32 indexed runId, bytes32 indexed taskId, uint32 indexed attempt, address assignee, uint8 role, bool passed, bytes32 artifactHash, bytes32 evidenceHash, string evidenceURI, address validator)",
+  "error UNAUTHORIZED()",
+  "error STALE_ATTEMPT()",
+  "error DUPLICATE_OUTCOME()",
+  "error ARTIFACT_MISMATCH()",
+  "error INVALID_ARGUMENT()",
+  "error INVALID_STATE()",
+  "error TASK_EXISTS()",
+  "error TASK_NOT_FOUND()",
+  "error ROLE_MISMATCH()",
+]);
