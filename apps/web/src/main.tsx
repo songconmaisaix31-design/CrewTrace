@@ -5,4 +5,5 @@ import './styles.css';
 import './editorial.css';
 import './scroll-choreography.css';
 import './experience.css';
+import './instrument.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
