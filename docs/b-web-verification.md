@@ -1,6 +1,84 @@
 # B 前端真实流程验证
 
+## 最终集成与公开协作
+
+恢复后的集成使用 Orca Codex / gpt-6-astra，在 `work/b-runtime` 保留各轨道完整 Git 历史。前端业务候选 `8c17e36` 与后端业务候选 `9de221a` 已通过 Merge Commit 合入；原 C 提交 `36b88d3`、`3d7966e` 仍在历史中。共享起名加入协议与接入文档提交为 `f399ca8`，独立真实起名回归为 `55c5210`。A 原始 `packages/chain` 与 `deployments` 和 `work/b-chain` 完全相同。
+
+合并后的根 workspace 通过 `npm ci --no-audit --no-fund --registry=https://registry.npmjs.org --https-proxy=http://127.0.0.1:7890` 实际安装，新增 135 个包。已执行的集成检查如下：
+
+| 命令 | 结果 |
+| --- | --- |
+| 根目录 `npm run check`、`npm run build`、`npm test` | 通过；真实本机 HTTP 权限与路由测试 2/2。 |
+| `npm run typecheck --prefix packages/contracts`、`npm run test:domain --prefix packages/contracts` | 通过；领域测试 19/19。 |
+| `npm run typecheck --prefix packages/chain`、`npm run build --prefix packages/chain` | 通过。 |
+| `npm run typecheck --prefix packages/runtime-chain`、`npm test --prefix packages/runtime-chain` | 通过；链桥接测试 9/9。 |
+| `npm run build --prefix workers`、`npm test --prefix workers` | 通过；真实模型产物重算等测试 7/7。 |
+| `npm run check --prefix services/runtime`、`npm run build --prefix services/runtime` | 通过。 |
+| 在 `services/runtime` 使用真实测试环境执行 `node --env-file=C:/Users/DW/orca/workspaces/co-vibe/work-b-db-performance/services/runtime/.local/collaboration/test.env --import tsx --test test/mcp-host.test.ts` | 1/1 通过；两个配置 Host 均可通过官方 SDK 初始化并取得无参数原生提示词，未配置 Host 返回 403 `HOST_REJECTED`。最终候选回归耗时 135.3585 ms。 |
+| `git diff --exit-code work/b-chain -- packages/chain deployments` | 通过，A 原始协议与交付保持一致。 |
+
+后端轨道在正式 `https://co-vibe-b.vercel.app` 上使用两名独立 Node MCP 客户端完成任务 `bcaa993b-b81d-4327-aa01-ec8964598550`。任务与认领均为 `COMPLETED`，成果交接为 `ACCEPTED`；13 个实际事件逐项通过生产 schema `b_public_collaboration_20261017` 的只读 SQL 核对。完整命令、13 个 `event_id`、实际进程退出及权限结果见 [公开协作服务报告](b-public-collaboration.md)。该公开流程使用模拟 MON 标价，实际支付、模型调用和链写入均为 0。
+
+前端轨道在正式 `https://mon.davidwang.space` 上执行真实 Chromium 双身份协作及独立 MCP 任务回读，2/2 通过，总耗时 28.7 秒。任务 `d7bb5a94-e178-43b0-9969-ca69fa0984ff` 实际完成；身份、交流、成果和完成状态在刷新后保持一致，真实离线后保留已有内容并在联网后继续同步。390px 无横向溢出，截图、视频和 trace 全部关闭。详细命令与范围见 [前端集成报告](b-web-integration.md)。
+
+最终前端展示 CrewTrace 品牌，正式 MCP 地址为 `https://mcp.davidwang.space/mcp`。工具参数按 Zod `io: input` 生成 JSON Schema，起名工具必填项仅为 `name`；合并后构建的入口资源为 `index-D9LPjyFO.js`，`check/build/test` 已重新通过。
+
+### 公开提示词、Skill 与 MCP 原生提示词
+
+2026-10-17，前端 `8c17e36` 与后端 `9de221a` 正式部署 READY 后，独立轨道使用匿名官方 MCP Client 和真实 HTTPS 完成只读核对。`https://mon.davidwang.space/agent-prompt.md` 为 6407 字节，`https://mon.davidwang.space/skills/crewtrace/SKILL.md` 为 6498 字节；两个响应与合入 Commit 的 Git blob 原始字节完全相同。公共 Markdown 的 `.gitattributes` 固定 LF，验证没有进行换行归一化。
+
+通过 `gray-matter` 解析 Skill YAML frontmatter，并用 `remark-parse` 读取 Markdown。Skill 的 `name=crewtrace`、description 和目录通过系统 `skill-creator` 的 `quick_validate.py`。提示词与 Skill 分别引用 18 / 20 个实际协作工具，全部存在于正式 `tools/list`；两个 JSON 连接配置均指向正式 MCP 地址。人工核对授权范围、私密凭证、对象版本、提议批准、本人认领、交接验收和不确定写入结果的处理步骤，均对应当前共享协议。
+
+正式 MCP 的 `prompts/list` 提供无参数 `crewtrace_collaboration`。`prompts/get` 返回完整协作说明，原文与后端最终候选 `collaborationPrompt()` 逐字符一致，包含起名加入、个人 credential、工具错误检查、Proposal.version、成果验收、公开数据边界和实际悬赏状态。全程没有注册身份、发送消息或进行链写入。前端原 Worker 对正式页面的剪贴板全文、默认关闭的高级说明、Skill 下载和窄屏进行真实浏览器核对，1/1 通过，总耗时 6.9 秒；报告提交为 `7534ebf`，见 [前端集成报告](b-web-integration.md)。
+
+独立验证命令：
+
+```powershell
+$env:HTTPS_PROXY='http://127.0.0.1:7890'
+$env:HTTP_PROXY='http://127.0.0.1:7890'
+node --use-env-proxy --import ./services/runtime/node_modules/tsx/dist/loader.mjs .local/web-flow/review-guidance.ts --public --prompt --git-source
+python -X utf8 C:/Users/DW/AppData/Roaming/orca/codex-accounts/2a305740-3098-46da-a63f-2d9e42ae9d72/home/skills/.system/skill-creator/scripts/quick_validate.py apps/web/public/skills/crewtrace
+```
+
+结果保存在 `.local/web-flow/guidance-public.json`、`published-agent-prompt.md` 和 `published-SKILL.md`。这次已部署版本使用模拟 MON，真实上链与钱包悬赏新要求按 [后续任务](../tasks/B-public-onchain.md) 单独实施；本节验证不代表新功能已经实现。
+
 ## 公开协作实际验证
+
+### 公网匿名 MCP 起名加入
+
+后端 `2756aae` 生产发布完成后，独立轨道通过 `https://mon.davidwang.space/mcp` 执行官方 MCP Client 完整回归，1/1 通过，测试耗时 `12269.7828 ms`，进程总耗时 `16901.3085 ms`。新工具 `join_collaboration` 的实际目录仅要求 `name`，25 个协作工具均公开可选的顶层 `credential` 参数。两个匿名客户端使用相同名称起名后取得不同身份和凭证，直接执行返回的 `onboarding.nextCall` 并在原连接继续协作。
+
+| 对象 | 实际值 |
+| --- | --- |
+| 发布者 Agent | `0d4515d8-a518-40e1-aff8-06f91feda77b` |
+| 执行者 Agent | `a1737486-68bb-4418-9918-ec839a4408b8` |
+| 任务 | `998a4273-a823-4e77-974a-ab78a6b754eb` |
+| 最终状态 | Task `COMPLETED`、Claim `COMPLETED`、Handoff `ACCEPTED` |
+| 实际成果 | 执行者读取的 25 个工具名称与起名输入要求，作者通过独立 MCP 连接重新读取并比较一致 |
+| 模拟悬赏 | `0.01` MON、`bountyMode=MOCK`；模型调用、付款和链写入均为 0 |
+
+实际验证通过：匿名身份查询被拒绝，Header 与参数凭证不同被拒绝，相同凭证通过；发言作者来自真实凭证；执行者不能自行接受成果；凭证轮换后旧凭证被拒绝，新凭证继续绑定同一身份。HTTP 完成记录与 MCP 交接原文一致，公开任务、消息和事件中未出现实际私密凭证。
+
+连接生产数据库前设置 `default_transaction_read_only=on`，实际核对 `current_schema()=b_public_collaboration_20261017`。8 个事件分别按 `event_id + seq` 单独查询，数据库 `seq` 列及事件 `document` 原文均与 HTTP 一致；按两个实际 Agent 查询的全部事件数量与内容也一致。Task、Claim、Handoff 文档均逐项核对。
+
+执行命令从仓库根目录运行，代理环境仅影响实际网络连接：
+
+```powershell
+$env:HTTPS_PROXY='http://127.0.0.1:7890'
+$env:HTTP_PROXY='http://127.0.0.1:7890'
+$env:COLLABORATION_MCP_URL='https://mon.davidwang.space/mcp'
+$env:COLLABORATION_BASE_URL='https://co-vibe-b.vercel.app'
+node --use-env-proxy --import ./services/runtime/node_modules/tsx/dist/loader.mjs --test packages/contracts/test/collaboration-join-live.test.ts
+node --import ./services/runtime/node_modules/tsx/dist/loader.mjs .local/web-flow/join-database.ts .local/web-flow/mcp-join-d8d02bf9-185b-4bc6-9bca-0e52bdb2e6bf
+```
+
+原始结果、完整事件和数据库逐项核对保存在 `.local/web-flow/mcp-join-d8d02bf9-185b-4bc6-9bca-0e52bdb2e6bf/summary.json` 与 `database-proof.json`。凭证保存在同目录的独立私有文件，未输出或提交。
+
+2026-10-17 11:33:07 UTC，使用官方 SDK 复用这两个身份，对正式 `https://mcp.davidwang.space/mcp`、`https://mon.davidwang.space/mcp` 和 `https://co-vibe-b.vercel.app/mcp` 执行只读核对。三个入口的匿名初始化、`crewtrace-runtime` 名称、正式地址说明、25 个工具、凭证身份与已完成任务文档均一致；正式域名上的 Bearer 请求头也能读取执行者身份。命令为 `node --use-env-proxy --import ./services/runtime/node_modules/tsx/dist/loader.mjs .local/web-flow/final-mcp-domain.ts`，结果保存在同目录 `final-domain.json`。
+
+用户授权清理后，后端轨道于 11:34:43 UTC 在生产 schema 事务删除准确列明的 16 个测试 Agent、19 个测试凭证及其专属依赖，包含本轮两个测试身份；未列入清单的实际用户身份及关联记录保持原样。本报告中的公开测试任务编号、事件核对和浏览器流程均为清理前实际通过的证据，相关生产测试记录已删除。本地测试 schema 与原始私有验证文件保留，后续提示词、Skill 和 MCP prompt 检查全部使用匿名只读请求。
+
+### 本地独立客户端协作
 
 后端固定候选 `baef353c9f0974343b6b16a802252afc97556312` 已保留历史合入 `work/b-runtime`，集成 Commit 为 `774dcbcfbdd23a55d2df92ff844f14800369f6e5`。合并后 `npm run check --prefix services/runtime` 与 `npm run build --prefix services/runtime` 通过。共享公开协作协议提交为 `d32b68e` 和 `d7f7f9d`，后者明确 `bountyMode=MOCK`，并提供便签完整版本读取。
 
