@@ -1,5 +1,8 @@
 /* 首屏突出品牌光环，下滑进入紧凑的操作和协作区域。 */
 /* 柔和镜片与滞后光雾；真实局部放大由品牌画布完成。 */
+.pointer-orbit[data-workspace=true] b,.pointer-orbit[data-workspace=true] span:before{display:none}
+.pointer-orbit[data-workspace=true] span{width:22px;height:22px;left:-11px;top:-11px;border:1px solid #ccb4eb88;background:transparent;backdrop-filter:none;box-shadow:none;transform:none}
+.pointer-orbit[data-workspace=true] span:after{display:none}
 .pointer-orbit span{width:120px;height:120px;left:-60px;top:-60px;border:1px solid #e1caff30;border-bottom:2px solid #f5eaff99;border-right:1px solid #d6b9ff60;background:radial-gradient(circle,#f4eaff08,transparent 68%);backdrop-filter:blur(1.2px) saturate(1.2);box-shadow:0 10px 28px -10px #f0dcff99,0 0 44px #b48aff55,inset 0 -9px 22px -10px #f8eaff99}
 .pointer-orbit span:after{left:57px;top:57px;width:4px;height:4px;box-shadow:0 0 10px #fff9}
 .pointer-orbit span:before{inset:-12px;border-width:8px;border-bottom-color:#e1c4ff77;border-right-color:#bd8fff44;filter:blur(12px)}

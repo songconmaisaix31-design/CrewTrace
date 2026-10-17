@@ -20,6 +20,7 @@ export default function PointerFeedback() {
       tx=event.clientX;ty=event.clientY;
       if(!started){x=tailX=tx;y=tailY=ty;started=true;}
       const target=event.target as Element;
+      ring.dataset.workspace=String(!target.closest('.launch-story'));
       ring.dataset.active=String(Boolean(target.closest('button:not(:disabled),a,summary,canvas')));
       ring.dataset.visible=String(!target.closest('dialog,input,textarea,pre'));
       if(!frame)frame=requestAnimationFrame(draw);
