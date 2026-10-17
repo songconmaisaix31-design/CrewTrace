@@ -1,0 +1,2 @@
+fixtures/*.csv -text
+evidence/** -text

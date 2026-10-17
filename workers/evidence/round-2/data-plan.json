@@ -1,0 +1,14 @@
+{
+  "ruleVersion": "business-csv-v1",
+  "operations": [
+    "normalize_dates",
+    "remove_identical_duplicates",
+    "sort_record_id"
+  ],
+  "sourceRowCount": 38,
+  "duplicateRecordIds": [
+    "R204",
+    "R230"
+  ],
+  "reason": "原始CSV共38行，存在R204、R230两条完全重复记录，日期存在yyyy-MM-dd、yyyy/MM/dd两种格式，需依次执行统一日期格式、删除重复记录、按record_id排序的清洗操作"
+}

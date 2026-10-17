@@ -1,0 +1,689 @@
+{
+  "schemaVersion": "business-metrics-v1",
+  "sourceHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+  "dataHash": "0xfea72000d400d1a6ffc96f8507879697ca0014549bbb6966fc6d5aabcbc5879e",
+  "metrics": [
+    {
+      "id": "total.sales_yuan",
+      "label": "全部数据销售额",
+      "value": "12273.00",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "total",
+        "key": "all"
+      }
+    },
+    {
+      "id": "total.orders",
+      "label": "全部数据订单数",
+      "value": "439",
+      "unit": "orders",
+      "dimension": {
+        "kind": "total",
+        "key": "all"
+      }
+    },
+    {
+      "id": "total.records",
+      "label": "全部数据记录数",
+      "value": "36",
+      "unit": "records",
+      "dimension": {
+        "kind": "total",
+        "key": "all"
+      }
+    },
+    {
+      "id": "total.average_order_yuan",
+      "label": "全部数据平均订单金额",
+      "value": "27.96",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "total",
+        "key": "all"
+      }
+    },
+    {
+      "id": "category.%E7%94%9C%E7%82%B9.sales_yuan",
+      "label": "甜点销售额",
+      "value": "2269.00",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "category",
+        "key": "甜点"
+      }
+    },
+    {
+      "id": "category.%E7%94%9C%E7%82%B9.orders",
+      "label": "甜点订单数",
+      "value": "104",
+      "unit": "orders",
+      "dimension": {
+        "kind": "category",
+        "key": "甜点"
+      }
+    },
+    {
+      "id": "category.%E7%94%9C%E7%82%B9.records",
+      "label": "甜点记录数",
+      "value": "12",
+      "unit": "records",
+      "dimension": {
+        "kind": "category",
+        "key": "甜点"
+      }
+    },
+    {
+      "id": "category.%E7%94%9C%E7%82%B9.average_order_yuan",
+      "label": "甜点平均订单金额",
+      "value": "21.82",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "category",
+        "key": "甜点"
+      }
+    },
+    {
+      "id": "category.%E9%A4%90%E9%A3%9F.sales_yuan",
+      "label": "餐食销售额",
+      "value": "6511.75",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "category",
+        "key": "餐食"
+      }
+    },
+    {
+      "id": "category.%E9%A4%90%E9%A3%9F.orders",
+      "label": "餐食订单数",
+      "value": "209",
+      "unit": "orders",
+      "dimension": {
+        "kind": "category",
+        "key": "餐食"
+      }
+    },
+    {
+      "id": "category.%E9%A4%90%E9%A3%9F.records",
+      "label": "餐食记录数",
+      "value": "12",
+      "unit": "records",
+      "dimension": {
+        "kind": "category",
+        "key": "餐食"
+      }
+    },
+    {
+      "id": "category.%E9%A4%90%E9%A3%9F.average_order_yuan",
+      "label": "餐食平均订单金额",
+      "value": "31.16",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "category",
+        "key": "餐食"
+      }
+    },
+    {
+      "id": "category.%E9%A5%AE%E5%93%81.sales_yuan",
+      "label": "饮品销售额",
+      "value": "3492.25",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "category",
+        "key": "饮品"
+      }
+    },
+    {
+      "id": "category.%E9%A5%AE%E5%93%81.orders",
+      "label": "饮品订单数",
+      "value": "126",
+      "unit": "orders",
+      "dimension": {
+        "kind": "category",
+        "key": "饮品"
+      }
+    },
+    {
+      "id": "category.%E9%A5%AE%E5%93%81.records",
+      "label": "饮品记录数",
+      "value": "12",
+      "unit": "records",
+      "dimension": {
+        "kind": "category",
+        "key": "饮品"
+      }
+    },
+    {
+      "id": "category.%E9%A5%AE%E5%93%81.average_order_yuan",
+      "label": "饮品平均订单金额",
+      "value": "27.72",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "category",
+        "key": "饮品"
+      }
+    },
+    {
+      "id": "date.2026-10-13.sales_yuan",
+      "label": "2026-10-13销售额",
+      "value": "570.25",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-13"
+      }
+    },
+    {
+      "id": "date.2026-10-13.orders",
+      "label": "2026-10-13订单数",
+      "value": "20",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-13"
+      }
+    },
+    {
+      "id": "date.2026-10-13.records",
+      "label": "2026-10-13记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-13"
+      }
+    },
+    {
+      "id": "date.2026-10-13.average_order_yuan",
+      "label": "2026-10-13平均订单金额",
+      "value": "28.51",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-13"
+      }
+    },
+    {
+      "id": "date.2026-10-14.sales_yuan",
+      "label": "2026-10-14销售额",
+      "value": "678.50",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-14"
+      }
+    },
+    {
+      "id": "date.2026-10-14.orders",
+      "label": "2026-10-14订单数",
+      "value": "24",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-14"
+      }
+    },
+    {
+      "id": "date.2026-10-14.records",
+      "label": "2026-10-14记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-14"
+      }
+    },
+    {
+      "id": "date.2026-10-14.average_order_yuan",
+      "label": "2026-10-14平均订单金额",
+      "value": "28.27",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-14"
+      }
+    },
+    {
+      "id": "date.2026-10-15.sales_yuan",
+      "label": "2026-10-15销售额",
+      "value": "751.25",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-15"
+      }
+    },
+    {
+      "id": "date.2026-10-15.orders",
+      "label": "2026-10-15订单数",
+      "value": "26",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-15"
+      }
+    },
+    {
+      "id": "date.2026-10-15.records",
+      "label": "2026-10-15记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-15"
+      }
+    },
+    {
+      "id": "date.2026-10-15.average_order_yuan",
+      "label": "2026-10-15平均订单金额",
+      "value": "28.89",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-15"
+      }
+    },
+    {
+      "id": "date.2026-10-16.sales_yuan",
+      "label": "2026-10-16销售额",
+      "value": "829.00",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-16"
+      }
+    },
+    {
+      "id": "date.2026-10-16.orders",
+      "label": "2026-10-16订单数",
+      "value": "29",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-16"
+      }
+    },
+    {
+      "id": "date.2026-10-16.records",
+      "label": "2026-10-16记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-16"
+      }
+    },
+    {
+      "id": "date.2026-10-16.average_order_yuan",
+      "label": "2026-10-16平均订单金额",
+      "value": "28.59",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-16"
+      }
+    },
+    {
+      "id": "date.2026-10-17.sales_yuan",
+      "label": "2026-10-17销售额",
+      "value": "907.25",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-17"
+      }
+    },
+    {
+      "id": "date.2026-10-17.orders",
+      "label": "2026-10-17订单数",
+      "value": "32",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-17"
+      }
+    },
+    {
+      "id": "date.2026-10-17.records",
+      "label": "2026-10-17记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-17"
+      }
+    },
+    {
+      "id": "date.2026-10-17.average_order_yuan",
+      "label": "2026-10-17平均订单金额",
+      "value": "28.35",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-17"
+      }
+    },
+    {
+      "id": "date.2026-10-18.sales_yuan",
+      "label": "2026-10-18销售额",
+      "value": "985.50",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-18"
+      }
+    },
+    {
+      "id": "date.2026-10-18.orders",
+      "label": "2026-10-18订单数",
+      "value": "35",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-18"
+      }
+    },
+    {
+      "id": "date.2026-10-18.records",
+      "label": "2026-10-18记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-18"
+      }
+    },
+    {
+      "id": "date.2026-10-18.average_order_yuan",
+      "label": "2026-10-18平均订单金额",
+      "value": "28.16",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-18"
+      }
+    },
+    {
+      "id": "date.2026-10-19.sales_yuan",
+      "label": "2026-10-19销售额",
+      "value": "1064.00",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-19"
+      }
+    },
+    {
+      "id": "date.2026-10-19.orders",
+      "label": "2026-10-19订单数",
+      "value": "38",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-19"
+      }
+    },
+    {
+      "id": "date.2026-10-19.records",
+      "label": "2026-10-19记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-19"
+      }
+    },
+    {
+      "id": "date.2026-10-19.average_order_yuan",
+      "label": "2026-10-19平均订单金额",
+      "value": "28.00",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-19"
+      }
+    },
+    {
+      "id": "date.2026-10-20.sales_yuan",
+      "label": "2026-10-20销售额",
+      "value": "1141.00",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-20"
+      }
+    },
+    {
+      "id": "date.2026-10-20.orders",
+      "label": "2026-10-20订单数",
+      "value": "41",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-20"
+      }
+    },
+    {
+      "id": "date.2026-10-20.records",
+      "label": "2026-10-20记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-20"
+      }
+    },
+    {
+      "id": "date.2026-10-20.average_order_yuan",
+      "label": "2026-10-20平均订单金额",
+      "value": "27.83",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-20"
+      }
+    },
+    {
+      "id": "date.2026-10-21.sales_yuan",
+      "label": "2026-10-21销售额",
+      "value": "1219.50",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-21"
+      }
+    },
+    {
+      "id": "date.2026-10-21.orders",
+      "label": "2026-10-21订单数",
+      "value": "44",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-21"
+      }
+    },
+    {
+      "id": "date.2026-10-21.records",
+      "label": "2026-10-21记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-21"
+      }
+    },
+    {
+      "id": "date.2026-10-21.average_order_yuan",
+      "label": "2026-10-21平均订单金额",
+      "value": "27.72",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-21"
+      }
+    },
+    {
+      "id": "date.2026-10-22.sales_yuan",
+      "label": "2026-10-22销售额",
+      "value": "1297.75",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-22"
+      }
+    },
+    {
+      "id": "date.2026-10-22.orders",
+      "label": "2026-10-22订单数",
+      "value": "47",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-22"
+      }
+    },
+    {
+      "id": "date.2026-10-22.records",
+      "label": "2026-10-22记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-22"
+      }
+    },
+    {
+      "id": "date.2026-10-22.average_order_yuan",
+      "label": "2026-10-22平均订单金额",
+      "value": "27.61",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-22"
+      }
+    },
+    {
+      "id": "date.2026-10-23.sales_yuan",
+      "label": "2026-10-23销售额",
+      "value": "1375.00",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-23"
+      }
+    },
+    {
+      "id": "date.2026-10-23.orders",
+      "label": "2026-10-23订单数",
+      "value": "50",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-23"
+      }
+    },
+    {
+      "id": "date.2026-10-23.records",
+      "label": "2026-10-23记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-23"
+      }
+    },
+    {
+      "id": "date.2026-10-23.average_order_yuan",
+      "label": "2026-10-23平均订单金额",
+      "value": "27.50",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-23"
+      }
+    },
+    {
+      "id": "date.2026-10-24.sales_yuan",
+      "label": "2026-10-24销售额",
+      "value": "1454.00",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-24"
+      }
+    },
+    {
+      "id": "date.2026-10-24.orders",
+      "label": "2026-10-24订单数",
+      "value": "53",
+      "unit": "orders",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-24"
+      }
+    },
+    {
+      "id": "date.2026-10-24.records",
+      "label": "2026-10-24记录数",
+      "value": "3",
+      "unit": "records",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-24"
+      }
+    },
+    {
+      "id": "date.2026-10-24.average_order_yuan",
+      "label": "2026-10-24平均订单金额",
+      "value": "27.43",
+      "unit": "yuan",
+      "dimension": {
+        "kind": "date",
+        "key": "2026-10-24"
+      }
+    }
+  ],
+  "observations": [
+    {
+      "metricId": "total.sales_yuan",
+      "value": "12273.00",
+      "explanation": "统计周期内全部业务记录的总销售额为12273.00元"
+    },
+    {
+      "metricId": "total.orders",
+      "value": "439",
+      "explanation": "统计周期内全部业务记录的总订单数为439单"
+    },
+    {
+      "metricId": "total.records",
+      "value": "36",
+      "explanation": "本次统计的有效业务记录总数为36条"
+    },
+    {
+      "metricId": "category.%E9%A4%90%E9%A3%9F.sales_yuan",
+      "value": "6511.75",
+      "explanation": "统计周期内餐食品类的总销售额为6511.75元"
+    },
+    {
+      "metricId": "category.%E9%A5%AE%E5%93%81.orders",
+      "value": "126",
+      "explanation": "统计周期内饮品品类的总订单数为126单"
+    },
+    {
+      "metricId": "date.2026-10-24.sales_yuan",
+      "value": "1454.00",
+      "explanation": "2026年10月24日的总销售额为1454.00元"
+    },
+    {
+      "metricId": "total.average_order_yuan",
+      "value": "27.96",
+      "explanation": "统计周期内全部订单的平均订单金额为27.96元"
+    }
+  ],
+  "limitations": [
+    "公开合成业务数据，不代表真实商户",
+    "仅接受固定字段与已定义日期格式",
+    "同一 record_id 的冲突记录立即拒绝"
+  ]
+}
