@@ -32,8 +32,9 @@ export class Application {
     const writable = Boolean(this.chain && this.config.CHAIN_COORDINATOR_PRIVATE_KEY && this.config.CHAIN_VALIDATOR_PRIVATE_KEY);
     const commitmentRows = await this.db.pool.query(`SELECT to_regclass('collaboration_commitments') IS NOT NULL AS exists`);
     const commitmentReady = Boolean(commitmentRows.rows[0]?.exists);
+    const collaborationWritable = Boolean(this.collaborationChain?.configured && commitmentReady);
     return {
-      status: writable && this.validator ? 'ok' : 'degraded', database: 'connected',
+      status: collaborationWritable || (writable && this.validator) ? 'ok' : 'degraded', database: 'connected',
       chain: { configured: Boolean(this.chain),writable, code: writable ? null : 'CHAIN_NOT_CONFIGURED' },
       collaborationChain: { configured: Boolean(this.collaborationChain?.configured), writable: Boolean(this.collaborationChain?.configured && commitmentReady), code: this.collaborationChain?.configured ? (this.collaborationChain && commitmentReady ? null : 'CHAIN_NOT_CONFIGURED') : 'CHAIN_NOT_CONFIGURED' },
       validator: { configured: Boolean(this.validator), code: this.validator ? null : 'VALIDATOR_NOT_CONFIGURED' },
