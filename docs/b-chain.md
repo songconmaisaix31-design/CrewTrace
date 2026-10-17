@@ -41,8 +41,16 @@ ChainReceipt 与 SubmissionReceipt 可选 `events` 保存 eventId/eventName/args
 
 `npm run typecheck --prefix packages/runtime-chain`、`npm run typecheck --prefix packages/contracts`、`npm run typecheck --prefix packages/chain` 和 `npm run build --prefix packages/chain` 已通过。runtime-chain 的 TypeScript 与 A 一致使用 5.9.3，viem 固定 2.57.7，各自锁文件保持独立。
 
-`npm test --prefix packages/runtime-chain`：7 项通过。测试使用原样保存的 A 公开测试网真实交易记录，检查提交、验收与指派的绑定拒绝、同合约登记交易无法替代提交、角色映射和计数溢出；这些记录标记 DEV_FIXTURE，只代表 A 的历史链端口验证。
+`npm test --prefix packages/runtime-chain`：9 项通过。测试使用原样保存的 A 公开测试网真实交易记录，检查提交、验收与指派的绑定拒绝、同合约登记交易无法替代提交、角色映射和计数溢出；这些记录标记 DEV_FIXTURE，只代表 A 的历史链端口验证。另以真实临时本地账户签署 A ABI 编码的登记交易，实际保存签名交易到忽略目录后核对哈希和恢复签名地址，实际 ENOENT 持久化错误立即传播；这两项没有广播交易。
 
-`npm run verify:readonly --prefix packages/runtime-chain`：2026-10-17 实际公开 RPC 读取通过，chainId=10143。部署回执 `0x5bdb6afff9b72a15175f0124b922a0c40e86396663f5b82044c223dec0b163fd` 为 success，部署区块=71765088；部署字节码 keccak256=`0x1f6512e60af3c66e4ce468cc7745e0465d4144208ff1d9e4b5d0fc75c1f706a2`，与 A 记录一致。finalized 快照=71775542，验收交易 `0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c` 返回 CONFIRMED，原始 eventId=`10143:0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c:79`。对应任务和产物/证据一致，执行者 DATA 记录为 PASS=2、FAIL=0，同快照返回；部署区块回读为真实 0/0，不存在任务返回 null。只读脚本还读取交付中的指派与提交交易。
+`npm run verify:readonly --prefix packages/runtime-chain`：2026-10-17 实际公开 RPC 读取通过，chainId=10143。部署回执 `0x5bdb6afff9b72a15175f0124b922a0c40e86396663f5b82044c223dec0b163fd` 为 success，部署区块=71765088；部署字节码 keccak256=`0x1f6512e60af3c66e4ce468cc7745e0465d4144208ff1d9e4b5d0fc75c1f706a2`，与 A 记录一致。finalized 快照=71776615。三笔交付交易均为 CONFIRMED，事件所在历史区块的任务字段核对通过：
+
+| 事件 | txHash | 区块 / logIndex |
+| --- | --- | --- |
+| TaskAssigned | `0x5fc76cb1325f132f066b0eafd098a11f60457b5168daedececb3b70bb51f5d16` | 71765658 / 7 |
+| ArtifactSubmitted | `0xb10f6d1d7922feac89f5f6ef9151d9aacb7abbc4d1b24bf05ca1b322c62dce5c` | 71765675 / 37 |
+| OutcomeRecorded | `0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c` | 71765687 / 79 |
+
+原始 eventId 均保留为 `10143:<txHash>:<logIndex>`。对应任务和产物/证据一致，执行者 DATA 记录为 PASS=2、FAIL=0，同快照返回；部署区块回读为真实 0/0，不存在任务返回 null。
 
 协调者与验收者私钥尚未提供，本轨道没有执行真实写入验证；两轮产品任务、Worker 与服务写入链路仍需对应轨道和集成验收。
