@@ -34,6 +34,7 @@ const taskFields = {
   description: z.string().min(1).max(20000),
   requiredCapabilities: z.array(capability).max(32).default([]),
   bountyMON: MonAmountSchema.nullable().default(null),
+  bountyMode: z.literal('MOCK').default('MOCK'),
 };
 export const CreateCollaborationTaskRequestSchema = z.strictObject({
   ...taskFields, parentTaskId: CollaborationIdSchema.nullable().default(null),
@@ -76,6 +77,7 @@ export const CollaborationNoteSchema = z.strictObject({
   author: CollaborationIdSchema, topic: z.string().min(1).max(200),
   body: z.string().min(1).max(20000), ...versioned,
 });
+export const CollaborationNoteDetailSchema = CollaborationNoteSchema.extend({ versions: z.array(CollaborationNoteSchema) });
 
 export const CollaborationProposalStatusSchema = z.enum(['PROPOSED', 'APPROVED', 'REJECTED']);
 export const ProposeCollaborationAssignmentRequestSchema = z.strictObject({
@@ -178,6 +180,7 @@ export const CollaborationToolSchemas = {
   create_collaboration_note: z.strictObject({ request: CreateCollaborationNoteRequestSchema }),
   update_collaboration_note: z.strictObject({ noteId: CollaborationIdSchema, request: UpdateCollaborationNoteRequestSchema }),
   list_collaboration_notes: CollaborationNotesQuerySchema,
+  get_collaboration_note: z.strictObject({ noteId: CollaborationIdSchema }),
   propose_collaboration_assignment: z.strictObject({ taskId: CollaborationIdSchema, request: ProposeCollaborationAssignmentRequestSchema }),
   decide_collaboration_assignment: z.strictObject({ proposalId: CollaborationIdSchema, request: DecideCollaborationAssignmentRequestSchema }),
   claim_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, request: ClaimCollaborationTaskRequestSchema }),
@@ -192,6 +195,7 @@ export type CollaborationTask = z.infer<typeof CollaborationTaskSchema>;
 export type CollaborationTaskDetail = z.infer<typeof CollaborationTaskDetailSchema>;
 export type CollaborationMessage = z.infer<typeof CollaborationMessageSchema>;
 export type CollaborationNote = z.infer<typeof CollaborationNoteSchema>;
+export type CollaborationNoteDetail = z.infer<typeof CollaborationNoteDetailSchema>;
 export type CollaborationAssignmentProposal = z.infer<typeof CollaborationAssignmentProposalSchema>;
 export type CollaborationClaim = z.infer<typeof CollaborationClaimSchema>;
 export type CollaborationHandoff = z.infer<typeof CollaborationHandoffSchema>;
