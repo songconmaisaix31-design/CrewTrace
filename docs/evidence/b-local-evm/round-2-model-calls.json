@@ -1,0 +1,68 @@
+[
+  {
+    "taskId": "0xddf97c2f7159a6bfd496924d726c903c622c0288d428cfce283c384bde38b94a",
+    "role": "DATA",
+    "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+    "calls": [
+      {
+        "step": "DATA",
+        "attempt": 1,
+        "requestedModel": "step-3.5-flash",
+        "startedAt": "2026-10-17T09:21:35.411Z",
+        "durationMs": 2697,
+        "status": "SUCCEEDED",
+        "actualModel": "step-3.5-flash",
+        "responseId": "cc984de92bcbb1f263371a39825718e7.051633aa891aa38988b477b87d532dd6",
+        "usage": {
+          "promptTokens": 1103,
+          "completionTokens": 370,
+          "totalTokens": 1473
+        }
+      }
+    ]
+  },
+  {
+    "taskId": "0x5ec1947007fd0db3bb5fd9524b6782b20dac9b34835326ff4eb5558387c7462e",
+    "role": "ANALYSIS",
+    "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+    "calls": [
+      {
+        "step": "ANALYSIS",
+        "attempt": 1,
+        "requestedModel": "step-3.5-flash",
+        "startedAt": "2026-10-17T09:23:02.111Z",
+        "durationMs": 14030,
+        "status": "SUCCEEDED",
+        "actualModel": "step-3.5-flash",
+        "responseId": "f95772a3edab4d241f36bcd27811c815.a96ea3af8f0def40c6af75489b247431",
+        "usage": {
+          "promptTokens": 4252,
+          "completionTokens": 2330,
+          "totalTokens": 6582
+        }
+      }
+    ]
+  },
+  {
+    "taskId": "0x302432cc0aee480b239323147751836c426ca2f81af538752021d1191e9a2c92",
+    "role": "REPORT",
+    "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+    "calls": [
+      {
+        "step": "REPORT",
+        "attempt": 1,
+        "requestedModel": "step-3.5-flash",
+        "startedAt": "2026-10-17T09:24:47.714Z",
+        "durationMs": 12503,
+        "status": "SUCCEEDED",
+        "actualModel": "step-3.5-flash",
+        "responseId": "f5eea2486d93e31434b610e6d9949683.0a7b35129b4ee89917df2935dd435662",
+        "usage": {
+          "promptTokens": 3942,
+          "completionTokens": 1787,
+          "totalTokens": 5729
+        }
+      }
+    ]
+  }
+]

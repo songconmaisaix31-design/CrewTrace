@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "worker-output-v1",
+  "role": "REPORT",
+  "sourceHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+  "parentArtifacts": [
+    {
+      "artifactId": "0x5ec1947007fd0db3bb5fd9524b6782b20dac9b34835326ff4eb5558387c7462e-1",
+      "contentHash": "0x86b34f12acd56382565c7bdc69449c033e076d8c2aec9c0e9a52cf0f803775c3",
+      "schemaVersion": "worker-output-v1"
+    }
+  ],
+  "limitations": [
+    "公开合成业务数据，不代表真实商户",
+    "仅接受固定字段与已定义日期格式",
+    "同一 record_id 的冲突记录立即拒绝"
+  ],
+  "files": [
+    {
+      "name": "report.json",
+      "schemaVersion": "business-report-v1",
+      "mediaType": "application/json",
+      "content": "{\n  \"title\": \"2026年10月13日至24日业务数据统计报告\",\n  \"summary\": \"本次统计覆盖2026年10月13日至24日的合成业务数据，包含全部类别与日维度的核心经营指标，观测期内单日销售额呈逐步上升趋势，餐食类别为销售额最高的商品类别\",\n  \"claims\": [\n    {\n      \"metricId\": \"total.sales_yuan\",\n      \"value\": \"12273.00\",\n      \"interpretation\": \"统计周期内全部业务记录的总销售额\"\n    },\n    {\n      \"metricId\": \"total.orders\",\n      \"value\": \"439\",\n      \"interpretation\": \"统计周期内全部业务记录的订单总数\"\n    },\n    {\n      \"metricId\": \"total.records\",\n      \"value\": \"36\",\n      \"interpretation\": \"本次统计包含的全部业务记录条数\"\n    },\n    {\n      \"metricId\": \"category.%E9%A4%90%E9%A3%9F.sales_yuan\",\n      \"value\": \"6511.75\",\n      \"interpretation\": \"餐食类别总销售额为三类商品类别中最高\"\n    },\n    {\n      \"metricId\": \"category.%E7%94%9C%E7%82%B9.average_order_yuan\",\n      \"value\": \"21.82\",\n      \"interpretation\": \"甜点类别平均订单金额为三类商品类别中最低\"\n    },\n    {\n      \"metricId\": \"date.2026-10-13.sales_yuan\",\n      \"value\": \"570.25\",\n      \"interpretation\": \"2026-10-13单日总销售额为观测期内最低\"\n    },\n    {\n      \"metricId\": \"date.2026-10-24.sales_yuan\",\n      \"value\": \"1454.00\",\n      \"interpretation\": \"2026-10-24单日总销售额为观测期内最高\"\n    }\n  ],\n  \"limitations\": [\n    \"本次数据为公开合成业务数据，不代表真实商户实际经营情况\",\n    \"统计仅接受固定字段与已定义日期格式，不支持自定义维度扩展\",\n    \"同一record_id的冲突记录会被立即拒绝，不纳入统计范围\"\n  ],\n  \"schemaVersion\": \"business-report-v1\",\n  \"sourceHash\": \"0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7\",\n  \"metricsHash\": \"0xf14fb478253ea6354634f338b476f16e5ca628f16220cfcb0eb76019dc6432dd\"\n}\n",
+      "contentHash": "0x04bdb0ef64046d068a0fbabd5f240f135b3659d47478bc4fec6adc43085bdaba"
+    },
+    {
+      "name": "report.md",
+      "schemaVersion": "business-report-markdown-v1",
+      "mediaType": "text/markdown",
+      "content": "# 2026年10月13日至24日业务数据统计报告\n\n来源：公开合成业务 CSV。\n\n本次统计覆盖2026年10月13日至24日的合成业务数据，包含全部类别与日维度的核心经营指标，观测期内单日销售额呈逐步上升趋势，餐食类别为销售额最高的商品类别\n\n- 全部数据销售额：12273.00 元。统计周期内全部业务记录的总销售额 [指标：total.sales_yuan]\n- 全部数据订单数：439 笔。统计周期内全部业务记录的订单总数 [指标：total.orders]\n- 全部数据记录数：36 条。本次统计包含的全部业务记录条数 [指标：total.records]\n- 餐食销售额：6511.75 元。餐食类别总销售额为三类商品类别中最高 [指标：category.%E9%A4%90%E9%A3%9F.sales_yuan]\n- 甜点平均订单金额：21.82 元。甜点类别平均订单金额为三类商品类别中最低 [指标：category.%E7%94%9C%E7%82%B9.average_order_yuan]\n- 2026-10-13销售额：570.25 元。2026-10-13单日总销售额为观测期内最低 [指标：date.2026-10-13.sales_yuan]\n- 2026-10-24销售额：1454.00 元。2026-10-24单日总销售额为观测期内最高 [指标：date.2026-10-24.sales_yuan]\n\n## 限制\n\n- 本次数据为公开合成业务数据，不代表真实商户实际经营情况\n- 统计仅接受固定字段与已定义日期格式，不支持自定义维度扩展\n- 同一record\\_id的冲突记录会被立即拒绝，不纳入统计范围\n\n指标原始字节摘要：0xf14fb478253ea6354634f338b476f16e5ca628f16220cfcb0eb76019dc6432dd\n输入原始字节摘要：0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7\n",
+      "contentHash": "0x848bbf775506c5260833f9c3d73c13b4d0e2633ca73becd398dd212dcdc02af7"
+    }
+  ]
+}

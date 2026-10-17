@@ -1,0 +1,50 @@
+{
+  "chainId": 31337,
+  "rpcURL": "http://127.0.0.1:18545",
+  "schema": "b_local_20261017_0905",
+  "scope": "LOCAL_EVM_ONLY",
+  "contractAddress": "0xda93474b17a98679c905534ad97cd42f99359317",
+  "deploymentTx": "0x7591ab4b6c0053164c56fff69941a5b892bc81cac12131fa3ba1c4735e0c083e",
+  "deploymentBlock": "8633",
+  "coordinator": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+  "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+  "codeHash": "0x256843c636e2f998e9f00ced06410fc67370611f6b15d84235b453054e3f347e",
+  "funding": [
+    {
+      "address": "0xb73d7C93B34d3e16669c0C602abc98D59853d0d8",
+      "txHash": "0x0f8f6cb7911a1fdc9152aa692b0cd25a11b481e7120716e022a2d7a91d6e8b36",
+      "blockNumber": "8623",
+      "valueWei": "1000000000000000000"
+    },
+    {
+      "address": "0xB785fa05DEcc21bB435feD4078ec6e480aE08171",
+      "txHash": "0xb876b75804b00a78ccf9cd1812ba1d3474047edf3e5171f5c81861789e990dee",
+      "blockNumber": "8624",
+      "valueWei": "1000000000000000000"
+    },
+    {
+      "address": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "txHash": "0x4a6a39619956807d886d703ec4dbdb9436da1f3de589648634b9a8d2baf96622",
+      "blockNumber": "8626",
+      "valueWei": "1000000000000000000"
+    },
+    {
+      "address": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "txHash": "0x69a9d536b6dfaf4c7d20fb507a45ed1e78ce6fd1af66b36e5d9c2a166e6c37fb",
+      "blockNumber": "8628",
+      "valueWei": "1000000000000000000"
+    },
+    {
+      "address": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "txHash": "0x632d2096f7e44d318f238ed7d3f3959514566bb54e39a3ceff95061d9a3a1781",
+      "blockNumber": "8629",
+      "valueWei": "1000000000000000000"
+    },
+    {
+      "address": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+      "txHash": "0x1e3c2ddac255b834324660a968bed01641fe5dd1fdc9ff2eb791d0444cd1e642",
+      "blockNumber": "8631",
+      "valueWei": "1000000000000000000"
+    }
+  ]
+}

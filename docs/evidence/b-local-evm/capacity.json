@@ -1,0 +1,1642 @@
+{
+  "scope": "LOCAL_EVM_ONLY",
+  "chainId": 31337,
+  "schema": "b_local_20261017_0905",
+  "assignments": [
+    {
+      "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+      "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+      "selectedAgentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030",
+      "originalTxHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+      "pendingRun": {
+        "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+        "templateVersion": "csv-analysis-v1",
+        "mode": "LIVE",
+        "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+        "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+        "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "status": "OPEN",
+        "tasks": [
+          {
+            "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+            "taskId": "0x1e78ad0564840b2f8d63905355af7affdd38823ab03318beab518beae525801f",
+            "role": "REPORT",
+            "dependsOn": [
+              "0x39e6f3bf0db456eb672d08bf097f5ff5bd86433cd88c97a4756f69728952d313"
+            ],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          },
+          {
+            "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+            "taskId": "0x39e6f3bf0db456eb672d08bf097f5ff5bd86433cd88c97a4756f69728952d313",
+            "role": "ANALYSIS",
+            "dependsOn": [
+              "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14"
+            ],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          },
+          {
+            "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "role": "DATA",
+            "dependsOn": [],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          }
+        ],
+        "createdAt": "2026-10-17T09:27:49.737Z",
+        "runtimeStatus": "ACTIVE",
+        "taskRuntime": [
+          {
+            "taskId": "0x1e78ad0564840b2f8d63905355af7affdd38823ab03318beab518beae525801f",
+            "status": "ACTIVE",
+            "reason": null
+          },
+          {
+            "taskId": "0x39e6f3bf0db456eb672d08bf097f5ff5bd86433cd88c97a4756f69728952d313",
+            "status": "ACTIVE",
+            "reason": null
+          },
+          {
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "status": "ACTIVE",
+            "reason": null
+          }
+        ],
+        "inputURI": "http://127.0.0.1:3410/api/runs/b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21/input",
+        "artifacts": [],
+        "assessments": [],
+        "handoffs": [],
+        "decisions": [
+          {
+            "decisionId": "43f9e84f-78bf-4c51-b253-58580f644bcf",
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "attempt": 1,
+            "role": "DATA",
+            "policyVersion": "role-rep-v1",
+            "repBlockNumber": "22643",
+            "evaluatedAt": "2026-10-17T09:28:02.993Z",
+            "agents": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "roles": [
+                  "DATA"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+                "lastSeenAt": "2026-10-17T09:27:58.301Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+                "roles": [
+                  "ANALYSIS"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+                "lastSeenAt": "2026-10-17T09:25:58.430Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+                "roles": [
+                  "REPORT"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+                "lastSeenAt": "2026-10-17T09:25:56.812Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "roles": [
+                  "DATA"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+                "lastSeenAt": "2026-10-17T09:27:56.017Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              }
+            ],
+            "reputations": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "role": "DATA",
+                "passCount": 2,
+                "failCount": 0,
+                "blockNumber": "22643",
+                "confirmed": true
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "role": "DATA",
+                "passCount": 0,
+                "failCount": 0,
+                "blockNumber": "22643",
+                "confirmed": true
+              }
+            ],
+            "candidateScores": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "role": "DATA",
+                "passCount": 2,
+                "failCount": 0,
+                "sampleSize": 2,
+                "reputation": 0.75,
+                "availability": 1,
+                "score": 0.8,
+                "activeTasks": 0,
+                "maxConcurrency": 1
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "role": "DATA",
+                "passCount": 0,
+                "failCount": 0,
+                "sampleSize": 0,
+                "reputation": 0.5,
+                "availability": 1,
+                "score": 0.6000000000000001,
+                "activeTasks": 0,
+                "maxConcurrency": 1
+              }
+            ],
+            "excludedReasons": [
+              {
+                "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+                "reasons": [
+                  "ROLE_MISMATCH",
+                  "HEARTBEAT_EXPIRED"
+                ]
+              },
+              {
+                "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+                "reasons": [
+                  "ROLE_MISMATCH",
+                  "HEARTBEAT_EXPIRED"
+                ]
+              }
+            ],
+            "selectedAgentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+            "selectionReason": "按 role-rep-v1 排名第一；角色 DATA；PASS 2，FAIL 0；R=0.75，A=1，score=0.8；同分按 agentId 升序",
+            "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030"
+          }
+        ],
+        "taskReceipts": [
+          {
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "attempt": 1,
+            "operation": "ASSIGN",
+            "receipt": {
+              "chainId": 31337,
+              "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+              "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+              "blockNumber": null,
+              "status": "PENDING",
+              "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8"
+            }
+          }
+        ]
+      },
+      "confirmedRun": {
+        "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+        "templateVersion": "csv-analysis-v1",
+        "mode": "LIVE",
+        "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+        "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+        "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "status": "RUNNING",
+        "tasks": [
+          {
+            "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+            "taskId": "0x1e78ad0564840b2f8d63905355af7affdd38823ab03318beab518beae525801f",
+            "role": "REPORT",
+            "dependsOn": [
+              "0x39e6f3bf0db456eb672d08bf097f5ff5bd86433cd88c97a4756f69728952d313"
+            ],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          },
+          {
+            "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+            "taskId": "0x39e6f3bf0db456eb672d08bf097f5ff5bd86433cd88c97a4756f69728952d313",
+            "role": "ANALYSIS",
+            "dependsOn": [
+              "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14"
+            ],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          },
+          {
+            "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "role": "DATA",
+            "dependsOn": [],
+            "attempt": 1,
+            "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+            "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "ASSIGNED",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          }
+        ],
+        "createdAt": "2026-10-17T09:27:49.737Z",
+        "runtimeStatus": "ACTIVE",
+        "taskRuntime": [
+          {
+            "taskId": "0x1e78ad0564840b2f8d63905355af7affdd38823ab03318beab518beae525801f",
+            "status": "ACTIVE",
+            "reason": null
+          },
+          {
+            "taskId": "0x39e6f3bf0db456eb672d08bf097f5ff5bd86433cd88c97a4756f69728952d313",
+            "status": "ACTIVE",
+            "reason": null
+          },
+          {
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "status": "ACTIVE",
+            "reason": null
+          }
+        ],
+        "inputURI": "http://127.0.0.1:3410/api/runs/b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21/input",
+        "artifacts": [],
+        "assessments": [],
+        "handoffs": [],
+        "decisions": [
+          {
+            "decisionId": "43f9e84f-78bf-4c51-b253-58580f644bcf",
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "attempt": 1,
+            "role": "DATA",
+            "policyVersion": "role-rep-v1",
+            "repBlockNumber": "22643",
+            "evaluatedAt": "2026-10-17T09:28:02.993Z",
+            "agents": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "roles": [
+                  "DATA"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+                "lastSeenAt": "2026-10-17T09:27:58.301Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+                "roles": [
+                  "ANALYSIS"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+                "lastSeenAt": "2026-10-17T09:25:58.430Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+                "roles": [
+                  "REPORT"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+                "lastSeenAt": "2026-10-17T09:25:56.812Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "roles": [
+                  "DATA"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+                "lastSeenAt": "2026-10-17T09:27:56.017Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              }
+            ],
+            "reputations": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "role": "DATA",
+                "passCount": 2,
+                "failCount": 0,
+                "blockNumber": "22643",
+                "confirmed": true
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "role": "DATA",
+                "passCount": 0,
+                "failCount": 0,
+                "blockNumber": "22643",
+                "confirmed": true
+              }
+            ],
+            "candidateScores": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "role": "DATA",
+                "passCount": 2,
+                "failCount": 0,
+                "sampleSize": 2,
+                "reputation": 0.75,
+                "availability": 1,
+                "score": 0.8,
+                "activeTasks": 0,
+                "maxConcurrency": 1
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "role": "DATA",
+                "passCount": 0,
+                "failCount": 0,
+                "sampleSize": 0,
+                "reputation": 0.5,
+                "availability": 1,
+                "score": 0.6000000000000001,
+                "activeTasks": 0,
+                "maxConcurrency": 1
+              }
+            ],
+            "excludedReasons": [
+              {
+                "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+                "reasons": [
+                  "ROLE_MISMATCH",
+                  "HEARTBEAT_EXPIRED"
+                ]
+              },
+              {
+                "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+                "reasons": [
+                  "ROLE_MISMATCH",
+                  "HEARTBEAT_EXPIRED"
+                ]
+              }
+            ],
+            "selectedAgentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+            "selectionReason": "按 role-rep-v1 排名第一；角色 DATA；PASS 2，FAIL 0；R=0.75，A=1，score=0.8；同分按 agentId 升序",
+            "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030"
+          }
+        ],
+        "taskReceipts": [
+          {
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "attempt": 1,
+            "operation": "ASSIGN",
+            "receipt": {
+              "chainId": 31337,
+              "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+              "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+              "blockNumber": "22688",
+              "status": "CONFIRMED",
+              "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+              "events": [
+                {
+                  "eventId": "31337:0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f:0",
+                  "logIndex": 0,
+                  "blockNumber": "22688",
+                  "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+                  "eventName": "TaskAssigned",
+                  "args": {
+                    "runId": "0xba5e5d621543d8fc38a378b74b152807d4fa523d9c702c224ea430e6ce8bafb0",
+                    "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+                    "attempt": 1,
+                    "role": "DATA",
+                    "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                    "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+                    "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+                    "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030",
+                    "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+      "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+      "selectedAgentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757",
+      "originalTxHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+      "pendingRun": {
+        "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+        "templateVersion": "csv-analysis-v1",
+        "mode": "LIVE",
+        "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+        "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+        "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "status": "OPEN",
+        "tasks": [
+          {
+            "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "role": "DATA",
+            "dependsOn": [],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          },
+          {
+            "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+            "taskId": "0xd9cbbcea6393fe03f65cde54743fc007a4c086d8f45b9a756327774969516c0e",
+            "role": "ANALYSIS",
+            "dependsOn": [
+              "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017"
+            ],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          },
+          {
+            "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+            "taskId": "0xe98bc792d22edf35c8659f2d3802b3244e42baaaea7b31ffaee30ecad9e3536d",
+            "role": "REPORT",
+            "dependsOn": [
+              "0xd9cbbcea6393fe03f65cde54743fc007a4c086d8f45b9a756327774969516c0e"
+            ],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          }
+        ],
+        "createdAt": "2026-10-17T09:27:52.836Z",
+        "runtimeStatus": "ACTIVE",
+        "taskRuntime": [
+          {
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "status": "ACTIVE",
+            "reason": null
+          },
+          {
+            "taskId": "0xd9cbbcea6393fe03f65cde54743fc007a4c086d8f45b9a756327774969516c0e",
+            "status": "ACTIVE",
+            "reason": null
+          },
+          {
+            "taskId": "0xe98bc792d22edf35c8659f2d3802b3244e42baaaea7b31ffaee30ecad9e3536d",
+            "status": "ACTIVE",
+            "reason": null
+          }
+        ],
+        "inputURI": "http://127.0.0.1:3410/api/runs/b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d/input",
+        "artifacts": [],
+        "assessments": [],
+        "handoffs": [],
+        "decisions": [
+          {
+            "decisionId": "e276ce26-59fe-4be4-b132-d800882d5431",
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "attempt": 1,
+            "role": "DATA",
+            "policyVersion": "role-rep-v1",
+            "repBlockNumber": "22797",
+            "evaluatedAt": "2026-10-17T09:28:19.623Z",
+            "agents": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "roles": [
+                  "DATA"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+                "lastSeenAt": "2026-10-17T09:28:14.904Z",
+                "activeTasks": 1,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+                "roles": [
+                  "ANALYSIS"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+                "lastSeenAt": "2026-10-17T09:25:58.430Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+                "roles": [
+                  "REPORT"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+                "lastSeenAt": "2026-10-17T09:25:56.812Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "roles": [
+                  "DATA"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+                "lastSeenAt": "2026-10-17T09:28:12.808Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              }
+            ],
+            "reputations": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "role": "DATA",
+                "passCount": 2,
+                "failCount": 0,
+                "blockNumber": "22797",
+                "confirmed": true
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "role": "DATA",
+                "passCount": 0,
+                "failCount": 0,
+                "blockNumber": "22797",
+                "confirmed": true
+              }
+            ],
+            "candidateScores": [
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "role": "DATA",
+                "passCount": 0,
+                "failCount": 0,
+                "sampleSize": 0,
+                "reputation": 0.5,
+                "availability": 1,
+                "score": 0.6000000000000001,
+                "activeTasks": 0,
+                "maxConcurrency": 1
+              }
+            ],
+            "excludedReasons": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "reasons": [
+                  "BUSY"
+                ]
+              },
+              {
+                "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+                "reasons": [
+                  "ROLE_MISMATCH",
+                  "HEARTBEAT_EXPIRED"
+                ]
+              },
+              {
+                "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+                "reasons": [
+                  "ROLE_MISMATCH",
+                  "HEARTBEAT_EXPIRED"
+                ]
+              }
+            ],
+            "selectedAgentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+            "selectionReason": "按 role-rep-v1 排名第一；角色 DATA；PASS 0，FAIL 0；R=0.5，A=1，score=0.6000000000000001；同分按 agentId 升序",
+            "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757"
+          }
+        ],
+        "taskReceipts": [
+          {
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "attempt": 1,
+            "operation": "ASSIGN",
+            "receipt": {
+              "chainId": 31337,
+              "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+              "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+              "blockNumber": null,
+              "status": "PENDING",
+              "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8"
+            }
+          }
+        ]
+      },
+      "confirmedRun": {
+        "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+        "templateVersion": "csv-analysis-v1",
+        "mode": "LIVE",
+        "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+        "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+        "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "status": "RUNNING",
+        "tasks": [
+          {
+            "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "role": "DATA",
+            "dependsOn": [],
+            "attempt": 1,
+            "assignee": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+            "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "ASSIGNED",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          },
+          {
+            "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+            "taskId": "0xd9cbbcea6393fe03f65cde54743fc007a4c086d8f45b9a756327774969516c0e",
+            "role": "ANALYSIS",
+            "dependsOn": [
+              "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017"
+            ],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          },
+          {
+            "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+            "taskId": "0xe98bc792d22edf35c8659f2d3802b3244e42baaaea7b31ffaee30ecad9e3536d",
+            "role": "REPORT",
+            "dependsOn": [
+              "0xd9cbbcea6393fe03f65cde54743fc007a4c086d8f45b9a756327774969516c0e"
+            ],
+            "attempt": 1,
+            "assignee": null,
+            "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "status": "OPEN",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+          }
+        ],
+        "createdAt": "2026-10-17T09:27:52.836Z",
+        "runtimeStatus": "ACTIVE",
+        "taskRuntime": [
+          {
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "status": "ACTIVE",
+            "reason": null
+          },
+          {
+            "taskId": "0xd9cbbcea6393fe03f65cde54743fc007a4c086d8f45b9a756327774969516c0e",
+            "status": "ACTIVE",
+            "reason": null
+          },
+          {
+            "taskId": "0xe98bc792d22edf35c8659f2d3802b3244e42baaaea7b31ffaee30ecad9e3536d",
+            "status": "ACTIVE",
+            "reason": null
+          }
+        ],
+        "inputURI": "http://127.0.0.1:3410/api/runs/b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d/input",
+        "artifacts": [],
+        "assessments": [],
+        "handoffs": [],
+        "decisions": [
+          {
+            "decisionId": "e276ce26-59fe-4be4-b132-d800882d5431",
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "attempt": 1,
+            "role": "DATA",
+            "policyVersion": "role-rep-v1",
+            "repBlockNumber": "22797",
+            "evaluatedAt": "2026-10-17T09:28:19.623Z",
+            "agents": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "roles": [
+                  "DATA"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+                "lastSeenAt": "2026-10-17T09:28:14.904Z",
+                "activeTasks": 1,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+                "roles": [
+                  "ANALYSIS"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+                "lastSeenAt": "2026-10-17T09:25:58.430Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+                "roles": [
+                  "REPORT"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+                "lastSeenAt": "2026-10-17T09:25:56.812Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "roles": [
+                  "DATA"
+                ],
+                "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+                "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+                "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+                "lastSeenAt": "2026-10-17T09:28:12.808Z",
+                "activeTasks": 0,
+                "maxConcurrency": 1,
+                "admitted": true,
+                "conditionsAccepted": true
+              }
+            ],
+            "reputations": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "role": "DATA",
+                "passCount": 2,
+                "failCount": 0,
+                "blockNumber": "22797",
+                "confirmed": true
+              },
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "role": "DATA",
+                "passCount": 0,
+                "failCount": 0,
+                "blockNumber": "22797",
+                "confirmed": true
+              }
+            ],
+            "candidateScores": [
+              {
+                "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                "role": "DATA",
+                "passCount": 0,
+                "failCount": 0,
+                "sampleSize": 0,
+                "reputation": 0.5,
+                "availability": 1,
+                "score": 0.6000000000000001,
+                "activeTasks": 0,
+                "maxConcurrency": 1
+              }
+            ],
+            "excludedReasons": [
+              {
+                "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                "reasons": [
+                  "BUSY"
+                ]
+              },
+              {
+                "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+                "reasons": [
+                  "ROLE_MISMATCH",
+                  "HEARTBEAT_EXPIRED"
+                ]
+              },
+              {
+                "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+                "reasons": [
+                  "ROLE_MISMATCH",
+                  "HEARTBEAT_EXPIRED"
+                ]
+              }
+            ],
+            "selectedAgentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+            "selectionReason": "按 role-rep-v1 排名第一；角色 DATA；PASS 0，FAIL 0；R=0.5，A=1，score=0.6000000000000001；同分按 agentId 升序",
+            "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757"
+          }
+        ],
+        "taskReceipts": [
+          {
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "attempt": 1,
+            "operation": "ASSIGN",
+            "receipt": {
+              "chainId": 31337,
+              "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+              "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+              "blockNumber": "22852",
+              "status": "CONFIRMED",
+              "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+              "events": [
+                {
+                  "eventId": "31337:0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a:0",
+                  "logIndex": 0,
+                  "blockNumber": "22852",
+                  "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+                  "eventName": "TaskAssigned",
+                  "args": {
+                    "runId": "0x7a8dd322ca68b901157df5ced7521a33d517218933407f41fc05a1f56c1e7a11",
+                    "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+                    "attempt": 1,
+                    "role": "DATA",
+                    "assignee": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                    "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+                    "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+                    "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757",
+                    "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "stages": [
+    {
+      "stage": "before",
+      "at": "2026-10-17T09:27:48.691Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:27:47.371Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:27:45.252Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "stage": "pending-1",
+      "at": "2026-10-17T09:28:11.763Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:27:58.301Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:27:56.017Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "stage": "pending-2",
+      "at": "2026-10-17T09:28:29.327Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:28:14.904Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:28:12.808Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "stage": "confirmed-b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+      "at": "2026-10-17T09:28:45.828Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:28:32.448Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:28:30.365Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "stage": "confirmed-b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+      "at": "2026-10-17T09:29:02.097Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:28:48.945Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:28:46.838Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "stage": "cancelled-b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+      "at": "2026-10-17T09:29:07.980Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:28:48.945Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:28:46.838Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "stage": "cancelled-b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+      "at": "2026-10-17T09:29:13.457Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:28:48.945Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:28:46.838Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "stage": "after-cancel",
+      "at": "2026-10-17T09:29:17.892Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:29:16.582Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:29:14.497Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    }
+  ],
+  "heartbeatChecks": [
+    {
+      "at": "2026-10-17T09:27:46.304Z",
+      "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "returnedActiveTasks": 0,
+      "publishedActiveTasks": 0
+    },
+    {
+      "at": "2026-10-17T09:27:48.428Z",
+      "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "returnedActiveTasks": 0,
+      "publishedActiveTasks": 0
+    },
+    {
+      "at": "2026-10-17T09:27:57.072Z",
+      "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "returnedActiveTasks": 0,
+      "publishedActiveTasks": 0
+    },
+    {
+      "at": "2026-10-17T09:27:59.379Z",
+      "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "returnedActiveTasks": 0,
+      "publishedActiveTasks": 0
+    },
+    {
+      "at": "2026-10-17T09:28:13.865Z",
+      "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "returnedActiveTasks": 0,
+      "publishedActiveTasks": 0
+    },
+    {
+      "at": "2026-10-17T09:28:15.978Z",
+      "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "returnedActiveTasks": 1,
+      "publishedActiveTasks": 1
+    },
+    {
+      "at": "2026-10-17T09:28:31.406Z",
+      "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "returnedActiveTasks": 1,
+      "publishedActiveTasks": 1
+    },
+    {
+      "at": "2026-10-17T09:28:33.504Z",
+      "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "returnedActiveTasks": 1,
+      "publishedActiveTasks": 1
+    },
+    {
+      "at": "2026-10-17T09:28:47.903Z",
+      "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "returnedActiveTasks": 1,
+      "publishedActiveTasks": 1
+    },
+    {
+      "at": "2026-10-17T09:28:50.048Z",
+      "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "returnedActiveTasks": 1,
+      "publishedActiveTasks": 1
+    },
+    {
+      "at": "2026-10-17T09:29:15.552Z",
+      "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "returnedActiveTasks": 0,
+      "publishedActiveTasks": 0
+    },
+    {
+      "at": "2026-10-17T09:29:17.642Z",
+      "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "returnedActiveTasks": 0,
+      "publishedActiveTasks": 0
+    }
+  ],
+  "heartbeatResponsesAgreeWithPublic": true,
+  "noModelCalls": true,
+  "distinctPendingAndConfirmedSlots": true,
+  "frozenDecisionsAndOriginalTransactionsPreserved": true,
+  "cancelledRuns": [
+    "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+    "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d"
+  ],
+  "slotsReleased": true,
+  "runtimeEvents": [
+    {
+      "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+      "individuallyLocated": 6,
+      "events": [
+        {
+          "eventId": "a3be46ce-28a1-4d05-b4c1-797849e8bf08",
+          "seq": 120,
+          "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+          "taskId": null,
+          "attempt": null,
+          "type": "RUN_CREATED",
+          "createdAt": "2026-10-17T09:27:50.762Z",
+          "receipt": null,
+          "data": {
+            "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54"
+          }
+        },
+        {
+          "eventId": "bde65b77-acdd-49c5-92b4-0c5051032f81",
+          "seq": 122,
+          "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+          "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+          "attempt": 1,
+          "type": "ASSIGNMENT_DECIDED",
+          "createdAt": "2026-10-17T09:28:03.641Z",
+          "receipt": null,
+          "data": {
+            "decisionId": "43f9e84f-78bf-4c51-b253-58580f644bcf",
+            "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030"
+          }
+        },
+        {
+          "eventId": "6fe53350-a925-441d-8ff6-424217860bed",
+          "seq": 124,
+          "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+          "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+          "attempt": 1,
+          "type": "CHAIN_ASSIGN_CONFIRMED",
+          "createdAt": "2026-10-17T09:28:38.099Z",
+          "receipt": {
+            "chainId": 31337,
+            "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+            "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+            "blockNumber": "22688",
+            "status": "CONFIRMED",
+            "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+            "events": [
+              {
+                "eventId": "31337:0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f:0",
+                "logIndex": 0,
+                "blockNumber": "22688",
+                "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+                "eventName": "TaskAssigned",
+                "args": {
+                  "runId": "0xba5e5d621543d8fc38a378b74b152807d4fa523d9c702c224ea430e6ce8bafb0",
+                  "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+                  "attempt": 1,
+                  "role": "DATA",
+                  "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                  "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+                  "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+                  "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030",
+                  "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+                }
+              }
+            ]
+          },
+          "data": {
+            "receipt": {
+              "events": [
+                {
+                  "args": {
+                    "role": "DATA",
+                    "runId": "0xba5e5d621543d8fc38a378b74b152807d4fa523d9c702c224ea430e6ce8bafb0",
+                    "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+                    "attempt": 1,
+                    "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                    "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+                    "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+                    "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+                    "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030"
+                  },
+                  "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+                  "eventId": "31337:0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f:0",
+                  "logIndex": 0,
+                  "eventName": "TaskAssigned",
+                  "blockNumber": "22688"
+                }
+              ],
+              "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+              "status": "CONFIRMED",
+              "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+              "chainId": 31337,
+              "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+              "blockNumber": "22688"
+            }
+          }
+        },
+        {
+          "eventId": "31337:0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f:0",
+          "seq": 125,
+          "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+          "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+          "attempt": 1,
+          "type": "TaskAssigned",
+          "createdAt": "2026-10-17T09:28:38.877Z",
+          "receipt": {
+            "chainId": 31337,
+            "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+            "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+            "blockNumber": "22688",
+            "status": "CONFIRMED",
+            "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+            "events": [
+              {
+                "eventId": "31337:0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f:0",
+                "logIndex": 0,
+                "blockNumber": "22688",
+                "txHash": "0x05cc8938bc2b02f120e7dc48f357f9b23441f70806dfd3c28f49591b7d04882f",
+                "eventName": "TaskAssigned",
+                "args": {
+                  "runId": "0xba5e5d621543d8fc38a378b74b152807d4fa523d9c702c224ea430e6ce8bafb0",
+                  "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+                  "attempt": 1,
+                  "role": "DATA",
+                  "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+                  "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+                  "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+                  "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030",
+                  "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+                }
+              }
+            ]
+          },
+          "data": {
+            "role": "DATA",
+            "runId": "0xba5e5d621543d8fc38a378b74b152807d4fa523d9c702c224ea430e6ce8bafb0",
+            "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+            "attempt": 1,
+            "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+            "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "decisionHash": "0xbc3d6a894a9597ee254322855b19f6eb2c97e8e4312c94f1dd7e9cdd7585a030"
+          }
+        },
+        {
+          "eventId": "acab49d4-248f-4d4f-9cea-6bb0a4bd0459",
+          "seq": 126,
+          "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+          "taskId": "0x99f601b71cc3b514a4c1f6f9049cbeed26878f54883ee1b81fc95245f0de3a14",
+          "attempt": 1,
+          "type": "TASK_ASSIGNED",
+          "createdAt": "2026-10-17T09:28:40.448Z",
+          "receipt": null,
+          "data": {
+            "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+            "decisionId": "43f9e84f-78bf-4c51-b253-58580f644bcf"
+          }
+        },
+        {
+          "eventId": "739ea5c5-20f2-4d16-bf53-4c02ed296c13",
+          "seq": 130,
+          "runId": "b-local-capacity-1-b3eba38c-6911-4658-9a6c-3ee4ce5e0d21",
+          "taskId": null,
+          "attempt": null,
+          "type": "RUN_CANCEL",
+          "createdAt": "2026-10-17T09:29:07.191Z",
+          "receipt": null,
+          "data": {
+            "runtimeStatus": "CANCELLED"
+          }
+        }
+      ]
+    },
+    {
+      "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+      "individuallyLocated": 6,
+      "events": [
+        {
+          "eventId": "cea6744d-fd25-4233-ac9a-85e3aebbe0a3",
+          "seq": 121,
+          "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+          "taskId": null,
+          "attempt": null,
+          "type": "RUN_CREATED",
+          "createdAt": "2026-10-17T09:27:53.909Z",
+          "receipt": null,
+          "data": {
+            "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7"
+          }
+        },
+        {
+          "eventId": "8a9a4c73-8f07-4f9c-b6f7-fa2093281a50",
+          "seq": 123,
+          "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+          "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+          "attempt": 1,
+          "type": "ASSIGNMENT_DECIDED",
+          "createdAt": "2026-10-17T09:28:19.900Z",
+          "receipt": null,
+          "data": {
+            "decisionId": "e276ce26-59fe-4be4-b132-d800882d5431",
+            "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757"
+          }
+        },
+        {
+          "eventId": "c23701d9-ffc7-48ae-ba76-4361e6666afb",
+          "seq": 127,
+          "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+          "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+          "attempt": 1,
+          "type": "CHAIN_ASSIGN_CONFIRMED",
+          "createdAt": "2026-10-17T09:28:54.628Z",
+          "receipt": {
+            "chainId": 31337,
+            "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+            "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+            "blockNumber": "22852",
+            "status": "CONFIRMED",
+            "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+            "events": [
+              {
+                "eventId": "31337:0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a:0",
+                "logIndex": 0,
+                "blockNumber": "22852",
+                "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+                "eventName": "TaskAssigned",
+                "args": {
+                  "runId": "0x7a8dd322ca68b901157df5ced7521a33d517218933407f41fc05a1f56c1e7a11",
+                  "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+                  "attempt": 1,
+                  "role": "DATA",
+                  "assignee": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                  "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+                  "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+                  "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757",
+                  "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+                }
+              }
+            ]
+          },
+          "data": {
+            "receipt": {
+              "events": [
+                {
+                  "args": {
+                    "role": "DATA",
+                    "runId": "0x7a8dd322ca68b901157df5ced7521a33d517218933407f41fc05a1f56c1e7a11",
+                    "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+                    "attempt": 1,
+                    "assignee": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                    "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+                    "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+                    "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+                    "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757"
+                  },
+                  "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+                  "eventId": "31337:0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a:0",
+                  "logIndex": 0,
+                  "eventName": "TaskAssigned",
+                  "blockNumber": "22852"
+                }
+              ],
+              "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+              "status": "CONFIRMED",
+              "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+              "chainId": 31337,
+              "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+              "blockNumber": "22852"
+            }
+          }
+        },
+        {
+          "eventId": "31337:0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a:0",
+          "seq": 128,
+          "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+          "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+          "attempt": 1,
+          "type": "TaskAssigned",
+          "createdAt": "2026-10-17T09:28:55.392Z",
+          "receipt": {
+            "chainId": 31337,
+            "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+            "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+            "blockNumber": "22852",
+            "status": "CONFIRMED",
+            "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+            "events": [
+              {
+                "eventId": "31337:0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a:0",
+                "logIndex": 0,
+                "blockNumber": "22852",
+                "txHash": "0x9604e9b61ba0767b1f3be2f9c5bac14b90bc79976a32b958fcfcb8f7a6b4f36a",
+                "eventName": "TaskAssigned",
+                "args": {
+                  "runId": "0x7a8dd322ca68b901157df5ced7521a33d517218933407f41fc05a1f56c1e7a11",
+                  "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+                  "attempt": 1,
+                  "role": "DATA",
+                  "assignee": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+                  "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+                  "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+                  "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757",
+                  "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+                }
+              }
+            ]
+          },
+          "data": {
+            "role": "DATA",
+            "runId": "0x7a8dd322ca68b901157df5ced7521a33d517218933407f41fc05a1f56c1e7a11",
+            "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+            "attempt": 1,
+            "assignee": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+            "inputHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+            "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+            "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+            "decisionHash": "0x3dcfd1eaf732da51991550e61c4d25da3d960fe37d7795b73592ae19bae41757"
+          }
+        },
+        {
+          "eventId": "e7fd8cae-f067-498a-8c12-b0288ed9af24",
+          "seq": 129,
+          "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+          "taskId": "0x9fd88955e6ff42b4f51d4567be2fa20466b82f70d9a7460d084fe2af68838017",
+          "attempt": 1,
+          "type": "TASK_ASSIGNED",
+          "createdAt": "2026-10-17T09:28:56.987Z",
+          "receipt": null,
+          "data": {
+            "assignee": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+            "decisionId": "e276ce26-59fe-4be4-b132-d800882d5431"
+          }
+        },
+        {
+          "eventId": "937453b8-0ce1-45f7-b769-a0a13e219835",
+          "seq": 131,
+          "runId": "b-local-capacity-2-1b46ef25-7b33-46fd-84fc-6eb01cd8f58d",
+          "taskId": null,
+          "attempt": null,
+          "type": "RUN_CANCEL",
+          "createdAt": "2026-10-17T09:29:12.663Z",
+          "receipt": null,
+          "data": {
+            "runtimeStatus": "CANCELLED"
+          }
+        }
+      ]
+    }
+  ]
+}

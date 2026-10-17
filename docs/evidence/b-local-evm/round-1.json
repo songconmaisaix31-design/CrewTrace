@@ -1,0 +1,963 @@
+{
+  "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+  "templateVersion": "csv-analysis-v1",
+  "mode": "LIVE",
+  "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+  "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+  "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+  "status": "VERIFIED_PASS",
+  "tasks": [
+    {
+      "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+      "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "role": "ANALYSIS",
+      "dependsOn": [
+        "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372"
+      ],
+      "attempt": 1,
+      "assignee": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+      "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+      "status": "VERIFIED_PASS",
+      "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+    },
+    {
+      "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+      "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "role": "DATA",
+      "dependsOn": [],
+      "attempt": 1,
+      "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+      "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+      "status": "VERIFIED_PASS",
+      "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+    },
+    {
+      "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+      "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "role": "REPORT",
+      "dependsOn": [
+        "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19"
+      ],
+      "attempt": 1,
+      "assignee": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+      "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+      "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+      "status": "VERIFIED_PASS",
+      "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+    }
+  ],
+  "createdAt": "2026-10-17T09:06:24.637Z",
+  "runtimeStatus": "ACTIVE",
+  "taskRuntime": [
+    {
+      "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "status": "ACTIVE",
+      "reason": null
+    },
+    {
+      "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "status": "ACTIVE",
+      "reason": null
+    },
+    {
+      "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "status": "ACTIVE",
+      "reason": null
+    }
+  ],
+  "inputURI": "http://127.0.0.1:3410/api/runs/b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc/input",
+  "artifacts": [
+    {
+      "artifactId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372-1",
+      "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "attempt": 1,
+      "parentArtifactIds": [],
+      "URI": "http://127.0.0.1:3410/api/artifacts/0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372-1",
+      "contentHash": "0xd0b087edc6060b5fe03201f1299a4ca1e535407de3ec894bf4fcca77e5b548b7",
+      "schemaVersion": "worker-output-v1",
+      "producer": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "limitations": [
+        "公开合成业务数据，不代表真实商户",
+        "仅接受固定字段与已定义日期格式",
+        "同一 record_id 的冲突记录立即拒绝"
+      ]
+    },
+    {
+      "artifactId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19-1",
+      "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "attempt": 1,
+      "parentArtifactIds": [
+        "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372-1"
+      ],
+      "URI": "http://127.0.0.1:3410/api/artifacts/0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19-1",
+      "contentHash": "0x990dc139037b1e260144e4d6a2841a025c267bcec1e367f87ff417b0ff2f4079",
+      "schemaVersion": "worker-output-v1",
+      "producer": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "limitations": [
+        "公开合成业务数据，不代表真实商户",
+        "仅接受固定字段与已定义日期格式",
+        "同一 record_id 的冲突记录立即拒绝"
+      ]
+    },
+    {
+      "artifactId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235-1",
+      "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "attempt": 1,
+      "parentArtifactIds": [
+        "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19-1"
+      ],
+      "URI": "http://127.0.0.1:3410/api/artifacts/0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235-1",
+      "contentHash": "0x1e28bd06456c35b6c857a72818ce7410c1ff63d234744fdcaa13f55b516967ef",
+      "schemaVersion": "worker-output-v1",
+      "producer": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+      "limitations": [
+        "公开合成业务数据，不代表真实商户",
+        "仅接受固定字段与已定义日期格式",
+        "同一 record_id 的冲突记录立即拒绝"
+      ]
+    }
+  ],
+  "assessments": [
+    {
+      "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "attempt": 1,
+      "verdict": "PASS",
+      "checks": [
+        {
+          "checkId": "original-bytes",
+          "passed": true,
+          "message": "原始输入与所有产物字节摘要相符"
+        },
+        {
+          "checkId": "schema-and-lineage",
+          "passed": true,
+          "message": "角色 schema、父产物与已验收上游版本相符"
+        },
+        {
+          "checkId": "trusted-recomputation",
+          "passed": true,
+          "message": "由原始 CSV 重算通过；指标与 claims 引用相符"
+        }
+      ],
+      "evidenceURI": "http://127.0.0.1:3410/api/tasks/0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19/assessments/1/evidence",
+      "evidenceHash": "0x6b0d595e9d363ef30cf318a34403a88d77a383d0c510895df4ca8e1291ae26fd",
+      "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x5af1cbadb825aa29885c62cde5fe8c272a254aba09279f649f7ae43bee01adf4",
+        "blockNumber": "17603",
+        "status": "CONFIRMED",
+        "signer": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "events": [
+          {
+            "eventId": "31337:0x5af1cbadb825aa29885c62cde5fe8c272a254aba09279f649f7ae43bee01adf4:0",
+            "logIndex": 0,
+            "blockNumber": "17603",
+            "txHash": "0x5af1cbadb825aa29885c62cde5fe8c272a254aba09279f649f7ae43bee01adf4",
+            "eventName": "OutcomeRecorded",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+              "attempt": 1,
+              "assignee": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+              "role": "ANALYSIS",
+              "passed": true,
+              "artifactHash": "0x990dc139037b1e260144e4d6a2841a025c267bcec1e367f87ff417b0ff2f4079",
+              "evidenceHash": "0x6b0d595e9d363ef30cf318a34403a88d77a383d0c510895df4ca8e1291ae26fd",
+              "evidenceURI": "http://127.0.0.1:3410/api/tasks/0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19/assessments/1/evidence",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "attempt": 1,
+      "verdict": "PASS",
+      "checks": [
+        {
+          "checkId": "original-bytes",
+          "passed": true,
+          "message": "原始输入与所有产物字节摘要相符"
+        },
+        {
+          "checkId": "schema-and-lineage",
+          "passed": true,
+          "message": "角色 schema、父产物与已验收上游版本相符"
+        },
+        {
+          "checkId": "trusted-recomputation",
+          "passed": true,
+          "message": "由原始 CSV 重算通过；指标与 claims 引用相符"
+        }
+      ],
+      "evidenceURI": "http://127.0.0.1:3410/api/tasks/0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372/assessments/1/evidence",
+      "evidenceHash": "0x0b68f45fd4a583e73cc542ff3f309751c23910d53552e69c475bfb4a3496b7c0",
+      "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x301e1da5e874203fdeab49f01991338e17e5ced8710f5e12f242bf2450020c84",
+        "blockNumber": "11321",
+        "status": "CONFIRMED",
+        "signer": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "events": [
+          {
+            "eventId": "31337:0x301e1da5e874203fdeab49f01991338e17e5ced8710f5e12f242bf2450020c84:0",
+            "logIndex": 0,
+            "blockNumber": "11321",
+            "txHash": "0x301e1da5e874203fdeab49f01991338e17e5ced8710f5e12f242bf2450020c84",
+            "eventName": "OutcomeRecorded",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+              "attempt": 1,
+              "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+              "role": "DATA",
+              "passed": true,
+              "artifactHash": "0xd0b087edc6060b5fe03201f1299a4ca1e535407de3ec894bf4fcca77e5b548b7",
+              "evidenceHash": "0x0b68f45fd4a583e73cc542ff3f309751c23910d53552e69c475bfb4a3496b7c0",
+              "evidenceURI": "http://127.0.0.1:3410/api/tasks/0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372/assessments/1/evidence",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "attempt": 1,
+      "verdict": "PASS",
+      "checks": [
+        {
+          "checkId": "original-bytes",
+          "passed": true,
+          "message": "原始输入与所有产物字节摘要相符"
+        },
+        {
+          "checkId": "schema-and-lineage",
+          "passed": true,
+          "message": "角色 schema、父产物与已验收上游版本相符"
+        },
+        {
+          "checkId": "trusted-recomputation",
+          "passed": true,
+          "message": "由原始 CSV 重算通过；指标与 claims 引用相符"
+        }
+      ],
+      "evidenceURI": "http://127.0.0.1:3410/api/tasks/0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235/assessments/1/evidence",
+      "evidenceHash": "0x42a478c0c81c354a181ecf4c2631502dd5a8787e69155e2798de683fb3aa7ab4",
+      "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x7d2c5a3cf11cec891e244efd45fc8ab861a31b8b9bb736cf9926061748389bbf",
+        "blockNumber": "18487",
+        "status": "CONFIRMED",
+        "signer": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "events": [
+          {
+            "eventId": "31337:0x7d2c5a3cf11cec891e244efd45fc8ab861a31b8b9bb736cf9926061748389bbf:0",
+            "logIndex": 0,
+            "blockNumber": "18487",
+            "txHash": "0x7d2c5a3cf11cec891e244efd45fc8ab861a31b8b9bb736cf9926061748389bbf",
+            "eventName": "OutcomeRecorded",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+              "attempt": 1,
+              "assignee": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+              "role": "REPORT",
+              "passed": true,
+              "artifactHash": "0x1e28bd06456c35b6c857a72818ce7410c1ff63d234744fdcaa13f55b516967ef",
+              "evidenceHash": "0x42a478c0c81c354a181ecf4c2631502dd5a8787e69155e2798de683fb3aa7ab4",
+              "evidenceURI": "http://127.0.0.1:3410/api/tasks/0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235/assessments/1/evidence",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "handoffs": [
+    {
+      "handoffId": "0b41d22a-9c5d-468d-855f-cc9325480af6",
+      "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+      "artifactId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19-1",
+      "fromTaskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "toTaskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "status": "ACCEPTED",
+      "reason": "已下载并检查相同版本的已验收上游文件、schema 与原始字节摘要。",
+      "contentHash": "0x990dc139037b1e260144e4d6a2841a025c267bcec1e367f87ff417b0ff2f4079",
+      "schemaVersion": "worker-output-v1",
+      "createdAt": "2026-10-17T09:19:08.940Z"
+    },
+    {
+      "handoffId": "ebc01289-b687-4988-a407-fa48e9a7e2eb",
+      "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+      "artifactId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372-1",
+      "fromTaskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "toTaskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "status": "ACCEPTED",
+      "reason": "已下载并检查相同版本的已验收上游文件、schema 与原始字节摘要。",
+      "contentHash": "0xd0b087edc6060b5fe03201f1299a4ca1e535407de3ec894bf4fcca77e5b548b7",
+      "schemaVersion": "worker-output-v1",
+      "createdAt": "2026-10-17T09:07:48.196Z"
+    }
+  ],
+  "decisions": [
+    {
+      "decisionId": "1043f1c9-bb63-484b-9c22-99abb154efc2",
+      "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "attempt": 1,
+      "role": "ANALYSIS",
+      "policyVersion": "role-rep-v1",
+      "repBlockNumber": "11510",
+      "evaluatedAt": "2026-10-17T09:07:52.843Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:07:49.444Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "roles": [
+            "ANALYSIS"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+          "lastSeenAt": "2026-10-17T09:07:50.460Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "roles": [
+            "REPORT"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+          "lastSeenAt": "2026-10-17T09:07:38.200Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:07:43.572Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ],
+      "reputations": [
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "role": "ANALYSIS",
+          "passCount": 0,
+          "failCount": 0,
+          "blockNumber": "11510",
+          "confirmed": true
+        }
+      ],
+      "candidateScores": [
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "role": "ANALYSIS",
+          "passCount": 0,
+          "failCount": 0,
+          "sampleSize": 0,
+          "reputation": 0.5,
+          "availability": 1,
+          "score": 0.6000000000000001,
+          "activeTasks": 0,
+          "maxConcurrency": 1
+        }
+      ],
+      "excludedReasons": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "reasons": [
+            "ROLE_MISMATCH"
+          ]
+        },
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "reasons": [
+            "ROLE_MISMATCH"
+          ]
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "reasons": [
+            "ROLE_MISMATCH"
+          ]
+        }
+      ],
+      "selectedAgentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "selectionReason": "按 role-rep-v1 排名第一；角色 ANALYSIS；PASS 0，FAIL 0；R=0.5，A=1，score=0.6000000000000001；同分按 agentId 升序",
+      "decisionHash": "0x4d666f31fbc7ff2f26c344bb136b2a517aaddfdc07e105da806e82e99e42e78b"
+    },
+    {
+      "decisionId": "1b9a0227-8d70-4379-8704-3be875c961be",
+      "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "attempt": 1,
+      "role": "REPORT",
+      "policyVersion": "role-rep-v1",
+      "repBlockNumber": "17771",
+      "evaluatedAt": "2026-10-17T09:19:14.659Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:19:11.338Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "roles": [
+            "ANALYSIS"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+          "lastSeenAt": "2026-10-17T09:19:01.018Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "roles": [
+            "REPORT"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+          "lastSeenAt": "2026-10-17T09:19:12.265Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:19:10.202Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ],
+      "reputations": [
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "role": "REPORT",
+          "passCount": 0,
+          "failCount": 0,
+          "blockNumber": "17771",
+          "confirmed": true
+        }
+      ],
+      "candidateScores": [
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "role": "REPORT",
+          "passCount": 0,
+          "failCount": 0,
+          "sampleSize": 0,
+          "reputation": 0.5,
+          "availability": 1,
+          "score": 0.6000000000000001,
+          "activeTasks": 0,
+          "maxConcurrency": 1
+        }
+      ],
+      "excludedReasons": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "reasons": [
+            "ROLE_MISMATCH"
+          ]
+        },
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "reasons": [
+            "ROLE_MISMATCH"
+          ]
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "reasons": [
+            "ROLE_MISMATCH"
+          ]
+        }
+      ],
+      "selectedAgentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+      "selectionReason": "按 role-rep-v1 排名第一；角色 REPORT；PASS 0，FAIL 0；R=0.5，A=1，score=0.6000000000000001；同分按 agentId 升序",
+      "decisionHash": "0x2dace1eb1659f74d78300f0a0399f775276930f7ba8fb2b5e3aa9d39b5ce3ce0"
+    },
+    {
+      "decisionId": "ced4935e-7c5a-4d32-b014-1e78d25cf70a",
+      "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "attempt": 1,
+      "role": "DATA",
+      "policyVersion": "role-rep-v1",
+      "repBlockNumber": "10735",
+      "evaluatedAt": "2026-10-17T09:06:28.939Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:06:21.901Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "roles": [
+            "ANALYSIS"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+          "lastSeenAt": "2026-10-17T09:06:22.926Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "roles": [
+            "REPORT"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+          "lastSeenAt": "2026-10-17T09:06:19.698Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:06:20.861Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ],
+      "reputations": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "role": "DATA",
+          "passCount": 0,
+          "failCount": 0,
+          "blockNumber": "10735",
+          "confirmed": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "role": "DATA",
+          "passCount": 0,
+          "failCount": 0,
+          "blockNumber": "10735",
+          "confirmed": true
+        }
+      ],
+      "candidateScores": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "role": "DATA",
+          "passCount": 0,
+          "failCount": 0,
+          "sampleSize": 0,
+          "reputation": 0.5,
+          "availability": 1,
+          "score": 0.6000000000000001,
+          "activeTasks": 0,
+          "maxConcurrency": 1
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "role": "DATA",
+          "passCount": 0,
+          "failCount": 0,
+          "sampleSize": 0,
+          "reputation": 0.5,
+          "availability": 1,
+          "score": 0.6000000000000001,
+          "activeTasks": 0,
+          "maxConcurrency": 1
+        }
+      ],
+      "excludedReasons": [
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "reasons": [
+            "ROLE_MISMATCH"
+          ]
+        },
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "reasons": [
+            "ROLE_MISMATCH"
+          ]
+        }
+      ],
+      "selectedAgentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+      "selectionReason": "按 role-rep-v1 排名第一；角色 DATA；PASS 0，FAIL 0；R=0.5，A=1，score=0.6000000000000001；同分按 agentId 升序",
+      "decisionHash": "0xbad1604dbbb635e0a9d4ebdf50650f2bd0351a1e652d4e7a6743b8acd3a1fa8e"
+    }
+  ],
+  "taskReceipts": [
+    {
+      "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "attempt": 1,
+      "operation": "ASSIGN",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x2ad9c092b20f01fd0555fd8d6e7ee45e572afc87a3621e00cf6539ca38a93fbb",
+        "blockNumber": "11553",
+        "status": "CONFIRMED",
+        "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+        "events": [
+          {
+            "eventId": "31337:0x2ad9c092b20f01fd0555fd8d6e7ee45e572afc87a3621e00cf6539ca38a93fbb:0",
+            "logIndex": 0,
+            "blockNumber": "11553",
+            "txHash": "0x2ad9c092b20f01fd0555fd8d6e7ee45e572afc87a3621e00cf6539ca38a93fbb",
+            "eventName": "TaskAssigned",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+              "attempt": 1,
+              "role": "ANALYSIS",
+              "assignee": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+              "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+              "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+              "decisionHash": "0x4d666f31fbc7ff2f26c344bb136b2a517aaddfdc07e105da806e82e99e42e78b",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "attempt": 1,
+      "operation": "OUTCOME",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x5af1cbadb825aa29885c62cde5fe8c272a254aba09279f649f7ae43bee01adf4",
+        "blockNumber": "17603",
+        "status": "CONFIRMED",
+        "signer": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "events": [
+          {
+            "eventId": "31337:0x5af1cbadb825aa29885c62cde5fe8c272a254aba09279f649f7ae43bee01adf4:0",
+            "logIndex": 0,
+            "blockNumber": "17603",
+            "txHash": "0x5af1cbadb825aa29885c62cde5fe8c272a254aba09279f649f7ae43bee01adf4",
+            "eventName": "OutcomeRecorded",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+              "attempt": 1,
+              "assignee": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+              "role": "ANALYSIS",
+              "passed": true,
+              "artifactHash": "0x990dc139037b1e260144e4d6a2841a025c267bcec1e367f87ff417b0ff2f4079",
+              "evidenceHash": "0x6b0d595e9d363ef30cf318a34403a88d77a383d0c510895df4ca8e1291ae26fd",
+              "evidenceURI": "http://127.0.0.1:3410/api/tasks/0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19/assessments/1/evidence",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+      "attempt": 1,
+      "operation": "SUBMIT",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0xfa399789ecc7408dab746140d9ab5f2258437fd4e6c0541612e835dea013f343",
+        "blockNumber": "17442",
+        "status": "CONFIRMED",
+        "signer": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+        "events": [
+          {
+            "eventId": "31337:0xfa399789ecc7408dab746140d9ab5f2258437fd4e6c0541612e835dea013f343:0",
+            "logIndex": 0,
+            "blockNumber": "17442",
+            "txHash": "0xfa399789ecc7408dab746140d9ab5f2258437fd4e6c0541612e835dea013f343",
+            "eventName": "ArtifactSubmitted",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19",
+              "attempt": 1,
+              "producer": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+              "artifactHash": "0x990dc139037b1e260144e4d6a2841a025c267bcec1e367f87ff417b0ff2f4079",
+              "artifactURI": "http://127.0.0.1:3410/api/artifacts/0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19-1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "attempt": 1,
+      "operation": "ASSIGN",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x98790e30c8c4463f33d08cb4a8b264673b5a0df317a44bdc98632e72806af043",
+        "blockNumber": "10782",
+        "status": "CONFIRMED",
+        "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+        "events": [
+          {
+            "eventId": "31337:0x98790e30c8c4463f33d08cb4a8b264673b5a0df317a44bdc98632e72806af043:0",
+            "logIndex": 0,
+            "blockNumber": "10782",
+            "txHash": "0x98790e30c8c4463f33d08cb4a8b264673b5a0df317a44bdc98632e72806af043",
+            "eventName": "TaskAssigned",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+              "attempt": 1,
+              "role": "DATA",
+              "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+              "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+              "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+              "decisionHash": "0xbad1604dbbb635e0a9d4ebdf50650f2bd0351a1e652d4e7a6743b8acd3a1fa8e",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "attempt": 1,
+      "operation": "OUTCOME",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x301e1da5e874203fdeab49f01991338e17e5ced8710f5e12f242bf2450020c84",
+        "blockNumber": "11321",
+        "status": "CONFIRMED",
+        "signer": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "events": [
+          {
+            "eventId": "31337:0x301e1da5e874203fdeab49f01991338e17e5ced8710f5e12f242bf2450020c84:0",
+            "logIndex": 0,
+            "blockNumber": "11321",
+            "txHash": "0x301e1da5e874203fdeab49f01991338e17e5ced8710f5e12f242bf2450020c84",
+            "eventName": "OutcomeRecorded",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+              "attempt": 1,
+              "assignee": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+              "role": "DATA",
+              "passed": true,
+              "artifactHash": "0xd0b087edc6060b5fe03201f1299a4ca1e535407de3ec894bf4fcca77e5b548b7",
+              "evidenceHash": "0x0b68f45fd4a583e73cc542ff3f309751c23910d53552e69c475bfb4a3496b7c0",
+              "evidenceURI": "http://127.0.0.1:3410/api/tasks/0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372/assessments/1/evidence",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+      "attempt": 1,
+      "operation": "SUBMIT",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0xc8b81a9c3fc20abc2ee8dec4bf0bead566f60ae23db1d53fb34b327851d0bbdf",
+        "blockNumber": "11195",
+        "status": "CONFIRMED",
+        "signer": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+        "events": [
+          {
+            "eventId": "31337:0xc8b81a9c3fc20abc2ee8dec4bf0bead566f60ae23db1d53fb34b327851d0bbdf:0",
+            "logIndex": 0,
+            "blockNumber": "11195",
+            "txHash": "0xc8b81a9c3fc20abc2ee8dec4bf0bead566f60ae23db1d53fb34b327851d0bbdf",
+            "eventName": "ArtifactSubmitted",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372",
+              "attempt": 1,
+              "producer": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+              "artifactHash": "0xd0b087edc6060b5fe03201f1299a4ca1e535407de3ec894bf4fcca77e5b548b7",
+              "artifactURI": "http://127.0.0.1:3410/api/artifacts/0x74f97fd265701dcf102c034d94f625a246c0756e3d832215c39018ceea052372-1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "attempt": 1,
+      "operation": "ASSIGN",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x4acd428a4558aefba760522385e1e433a18564cabc7dc994855e05ab34ff59da",
+        "blockNumber": "17818",
+        "status": "CONFIRMED",
+        "signer": "0xb73d7c93b34d3e16669c0c602abc98d59853d0d8",
+        "events": [
+          {
+            "eventId": "31337:0x4acd428a4558aefba760522385e1e433a18564cabc7dc994855e05ab34ff59da:0",
+            "logIndex": 0,
+            "blockNumber": "17818",
+            "txHash": "0x4acd428a4558aefba760522385e1e433a18564cabc7dc994855e05ab34ff59da",
+            "eventName": "TaskAssigned",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+              "attempt": 1,
+              "role": "REPORT",
+              "assignee": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+              "inputHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+              "criteriaHash": "0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b",
+              "decisionHash": "0x2dace1eb1659f74d78300f0a0399f775276930f7ba8fb2b5e3aa9d39b5ce3ce0",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "attempt": 1,
+      "operation": "OUTCOME",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0x7d2c5a3cf11cec891e244efd45fc8ab861a31b8b9bb736cf9926061748389bbf",
+        "blockNumber": "18487",
+        "status": "CONFIRMED",
+        "signer": "0xb785fa05decc21bb435fed4078ec6e480ae08171",
+        "events": [
+          {
+            "eventId": "31337:0x7d2c5a3cf11cec891e244efd45fc8ab861a31b8b9bb736cf9926061748389bbf:0",
+            "logIndex": 0,
+            "blockNumber": "18487",
+            "txHash": "0x7d2c5a3cf11cec891e244efd45fc8ab861a31b8b9bb736cf9926061748389bbf",
+            "eventName": "OutcomeRecorded",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+              "attempt": 1,
+              "assignee": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+              "role": "REPORT",
+              "passed": true,
+              "artifactHash": "0x1e28bd06456c35b6c857a72818ce7410c1ff63d234744fdcaa13f55b516967ef",
+              "evidenceHash": "0x42a478c0c81c354a181ecf4c2631502dd5a8787e69155e2798de683fb3aa7ab4",
+              "evidenceURI": "http://127.0.0.1:3410/api/tasks/0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235/assessments/1/evidence",
+              "validator": "0xb785fa05decc21bb435fed4078ec6e480ae08171"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+      "attempt": 1,
+      "operation": "SUBMIT",
+      "receipt": {
+        "chainId": 31337,
+        "contract": "0xda93474b17a98679c905534ad97cd42f99359317",
+        "txHash": "0xedd457d1917872fd9c01aaab2d00a5b908d5623d8da6499611e9529fbcf3ed69",
+        "blockNumber": "18322",
+        "status": "CONFIRMED",
+        "signer": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+        "events": [
+          {
+            "eventId": "31337:0xedd457d1917872fd9c01aaab2d00a5b908d5623d8da6499611e9529fbcf3ed69:0",
+            "logIndex": 0,
+            "blockNumber": "18322",
+            "txHash": "0xedd457d1917872fd9c01aaab2d00a5b908d5623d8da6499611e9529fbcf3ed69",
+            "eventName": "ArtifactSubmitted",
+            "args": {
+              "runId": "0x4e2ccb02376c43d2253389db07bb10215aa3a03e2cd9814009b8a7b44d5a2a0b",
+              "taskId": "0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235",
+              "attempt": 1,
+              "producer": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+              "artifactHash": "0x1e28bd06456c35b6c857a72818ce7410c1ff63d234744fdcaa13f55b516967ef",
+              "artifactURI": "http://127.0.0.1:3410/api/artifacts/0xbd73e08818dc83e146cba68b1892724097a35591943bea3bf0f032bd96035235-1"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-17T09:10:47.263Z",
+  "scope": "LOCAL_EVM_ONLY",
+  "starts": [
+    {
+      "pid": 56460,
+      "startupMs": 3859
+    },
+    {
+      "pid": 55656,
+      "startupMs": 4076
+    }
+  ],
+  "actualNewHonoEntry": true,
+  "missingChainError": "CHAIN_NOT_CONFIGURED",
+  "originalRunRestored": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+  "notesRestored": 2,
+  "announcementsRestored": 3,
+  "eventsRestored": 24,
+  "rawInputRestored": true,
+  "officialMcpClient": true
+}
