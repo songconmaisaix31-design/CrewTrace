@@ -13,15 +13,25 @@
 @supports(animation-timeline:view()){
  .landing .hero-word{animation:word-drift linear both;animation-timeline:view();animation-range:exit 0% exit 100%}
  .landing .signal-scene{animation:scene-drift linear both;animation-timeline:view();animation-range:exit 0% exit 100%}
- .task-panel,.role-card,.network-section{animation:rise-in linear both;animation-timeline:view();animation-range:entry 0% entry 24%}
+ .task-panel,.role-card,.network-section{animation:rise-in linear both;animation-timeline:view();animation-range:entry 0% entry 65%}
+ .scroll-position{position:fixed;left:0;top:0;width:100%;height:3px;z-index:60;background:#d6b0ff;box-shadow:0 0 16px #ae71ff;transform-origin:left;animation:reading-progress linear both;animation-timeline:scroll(root)}
 }
-@keyframes word-drift{to{transform:translateX(100px);opacity:0}}@keyframes scene-drift{to{transform:translateY(90px) scale(.86);opacity:.25}}@keyframes rise-in{from{opacity:.8;transform:translateY(35px)}to{opacity:1;transform:none}}
+@keyframes reading-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes word-drift{to{transform:translateX(230px);opacity:0}}@keyframes scene-drift{to{transform:translateY(180px) rotate(24deg) scale(.65);opacity:.15}}@keyframes rise-in{from{opacity:.45;transform:translateY(90px) scale(.96)}to{opacity:1;transform:none}}
 .hero-stage{overflow:clip}
 .pointer-orbit span{border-color:#e6ceff;box-shadow:0 0 16px #bf8fff55,inset 0 0 12px #bf8fff22}
 .pointer-orbit[data-active=true] span{box-shadow:0 0 26px #bf8fff88,inset 0 0 18px #bf8fff33}
 .pointer-orbit i{box-shadow:0 0 20px #b78aff88}
+.pointer-orbit span{width:52px;height:52px;left:-26px;top:-26px;border-width:1.5px;background:#c497ff0c}
+.pointer-orbit span:after{left:23px;top:23px;width:3px;height:3px}
+.pointer-orbit b{position:absolute;left:-58px;top:-58px;width:116px;height:116px;border-radius:50%;border:1px solid #c293ff40;background:radial-gradient(circle,#b07aff30, #995bff12 45%,transparent 70%);box-shadow:0 0 35px #aa74ff25}
+.pointer-orbit[data-active=true] span{background:#ddbeff16;box-shadow:0 0 35px #c49aff99,inset 0 0 22px #bf8fff44}
+.task-panel:focus-within,.role-card:focus-within{animation:none!important;opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.scroll-position{display:none}}
 @media(max-width:650px){.scene-controls{bottom:65px}}
 @media(min-width:1600px){main{padding:0 70px}}
 @media(max-width:1050px){.topbar{gap:40px}.hero-stage{min-height:620px;max-height:760px}.intro{padding-top:85px}.signal-scene{right:-6%;width:70%;opacity:.8}.intro>div:first-child{max-width:70%}.task-panel{grid-template-columns:minmax(0,1fr) 260px;gap:35px}.role-card{grid-template-columns:70px 140px 1fr;gap:20px}.role-state{grid-column:2/-1;text-align:left}.step{font-size:48px}}
 @media(max-width:650px){main{padding:0 24px}.topbar{padding:15px 24px 0;height:auto;min-height:90px;gap:10px}.topbar nav{height:36px;gap:24px}.brand{font-size:25px}.connection{font-size:10px}.hero-stage{height:740px;min-height:0;max-height:none;margin-bottom:50px}.intro{padding:45px 0 0}.intro>div:first-child{max-width:100%}.intro h1{font-size:36px;line-height:1.25;letter-spacing:-1.6px;max-width:none;margin:23px 0 18px}.lead{font-size:13px;max-width:280px}.hero-link{margin-top:16px;padding:12px 0;gap:35px}.signal-scene{top:300px;right:-24px;left:-24px;width:auto;height:400px;opacity:1}.scene-controls{bottom:12px;right:30px;font-size:10px;gap:18px}.hero-word{font-size:28vw;bottom:0;opacity:.18}.task-panel{grid-template-columns:1fr;gap:28px;padding-bottom:40px}.task-main h2{font-size:29px;line-height:1.4;max-width:300px}.task-main>p{font-size:13px}.task-action{padding:0;border:0;gap:10px}.task-action>.muted{display:none}.deliverable{display:inline-flex;font-size:12px}.task-action .start{margin-top:12px}.sample-picker{margin-top:22px}.file-line{font-size:11px}.role-card{grid-template-columns:50px 1fr;gap:15px;padding:28px 0}.role-top{grid-row:1/4;align-self:start}.step{font-size:39px;letter-spacing:-2px}.role-card h3{font-size:22px}.role-description,.role-state{grid-column:2}.role-state{text-align:left}.workflow{margin-bottom:40px}.network-section{padding-bottom:38px;align-items:flex-start}.network-section h3{font-size:25px}.working .intro{padding-top:32px}.working .intro h1{font-size:28px}.working .hero-stage{margin-bottom:34px}.section-line{gap:6px;margin-bottom:25px}.pointer-orbit{display:none}}
+@media(pointer:fine) and (prefers-reduced-motion:no-preference){.pointer-orbit{display:block}}
+@media(pointer:coarse){.pointer-orbit{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pointer-orbit,.motion-toggle{display:none}*,*::before,*::after{animation:none!important;transition:none!important}.signal-scene,.hero-word{transform:none!important}}
