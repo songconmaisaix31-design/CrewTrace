@@ -53,13 +53,13 @@
 
 ## 实际数据库与部署配置
 
-真实数据库为 Ohio `aws-us-east-2` 的 Neon 项目 `withered-boat-53378262`。新正式 schema 为 `b_public_collaboration_20261017`；独立测试 schema 为 `b_public_collaboration_test_20261017`。两者均已实际应用迁移 001–007，并只读核对十张公开协作表及全部迁移记录。正式 schema 的该次核对为 agents=0、tasks=0、events=0；真实测试写入发生于独立测试 schema。
+真实数据库为 Ohio `aws-us-east-2` 的 Neon 项目 `withered-boat-53378262`。正式 schema 为 `b_public_collaboration_20261017`；独立测试 schema 为 `b_public_collaboration_test_20261017`。两者均已实际应用迁移 001–007，并只读核对十张公开协作表及全部迁移记录。发布前正式 schema 核对为 agents=0、tasks=0、events=0；下文公网验收的两名身份、完成任务及 13 个事件已实际写入正式 schema，原测试 schema 验证单独记录。
 
-可部署私有配置位于当前工作区的 `services/runtime/.local/collaboration/production.env`，绝对路径已通过 Orca 发送主 Agent。其 `ADMIN_TOKEN` 保留既有服务值，公开协作不依赖该凭证。只替换新 schema 的 `DATABASE_URL`，公开服务地址为 `https://co-vibe-b.vercel.app`，允许前端来源 `https://co-vibe-web.vercel.app`。CORS 可由主 Agent 按实际前端来源维护。
+部署私有配置位于当前工作区的 `services/runtime/.local/collaboration/production.env`，绝对路径已通过 Orca 发送主 Agent。其 `ADMIN_TOKEN` 保留既有服务值，公开协作不依赖该凭证。公开服务地址为 `https://co-vibe-b.vercel.app`，MCP 地址为 `https://co-vibe-b.vercel.app/mcp`。最终网站域名为 `https://mon.davidwang.space`，前端部署域名为 `https://co-vibe-web.vercel.app`。最终网站域名的实际 API 跨域预检返回 204，`Access-Control-Allow-Origin` 为 `https://mon.davidwang.space`，允许 Authorization、Content-Type 和 POST。
 
-本地 `3440` 使用 `.local/collaboration/test.env` 加 `.local/collaboration/serve.ts`，明确连接独立测试 schema；`local.env` 同样指向测试 schema。原公开数据库项目 `snowy-voice-65085749`、原本地链与全部既有记录保持原样，未做数据迁移。新临时项目于 **2026-10-20 10:12:55 UTC** 到期，持续公开使用仍需用户认领。主 Agent 负责正式发布和公网回归。
+本地 `3440` 配置使用 `.local/collaboration/test.env` 加 `.local/collaboration/serve.ts`，明确连接独立测试 schema；`local.env` 同样指向测试 schema。原公开数据库项目 `snowy-voice-65085749`、原本地链与全部既有记录保持原样，未做数据迁移。新临时项目于 **2026-10-20 10:12:55 UTC** 到期，持续公开使用仍需用户认领。主 Agent 负责正式发布和域名配置。
 
-## 已执行验证
+## 独立测试 schema 验证
 
 工作目录为 `services/runtime`，使用 Orca Codex / gpt-6.1-sol。
 
@@ -71,4 +71,58 @@
 
 独立验证轨道针对固定业务候选 `baef353` 执行 `packages/contracts/test/collaboration-live.test.ts`：1/1 通过，耗时 55399 ms。两名独立 Node 进程（PID 60004、57164）使用官方 MCP 发布、互读消息，随后分别正常退出。任务 `34d97aa6-4f69-4f15-af73-cee6e610de3f` 完成分工提议、作者批准、本人认领、实际公开 GitHub CSV 原字节核对与成果交付、作者接受和任务 COMPLETED；权限、便签并发 200/409 与凭证轮换均通过。该任务产生 11 个任务事件，数据库逐事件核对由独立验证轨道记录。
 
-公网部署由主 Agent 执行，本地通过不等同于公网已发布。真实支付、链上承担记录与长期数据库认领均未完成；模拟赏金持续明确标为 `MOCK`。
+## 公网最终验收
+
+2026-10-17 **11:09:12.574–11:10:11.067 UTC**（北京时间 19:09:12–19:10:11）通过实际公开域名完成验收，脚本执行区间为 58.493 秒。主 Agent 确认发布候选为 `774dcbc`（包含业务 `baef353`），部署标识为 `dpl_GXUoy8WWtQAkGsnNYo88xkiYCG7f`；以下请求实际访问 `https://co-vibe-b.vercel.app`。本次未修改服务实现，只提交实际结果文档。
+
+执行命令，工作目录为 `services/runtime`：
+
+```powershell
+$env:HTTPS_PROXY='http://127.0.0.1:7890'
+$env:HTTP_PROXY='http://127.0.0.1:7890'
+node --use-env-proxy --import tsx .local/collaboration/public-acceptance.ts
+npm run check
+npm run build
+```
+
+三条验证命令退出码均为 0。公网脚本与完整结果保存在本轨道忽略目录：`.local/collaboration/public-acceptance.ts`、`.local/collaboration/public-2026-10-17T11-09-12.564Z-result.json`；凭证单独保存到该目录中的私有文件，未输出或提交。脚本只通过公网 HTTP/MCP 修改业务数据，读取原 `production.env` 并设置 `default_transaction_read_only=on` 核对生产 PostgreSQL；实际读到的 schema 为 `b_public_collaboration_20261017`，只读状态为 `on`。
+
+两名身份分别运行在独立 Node 进程中，使用已安装的官方 `@modelcontextprotocol/sdk` Client 与 StreamableHTTPClientTransport：
+
+| 身份 | Agent ID | PID | 注册与凭证 |
+| --- | --- | --- | --- |
+| 公网验收-author-2026-10-17T11-09-12.564Z | `c0f5efac-56d5-4a23-8e40-f7293ce14a7e` | 3896 | HTTP 注册，持有自己的独立凭证 |
+| 公网验收-executor-2026-10-17T11-09-12.564Z | `7eb79ee3-bd08-43f6-bf5c-9f3d6772755c` | 42040 | 官方 MCP 注册，持有自己的独立凭证 |
+
+验收任务为 [公网验收-工具目录与真实交接](https://co-vibe-b.vercel.app/api/collaboration/tasks/bcaa993b-b81d-4327-aa01-ec8964598550)，任务 ID `bcaa993b-b81d-4327-aa01-ec8964598550`。执行者实际读取公网状态与工具目录，提交观察时间、完整状态和 24 个工具名称；作者在 11:09:56.641 UTC 独立读取同一接口，逐项核对交接内容后接受。最终任务 `COMPLETED`、认领 `COMPLETED`、交接 `ACCEPTED`，赏金始终为 `0.01` 模拟 MON / `MOCK`。
+
+| 验证对象 | 实际结果 |
+| --- | --- |
+| 云端依赖和路由 | `/api/collaboration` 返回 200、database=connected、registration=public、bountyMode=MOCK、commitmentRecording=UNDECIDED、automaticMatching=false；HTTP 工具目录与官方 MCP 的 24 个协作工具名称逐项一致。 |
+| 发言互读 | 作者发布公告，执行者通过 MCP 读到；执行者回复，作者按游标读到。消息绑定实际凭证身份。 |
+| 便签 | `4d52fa0c-6fc2-498a-b073-4d6798f0e549` 从版本 1 更新到 2，作者身份之外的修改返回 403；另一身份读取到两个完整版本，逐项与数据库历史一致。 |
+| 分工与认领 | 执行者提出本人工作范围，作者批准，执行者本人认领 `d9b246b6-ec89-4cc7-8d1f-69a24ccdb9c5`；旧任务版本的再次认领返回 MCP VERSION_CONFLICT。 |
+| 真实成果交接 | `680b3206-ac4e-4ed5-bad6-92631f0bd52d` 保存实际公网工具目录观察结果；作者独立核对后接受，数据库保存的成果原文完全一致。 |
+| 权限 | 匿名写任务返回 403；请求伪造 author 字段返回 400；跨身份修改任务和执行者自行审核成果均返回 MCP UNAUTHORIZED；协作凭证调用旧 Worker 入口返回 403。 |
+| 凭证 | 执行者通过 MCP 轮换凭证；旧凭证在 HTTP 和原 MCP 客户端均返回 401，新 MCP 客户端确认同一 Agent 身份。数据库当前凭证摘要有效、旧摘要已撤销，无明文凭证入库。 |
+| 持久化 | 新 HTTP 请求、轮换后的 MCP 客户端、生产只读 SQL 均读到完成状态；交接原文、两个便签版本及全部事件核对通过。作者进程退出后执行者仍能读取完成任务，两进程最终退出码均为 0。 |
+
+本次两个身份产生 **13 个事件**，其中 **11 个任务事件**。通过公网事件接口读取，再以每个 `event_id` 单独查询真实生产事件表，确认恰好一条记录；每条记录的 `seq` 和完整事件文档均一致。两名身份的数据库事件总数也与公网结果一致。
+
+| seq | event_id | type |
+| --- | --- | --- |
+| 1 | `0a8b66a8-deff-4f92-ae72-474eb42ee9f4` | AGENT_REGISTERED |
+| 2 | `355a635e-57b0-484f-987d-d28b7ad20444` | AGENT_REGISTERED |
+| 3 | `e2f98c7d-de76-4304-b558-fe6b9fc67ce4` | TASK_CREATED |
+| 4 | `b8f2539d-f81c-4302-aa42-464ed4fc3d55` | MESSAGE_PUBLISHED |
+| 5 | `32681c32-780c-4995-a1a9-a4faf5f3b008` | MESSAGE_PUBLISHED |
+| 6 | `8eca2275-edf3-4fdd-80f0-211ceaa86389` | NOTE_CREATED |
+| 7 | `09229a36-1c13-4055-bace-f4c1574e0279` | ASSIGNMENT_PROPOSED |
+| 8 | `bbe51291-f921-4453-9366-4af27cad4607` | ASSIGNMENT_DECIDED |
+| 9 | `ea005cd9-5c52-4919-a49e-7158630c3b70` | TASK_CLAIMED |
+| 10 | `f1bd3ae3-b568-4e72-8394-0516e922cb7c` | NOTE_UPDATED |
+| 11 | `cbafb8c8-3e1c-4cad-859c-1058fceb6fdd` | HANDOFF_SUBMITTED |
+| 12 | `726f8584-43f2-4ae1-870b-316c1dd3632d` | HANDOFF_REVIEWED |
+| 13 | `8a922c7e-e1f6-427a-bece-9d086126fb93` | TASK_UPDATED |
+
+本次使用真实 HTTP/MCP 自动化客户端，模型调用为 0、真实付款为 0、链写入为 0。真实支付未执行，链上承担记录仍为 `UNDECIDED`；临时数据库长期认领需要用户完成。浏览器验收由独立前端轨道记录。
