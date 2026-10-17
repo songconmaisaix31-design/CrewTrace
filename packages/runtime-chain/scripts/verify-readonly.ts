@@ -1,0 +1,62 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { createPublicClient, http, keccak256 } from "viem";
+import { monadTestnet } from "viem/chains";
+import { AddressSchema, HashSchema } from "../../contracts/src/index.ts";
+import { createChainPort } from "../src/index.ts";
+
+const deployment = JSON.parse(await readFile(new URL("../../../deployments/monad-testnet.json", import.meta.url), "utf8"));
+const rpcUrl = process.env.CHAIN_RPC_URL ?? "https://testnet-rpc.monad.xyz";
+const client = createPublicClient({ chain: monadTestnet, transport: http(rpcUrl, { retryCount: 0, timeout: 15_000 }) });
+const address = AddressSchema.parse(deployment.contractAddress);
+const chainId = await client.getChainId();
+assert.equal(chainId, deployment.chainId);
+console.log(JSON.stringify({ check: "chainId", chainId }));
+const code = await client.getCode({ address, blockNumber: BigInt(deployment.deploymentBlock) });
+assert.ok(code && code !== "0x");
+assert.equal(keccak256(code), deployment.codeHash);
+console.log(JSON.stringify({ check: "deploymentBytecode", blockNumber: deployment.deploymentBlock, codeHash: keccak256(code) }));
+const deployed = await client.getTransactionReceipt({ hash: HashSchema.parse(deployment.deploymentTx) });
+assert.equal(deployed.status, "success");
+assert.equal(deployed.blockNumber.toString(), deployment.deploymentBlock);
+assert.equal(deployed.contractAddress?.toLowerCase(), address);
+console.log(JSON.stringify({ check: "deploymentReceipt", txHash: deployed.transactionHash, blockNumber: deployed.blockNumber.toString(), status: deployed.status }));
+
+const port = await createChainPort({ rpcUrl, chainId, contractAddress: address, deploymentBlock: deployment.deploymentBlock });
+const snapshot = await port.getSnapshot();
+console.log(JSON.stringify({ check: "finalizedSnapshot", ...snapshot }));
+const delivered = JSON.parse(await readFile(new URL("../test/fixtures/a-smoke-testnet.json", import.meta.url), "utf8"));
+for (const eventName of ["TaskAssigned", "ArtifactSubmitted"] as const) {
+  const source = delivered.receipts.find((value: { events: { eventName: string }[] }) => value.events.some(event => event.eventName === eventName));
+  assert.ok(source);
+  const [actual] = await port.getReceipts({ txHash: HashSchema.parse(source.txHash), snapshot });
+  assert.equal(actual?.status, "CONFIRMED");
+  assert.ok(actual.events?.some(event => event.eventName === eventName));
+  console.log(JSON.stringify({ check: eventName, receipt: actual }));
+}
+// A 交付中第一轮 DATA 的真实验收交易，仅读取既有证据。
+const txHash = HashSchema.parse("0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c");
+const receipts = await port.getReceipts({ txHash, snapshot });
+const receipt = receipts[0]!;
+assert.equal(receipt.status, "CONFIRMED");
+assert.equal(receipt.signer, deployment.validator.toLowerCase());
+const event = receipt.events?.find(value => value.eventName === "OutcomeRecorded");
+assert.ok(event && event.eventName === "OutcomeRecorded");
+assert.equal(event.eventId, `${chainId}:${txHash}:${event.logIndex}`);
+console.log(JSON.stringify({ check: "outcomeReceipt", receipt }));
+const task = await port.getTask({ ...snapshot, taskId: event.args.taskId });
+assert.ok(task);
+assert.equal(task.chainRunId, event.args.runId);
+assert.equal(task.artifactHash, event.args.artifactHash);
+assert.equal(task.evidenceHash, event.args.evidenceHash);
+const reputation = await port.getRoleReputation({ ...snapshot, agentId: event.args.assignee, role: event.args.role });
+assert.equal(reputation.blockNumber, snapshot.blockNumber);
+assert.ok(reputation.passCount >= 1);
+console.log(JSON.stringify({ check: "taskAndRoleReputation", task, reputation }));
+const missing = await port.getTask({ ...snapshot, taskId: HashSchema.parse(`0x${"00".repeat(32)}`) });
+assert.equal(missing, null);
+const before = { chainId, blockNumber: deployment.deploymentBlock };
+const history = await port.getRoleReputation({ ...before, agentId: event.args.assignee, role: event.args.role });
+assert.equal(history.passCount, 0);
+assert.equal(history.failCount, 0);
+console.log(JSON.stringify({ check: "historicalZeroAndMissingTask", history, missing }));

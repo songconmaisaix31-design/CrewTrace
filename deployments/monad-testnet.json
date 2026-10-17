@@ -1,0 +1,12 @@
+{
+  "chainId": 10143,
+  "contractAddress": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+  "deploymentTx": "0x5bdb6afff9b72a15175f0124b922a0c40e86396663f5b82044c223dec0b163fd",
+  "deploymentBlock": "71765088",
+  "explorer": "https://testnet.monadscan.com",
+  "version": "ledger-v1",
+  "sourceCommit": "3eb61cb3ca588852e4c925e7004515de8d67bfcf",
+  "coordinator": "0x02f15C12e9DEd7d44ca4c6a22a652F7d229ed914",
+  "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe",
+  "codeHash": "0x1f6512e60af3c66e4ce468cc7745e0465d4144208ff1d9e4b5d0fc75c1f706a2"
+}
