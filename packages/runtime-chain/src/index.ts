@@ -40,6 +40,27 @@ export type ChainOperation =
   | { operation: "OUTCOME"; input: OutcomeSubmission };
 export type PreparedChainTransaction = ChainOperation & { receipt: ChainReceipt; serializedTransaction: Hex };
 
+export function withPreparedTransaction(
+  account: LocalAccount,
+  network: { chainId: number; contractAddress: `0x${string}` },
+  operation: ChainOperation,
+  persist: ChainPortConfig["onPreparedTransaction"],
+): LocalAccount {
+  return {
+    ...account,
+    async signTransaction(transaction, options) {
+      const serializedTransaction = await account.signTransaction(transaction, options);
+      if (persist) {
+        await persist({ ...operation, serializedTransaction, receipt: {
+          chainId: network.chainId, contract: AddressSchema.parse(network.contractAddress), txHash: keccak256(serializedTransaction),
+          blockNumber: null, status: "PENDING", signer: AddressSchema.parse(account.address),
+        } });
+      }
+      return serializedTransaction;
+    },
+  };
+}
+
 export function toLedgerRole(role: Role): LedgerRole {
   if (role === "DATA") return LedgerRole.DATA;
   if (role === "ANALYSIS") return LedgerRole.ANALYSIS;
@@ -110,19 +131,7 @@ export async function createChainPort(config: ChainPortConfig): Promise<RuntimeC
   }
   async function writer(account: LocalAccount | undefined, name: string, operation: ChainOperation): Promise<LedgerClient> {
     if (!account) throw new ApplicationError("CHAIN_NOT_CONFIGURED", `缺少 ${name} 签名账户`);
-    const signingAccount: LocalAccount = {
-      ...account,
-      async signTransaction(transaction, options) {
-        const serializedTransaction = await account.signTransaction(transaction, options);
-        if (config.onPreparedTransaction) {
-          await config.onPreparedTransaction({ ...operation, serializedTransaction, receipt: {
-            chainId: config.chainId, contract: contractAddress, txHash: keccak256(serializedTransaction),
-            blockNumber: null, status: "PENDING", signer: AddressSchema.parse(account.address),
-          } });
-        }
-        return serializedTransaction;
-      },
-    };
+    const signingAccount = withPreparedTransaction(account, { chainId: config.chainId, contractAddress }, operation, config.onPreparedTransaction);
     return createLedgerClient({ ...base, walletClient: createWalletClient({ chain, account: signingAccount, transport: transport() }) });
   }
   async function snapshot(input?: SnapshotRead): Promise<SnapshotRead> {
