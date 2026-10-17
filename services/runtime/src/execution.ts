@@ -139,9 +139,7 @@ export class Execution {
   }
   async submit(principal: Principal,taskId: string,input: unknown) {
     node(principal);
-    const task = await this.finalizeSubmission(principal,taskId,input);
-    if (this.app.chain && this.app.validator) await this.app.progress(task.runId);
-    return task;
+    return this.finalizeSubmission(principal,taskId,input);
   }
   private async finalizeSubmission(principal: Principal | null,taskId: string,input: unknown) {
     const request = SubmitTaskRequestSchema.parse(input);

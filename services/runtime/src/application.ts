@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { z } from 'zod';
 import { verifyMessage } from 'viem';
 import type { PoolClient } from '@neondatabase/serverless';
 import {
@@ -40,6 +41,11 @@ export class Application {
   async progress(runId?: string) {
     const { FixedWorkflow } = await import('./workflow.ts');
     return new FixedWorkflow(this).advance(runId);
+  }
+  async advanceWork(principal: Principal,input: unknown) {
+    node(principal);
+    z.strictObject({}).parse(input);
+    return this.progress();
   }
   requireChain() {
     if (!this.chain) throw new AppError(503,'CHAIN_NOT_CONFIGURED','A 的真实链适配器尚未配置');
@@ -126,7 +132,6 @@ export class Application {
       await client.query('UPDATE agents SET profile=$2 WHERE id=$1',[identity.agentId,updated]);
       return updated;
     });
-    if (this.chain && this.validator) await this.progress();
     return updated;
   }
   async createRun(principal: Principal,input: unknown) {
@@ -147,7 +152,6 @@ export class Application {
       await this.store.event(client,'RUN_CREATED',run.runId,null,null,{ inputHash: run.inputHash });
       return run;
     });
-    if (this.chain && this.validator) await this.progress(created.runId);
     const { runtimeStatus: _runtimeStatus,taskRuntime: _taskRuntime,...current } = await this.run(created.runId);
     return current;
   }

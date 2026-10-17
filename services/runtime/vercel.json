@@ -3,6 +3,6 @@
   "installCommand": "npm ci --prefix ../../packages/contracts && npm ci --prefix ../../packages/chain && npm ci --prefix ../../packages/runtime-chain && npm ci --prefix ../../workers && npm ci",
   "buildCommand": "npm run build",
   "functions": {
-    "src/index.ts": { "includeFiles": "../../workers/criteria.json" }
+    "src/index.ts": { "includeFiles": "../../workers/criteria.json", "maxDuration": 120 }
   }
 }

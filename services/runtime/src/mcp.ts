@@ -40,6 +40,7 @@ export async function mcpResponse(app: Application, principal: Principal, reques
   });
   register('get_jobs','读取当前凭证节点的任务',z.strictObject({}),()=>app.jobs(principal));
   register('heartbeat','报告当前节点在线状态',HeartbeatRequestSchema,input=>app.heartbeat(principal,input));
+  register('advance_work','节点推进管理员已创建的固定运行',z.strictObject({}),input=>app.advanceWork(principal,input));
   register('accept_task','启动已指派任务，校验已接受的上游交接',AcceptTaskRequestSchema.extend({ taskId: HashSchema }),input=>execution.accept(principal,input.taskId,input.attempt));
   register('reserve_model_call','在实际模型调用前预留预算',ModelCallRequestSchema.extend({ taskId: HashSchema }),input=>execution.reserveModelCall(principal,input.taskId,input.attempt));
   register('upload_artifact','持久化原始 UTF-8 产物并验证摘要',ArtifactUploadRequestSchema,input=>execution.upload(principal,input));
