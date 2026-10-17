@@ -55,8 +55,9 @@ export class Execution {
     const decision = await this.app.store.write(async client => {
       const task = await this.app.task(taskId,client);
       if (task.status !== 'OPEN') throw new AppError(409,'INVALID_STATE','任务已被指派');
+      if ((await this.app.run(task.runId,client)).runtimeStatus!=='ACTIVE') throw new AppError(409,'INVALID_STATE','运行当前不能指派任务');
       assertUpstreamVerified(task,await this.dependencies(task,client),context);
-      const previous = (await client.query("SELECT document,raw_bytes FROM decisions WHERE task_id=$1 ORDER BY document->>'evaluatedAt' DESC,id DESC LIMIT 1",[taskId])).rows[0];
+      const previous = (await client.query("SELECT document,raw_bytes FROM decisions WHERE task_id=$1 AND document->>'attempt'=$2 ORDER BY document->>'evaluatedAt' DESC,id DESC LIMIT 1",[taskId,String(task.attempt)])).rows[0];
       if (previous?.document.selectedAgentId) {
         const decision = AssignmentDecisionSchema.parse(previous.document);
         if (!previous.raw_bytes || hashUtf8(previous.raw_bytes) !== decision.decisionHash) throw new AppError(409,'ARTIFACT_MISMATCH','已保存决策摘要不匹配');
@@ -90,7 +91,7 @@ export class Execution {
       } else {
         const existing = await chain.getTask({ ...await this.snapshot(),taskId: task.taskId });
         if (existing) throw new AppError(503,'CHAIN_DATA_MISSING','链上已有指派但缺少原交易哈希，需要显式对账');
-        const selected = requireValue((await this.app.agents()).find(agent=>agent.agentId===decision.selectedAgentId));
+        const selected = requireValue((await this.app.agents(this.app.db.pool,task.taskId)).find(agent=>agent.agentId===decision.selectedAgentId));
         if (candidateExclusions(selected,task.role,new Date().toISOString()).length) throw new AppError(409,'NO_ELIGIBLE_AGENT','冻结决策中的节点当前不满足在线与容量条件');
         receipt = await state.send(task,'ASSIGN',()=>chain.assignTask(assignment));
       }
