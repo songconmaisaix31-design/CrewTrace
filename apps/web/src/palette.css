@@ -13,6 +13,12 @@
   background: var(--surface-base);
 }
 body { background: var(--surface-base); }
+/* 页面随窗口铺开；内边距只负责阅读留白，不限定画布宽度。 */
+main, main.landing { width: 100%; max-width: none; margin-inline: 0; }
+@media (min-width: 761px) {
+  main, main.landing { padding-inline: clamp(32px, 4vw, 96px); }
+  .topbar { padding-inline: clamp(32px, 4vw, 96px); }
+}
 .topbar { background: #090b0fed; border-bottom-color: #ffffff0e; }
 .experience { background: none; }
 .launch-story h1, .collaboration-board h2, .agent-node h3 { color: var(--text-primary); }
@@ -35,8 +41,8 @@ input::placeholder { color: #9ca5b4; }
 button:focus-visible, a:focus-visible, summary:focus-visible,
 input:focus-visible, select:focus-visible { outline-color: var(--accent); }
 ::selection { background: #b4a0ff55; color: #fff; }
-.collaboration-board { border-color: var(--line); background: #0d1015; }
-.collaboration-board:before { opacity: .45; }
+.collaboration-board { border-color: var(--line); border-inline: 0; background: #0d1015; }
+.collaboration-board:before { display: none; }
 .collaboration-map { background: none; }
 .announcement-board { background: var(--surface-panel); border-color: var(--line); }
 .collaboration-board header { border-color: var(--line); }
