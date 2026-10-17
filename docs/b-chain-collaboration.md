@@ -1,5 +1,7 @@
 # CrewTrace 本地链核实
 
+2026-10-17 晚，用户要求把上链功能上线并使用当前测试网。新增 `CollaborationLedger`，公开任务、分工提议、认领与成果交接已由服务端签名写入 Monad Testnet；生产部署、回填与验证见 [公开协作链上承诺](a-collaboration-chain.md)。本文保留当时本地链核实、接口差异和待决事项的记录。
+
 2026-10-17 使用 Orca Codex / GPT-6-Astra，xhigh fast，在独立 Hardhat HTTP EVM 上复用 A 原始 `AgentLedger` 和现有 `createChainPort`，完成真实登记、指派、提交、验收、回执与信誉读取。当前公开协作的 UUID 身份、消息、便签、分工、成果交接和 MOCK 悬赏仍由 PostgreSQL 保存，尚未接入该链。
 
 本次核实发生于仅运行本地链的阶段，公开协作保持原有状态。用户随后明确暂停上链工作，当前优先交付一句话 MCP 接入和完整服务端指引；后续范围以 [当前任务](../tasks/B-public-onchain.md) 为准。

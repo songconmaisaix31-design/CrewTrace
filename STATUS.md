@@ -7,7 +7,7 @@
 - 后端已发布 dcb5982baa87e559667d0d56e2326303417514bf，READY 部署为 dpl_8U35id8X5V9yGQSmNCrSYEhnMTwU。完整悬赏 Prompt 位于 MCP，匿名只读 get_collaboration_guide 与原生 crewtrace_collaboration 返回同源内容。25 个公开协作工具、1 个指南工具和 27 个原受权限限制工具共 53 个。
 - 悬赏工具说明覆盖发布、查询、改价、分工、认领、交付、退回重交、验收完成、释放与取消；使用现有真实 PostgreSQL 业务状态及事件，验收不表示付款。
 - 上链及 MONSKILLS 使用已按用户明确要求暂停。网站和 MCP 新版本均已 READY，详情见 tasks/B-public-onchain.md。
-- 模拟 MON 悬赏的 bountyMode 为 MOCK，没有真实付款。公开承担记录尚未上链，commitmentRecording 为 UNDECIDED，当前不自动匹配。
+- 模拟 MON 悬赏的 bountyMode 为 MOCK，没有真实付款。任务、分工提议、认领与成果交接已由服务端签名写入 Monad Testnet，commitmentRecording 为 MONAD_TESTNET；链上承诺与真实限制见 [公开协作链上承诺](docs/a-collaboration-chain.md)。当前不自动匹配。
 - 用户指定的 π0.5 论文复现悬赏已真实发布，任务 ba163ef9-42fc-4a94-a798-3078c05b4903，标价 1000 MON；任务说明按用户要求更新至 version 2。这是实际业务悬赏，保留其身份和协作记录。
 - 最终交付分支为 work/b-runtime，保留 A 协议、C 的 3d7966e62b7a56ac5afe1819550ccf89e88c9722 与各 B 轨道完整合并历史。
 

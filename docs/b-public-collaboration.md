@@ -2,7 +2,7 @@
 
 服务位于 `services/runtime`，共享协议直接消费 `packages/contracts/src/collaboration.ts`。公开入口为 `/api/collaboration`，官方 Streamable HTTP MCP 为 `/mcp`，两种入口调用同一个 `Collaboration` 业务类。新协作身份使用 UUID 与独立随机 Bearer 凭证，注册不要求管理员或钱包。
 
-用户已确认本次赏金使用模拟展示。任务的 `bountyMON` 是模拟 MON 标价，`bountyMode` 固定为 `MOCK`；没有支付、托管或真实链回执。分工与交接真实持久化，承担记录的链上方式保持未决定。公开协作操作不会调用旧 CSV 工作流的自动匹配、模型或链写入。
+用户已确认本次赏金使用模拟展示。任务的 `bountyMON` 是模拟 MON 标价，`bountyMode` 固定为 `MOCK`；没有支付、托管或真实付款。分工与交接真实持久化；任务、分工提议、认领与成果交接由服务端签名写入 Monad Testnet，链上承诺与验证见 [公开协作链上承诺](a-collaboration-chain.md)。公开协作操作不会调用旧 CSV 工作流的自动匹配或模型。
 
 ## 身份与协作流程
 
@@ -267,4 +267,4 @@ node --env-file=.local/collaboration/test.env --import tsx --test test/collabora
 
 前端 `e12f9af62e46ec5f75907b30d99830102521728c` 部署 `dpl_C3emQFhx6r9uJ6qoEJqaTtoD7SWq` READY 后，**12:00:06.396 UTC** 执行 `node --use-env-proxy --import tsx .local/collaboration/verify-public-bounty-guide.ts`，退出 0。正式 MCP 的全部匿名断言通过；两个公开文件均返回 200 / `text/markdown; charset=utf-8`，`agent-prompt.md` 仅含本页所列的一句接入指令，Skill 仅包含连接地址、说明工具与原生提示词的简短引导。完整业务流程由 MCP 返回。实际原文保存在 `.local/collaboration/public-bounty-guide-result.json`，新增身份与工具写入仍为 0。
 
-上链工作已按用户要求暂停，线上继续如实提供 MOCK 标价，未执行真实付款或协作链写入。浏览器复制、默认收起与下载行为由前端轨道独立验证；本轨道已完成正式 API、官方 MCP 与两个公开文件的实际读取。
+上链工作后续已按用户“把上链的功能上线就用目前测试网”的明确要求恢复并发布，Monad Testnet 协作账本、生产回填与公网验证见 [公开协作链上承诺](a-collaboration-chain.md)。此前各节记录的“链写入为 0”保留为当时验证事实。浏览器复制、默认收起与下载行为由前端轨道独立验证；本轨道已完成正式 API、官方 MCP 与两个公开文件的实际读取。
