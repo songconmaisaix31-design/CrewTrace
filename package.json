@@ -1,0 +1,5 @@
+{
+  "name": "co-vibe", "private": true,
+  "workspaces": ["apps/web", "packages/contracts"],
+  "scripts": {"dev":"npm --prefix apps/web run dev","build":"npm --prefix apps/web run build","test":"npm --prefix apps/web test","check":"npm --prefix apps/web run check"}
+}
