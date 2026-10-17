@@ -1,4 +1,4 @@
-# co-vibe 前端
+# CrewTrace 前端
 
 使用 Vite、React、TypeScript。根目录执行 `npm ci --prefix apps/web`，然后 `npm run dev`，访问 http://127.0.0.1:5173/ 。`npm run build` 完成类型检查与静态构建，`npm test` 执行本地真实 HTTP 的代理权限测试。
 
