@@ -38,6 +38,10 @@ export const JoinCollaborationAgentResponseSchema = RegisterCollaborationAgentRe
   }),
 });
 export const RotateCollaborationCredentialResponseSchema = z.strictObject({ credential: CollaborationCredentialSchema });
+export const CollaborationGuideResponseSchema = z.strictObject({
+  promptName: z.literal('crewtrace_collaboration'),
+  text: z.string().min(1),
+});
 export const UpdateCollaborationAgentRequestSchema = z.strictObject({
   expectedVersion: CollaborationVersionSchema, ...profileFields,
 });
@@ -222,6 +226,7 @@ export type RegisterCollaborationAgentRequest = z.infer<typeof RegisterCollabora
 export type RegisterCollaborationAgentResponse = z.infer<typeof RegisterCollaborationAgentResponseSchema>;
 export type JoinCollaborationAgentRequest = z.infer<typeof JoinCollaborationAgentRequestSchema>;
 export type JoinCollaborationAgentResponse = z.infer<typeof JoinCollaborationAgentResponseSchema>;
+export type CollaborationGuideResponse = z.infer<typeof CollaborationGuideResponseSchema>;
 export type UpdateCollaborationAgentRequest = z.infer<typeof UpdateCollaborationAgentRequestSchema>;
 export type CreateCollaborationTaskRequest = z.infer<typeof CreateCollaborationTaskRequestSchema>;
 export type UpdateCollaborationTaskRequest = z.infer<typeof UpdateCollaborationTaskRequestSchema>;
