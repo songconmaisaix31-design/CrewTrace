@@ -51,8 +51,34 @@ export class Application {
     if (!this.chain) throw new AppError(503,'CHAIN_NOT_CONFIGURED','A 的真实链适配器尚未配置');
     return this.chain;
   }
-  async agents(client: Pick<PoolClient,'query'> = this.db.pool): Promise<AgentProfile[]> {
-    return (await client.query('SELECT profile FROM agents ORDER BY id')).rows.map(row => AgentProfileSchema.parse(row.profile));
+  async agents(client: Pick<PoolClient,'query'> = this.db.pool,excludingReservedTaskId: string | null = null): Promise<AgentProfile[]> {
+    const { rows } = await client.query(`
+      WITH task_load AS (
+        SELECT CASE WHEN t.document->>'status'='OPEN' THEN d.document->>'selectedAgentId'
+                    ELSE t.document->>'assignee' END AS agent_id,
+               t.document->>'status'='OPEN' AS reserved
+        FROM tasks t JOIN runs r ON r.id=t.run_id
+        LEFT JOIN LATERAL (
+          SELECT document FROM decisions
+          WHERE task_id=t.id AND document->>'attempt'=t.document->>'attempt'
+          ORDER BY document->>'evaluatedAt' DESC,id DESC LIMIT 1
+        ) d ON t.document->>'status'='OPEN'
+        WHERE r.runtime_status<>'CANCELLED' AND t.runtime_status<>'CANCELLED'
+          AND t.document->>'status' IN ('OPEN','ASSIGNED','RUNNING','SUBMITTED')
+          AND ($1::text IS NULL OR t.id<>$1 OR t.document->>'status'<>'OPEN')
+      ), agent_load AS (
+        SELECT agent_id,count(*) FILTER (WHERE reserved) AS reserved_tasks,
+               count(*) FILTER (WHERE NOT reserved) AS assigned_tasks
+        FROM task_load GROUP BY agent_id
+      )
+      SELECT a.profile,a.worker_reported_active_tasks,
+             coalesce(l.reserved_tasks,0) AS reserved_tasks,coalesce(l.assigned_tasks,0) AS assigned_tasks
+      FROM agents a LEFT JOIN agent_load l ON l.agent_id=a.id ORDER BY a.id
+    `,[excludingReservedTaskId]);
+    return rows.map(row => AgentProfileSchema.parse({
+      ...row.profile,
+      activeTasks: Number(row.reserved_tasks)+Math.max(Number(row.worker_reported_active_tasks),Number(row.assigned_tasks)),
+    }));
   }
   async task(taskId: string, client: Pick<PoolClient,'query'> = this.db.pool): Promise<Task> {
     return TaskSchema.parse(requireValue((await client.query('SELECT document FROM tasks WHERE id=$1',[taskId])).rows[0]).document);
@@ -127,10 +153,9 @@ export class Application {
     const updated = await this.store.write(async client => {
       const profile = requireValue((await this.agents(client)).find(a=>a.agentId===identity.agentId));
       if (profile.maxConcurrency !== request.maxConcurrency) throw new AppError(409,'INVALID_INPUT','并发配置与登记值不匹配');
-      const occupied = Number((await client.query("SELECT count(*) FROM tasks t JOIN runs r ON r.id=t.run_id WHERE t.document->>'assignee'=$1 AND t.document->>'status' IN ('ASSIGNED','RUNNING','SUBMITTED') AND r.runtime_status <> 'CANCELLED'",[identity.agentId])).rows[0].count);
-      const updated = AgentProfileSchema.parse({ ...profile,lastSeenAt: new Date().toISOString(),activeTasks: Math.max(request.activeTasks,occupied) });
-      await client.query('UPDATE agents SET profile=$2 WHERE id=$1',[identity.agentId,updated]);
-      return updated;
+      const reported = AgentProfileSchema.parse({ ...profile,lastSeenAt: new Date().toISOString(),activeTasks: request.activeTasks });
+      await client.query('UPDATE agents SET profile=$2,worker_reported_active_tasks=$3 WHERE id=$1',[identity.agentId,reported,request.activeTasks]);
+      return requireValue((await this.agents(client)).find(a=>a.agentId===identity.agentId));
     });
     return updated;
   }
@@ -160,10 +185,6 @@ export class Application {
     await client.query('UPDATE tasks SET document=$2 WHERE id=$1',[task.taskId,task]);
     const run = await this.run(task.runId,client);
     await client.query("UPDATE runs SET document=jsonb_set(document,'{status}',$2::jsonb) WHERE id=$1",[task.runId,JSON.stringify(run.status)]);
-    if (task.assignee) {
-      const active = Number((await client.query("SELECT count(*) FROM tasks t JOIN runs r ON r.id=t.run_id WHERE t.document->>'assignee'=$1 AND t.document->>'status' IN ('ASSIGNED','RUNNING','SUBMITTED') AND r.runtime_status <> 'CANCELLED'",[task.assignee])).rows[0].count);
-      await client.query("UPDATE agents SET profile=jsonb_set(profile,'{activeTasks}',$2::jsonb) WHERE id=$1",[task.assignee,JSON.stringify(active)]);
-    }
   }
   assertAttempt(task: Task, attempt: number) {
     if (task.attempt !== attempt) throw new AppError(409,'STALE_ATTEMPT','请求 attempt 已过期');
