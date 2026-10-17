@@ -12,7 +12,7 @@
 
 ## 并行轨道
 
-每条轨道使用一个 Orca Codex Agent、一个 Worktree 和一个分支。启动时继承用户配置模型，不手设模型；实际 launch 信息在启动后补充。各 Worker 自行实现、测试、返修、提交并 push，只能修改自己的 write_paths。
+每条轨道使用一个 Orca Codex Agent、一个 Worktree 和一个分支。实际三条轨道均继承用户配置，Orca 运行状态报告模型 gpt-6.1-sol。各 Worker 自行实现、测试、返修、提交并 push，只能修改自己的 write_paths。
 
 | 轨道 | 分支 | write_paths | 交付 |
 | --- | --- | --- | --- |
