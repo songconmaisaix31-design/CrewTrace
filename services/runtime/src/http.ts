@@ -68,6 +68,7 @@ export function createHttp(app: Application) {
   });
   http.post('/admin/runs/:id/:action',async c=>c.json(await execution.control(c.get('principal'),c.req.param('id'),z.enum(['pause','resume','cancel']).parse(c.req.param('action')))));
   http.post('/worker/heartbeat',async c=>c.json(await app.heartbeat(c.get('principal'),await c.req.json())));
+  http.post('/worker/progress',async c=>c.json(await app.advanceWork(c.get('principal'),await c.req.json())));
   http.get('/worker/jobs',async c=>c.json(await app.jobs(c.get('principal'))));
   http.post('/worker/tasks/:id/accept',async c=>c.json(await execution.accept(c.get('principal'),c.req.param('id'),AcceptTaskRequestSchema.parse(await c.req.json()).attempt)));
   http.post('/worker/artifacts',async c=>c.json(await execution.upload(c.get('principal'),await c.req.json()),201));

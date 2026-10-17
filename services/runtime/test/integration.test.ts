@@ -9,6 +9,7 @@ import { CRITERIA_HASH,CRITERIA_BYTES } from '../../../workers/src/criteria.ts';
 import { serve } from '@hono/node-server';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import { Database } from '../src/db.js';
 import { migrate } from '../src/migrate.js';
 import { Application } from '../src/service.js';
@@ -45,9 +46,10 @@ test('真实 PostgreSQL、HTTP 与官方 MCP Client', async () => {
 });
 
 async function startProcess(adminToken: string) {
+  const started = performance.now();
   const processHandle = spawn(process.execPath,['--import','tsx','src/local.ts'],{
     cwd: new URL('..',import.meta.url),
-    env: { ...process.env,ADMIN_TOKEN: adminToken,PUBLIC_BASE_URL: 'http://127.0.0.1:3000',PORT: '0' },
+    env: { ...process.env,TSX_DISABLE_CACHE: '1',ADMIN_TOKEN: adminToken,PUBLIC_BASE_URL: 'http://127.0.0.1:3000',PORT: '0' },
     stdio: ['ignore','pipe','pipe'],windowsHide: true,
   });
   const output = createInterface({ input: processHandle.stdout });
@@ -55,7 +57,13 @@ async function startProcess(adminToken: string) {
     const timeout = setTimeout(()=>{ processHandle.kill(); reject(new Error('服务进程未在 20 秒内启动')); },20_000);
     processHandle.once('error',reject);
     processHandle.once('exit',code=>{ clearTimeout(timeout); reject(new Error(`服务提前终止 ${code}`)); });
-    output.once('line',line=>{ clearTimeout(timeout); resolve(JSON.parse(line).url); });
+    output.once('line',line=>{
+      clearTimeout(timeout);
+      const event = JSON.parse(line);
+      assert.equal(event.event,'listening');
+      console.log(JSON.stringify({ event: 'cold-start',pid: processHandle.pid,elapsedMs: Math.round(performance.now()-started),cacheDisabled: true }));
+      resolve(event.url);
+    });
   });
   return { processHandle,url };
 }
@@ -101,6 +109,10 @@ test('真实进程重启、身份权限、便签并发、事件增量和 MCP 写
     await json('/worker/heartbeat','POST',{ runtimeId: runtimes[1],activeTasks: 0,maxConcurrency: 1 },nodeTokens[0],403);
     await json('/worker/jobs','GET',undefined,undefined,403);
     await json('/worker/jobs','GET',undefined,'invalid-node-credential',401);
+    await json('/worker/progress','POST',{},undefined,403);
+    await json('/worker/progress','POST',{},adminToken,403);
+    await json('/worker/progress','POST',{ runId: runIds[0] },nodeTokens[0],400);
+    await json('/worker/progress','POST',{},nodeTokens[0],503);
     const agents = await json('/api/agents');
     assert.ok(agents.agents.find((agent: any)=>agent.agentId===accounts[0].address.toLowerCase()).lastSeenAt);
     const source = 'record_id,date,category,sales_yuan,orders\r\n'+Array.from({ length: 30 },(_,index)=>`${index+1},2026-10-17,controlled,${index+1}.00,1`).join('\r\n')+'\r\n';
@@ -138,7 +150,10 @@ test('真实进程重启、身份权限、便签并发、事件增量和 MCP 写
     mcp = new Client({ name: 'controlled-node-official-client',version: '1.0.0' });
     await mcp.connect(new StreamableHTTPClientTransport(new URL(`${running.url}/mcp`),{ requestInit: { headers: { Authorization: `Bearer ${nodeTokens[1]}` } } }));
     const tools = await mcp.listTools();
-    for (const name of ['publish_announcement','list_announcements','create_note','get_note','update_note','get_jobs','update_handoff']) assert.ok(tools.tools.some(tool=>tool.name===name));
+    for (const name of ['publish_announcement','list_announcements','create_note','get_note','update_note','get_jobs','update_handoff','advance_work']) assert.ok(tools.tools.some(tool=>tool.name===name));
+    const unavailable = CallToolResultSchema.parse(await mcp.callTool({ name: 'advance_work',arguments: {} }));
+    assert.equal(unavailable.isError,true);
+    assert.ok(unavailable.content.some(content=>content.type==='text' && JSON.parse(content.text).error.code==='CHAIN_NOT_CONFIGURED'));
     const published = await mcp.callTool({ name: 'publish_announcement',arguments: { ...message,body: '官方 MCP Client 实际发布公告' } });
     assert.notEqual(published.isError,true,JSON.stringify(published));
     const listed = await mcp.callTool({ name: 'list_announcements',arguments: { runId: run.runId,taskId } });
