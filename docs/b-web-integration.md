@@ -16,11 +16,13 @@
 
 2026-10-17 最新要求限定网站显示真实协作记录。页面移除预置模拟悬赏卡片，历史 `?view=csv`、`?run=` 地址清除旧参数并打开公开协作。发布包没有 CSV 工作台模块和固定 CSV 文件；网站网关的旧演示创建、状态、运行、规则、产物及决策路径返回 405。原 A 协议、后端记录及历史自动化测试继续保留。
 
-当前前端依赖含 `viem` 2.57.7，尚未接入钱包连接组件。按照最新用户决定，上链继续由本地链轨道实施，线上维持实际 MOCK 与未上链状态；前端不新增钱包授权或真实支付操作。新指令依赖后端 `get_collaboration_guide`，主 Agent 在该工具发布后安排前端发布。
+当前前端依赖含 `viem` 2.57.7，尚未接入钱包连接组件。最新用户要求优先完成一句 MCP 接入，上链工作按用户要求暂停；线上维持实际 MOCK 与未上链状态，前端不新增钱包授权或真实支付操作。主 Agent 已先发布后端 `get_collaboration_guide`，再发布前端一句指令。
 
 本地前端连接真实公网后端的 Chromium 回归 4/4 通过，耗时 53.8 秒：一句指令精确复制、成功状态、配置默认关闭、两个公开文件原字节下载、桌面与 390px 的真实任务读取和筛选、断线后保留记录及联网恢复、旧页面地址处理、旧网关路径返回 405。品牌动画限制在品牌区域内，滚动后页面宽度保持在视口内。命令为设置 `WEB_BASE_URL=http://127.0.0.1:5177`、`BROWSER_REPORT=../../.local/web-integration/browser-cleanup-local.json` 后执行 `node node_modules/@playwright/test/cli.js test --config apps/web/playwright.config.ts browser-smoke.spec.ts browser-brand.spec.ts`。
 
-`npm run check`、`npm run build` 通过，`npm test` 的真实 HTTP 路由与权限检查 2/2 通过，简短 Skill 使用 `python -X utf8 .../skill-creator/scripts/quick_validate.py apps/web/public/skills/crewtrace` 校验通过。此次验证仅匿名读取线上服务，没有新增身份、任务或悬赏。当前生产包资源为 `index-COJT24Eq.js` 与 `PublicWorkspace-BgvxKiY5.js`；正式域名复测等待主 Agent 发布。
+`npm run check`、`npm run build` 通过，`npm test` 的真实 HTTP 路由与权限检查 2/2 通过。简短 Skill 使用 `python -X utf8 C:/Users/DW/AppData/Roaming/orca/codex-accounts/2a305740-3098-46da-a63f-2d9e42ae9d72/home/skills/.system/skill-creator/scripts/quick_validate.py apps/web/public/skills/crewtrace` 校验通过。此次验证仅匿名读取线上服务，没有新增身份、任务或悬赏。
+
+正式业务提交为 `e12f9af62e46ec5f75907b30d99830102521728c`，主 Agent 发布编号为 `dpl_C3emQFhx6r9uJ6qoEJqaTtoD7SWq`，资源为 `index-COJT24Eq.js` 与 `PublicWorkspace-BgvxKiY5.js`。在正式域名执行同一组真实 Chromium 检查，4/4 通过，耗时 26.1 秒，页面 JavaScript 无异常。设置 `WEB_BASE_URL=https://mon.davidwang.space`、`BROWSER_PROXY=http://127.0.0.1:7890`、`BROWSER_REPORT=../../.local/web-integration/browser-cleanup-production.json`，执行 `node node_modules/@playwright/test/cli.js test --config apps/web/playwright.config.ts browser-smoke.spec.ts browser-brand.spec.ts`；报告保存在指定忽略目录。完整指南与原生提示词的同源检查由后端和独立轨道完成。
 
 以下分阶段记录保留各提交实际执行过的验收证据；历史两轮 CSV 与长提示词检查对应各段标注的提交，不属于当前公开入口。
 
