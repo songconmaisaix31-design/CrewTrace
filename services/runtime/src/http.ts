@@ -9,6 +9,7 @@ import { mcpResponse } from './mcp.js';
 import { Board } from './board.js';
 import { Execution } from './execution.js';
 import { mountCollaboration } from './collaboration-http.js';
+import { publicMcpURL } from './config.js';
 import {
   AcceptTaskRequestSchema, AddressSchema, AssignTaskRequestSchema, CreateRunWithInputRequestSchema,
   HandoffUpdateRequestSchema, InterruptRequestSchema, ModelCallRequestSchema, NodeEnrollmentRequestSchema,
@@ -27,7 +28,11 @@ export function createHttp(app: Application) {
     c.header('Cache-Control','no-store');
     const origin = c.req.header('Origin');
     if (origin && origin !== ownOrigin && !origins.includes(origin)) throw new AppError(403, 'ORIGIN_REJECTED', '请求来源未获授权');
-    if (c.req.path === '/mcp' && new URL(c.req.url).host !== new URL(app.config.PUBLIC_BASE_URL).host) throw new AppError(403, 'HOST_REJECTED', 'MCP Host 不匹配');
+    if (c.req.path === '/mcp') {
+      const host=new URL(c.req.url).host;
+      const allowedHosts=[new URL(app.config.PUBLIC_BASE_URL).host,new URL(publicMcpURL(app.config)).host];
+      if(!allowedHosts.includes(host)) throw new AppError(403,'HOST_REJECTED','MCP Host 不匹配');
+    }
     c.set('principal', await auth.authenticate(c.req.header('Authorization')));
     await next();
   });
