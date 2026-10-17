@@ -1,2 +1,4 @@
 fixtures/*.csv -text
 evidence/** -text
+criteria.json -text
+identities.json -text
