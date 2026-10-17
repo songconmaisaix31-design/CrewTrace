@@ -12,4 +12,6 @@
 
 如果测试网签名配置尚未到达，应使用 A 原始合约在真实本地 EVM 与实际 HTTP RPC 上验证 B 的指派、Worker 模型执行、提交、可信验收、第二轮回读和原交易对账，作为 B 功能检查；不得伪造协议、适配器或回执，也不得把本地结果标为 Monad Testnet 验证。A 的 Hardhat 项目位于 .local/a-handoff/contracts，依赖由主 Agent 准备。使用真实部署交易、独立生成钱包和实际转账；不改 A 源码、不操作已有测试网部署或 A 资金。Windows 执行 Hardhat 时在当前进程设置 HARDHAT_DISABLE_TELEMETRY，直接调用包内 hardhat，避免改写 A 的原始 package.json。
 
+A 原始合约已用 Hardhat 3.20.0 / solc 0.8.28 编译通过。主 Agent 已启动真实本地 RPC http://127.0.0.1:18545，chainId 31337，进程 42396；已通过原生 evm_setIntervalMining 设置一秒出块。日志位于 .local/hardhat-node.stdout.log 与 .local/hardhat-node.stderr.log，包含开发钱包信息，禁止打印或公开。集成 Agent 可以使用该本地节点，私有部署配置保存在 .local/，不得复用公开开发钱包作为产品身份；为协调者、验收者和四个 Worker 分别生成钱包并实际转账。需要缩短本地 finalized 等待时，可使用此真实节点的原生区块生成参数，保留实际交易与区块证据。不要改写 Monad RPC 或公共部署。
+
 提供可复现的 Vercel 部署配置与命令，目标仅 Dwwww/co-vibe-b。当前 Vercel 连接器创建项目返回 403，本机 CLI token 无效，用户恢复访问前不进行账号切换或其他团队部署。完成本机验证后列出部署所需配置。验证成功后提交必要衔接，push work/b-runtime，报告实际命令、结果、Commit 和真实阻塞。不要自行发布到 main。
