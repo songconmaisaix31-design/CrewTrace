@@ -6,6 +6,15 @@ import { AddressSchema, NodeEnrollmentRequestSchema, RoleSchema, nodeBindingMess
 import { contentHash } from "./content.ts";
 import { requireValue, WorkerError } from "./errors.ts";
 
+export async function loadPublishedManifest(manifestPath: string, manifestURI: string, signal?: AbortSignal) {
+  const manifestBytes = await readFile(manifestPath);
+  requireValue(new URL(manifestURI).protocol === "https:", "INVALID_MANIFEST_URI", "角色说明文件必须提供实际公开 HTTPS URI");
+  const published = await fetch(manifestURI, { signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
+  requireValue(published.ok, "MANIFEST_UNAVAILABLE", `角色说明文件 HTTP ${published.status}`);
+  requireValue(contentHash(new Uint8Array(await published.arrayBuffer())) === contentHash(manifestBytes), "ARTIFACT_MISMATCH", "公开角色说明文件与本地原始字节摘要不符");
+  return { manifestURI, manifestHash: contentHash(manifestBytes) };
+}
+
 export async function enrollIdentity(configPath: string, manifestPath: string, manifestURI: string, signal?: AbortSignal) {
   const config = parseEnv(await readFile(configPath, "utf8"));
   requireValue(config.WORKER_PRIVATE_KEY && config.WORKER_RUNTIME_ID && config.WORKER_ROLE && config.WORKER_SERVICE_URL, "INVALID_CONFIG", "节点私有配置缺少钱包、runtimeId、角色或服务地址");
@@ -15,13 +24,9 @@ export async function enrollIdentity(configPath: string, manifestPath: string, m
   requireValue(endpoint.protocol === "https:" || (endpoint.protocol === "http:" && ["127.0.0.1", "localhost"].includes(endpoint.hostname)), "INVALID_SERVICE_URL", "登记仅允许 HTTPS 或本机 HTTP");
   const account = privateKeyToAccount(config.WORKER_PRIVATE_KEY as `0x${string}`);
   const agentId = AddressSchema.parse(account.address);
-  const manifestBytes = await readFile(manifestPath);
-  requireValue(new URL(manifestURI).protocol === "https:", "INVALID_MANIFEST_URI", "角色说明文件必须提供实际公开 HTTPS URI");
-  const published = await fetch(manifestURI, { signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000) });
-  requireValue(published.ok, "MANIFEST_UNAVAILABLE", `角色说明文件 HTTP ${published.status}`);
-  requireValue(contentHash(new Uint8Array(await published.arrayBuffer())) === contentHash(manifestBytes), "ARTIFACT_MISMATCH", "公开角色说明文件与本地原始字节摘要不符");
+  const manifest = await loadPublishedManifest(manifestPath, manifestURI, signal);
   const profile = {
-    agentId, roles: [RoleSchema.parse(config.WORKER_ROLE)], manifestURI, manifestHash: contentHash(manifestBytes),
+    agentId, roles: [RoleSchema.parse(config.WORKER_ROLE)], ...manifest,
     runtimeId: config.WORKER_RUNTIME_ID, lastSeenAt: null, activeTasks: 0, maxConcurrency: 1, admitted: true, conditionsAccepted: true,
   };
   const signature = await account.signMessage({ message: nodeBindingMessage(profile) });
