@@ -60,7 +60,7 @@ node --import ./workers/node_modules/tsx/dist/loader.mjs workers/src/cli.ts --co
 
 ## 链依赖
 
-`start` 需要 A 的真实适配器 `CHAIN_ADAPTER_MODULE`，导出 `createChainPort({privateKey,rpcUrl,contractAddress,chainId})`，并提供 `CHAIN_RPC_URL/CHAIN_CONTRACT_ADDRESS/CHAIN_ID`。缺少立即报 `CHAIN_NOT_CONFIGURED`。执行前读取真实指派回执与链上任务；提交使用该 Worker 私钥签名，核对真实回执的任务、attempt、签名者和产物摘要。
+`start` 需要真实适配器 `CHAIN_ADAPTER_MODULE`，导出 `createChainPort({workerAccount,rpcUrl,contractAddress,chainId,deploymentBlock})`，并提供 `CHAIN_RPC_URL/CHAIN_CONTRACT_ADDRESS/CHAIN_ID/CHAIN_DEPLOYMENT_BLOCK`。Worker 用自己的私钥创建 LocalAccount 传入工厂。缺少立即报 `CHAIN_NOT_CONFIGURED`。执行前读取真实指派回执与链上任务；提交使用该 Worker 私钥签名，核对真实回执的任务、attempt、签名者和产物摘要。
 
 待确认回执保存到节点私有结果目录；`reconcile --task-id <id> --attempt <number>` 对账同一交易并通过真实链读取确认产物，完成服务提交。该命令不重复调用模型或提交新链交易。
 
@@ -77,6 +77,14 @@ node --import ./workers/node_modules/tsx/dist/loader.mjs workers/src/cli.ts --co
 
 `npm test --prefix workers`：7 个测试通过；覆盖两份真实模型产物、可信重算、数据/指标/报告/Markdown 篡改、缺字段、日期错误、重复冲突、原始摘要、未配置依赖拒绝和跨源 URI 拒绝。`npm run build --prefix workers` 通过。
 
+2026-10-17 在真实 PostgreSQL、HTTP 与 MCP 服务 `http://127.0.0.1:3400` 完成四个钱包的签名登记，节点凭证由服务实际发放。`workers/identities.json` 保存公开身份；私钥和节点凭证保存在忽略目录。`enroll --identity-config <path> --manifest-file <path> --manifest-uri <url>` 校验实际公开说明文件字节，再签名登记，并将服务发放的节点凭证写入私有配置。
+
+实际 MCP 通信使用两个独立 CLI 进程 PID 40608、21776，真实运行 `worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12`。两节点均完成 initialize、tools/list、公告发布、便签创建及更新到版本 2，且各自读取到对方的真实消息。先向 40608 发送 SIGINT，21776 继续读取；随后单独终止 21776。两个进程分别保存 signal:true 的终止记录。测试运行通过真实管理端点取消，任务仍为 OPEN。原始通信记录见 `workers/evidence/communication/`。
+
+通信准备和检查命令：`node --env-file=<服务私有环境路径> --import ./workers/node_modules/tsx/dist/loader.mjs workers/test/communication-run.ts` 创建真实运行；两个终端分别运行 `communicate`；信号终止后，执行相同准备脚本并加 `--cancel` 取消运行。`node --import ./workers/node_modules/tsx/dist/loader.mjs workers/test/verify-communication.ts` 从真实服务回读消息、便签、任务与增量事件核对已保存记录。
+
+验收规则原始字节为 `workers/criteria.json`，`workers/src/criteria.ts` 导出 `CRITERIA_BYTES/CRITERIA_HASH`；当前摘要为 `0xf996dfda70588bbab4464c303cfc4283a3edb60132b40042d39827cc4bb4f67b`。执行器与服务验收器拒绝其他规则摘要。部署打包须包含该原始文件，保持字节与换行不变。
+
 ## 剩余限制
 
-真实链适配器、部署及回执尚未取得；链上身份登记、Worker 接受指派、链提交、服务独立验收上链、两轮信誉回读均未通过。HTTP/MCP 的两个独立在线 Worker 联调仍待真实服务启动。两轮本地真实模型结果保持 `chainIntegration/serviceIntegration=NOT_VERIFIED`。常驻主机和两台设备运行待确认。
+A 的真实适配器与部署协议已取得，正在通过公共 ChainPort 桥接；链上身份登记、Worker 接受指派、链提交、服务独立验收上链、两轮信誉回读均未通过。两轮本地真实模型结果保持 `chainIntegration/serviceIntegration=NOT_VERIFIED`。常驻主机和两台设备运行待确认。

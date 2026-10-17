@@ -1,0 +1,28 @@
+{
+  "notes": [
+    {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "DATA 执行条件",
+      "artifactIds": [],
+      "noteId": "83dfb4d2-8751-4488-bc99-6709a3bf0721",
+      "author": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "version": 2,
+      "createdAt": "2026-10-17T08:30:48.049Z",
+      "updatedAt": "2026-10-17T08:30:56.210Z"
+    },
+    {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 执行条件",
+      "artifactIds": [],
+      "noteId": "0626224b-f169-4ee9-bb0b-b10aedf18085",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "version": 2,
+      "createdAt": "2026-10-17T08:30:53.064Z",
+      "updatedAt": "2026-10-17T08:30:58.600Z"
+    }
+  ]
+}

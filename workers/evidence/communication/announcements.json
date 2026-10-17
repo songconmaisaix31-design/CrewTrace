@@ -1,0 +1,24 @@
+{
+  "announcements": [
+    {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "DATA 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "1607dfce-68c5-4aa3-b651-835ae9164760",
+      "author": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "createdAt": "2026-10-17T08:30:41.869Z"
+    },
+    {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "ea3b30bc-9cdb-4f9b-a4b6-bf2352e4d91d",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "createdAt": "2026-10-17T08:30:45.897Z"
+    }
+  ]
+}

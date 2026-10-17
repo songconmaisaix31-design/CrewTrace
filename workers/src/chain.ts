@@ -1,19 +1,20 @@
 import { isAbsolute, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { z } from "zod";
+import { privateKeyToAccount } from "viem/accounts";
 import { AddressSchema, SubmissionReceiptSchema, type Artifact, type ChainPort, type Task } from "../../packages/contracts/src/index.ts";
 import { exact } from "./content.ts";
 import { requireValue } from "./errors.ts";
 
 export async function loadWorkerChain(privateKey: `0x${string}`, env: NodeJS.ProcessEnv = process.env): Promise<ChainPort> {
   requireValue(env.CHAIN_ADAPTER_MODULE, "CHAIN_NOT_CONFIGURED", "缺少 A 的真实链适配器 CHAIN_ADAPTER_MODULE");
-  requireValue(env.CHAIN_RPC_URL && env.CHAIN_CONTRACT_ADDRESS && env.CHAIN_ID, "CHAIN_NOT_CONFIGURED", "缺少真实 RPC、部署地址或链 ID");
-  const config = z.object({ rpcUrl: z.url(), contractAddress: AddressSchema, chainId: z.coerce.number().int().positive() }).parse({ rpcUrl: env.CHAIN_RPC_URL, contractAddress: env.CHAIN_CONTRACT_ADDRESS, chainId: env.CHAIN_ID });
+  requireValue(env.CHAIN_RPC_URL && env.CHAIN_CONTRACT_ADDRESS && env.CHAIN_ID && env.CHAIN_DEPLOYMENT_BLOCK, "CHAIN_NOT_CONFIGURED", "缺少真实 RPC、部署地址、链 ID 或部署区块");
+  const config = z.object({ rpcUrl: z.url(), contractAddress: AddressSchema, chainId: z.coerce.number().int().positive(), deploymentBlock: z.string().regex(/^\d+$/) }).parse({ rpcUrl: env.CHAIN_RPC_URL, contractAddress: env.CHAIN_CONTRACT_ADDRESS, chainId: env.CHAIN_ID, deploymentBlock: env.CHAIN_DEPLOYMENT_BLOCK });
   const modulePath = resolve(env.CHAIN_ADAPTER_MODULE);
   requireValue(isAbsolute(modulePath), "CHAIN_NOT_CONFIGURED", "链适配器必须为本地模块");
   const adapter = await import(pathToFileURL(modulePath).href);
   requireValue(typeof adapter.createChainPort === "function", "CHAIN_NOT_CONFIGURED", "真实适配器必须导出 createChainPort(config)");
-  const port = await adapter.createChainPort({ privateKey, ...config });
+  const port = await adapter.createChainPort({ workerAccount: privateKeyToAccount(privateKey), ...config });
   for (const method of ["registerAgent", "assignTask", "submitArtifact", "recordOutcome", "getRoleReputation", "getTask", "getReceipts"]) requireValue(typeof port?.[method] === "function", "CHAIN_NOT_CONFIGURED", `链适配器缺少 ${method}`);
   return port as ChainPort;
 }
