@@ -22,6 +22,12 @@
 @media(prefers-reduced-motion:reduce){.stage-copy,.launch-art,.launch-story h1,.collaboration-layout,.evidence-story{animation:none!important;transform:none!important}}
 
 /* 主视觉占据一屏，取消额外滚动停留区。 */
+.experience{background:radial-gradient(ellipse at 94% 48%,#7847b80b,transparent 45%)}
+/* 静态底纹不占布局、不接收指针，也不增加持续重绘。 */
+.launch-story:before,.launch-story:after{content:'';position:absolute;inset:0;pointer-events:none;z-index:-2}
+.launch-story:before{background:radial-gradient(ellipse at 76% 48%,#7544bd35,transparent 55%),radial-gradient(ellipse at 12% 82%,#28395724,transparent 42%),repeating-linear-gradient(0deg,transparent 0 79px,#baa1e814 79px 80px),repeating-linear-gradient(90deg,transparent 0 79px,#baa1e814 79px 80px);mask-image:radial-gradient(ellipse at 73% 52%,#000 12%,#000b 48%,transparent 78%)}
+.launch-story:after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23n)' opacity='.32' d='M0 0h180v180H0z'/%3E%3C/svg%3E");opacity:.15;mask-image:linear-gradient(transparent,#000 15%,#000 80%,transparent)}
+.launch-story h1{text-shadow:0 2px 28px #08090bb3}
 .launch-layout{display:block;padding:0;border:0}
 .launch-story{height:calc(100svh - 80px);min-height:620px;max-height:1050px;display:flex;flex-direction:column;justify-content:center;isolation:isolate;padding:0 0 100px}
 .launch-kicker,.launch-story h1,.launch-promise{max-width:650px;pointer-events:none}
