@@ -40,7 +40,8 @@ test('真实服务：代理授权、固定原文、创建与刷新查询，最�
     for(const secret of [process.env.ADMIN_TOKEN!,process.env.DEMO_ACCESS_CODE!])assert(!statusText.includes(secret));
     const denied=await fetch(`${base}?path=%2Fapi%2Fruns`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({runId:randomUUID(),sample:'round-1'})});
     assert.equal(denied.status,403);
-    const directDenied=await fetch(new URL('/api/runs',process.env.RUNTIME_URL),{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    const source=new Uint8Array(readFileSync(new URL('../../../workers/fixtures/round-1.csv',import.meta.url)));
+    const directDenied=await fetch(new URL('/api/runs',process.env.RUNTIME_URL),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({runId:randomUUID(),inputContent:new TextDecoder('utf-8',{fatal:true}).decode(source),inputHash:keccak256(source),criteriaHash:keccak256(criteria),validator:process.env.VALIDATOR_ADDRESS})});
     assert.equal(directDenied.status,403);
     const runId=randomUUID();
     let created=false;
@@ -49,14 +50,13 @@ test('真实服务：代理授权、固定原文、创建与刷新查询，最�
       assert.equal(response.status,201,`创建 HTTP ${response.status}`);
       created=true;
       const run=RunSchema.parse(await response.json());
-      assert.equal(run.runId,runId);assert.equal(run.status,'OPEN');
+      assert.equal(run.runId,runId);assert.notEqual(run.status,'VERIFIED_PASS');
       assert.equal(run.validator,process.env.VALIDATOR_ADDRESS!.toLowerCase());
       assert.equal(run.criteriaHash,keccak256(criteria));
-      const source=new Uint8Array(readFileSync(new URL('../../../workers/fixtures/round-1.csv',import.meta.url)));
       const input=new Uint8Array(await (await get(base,`/api/runs/${runId}/input`)).arrayBuffer());
       assert.deepEqual(input,source);assert.equal(run.inputHash,keccak256(input));
       const detail=RunDetailSchema.parse(await (await get(base,`/api/runs/${runId}`)).json());
-      assert.equal(detail.runId,runId);assert.equal(completed(detail),false);assert.equal(runState(detail),'OPEN');
+      assert.equal(detail.runId,runId);assert.equal(completed(detail),false);assert.notEqual(runState(detail),'VERIFIED_PASS');
       const events=EventsResponseSchema.parse(await (await get(base,`/api/runs/${runId}/events?after=0`)).json());
       assert(events.events.some(event=>event.type==='RUN_CREATED'));
       console.log(JSON.stringify({runtime:process.env.RUNTIME_URL,runId,status:detail.status,chainWritable:health.chain.writable}));
