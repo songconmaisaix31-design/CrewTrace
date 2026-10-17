@@ -2,6 +2,8 @@
 
 当前任务以 PRD.md 与 tasks/B-plan.md 为准。用户已确认完整 B 职责，并要求产品运行中的 Agent 使用轻量 MCP 公告板与便签交流任务、执行情况和成果交接。
 
+当前新增任务为集成 work/c-web、真实可用性测试及数据库性能改进，执行计划见 [tasks/B-web-integration.md](tasks/B-web-integration.md)。原 Neon 项目正在认领，旧密码已撤销；公开服务恢复需要认领后的有效连接。独立测试项目与原生产项目分别记录，不把新项目当作原数据迁移完成。
+
 B 在 work/b-runtime 交付；共享业务类型由 B 维护。A 保持链上源码、ABI 与适配器所有权；C 保持前端、根配置与锁文件所有权。B 使用包内配置与锁文件，不占用 A/C 文件。
 
 开始工作前先读取 STATUS.md 与 tasks/B-plan.md。密钥位于本地忽略目录或部署服务端配置，禁止加入交接文档、测试输出及 Git。
