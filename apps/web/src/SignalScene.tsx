@@ -9,7 +9,7 @@ export default function SignalScene() {
     const el = canvas.current!;
     const ctx = el.getContext('2d');
     if (!ctx) return;
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce), (max-width: 760px)');
     let width=0, height=0, frame=0, visible=true, tick=0, last=0;
     let mx=0, my=0, tx=0, ty=0, burst=0;
     const draw = (now:number) => {

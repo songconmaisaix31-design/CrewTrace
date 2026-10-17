@@ -4,4 +4,5 @@ import App from './App';
 import './styles.css';
 import './editorial.css';
 import './scroll-choreography.css';
+import './experience.css';
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);

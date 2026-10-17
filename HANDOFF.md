@@ -8,4 +8,6 @@
 
 仓库现有 AGENTS.md 包含 Astrocyte 的历史内容。其历史 S0 状态、其他项目费用授权及专用验证对象不能作为 co-vibe 的业务事实或新增授权；本项目以当前用户指令和 PRD 为准。未在本轮改写团队共享规则。
 
-apps/web 已建立 Vite + React + TypeScript 前端，根目录 npm run dev 启动。说明见 apps/web/README.md。实际服务、链适配和公网尚未连接，不能将页面代码与本地验证写成完整真实运行。B 的 a014c46 原始 schema 暂存 apps/web/vendor/contracts（Git fetch DNS 失败），集成团队分支后改为引用 packages/contracts，C 不修改其业务定义。Firecrawl 未安装或调用。
+apps/web 已建立 Vite + React + TypeScript 前端，根目录 npm run dev 启动。说明见 apps/web/README.md。实际服务、链适配和公网尚未连接，不能将页面代码与本地验证写成完整真实运行。B 的 a014c46 原始 schema 暂存 apps/web/vendor/contracts（Git fetch DNS 失败），集成团队分支后改为引用 packages/contracts，C 不修改其业务定义。
+
+2026-10-17 最新布局已改为首屏品牌与任务双栏、可切换协作说明和履历入口。Firecrawl 已实际调用，提取月之暗面、Monad、Linear 并提交反馈，记录见 docs/firecrawl-layout-review.md。桌面首屏入口、示例预览、键盘页签和历史入口已验证；390px 窄屏无横向溢出。
