@@ -33,6 +33,8 @@ export function createHttp(app: Application) {
   http.onError((error,c) => { const body = errorBody(error); return c.json({ error: body.error }, body.status as 400); });
   http.notFound(c => c.json({ error: { code: 'NOT_FOUND', message: '端点不存在' } },404));
   http.get('/health', async c => c.json(await app.health()));
+  http.get('/api/template',c=>c.json(app.template()));
+  http.get('/api/criteria',()=>new Response(new Uint8Array(app.criteria()),{ headers: { 'Content-Type': 'application/json; charset=utf-8' } }));
   http.get('/api/agents',async c=>c.json({ agents: await app.agents() }));
   http.post('/api/runs',async c=>c.json(await app.createRun(c.get('principal'),CreateRunWithInputRequestSchema.parse(await c.req.json())),201));
   http.get('/api/runs/:id',async c=>c.json(await app.runDetails(c.req.param('id'))));
@@ -60,6 +62,10 @@ export function createHttp(app: Application) {
     return c.json(await execution.assign(c.get('principal'),c.req.param('id'),request));
   });
   http.post('/admin/tasks/:id/assess',async c=>c.json(await execution.assess(c.get('principal'),c.req.param('id'))));
+  http.post('/admin/runs/:id/advance',async c=>{
+    if (c.get('principal').kind!=='admin') throw new AppError(403,'UNAUTHORIZED','需要管理凭证');
+    return c.json(await app.progress(c.req.param('id')));
+  });
   http.post('/admin/runs/:id/:action',async c=>c.json(await execution.control(c.get('principal'),c.req.param('id'),z.enum(['pause','resume','cancel']).parse(c.req.param('action')))));
   http.post('/worker/heartbeat',async c=>c.json(await app.heartbeat(c.get('principal'),await c.req.json())));
   http.get('/worker/jobs',async c=>c.json(await app.jobs(c.get('principal'))));

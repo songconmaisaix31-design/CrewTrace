@@ -12,6 +12,9 @@ import { assertExecutionBudget } from './domain/workflow.ts';
 import type { Application } from './application.js';
 import { admin, node, sameAgent, type Principal } from './auth.js';
 import { AppError, requireValue } from './errors.js';
+import { encodeUtf8 } from './content.js';
+import { assertAssignmentReceipt,assertSubmissionReceipt,assertOutcomeReceipt,toChainRunId } from '../../../packages/runtime-chain/src/index.ts';
+import { ChainState,type ChainOperation } from './chain-state.js';
 
 export class Execution {
   constructor(readonly app: Application) {}
@@ -38,9 +41,8 @@ export class Execution {
     }
     return result;
   }
-  async saveReceipt(client: PoolClient,task: Task,operation: string,receipt: ChainReceipt) {
-    await client.query('INSERT INTO chain_receipts(task_id,attempt,operation,receipt) VALUES($1,$2,$3,$4) ON CONFLICT(task_id,attempt,operation) DO UPDATE SET receipt=excluded.receipt',[task.taskId,task.attempt,operation,receipt]);
-    await this.app.store.event(client,`CHAIN_${operation}_${receipt.status}`,task.runId,task.taskId,task.attempt,{ receipt });
+  async saveReceipt(client: PoolClient,task: Task,operation: ChainOperation,receipt: ChainReceipt) {
+    await new ChainState(this.app).save(client,task,operation,receipt);
   }
   pending(receipt: ChainReceipt) {
     assertConfirmedReceipt(receipt,this.context());
@@ -74,35 +76,36 @@ export class Execution {
       return decision;
     });
     if (!decision.selectedAgentId) throw new AppError(409,'NO_ELIGIBLE_AGENT','没有符合当前政策的候选节点');
-    const result = await this.app.store.write(async client => {
-      const task = await this.app.task(taskId,client);
+    const state = new ChainState(this.app);
+    const result = await state.exclusive(async () => {
+      const task = await this.app.task(taskId);
       if (task.status !== 'OPEN') throw new AppError(409,'INVALID_STATE','任务已被指派');
-      const run = await this.app.run(task.runId,client);
+      const run = await this.app.run(task.runId);
       if (run.runtimeStatus!=='ACTIVE') throw new AppError(409,'INVALID_STATE','运行当前不能指派任务');
-      const dependencies = await this.dependencies(task,client);
-      assertUpstreamVerified(task,dependencies,context);
-      const snapshot = await this.snapshot();
-      const existing = await chain.getTask({ ...snapshot,taskId: task.taskId });
-      const tracked = (await client.query("SELECT receipt FROM chain_receipts WHERE task_id=$1 AND attempt=$2 AND operation='ASSIGN'",[taskId,task.attempt])).rows[0]?.receipt;
+      const assignment = { runId: task.runId,taskId: task.taskId,attempt: task.attempt,role: task.role,assignee: decision.selectedAgentId!,validator: task.validator,inputHash: task.inputHash,criteriaHash: task.criteriaHash,decisionHash: decision.decisionHash };
+      const tracked = await state.tracked(task,'ASSIGN');
       let receipt: ChainReceipt;
       if (tracked) {
-        receipt = requireValue((await chain.getReceipts({ taskId: task.taskId,attempt: task.attempt,snapshot })).find(r=>r.txHash===tracked.txHash),'CHAIN_DATA_MISSING');
-        if (receipt.status==='CONFIRMED' && (!existing || existing.assignee!==decision.selectedAgentId || existing.attempt!==task.attempt || existing.inputHash!==task.inputHash || existing.criteriaHash!==task.criteriaHash || existing.validator!==task.validator || existing.role!==task.role)) throw new AppError(409,'ARTIFACT_MISMATCH','已确认指派与冻结任务不一致');
-      } else if (existing) {
-        if (existing.assignee !== decision.selectedAgentId || existing.attempt !== task.attempt || existing.inputHash !== task.inputHash || existing.criteriaHash !== task.criteriaHash || existing.validator !== task.validator || existing.role !== task.role) throw new AppError(409,'ARTIFACT_MISMATCH','链上已有指派与冻结决策不一致');
-        receipt = requireValue((await chain.getReceipts({ taskId: task.taskId,attempt: task.attempt,snapshot })).find(r=>r.signer===context.coordinator),'CHAIN_DATA_MISSING');
+        receipt = await state.read(tracked);
       } else {
-        const selected = requireValue((await this.app.agents(client)).find(agent=>agent.agentId===decision.selectedAgentId));
+        const existing = await chain.getTask({ ...await this.snapshot(),taskId: task.taskId });
+        if (existing) throw new AppError(503,'CHAIN_DATA_MISSING','链上已有指派但缺少原交易哈希，需要显式对账');
+        const selected = requireValue((await this.app.agents()).find(agent=>agent.agentId===decision.selectedAgentId));
         if (candidateExclusions(selected,task.role,new Date().toISOString()).length) throw new AppError(409,'NO_ELIGIBLE_AGENT','冻结决策中的节点当前不满足在线与容量条件');
-        receipt = ChainReceiptSchema.parse(await chain.assignTask({ taskId: task.taskId,attempt: task.attempt,role: task.role,assignee: decision.selectedAgentId!,validator: task.validator,inputHash: task.inputHash,criteriaHash: task.criteriaHash }));
+        receipt = await state.send(task,'ASSIGN',()=>chain.assignTask(assignment));
       }
-      await this.saveReceipt(client,task,'ASSIGN',receipt);
-      await client.query('UPDATE decisions SET receipt=$2 WHERE id=$1',[decision.decisionId,receipt]);
-      if (receipt.status !== 'CONFIRMED') return { receipt,task };
-      const next = transitionTask(task,'ASSIGNED',{ ...context,attempt: task.attempt,assignee: decision.selectedAgentId!,receipt,dependencies });
-      await this.app.saveTask(client,next);
-      await this.app.store.event(client,'TASK_ASSIGNED',task.runId,task.taskId,task.attempt,{ decisionId: decision.decisionId,assignee: next.assignee });
-      return { receipt,task: next };
+      if (receipt.status==='CONFIRMED') assertAssignmentReceipt(receipt,{ ...assignment,...context });
+      return this.app.store.write(async client=>{
+        const current = await this.app.task(taskId,client);
+        const dependencies = await this.dependencies(current,client);
+        await this.saveReceipt(client,current,'ASSIGN',receipt);
+        await client.query('UPDATE decisions SET receipt=$2 WHERE id=$1',[decision.decisionId,receipt]);
+        if (receipt.status!=='CONFIRMED') return { receipt,task: current };
+        const next = transitionTask(current,'ASSIGNED',{ ...context,attempt: current.attempt,assignee: decision.selectedAgentId!,receipt,dependencies });
+        await this.app.saveTask(client,next);
+        await this.app.store.event(client,'TASK_ASSIGNED',current.runId,current.taskId,current.attempt,{ decisionId: decision.decisionId,assignee: next.assignee });
+        return { receipt,task: next };
+      });
     });
     this.pending(result.receipt);
     return { ...result,decision };
@@ -129,21 +132,32 @@ export class Execution {
       for (const parent of request.parentArtifactIds) await this.app.artifact(parent,client);
       if ((await client.query('SELECT id FROM artifacts WHERE id=$1',[request.artifactId])).rowCount) throw new AppError(409,'INVALID_STATE','artifactId 已存在');
       const artifact = ArtifactSchema.parse({ artifactId: request.artifactId,taskId: request.taskId,attempt: request.attempt,parentArtifactIds: request.parentArtifactIds,schemaVersion: request.schemaVersion,limitations: request.limitations,contentHash: request.contentHash,producer: node(principal).agentId,URI: `${this.app.config.PUBLIC_BASE_URL}/api/artifacts/${encodeURIComponent(request.artifactId)}` });
-      await client.query('INSERT INTO artifacts(id,run_id,task_id,document,raw_bytes) VALUES($1,$2,$3,$4,$5)',[artifact.artifactId,task.runId,task.taskId,artifact,Buffer.from(request.content,'utf8')]);
+      await client.query('INSERT INTO artifacts(id,run_id,task_id,document,raw_bytes) VALUES($1,$2,$3,$4,$5)',[artifact.artifactId,task.runId,task.taskId,artifact,encodeUtf8(request.content)]);
       await this.app.store.event(client,'ARTIFACT_STORED',task.runId,task.taskId,task.attempt,{ artifactId: artifact.artifactId,contentHash: artifact.contentHash });
       return artifact;
     });
   }
   async submit(principal: Principal,taskId: string,input: unknown) {
+    node(principal);
+    const task = await this.finalizeSubmission(principal,taskId,input);
+    if (this.app.chain && this.app.validator) await this.app.progress(task.runId);
+    return task;
+  }
+  private async finalizeSubmission(principal: Principal | null,taskId: string,input: unknown) {
     const request = SubmitTaskRequestSchema.parse(input);
     const context = this.context();
     const chain = this.app.requireChain();
     const result = await this.app.store.write(async client => {
-      const task = await this.app.assignedTask(principal,taskId,request.attempt,client);
+      const task = principal
+        ? await this.app.assignedTask(principal,taskId,request.attempt,client)
+        : await this.app.task(taskId,client);
+      this.app.assertAttempt(task,request.attempt);
+      if ((await this.app.run(task.runId,client)).runtimeStatus!=='ACTIVE') throw new AppError(409,'INVALID_STATE','运行当前不能恢复提交');
       const { artifact } = await this.app.artifact(request.artifactId,client);
       assertArtifactBinding(task,artifact);
-      const snapshot = await this.snapshot();
-      const actual = requireValue((await chain.getReceipts({ taskId: task.taskId,attempt: task.attempt,snapshot })).find(r=>r.txHash===request.receipt.txHash),'CHAIN_DATA_MISSING');
+      const actual = requireValue((await chain.getReceipts({ txHash: request.receipt.txHash })).find(r=>r.txHash===request.receipt.txHash),'CHAIN_DATA_MISSING');
+      if (actual.signer!==task.assignee) throw new AppError(403,'UNAUTHORIZED','真实提交签名者与指派节点不匹配');
+      if (actual.chainId!==context.chainId || actual.contract!==context.contract) throw new AppError(409,'WRONG_CHAIN','真实提交回执网络或合约不匹配');
       const { taskId: _receiptTaskId,attempt: _receiptAttempt,artifactHash: _receiptArtifactHash,...baseReceipt } = request.receipt;
       const claimed = ChainReceiptSchema.parse(baseReceipt);
       if (actual.chainId!==claimed.chainId || actual.contract!==claimed.contract || actual.signer!==claimed.signer || (claimed.blockNumber!==null && actual.blockNumber!==claimed.blockNumber)) throw new AppError(409,'ARTIFACT_MISMATCH','提交回执与真实链读取不一致');
@@ -154,9 +168,10 @@ export class Execution {
         await this.saveReceipt(client,task,'SUBMIT',actual);
         return { task,receipt: actual };
       }
-      const actualTask = requireValue(await chain.getTask({ ...snapshot,taskId: task.taskId }),'CHAIN_DATA_MISSING');
+      const actualTask = requireValue(await chain.getTask({ chainId: actual.chainId,blockNumber: requireValue(actual.blockNumber,'CHAIN_DATA_MISSING'),taskId: task.taskId }),'CHAIN_DATA_MISSING');
       if (actualTask.assignee!==task.assignee || actualTask.attempt!==task.attempt || actualTask.inputHash!==task.inputHash || actualTask.criteriaHash!==task.criteriaHash || actualTask.validator!==task.validator || actualTask.role!==task.role || actualTask.artifactHash!==artifact.contentHash || !['SUBMITTED','VERIFIED_PASS','VERIFIED_FAIL'].includes(actualTask.status)) throw new AppError(409,'ARTIFACT_MISMATCH','链上提交与任务、节点、产物不匹配');
-      const next = transitionTask(task,'SUBMITTED',{ ...context,attempt: task.attempt,actor: node(principal).agentId as Hash,artifact,submissionReceipt });
+      assertSubmissionReceipt(actual,{ chainId: context.chainId,contract: context.contract,taskId: task.taskId,attempt: task.attempt,artifactHash: artifact.contentHash,artifactURI: artifact.URI,producer: requireValue(task.assignee),chainRunId: toChainRunId(task.runId) });
+      const next = transitionTask(task,'SUBMITTED',{ ...context,attempt: task.attempt,actor: actual.signer,artifact,submissionReceipt });
       await client.query('UPDATE tasks SET submitted_artifact_id=$2,submission_receipt=$3 WHERE id=$1',[task.taskId,artifact.artifactId,submissionReceipt]);
       await this.app.saveTask(client,next);
       await this.saveReceipt(client,task,'SUBMIT',actual);
@@ -165,6 +180,11 @@ export class Execution {
     });
     this.pending(result.receipt);
     return result.task;
+  }
+  async reconcileSubmission(taskId: string) {
+    const row = requireValue((await this.app.db.pool.query('SELECT document,submitted_artifact_id,submission_receipt FROM tasks WHERE id=$1',[taskId])).rows[0]);
+    if (!row.submission_receipt || !row.submitted_artifact_id) throw new AppError(409,'CHAIN_DATA_MISSING','没有已授权并持久化的待确认提交');
+    return this.finalizeSubmission(null,taskId,{ attempt: row.document.attempt,artifactId: row.submitted_artifact_id,receipt: row.submission_receipt });
   }
   async reserveModelCall(principal: Principal,taskId: string,attempt: number) {
     const result = await this.app.store.write(async client => {
@@ -254,33 +274,40 @@ export class Execution {
       await this.app.store.event(client,'ASSESSMENT_READY',task.runId,taskId,task.attempt,{ verdict,evidenceHash });
       return { task,artifact,assessment };
     });
-    const result = await this.app.store.write(async client => {
-      const task = await this.app.task(taskId,client);
+    const state = new ChainState(this.app);
+    const result = await state.exclusive(async () => {
+      const task = await this.app.task(taskId);
       if (task.status !== 'SUBMITTED') throw new AppError(409,'DUPLICATE_OUTCOME','任务已记录结论');
+      const outcome = { taskId: task.taskId,attempt: task.attempt,verdict: prepared.assessment.verdict as 'PASS'|'FAIL',artifactHash: prepared.artifact.contentHash,criteriaHash: task.criteriaHash,evidenceHash: prepared.assessment.evidenceHash,evidenceURI: prepared.assessment.evidenceURI,validator: task.validator };
+      const tracked = await state.tracked(task,'OUTCOME');
       let receipt: ChainReceipt;
-      if (prepared.assessment.receipt) {
-        const receipts = await chain.getReceipts({ taskId: task.taskId,attempt: task.attempt,snapshot: await this.snapshot() });
-        receipt = requireValue(receipts.find(item=>item.txHash===prepared.assessment.receipt!.txHash),'CHAIN_DATA_MISSING');
+      if (tracked) {
+        receipt = await state.read(tracked);
       } else {
         const onChain = await chain.getTask({ ...await this.snapshot(),taskId: task.taskId });
         if (onChain?.status==='VERIFIED_PASS' || onChain?.status==='VERIFIED_FAIL') throw new AppError(503,'CHAIN_DATA_MISSING','链上已有结论但缺少可核对的原始交易，等待人工对账');
-        receipt = ChainReceiptSchema.parse(await chain.recordOutcome({ taskId: task.taskId,attempt: task.attempt,verdict: prepared.assessment.verdict as 'PASS'|'FAIL',artifactHash: prepared.artifact.contentHash,criteriaHash: task.criteriaHash,evidenceHash: prepared.assessment.evidenceHash,evidenceURI: prepared.assessment.evidenceURI,validator: task.validator }));
+        receipt = await state.send(task,'OUTCOME',()=>chain.recordOutcome(outcome));
       }
-      const assessment = AssessmentSchema.parse({ ...prepared.assessment,receipt });
-      await client.query('UPDATE assessments SET document=$3 WHERE task_id=$1 AND attempt=$2',[taskId,task.attempt,assessment]);
-      await this.saveReceipt(client,task,'OUTCOME',receipt);
-      if (receipt.status !== 'CONFIRMED') return { receipt,assessment };
-      const next = transitionTask(task,assessment.verdict==='PASS' ? 'VERIFIED_PASS' : 'VERIFIED_FAIL',{ ...context,attempt: task.attempt,artifact: prepared.artifact,assessment });
-      await this.app.saveTask(client,next);
-      if (assessment.verdict==='PASS') {
-        const downstream = (await this.app.run(task.runId,client)).tasks.filter(item=>item.dependsOn.includes(taskId as Hash));
-        for (const target of downstream) {
-          const handoff = HandoffSchema.parse({ handoffId: randomUUID(),runId: task.runId,artifactId: prepared.artifact.artifactId,fromTaskId: task.taskId,toTaskId: target.taskId,status: 'PENDING',reason: '上游已通过确定性验收，等待下游核对原始文件与交接说明',contentHash: prepared.artifact.contentHash,schemaVersion: prepared.artifact.schemaVersion,createdAt: new Date().toISOString() });
-          await client.query('INSERT INTO handoffs(id,run_id,document) VALUES($1,$2,$3)',[handoff.handoffId,task.runId,handoff]);
+      if (receipt.status==='CONFIRMED') assertOutcomeReceipt(receipt,{ ...outcome,chainId: context.chainId,contract: context.contract,assignee: requireValue(task.assignee),role: task.role,chainRunId: toChainRunId(task.runId) });
+      return this.app.store.write(async client=>{
+        const current = await this.app.task(taskId,client);
+        if (current.status!=='SUBMITTED') throw new AppError(409,'DUPLICATE_OUTCOME','当前任务已记录验收结论');
+        const assessment = AssessmentSchema.parse({ ...prepared.assessment,receipt });
+        await client.query('UPDATE assessments SET document=$3 WHERE task_id=$1 AND attempt=$2',[taskId,current.attempt,assessment]);
+        await this.saveReceipt(client,current,'OUTCOME',receipt);
+        if (receipt.status !== 'CONFIRMED') return { receipt,assessment };
+        const next = transitionTask(current,assessment.verdict==='PASS' ? 'VERIFIED_PASS' : 'VERIFIED_FAIL',{ ...context,attempt: current.attempt,artifact: prepared.artifact,assessment });
+        await this.app.saveTask(client,next);
+        if (assessment.verdict==='PASS') {
+          const downstream = (await this.app.run(task.runId,client)).tasks.filter(item=>item.dependsOn.includes(taskId as Hash));
+          for (const target of downstream) {
+            const handoff = HandoffSchema.parse({ handoffId: randomUUID(),runId: task.runId,artifactId: prepared.artifact.artifactId,fromTaskId: task.taskId,toTaskId: target.taskId,status: 'PENDING',reason: '上游已通过确定性验收，等待下游核对原始文件与交接说明',contentHash: prepared.artifact.contentHash,schemaVersion: prepared.artifact.schemaVersion,createdAt: new Date().toISOString() });
+            await client.query('INSERT INTO handoffs(id,run_id,document) VALUES($1,$2,$3)',[handoff.handoffId,task.runId,handoff]);
+          }
         }
-      }
-      await this.app.store.event(client,`TASK_${next.status}`,task.runId,task.taskId,task.attempt,{ evidenceHash: assessment.evidenceHash,receipt });
-      return { receipt,assessment };
+        await this.app.store.event(client,`TASK_${next.status}`,task.runId,task.taskId,task.attempt,{ evidenceHash: assessment.evidenceHash,receipt });
+        return { receipt,assessment };
+      });
     });
     this.pending(result.receipt);
     return result.assessment;

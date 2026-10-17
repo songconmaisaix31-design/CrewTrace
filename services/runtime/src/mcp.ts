@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
-import type { Principal } from './auth.js';
+import { admin,type Principal } from './auth.js';
 import type { Application } from './service.js';
 import { errorBody } from './errors.js';
 import { z } from 'zod';
@@ -29,6 +29,7 @@ export async function mcpResponse(app: Application, principal: Principal, reques
   const contextFilter = z.strictObject({ runId: IdSchema.optional(),taskId: HashSchema.optional() });
   const taskKey = z.strictObject({ taskId: HashSchema });
   register('health','读取真实数据库与链依赖状态',z.strictObject({}),()=>app.health());
+  register('get_template','读取固定三角色流程与真实规则原文地址',z.strictObject({}),async()=>app.template());
   register('list_agents','读取节点身份与实际心跳',z.strictObject({}),async()=>({ agents: await app.agents() }));
   register('get_run','读取运行、任务进度、产物、决策和交接',z.strictObject({ runId: IdSchema }),input=>app.runDetails(input.runId));
   register('get_events','按数据库 seq 增量读取事件',z.strictObject({ runId: IdSchema,after: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0) }),input=>app.store.events(input.runId,input.after));
@@ -54,6 +55,8 @@ export async function mcpResponse(app: Application, principal: Principal, reques
   register('create_run','管理凭证创建固定 CSV 工作流',CreateRunWithInputRequestSchema,input=>app.createRun(principal,input));
   register('assign_task','管理凭证按真实链上信誉快照指派任务',taskKey,input=>execution.assign(principal,input.taskId));
   register('assess_task','管理凭证执行确定性验收并写入真实链',taskKey,input=>execution.assess(principal,input.taskId));
+  register('advance_run','管理凭证按原交易恢复固定流程',z.strictObject({ runId: IdSchema }),async input=>{ admin(principal); return app.progress(input.runId); });
+  register('control_run','管理凭证暂停、恢复或取消运行',z.strictObject({ runId: IdSchema,action: z.enum(['pause','resume','cancel']) }),input=>execution.control(principal,input.runId,input.action));
   const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   await server.connect(transport);
   try { return await transport.handleRequest(request); }

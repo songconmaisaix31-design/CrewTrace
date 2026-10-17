@@ -6,11 +6,14 @@ import {
   hashUtf8, nodeBindingMessage, type AgentProfile, type Artifact, type AssessmentCheck, type ChainPort, type Task,
 } from '../../../packages/contracts/src/index.ts';
 import { createFixedRun, deriveRunStatus, assertExecutionBudget } from './domain/workflow.ts';
+import { CRITERIA_BYTES, CRITERIA_HASH } from '../../../workers/src/criteria.ts';
+import { FIXED_WORKFLOW,TEMPLATE_VERSION } from './domain/workflow.ts';
 import type { Config } from './config.js';
 import type { Database } from './db.js';
 import { Store } from './store.js';
 import { admin, node, sameAgent, tokenHash, type Principal } from './auth.js';
 import { AppError, requireValue } from './errors.js';
+import { encodeUtf8 } from './content.js';
 
 export interface ValidationInput {
   task: Task; artifact: Artifact; content: string; inputContent: string;
@@ -23,11 +26,20 @@ export class Application {
   constructor(readonly db: Database, readonly config: Config, readonly chain: ChainPort | null = null, readonly validator: Validator | null = null) { this.store = new Store(db); }
   async health() {
     await this.db.pool.query('SELECT 1');
+    const writable = Boolean(this.chain && this.config.CHAIN_COORDINATOR_PRIVATE_KEY && this.config.CHAIN_VALIDATOR_PRIVATE_KEY);
     return {
-      status: this.chain && this.validator ? 'ok' : 'degraded', database: 'connected',
-      chain: { configured: Boolean(this.chain), code: this.chain ? null : 'CHAIN_NOT_CONFIGURED' },
+      status: writable && this.validator ? 'ok' : 'degraded', database: 'connected',
+      chain: { configured: Boolean(this.chain),writable, code: writable ? null : 'CHAIN_NOT_CONFIGURED' },
       validator: { configured: Boolean(this.validator), code: this.validator ? null : 'VALIDATOR_NOT_CONFIGURED' },
     };
+  }
+  template() {
+    return { templateVersion: TEMPLATE_VERSION,workflow: FIXED_WORKFLOW,criteriaHash: CRITERIA_HASH,criteriaURI: `${this.config.PUBLIC_BASE_URL}/api/criteria` };
+  }
+  criteria() { return CRITERIA_BYTES; }
+  async progress(runId?: string) {
+    const { FixedWorkflow } = await import('./workflow.ts');
+    return new FixedWorkflow(this).advance(runId);
   }
   requireChain() {
     if (!this.chain) throw new AppError(503,'CHAIN_NOT_CONFIGURED','A 的真实链适配器尚未配置');
@@ -52,11 +64,12 @@ export class Application {
     const handoffs = await this.db.pool.query('SELECT document FROM handoffs WHERE run_id=$1 ORDER BY id',[runId]);
     const artifacts = await this.db.pool.query('SELECT document FROM artifacts WHERE run_id=$1 ORDER BY created_at',[runId]);
     const assessments = await this.db.pool.query('SELECT a.document FROM assessments a JOIN tasks t ON t.id=a.task_id WHERE t.run_id=$1 ORDER BY task_id,attempt',[runId]);
+    const receipts = await this.db.pool.query('SELECT c.task_id,c.attempt,c.operation,c.receipt FROM chain_receipts c JOIN tasks t ON t.id=c.task_id WHERE t.run_id=$1 ORDER BY c.task_id,c.operation',[runId]);
     const snapshots = decisions.rows.map(row=>{
       if (!row.raw_bytes || hashUtf8(row.raw_bytes)!==row.document.decisionHash) throw new AppError(409,'ARTIFACT_MISMATCH','持久化决策摘要不匹配');
       return AssignmentDecisionSchema.parse({ ...JSON.parse(row.raw_bytes.toString('utf8')),decisionHash: row.document.decisionHash });
     });
-    return RunDetailSchema.parse({ ...run,inputURI: `${this.config.PUBLIC_BASE_URL}/api/runs/${encodeURIComponent(runId)}/input`,decisions: snapshots,handoffs: handoffs.rows.map(r=>r.document),artifacts: artifacts.rows.map(r=>r.document),assessments: assessments.rows.map(r=>r.document) });
+    return RunDetailSchema.parse({ ...run,inputURI: `${this.config.PUBLIC_BASE_URL}/api/runs/${encodeURIComponent(runId)}/input`,decisions: snapshots,handoffs: handoffs.rows.map(r=>r.document),artifacts: artifacts.rows.map(r=>r.document),assessments: assessments.rows.map(r=>r.document),taskReceipts: receipts.rows.map(row=>({ taskId: row.task_id,attempt: row.attempt,operation: row.operation,receipt: row.receipt })) });
   }
   async input(runId: string,client: Pick<PoolClient,'query'> = this.db.pool) {
     const record = requireValue((await client.query('SELECT document,input_bytes FROM runs WHERE id=$1',[runId])).rows[0]);
@@ -105,7 +118,7 @@ export class Application {
     const identity = node(principal);
     const request = HeartbeatRequestSchema.parse(input);
     if (request.runtimeId !== identity.runtimeId) throw new AppError(403,'UNAUTHORIZED','runtimeId 与凭证不匹配');
-    return this.store.write(async client => {
+    const updated = await this.store.write(async client => {
       const profile = requireValue((await this.agents(client)).find(a=>a.agentId===identity.agentId));
       if (profile.maxConcurrency !== request.maxConcurrency) throw new AppError(409,'INVALID_INPUT','并发配置与登记值不匹配');
       const occupied = Number((await client.query("SELECT count(*) FROM tasks t JOIN runs r ON r.id=t.run_id WHERE t.document->>'assignee'=$1 AND t.document->>'status' IN ('ASSIGNED','RUNNING','SUBMITTED') AND r.runtime_status <> 'CANCELLED'",[identity.agentId])).rows[0].count);
@@ -113,22 +126,30 @@ export class Application {
       await client.query('UPDATE agents SET profile=$2 WHERE id=$1',[identity.agentId,updated]);
       return updated;
     });
+    if (this.chain && this.validator) await this.progress();
+    return updated;
   }
   async createRun(principal: Principal,input: unknown) {
     admin(principal);
     const request = CreateRunWithInputRequestSchema.parse(input);
+    if (request.criteriaHash!==CRITERIA_HASH) throw new AppError(409,'ARTIFACT_MISMATCH','规则摘要与固定流程公开原文不一致');
+    if (this.chain && this.config.CHAIN_VALIDATOR?.toLowerCase()!==request.validator) throw new AppError(403,'UNAUTHORIZED','运行必须使用已配置的可信验收地址');
     const inputContent = request.inputContent;
+    const inputBytes = encodeUtf8(inputContent);
     if (hashUtf8(inputContent) !== request.inputHash) throw new AppError(409,'ARTIFACT_MISMATCH','输入字节与 inputHash 不匹配');
-    return this.store.write(async client => {
+    const created = await this.store.write(async client => {
       const activeRuns = Number((await client.query("SELECT count(*) FROM runs WHERE document->>'status' IN ('OPEN','RUNNING') AND runtime_status <> 'CANCELLED'")).rows[0].count);
       assertExecutionBudget({ operation: 'CREATE_RUN',activeRuns,modelCalls: 0,stepCalls: 0 });
       if ((await client.query('SELECT id FROM runs WHERE id=$1',[request.runId])).rowCount) throw new AppError(409,'INVALID_STATE','runId 已存在');
       const run = createFixedRun(request,new Date().toISOString());
-      await client.query('INSERT INTO runs(id,document,input_bytes) VALUES($1,$2,$3)',[run.runId,run,Buffer.from(inputContent,'utf8')]);
+      await client.query('INSERT INTO runs(id,document,input_bytes) VALUES($1,$2,$3)',[run.runId,run,inputBytes]);
       for (const task of run.tasks) await client.query('INSERT INTO tasks(id,run_id,document) VALUES($1,$2,$3)',[task.taskId,run.runId,task]);
       await this.store.event(client,'RUN_CREATED',run.runId,null,null,{ inputHash: run.inputHash });
       return run;
     });
+    if (this.chain && this.validator) await this.progress(created.runId);
+    const { runtimeStatus: _runtimeStatus,taskRuntime: _taskRuntime,...current } = await this.run(created.runId);
+    return current;
   }
   async saveTask(client: PoolClient,task: Task) {
     TaskSchema.parse(task);

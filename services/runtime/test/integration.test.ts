@@ -5,6 +5,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { hashUtf8, nodeBindingMessage, type Run } from '../../../packages/contracts/src/index.ts';
+import { CRITERIA_HASH,CRITERIA_BYTES } from '../../../workers/src/criteria.ts';
 import { serve } from '@hono/node-server';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -51,7 +52,7 @@ async function startProcess(adminToken: string) {
   });
   const output = createInterface({ input: processHandle.stdout });
   const url = await new Promise<string>((resolve,reject)=>{
-    const timeout = setTimeout(()=>reject(new Error('服务进程未在 20 秒内启动')),20_000);
+    const timeout = setTimeout(()=>{ processHandle.kill(); reject(new Error('服务进程未在 20 秒内启动')); },20_000);
     processHandle.once('error',reject);
     processHandle.once('exit',code=>{ clearTimeout(timeout); reject(new Error(`服务提前终止 ${code}`)); });
     output.once('line',line=>{ clearTimeout(timeout); resolve(JSON.parse(line).url); });
@@ -60,7 +61,7 @@ async function startProcess(adminToken: string) {
 }
 
 async function stopProcess(processHandle: ChildProcess) {
-  if (processHandle.exitCode !== null) return;
+  if (processHandle.exitCode !== null || processHandle.signalCode !== null) return;
   const exited = new Promise<void>(resolve=>processHandle.once('exit',()=>resolve()));
   processHandle.kill();
   await exited;
@@ -103,7 +104,9 @@ test('真实进程重启、身份权限、便签并发、事件增量和 MCP 写
     const agents = await json('/api/agents');
     assert.ok(agents.agents.find((agent: any)=>agent.agentId===accounts[0].address.toLowerCase()).lastSeenAt);
     const source = 'record_id,date,category,sales_yuan,orders\r\n'+Array.from({ length: 30 },(_,index)=>`${index+1},2026-10-17,controlled,${index+1}.00,1`).join('\r\n')+'\r\n';
-    const makeRun = (runId: string)=>({ runId,inputContent: source,inputHash: hashUtf8(source),criteriaHash: hashUtf8('controlled permission persistence test'),validator: accounts[1].address.toLowerCase() });
+    const makeRun = (runId: string)=>({ runId,inputContent: source,inputHash: hashUtf8(source),criteriaHash: CRITERIA_HASH,validator: accounts[1].address.toLowerCase() });
+    assert.equal((await json('/api/template')).criteriaHash,CRITERIA_HASH);
+    assert.deepEqual(Buffer.from(await (await request('/api/criteria')).arrayBuffer()),CRITERIA_BYTES);
     await json('/api/runs','POST',makeRun(runIds[0]),undefined,403);
     const run: Run = await json('/api/runs','POST',makeRun(runIds[0]),adminToken,201);
     await json('/api/runs','POST',makeRun(runIds[1]),adminToken,201);
@@ -148,8 +151,11 @@ test('真实进程重启、身份权限、便签并发、事件增量和 MCP 写
     const databaseIds = await db.pool.query('SELECT event_id FROM events WHERE run_id=$1',[run.runId]);
     for (const event of [...events.events,...delta.events]) assert.ok(databaseIds.rows.some(row=>row.event_id===event.eventId));
     await mcp.close(); mcp=undefined;
+    console.log('restart: stopping first service process');
     await stopProcess(running.processHandle);
+    console.log('restart: starting second service process');
     running = await startProcess(adminToken);
+    console.log('restart: second service process listening');
     const persistedNote = await json(`/api/notes/${note.noteId}`);
     assert.equal(persistedNote.version,2);
     assert.equal(persistedNote.versions.length,2);
