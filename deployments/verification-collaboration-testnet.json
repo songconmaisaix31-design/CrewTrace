@@ -1,0 +1,24 @@
+{
+  "chainId": 10143,
+  "contractAddress": "0x6c50db72f4d6e57a92d8feb1bce534ca0052fb81",
+  "checkedAt": "2026-10-17T12:58:28.390Z",
+  "httpStatus": 200,
+  "result": {
+    "success": true,
+    "verified": 2,
+    "total": 2,
+    "results": {
+      "monadvision": {
+        "status": "success",
+        "message": "Verified with perfect match",
+        "url": "https://testnet.monadvision.com/address/0x6c50db72f4d6e57a92d8feb1bce534ca0052fb81"
+      },
+      "monadscan": {
+        "status": "success",
+        "message": "Pass - Verified",
+        "guid": "kx5ppzc8uasn3wdw37qg6dgbhs8sn7gk4gsaksjfrkwgecixnc",
+        "url": "https://testnet.monadscan.com/address/0x6c50db72f4d6e57a92d8feb1bce534ca0052fb81"
+      }
+    }
+  }
+}
