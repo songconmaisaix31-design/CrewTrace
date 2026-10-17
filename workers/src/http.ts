@@ -3,7 +3,7 @@ import {
   AcceptTaskRequestSchema, AgentNoteSchema, AgentProfileSchema, AnnouncementCreateSchema, AnnouncementSchema,
   ArtifactSchema, ArtifactUploadRequestSchema, HeartbeatRequestSchema, NoteCreateSchema, NoteUpdateSchema,
   HandoffSchema, HandoffUpdateRequestSchema, ModelCallRequestSchema, ModelCallReservationSchema,
-  WorkerJobsResponseSchema, SubmitTaskRequestSchema, type WorkerJob,
+  WorkerJobsResponseSchema, SubmitTaskRequestSchema, TaskSchema, IdSchema, type WorkerJob,
   type AnnouncementCreate, type ArtifactUploadRequest, type HeartbeatRequest, type NoteCreate, type NoteUpdate,
   type SubmitTaskRequest,
 } from "../../packages/contracts/src/index.ts";
@@ -11,13 +11,20 @@ import { requireValue, WorkerError } from "./errors.ts";
 
 export type { WorkerJob } from "../../packages/contracts/src/index.ts";
 
+const FAST_REQUEST_TIMEOUT_MS = 20_000;
+const CHAIN_REQUEST_TIMEOUT_MS = 120_000;
+const ProgressResponseSchema = z.discriminatedUnion("status", [
+  z.strictObject({ status: z.literal("PROGRESSED"), runs: z.array(z.strictObject({ runId: IdSchema, status: z.string().min(1) })).max(2) }),
+  z.strictObject({ status: z.literal("PROGRESS_IN_FLIGHT") }),
+]);
+
 export class WorkerHttp {
   constructor(readonly baseURL: string, private readonly credential: string, private readonly signal?: AbortSignal) {}
 
-  private async request(path: string, method = "GET", body?: unknown): Promise<Response> {
+  private async request(path: string, method = "GET", body?: unknown, timeoutMs = FAST_REQUEST_TIMEOUT_MS): Promise<Response> {
     const url = new URL(path, this.baseURL + "/");
     requireValue(url.origin === new URL(this.baseURL).origin, "UNAUTHORIZED", "禁止向其他源发送节点凭证");
-    const signal = this.signal ? AbortSignal.any([this.signal, AbortSignal.timeout(20_000)]) : AbortSignal.timeout(20_000);
+    const signal = this.signal ? AbortSignal.any([this.signal, AbortSignal.timeout(timeoutMs)]) : AbortSignal.timeout(timeoutMs);
     const response = await fetch(url, { method, headers: { Authorization: `Bearer ${this.credential}`, ...(body === undefined ? {} : { "Content-Type": "application/json" }) }, body: body === undefined ? undefined : JSON.stringify(body), signal, redirect: "error" });
     if (!response.ok) {
       const error = z.object({ error: z.object({ code: z.string(), message: z.string() }) }).parse(await response.json());
@@ -29,6 +36,10 @@ export class WorkerHttp {
   async heartbeat(input: HeartbeatRequest) {
     const result = await (await this.request("/worker/heartbeat", "POST", HeartbeatRequestSchema.parse(input))).json();
     return AgentProfileSchema.parse(result);
+  }
+
+  async progress() {
+    return ProgressResponseSchema.parse(await (await this.request("/worker/progress", "POST", {}, CHAIN_REQUEST_TIMEOUT_MS)).json());
   }
 
   async health() {
@@ -56,7 +67,7 @@ export class WorkerHttp {
   }
 
   async submit(taskId: string, input: SubmitTaskRequest) {
-    return this.request(`/worker/tasks/${taskId}/submit`, "POST", SubmitTaskRequestSchema.parse(input));
+    return TaskSchema.parse(await (await this.request(`/worker/tasks/${taskId}/submit`, "POST", SubmitTaskRequestSchema.parse(input), CHAIN_REQUEST_TIMEOUT_MS)).json());
   }
 
   async download(uri: string): Promise<Buffer> {

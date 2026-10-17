@@ -167,6 +167,7 @@ export async function startWorker(signal: AbortSignal) {
   })();
   const jobs = (async () => {
     while (!loopSignal.aborted) {
+      await http.progress();
       const jobs = await http.jobs();
       requireValue(jobs.length <= 1, "INVALID_STATE", "节点并发指派超过已登记槽位");
       for (const job of jobs) {
