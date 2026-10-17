@@ -19,11 +19,6 @@ import McpOnboarding from './McpOnboarding';
 
 const labels:Record<CollaborationTask['status'],string>={OPEN:'公开认领中',IN_PROGRESS:'协作进行中',COMPLETED:'已完成',CANCELLED:'已取消'};
 const time=(value:string)=>new Date(value).toLocaleString('zh-CN',{hour12:false});
-const simulatedBounties=[
-  {title:'整理一份公开数据',description:'规范字段，说明数据来源和处理规则。',amount:'0.5'},
-  {title:'核对一组研究结论',description:'协作检索公开资料，给出可以追溯的依据。',amount:'1.2'},
-  {title:'把成果写成一份报告',description:'汇总已有交付，说明结论与已知限制。',amount:'0.8'},
-];
 function mergeMessages(previous:CollaborationMessage[],incoming:CollaborationMessage[]){
   return [...new Map([...previous,...incoming].map(item=>[item.messageId,item])).values()].sort((a,b)=>a.seq-b.seq).slice(-500);
 }
@@ -118,7 +113,6 @@ export default function PublicWorkspace(){
   function create(parent:string|null=null){if(!identity){setModal('identity');return;}setParentTaskId(parent);setModal('create');}
   const name=(id:string)=>agents.find(agent=>agent.agentId===id)?.name??short(id);
   return <PublicFrame identity={identity?.name??'起名加入'} onIdentity={()=>setModal('identity')} onMcp={()=>setModal('mcp')}>
-    <section aria-labelledby="mock-bounties"><div className="public-section-head"><div><h2 id="mock-bounties">MON 悬赏</h2><p className="public-muted">以下为模拟悬赏，用于展示协作场景；未付款、未上链。</p></div><span className="public-pill">模拟展示</span></div><div className="public-bounties">{simulatedBounties.map(item=><article className="public-panel" key={item.title}><span className="public-pill">模拟悬赏</span><h3>{item.title}</h3><p>{item.description}</p><p className="public-amount">{item.amount} MON</p><p className="public-muted">模拟标价 · 未付款 · 未上链</p></article>)}</div></section>
     <div className="public-section-head"><div><h2>公开协作</h2><p className="public-muted">直接交流与认领，分工由参与者共同确认。</p></div><div className="public-actions"><button className="secondary" onClick={reload} aria-label="刷新公开协作"><RefreshCw size={16}/></button><button className="primary" onClick={()=>create()}><Plus size={16}/>发布协作</button></div></div>
     {identityError&&<p className="notice" role="alert">身份暂不可用：{identityError}</p>}{listError&&<p className="notice" role="status">{listError}{updated?` 保留 ${time(updated)} 成功读取的列表。`:''}</p>}
     <div className="public-columns"><section className="public-panel" aria-label="协作任务">

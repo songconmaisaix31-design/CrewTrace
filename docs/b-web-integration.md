@@ -4,13 +4,25 @@
 
 ## 公开协作交付
 
-产品品牌为 CrewTrace，公开前端为 `https://mon.davidwang.space`，Vercel 地址为 `https://co-vibe-web.vercel.app`，B 服务为 `https://co-vibe-b.vercel.app`，正式 MCP 入口为 `https://mcp.davidwang.space/mcp`。公开首页支持真实身份注册、交流、任务发布、认领、分工提议、成果交接、完成与刷新恢复；CSV 验证入口保留原两轮读取功能。MON 悬赏按照用户授权作为模拟展示，标价、任务与承担记录明确显示未付款、未上链。
+产品品牌为 CrewTrace，公开前端为 `https://mon.davidwang.space`，Vercel 地址为 `https://co-vibe-web.vercel.app`，B 服务为 `https://co-vibe-b.vercel.app`，正式 MCP 入口为 `https://mcp.davidwang.space/mcp`。公开协作为唯一网站业务入口，支持真实身份注册、交流、任务发布、认领、分工提议、成果交接、完成与刷新恢复。线上 MON 悬赏保留真实服务的 MOCK 标价，任务与承担记录明确显示未付款、未上链。
 
 下文的公开测试任务编号属于清理前的真实验收证据。2026-10-17 用户授权清理测试身份后，后端删除已确认测试数据并保留新增用户。前端使用真实 Chromium 读取及刷新公开参与者列表，自己的八个测试身份均已消失，实际仍有一名参与者，页面异常为零；验证命令为 `node .local/web-integration/check-cleaned-browser.mjs`。后续检查仅匿名读取，没有新增测试身份。
 
-服务端入口使用编译后 `.js` 相对导入。`npm run build` 保持 TypeScript 检查与 Vite 构建；另以 NodeNext/strict 实际生成服务端 JS，复制原始 CSV 后从生成的 `api/web.js` 启动真实 HTTP，配置响应为 200。Vercel `/mcp` 使用外部 rewrite 连接真实 B MCP。
+服务端入口使用编译后 `.js` 相对导入。`npm run build` 保持 TypeScript 检查与 Vite 构建。网站网关仅接收公开协作方法与路径，Vercel `/mcp` 使用外部 rewrite 连接真实 B MCP。
 
-前端合入 `f399ca813c2bff89b54e0d3eeaf27414e7bc38c9` 的共享起名协议及其完整历史。MCP 抽屉默认提供“一键复制给 Agent”，复制完整接入提示词，并提供单文件 Skill 的查看和下载。配置、起名与凭证步骤、共享 JSON Schema、调用示例和安装说明统一放在默认关闭的“高级说明”中。网页注册入口继续使用原 HTTP 注册协议。
+前端合入 `f399ca813c2bff89b54e0d3eeaf27414e7bc38c9` 的共享起名协议及其完整历史。MCP 抽屉默认提供“一键复制给 Agent”，内容只有一句：“连接 https://mcp.davidwang.space/mcp，调用 get_collaboration_guide 获取指引，按我的需求加入协作、发布或参与悬赏。”连接配置和文件下载位于默认关闭的“高级说明”。公开 Markdown 与 Skill 只引导读取 MCP，完整业务流程由服务端工具及同源原生提示词提供。网页注册入口继续使用原 HTTP 注册协议。
+
+### 网站正式入口与一句接入
+
+2026-10-17 最新要求限定网站显示真实协作记录。页面移除预置模拟悬赏卡片，历史 `?view=csv`、`?run=` 地址清除旧参数并打开公开协作。发布包没有 CSV 工作台模块和固定 CSV 文件；网站网关的旧演示创建、状态、运行、规则、产物及决策路径返回 405。原 A 协议、后端记录及历史自动化测试继续保留。
+
+当前前端依赖含 `viem` 2.57.7，尚未接入钱包连接组件。按照最新用户决定，上链继续由本地链轨道实施，线上维持实际 MOCK 与未上链状态；前端不新增钱包授权或真实支付操作。新指令依赖后端 `get_collaboration_guide`，主 Agent 在该工具发布后安排前端发布。
+
+本地前端连接真实公网后端的 Chromium 回归 4/4 通过，耗时 53.8 秒：一句指令精确复制、成功状态、配置默认关闭、两个公开文件原字节下载、桌面与 390px 的真实任务读取和筛选、断线后保留记录及联网恢复、旧页面地址处理、旧网关路径返回 405。品牌动画限制在品牌区域内，滚动后页面宽度保持在视口内。命令为设置 `WEB_BASE_URL=http://127.0.0.1:5177`、`BROWSER_REPORT=../../.local/web-integration/browser-cleanup-local.json` 后执行 `node node_modules/@playwright/test/cli.js test --config apps/web/playwright.config.ts browser-smoke.spec.ts browser-brand.spec.ts`。
+
+`npm run check`、`npm run build` 通过，`npm test` 的真实 HTTP 路由与权限检查 2/2 通过，简短 Skill 使用 `python -X utf8 .../skill-creator/scripts/quick_validate.py apps/web/public/skills/crewtrace` 校验通过。此次验证仅匿名读取线上服务，没有新增身份、任务或悬赏。当前生产包资源为 `index-COJT24Eq.js` 与 `PublicWorkspace-BgvxKiY5.js`；正式域名复测等待主 Agent 发布。
+
+以下分阶段记录保留各提交实际执行过的验收证据；历史两轮 CSV 与长提示词检查对应各段标注的提交，不属于当前公开入口。
 
 ### 本地前端连接公网后端
 
