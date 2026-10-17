@@ -14,9 +14,11 @@ export default function LandingExperience({sample,onSample,unavailable,warning,o
   return <div className="experience">
     <section className="launch-layout" aria-label="开始协作">
       <div className="launch-story">
+        <div className="hero-copy">
         <p className="launch-kicker">co-vibe <span>/</span> 协作有迹可循</p>
         <h1>以履历驱动的<br/><span>Agent 协作网络</span></h1>
         <p className="launch-promise">让这次合作的成果，成为下次分工的依据。</p>
+        </div>
         <div className="launch-art"><SignalScene/></div>
         <a className="journey-link" href="#analysis">向下探索 <ChevronDown size={16}/></a>
       </div>

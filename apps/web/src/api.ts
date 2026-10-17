@@ -12,7 +12,8 @@ export function userMessage(error:unknown):string {
   return '暂时无法完成此操作，请稍后重试。';
 }
 export async function request(path:string, init?:RequestInit) {
-  const response = await fetch(path, {...init, signal:init?.signal ?? AbortSignal.timeout(45000)});
+  const timeout=AbortSignal.timeout(45000);
+  const response = await fetch(path, {...init, signal:init?.signal ? AbortSignal.any([init.signal,timeout]) : timeout});
   if (!response.ok) {
     const errorBody = z.object({error:z.object({code:z.string().optional()})}).safeParse(await response.json());
     const code = errorBody.success ? errorBody.data.error.code : undefined;

@@ -1,5 +1,8 @@
 /* 首屏突出品牌光环，下滑进入紧凑的操作和协作区域。 */
 /* 柔和镜片与滞后光雾；真实局部放大由品牌画布完成。 */
+.pointer-orbit[data-workspace=true] b,.pointer-orbit[data-workspace=true] span:before{display:none}
+.pointer-orbit[data-workspace=true] span{width:22px;height:22px;left:-11px;top:-11px;border:1px solid #ccb4eb88;background:transparent;backdrop-filter:none;box-shadow:none;transform:none}
+.pointer-orbit[data-workspace=true] span:after{display:none}
 .pointer-orbit span{width:120px;height:120px;left:-60px;top:-60px;border:1px solid #e1caff30;border-bottom:2px solid #f5eaff99;border-right:1px solid #d6b9ff60;background:radial-gradient(circle,#f4eaff08,transparent 68%);backdrop-filter:blur(1.2px) saturate(1.2);box-shadow:0 10px 28px -10px #f0dcff99,0 0 44px #b48aff55,inset 0 -9px 22px -10px #f8eaff99}
 .pointer-orbit span:after{left:57px;top:57px;width:4px;height:4px;box-shadow:0 0 10px #fff9}
 .pointer-orbit span:before{inset:-12px;border-width:8px;border-bottom-color:#e1c4ff77;border-right-color:#bd8fff44;filter:blur(12px)}
@@ -36,10 +39,11 @@
 .launch-story:after{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%23fff' filter='url(%23n)' opacity='.32' d='M0 0h180v180H0z'/%3E%3C/svg%3E");opacity:.15;mask-image:linear-gradient(transparent,#000 15%,#000 80%,transparent)}
 .launch-story h1{text-shadow:0 2px 28px #08090bb3}
 .launch-layout{display:block;padding:0;border:0}
-.launch-story{height:calc(100svh - 80px);min-height:620px;max-height:1050px;display:flex;flex-direction:column;justify-content:center;isolation:isolate;padding:0 0 100px}
+.launch-story{height:calc(100svh - 80px);min-height:620px;max-height:1050px;display:flex;flex-direction:column;justify-content:center;isolation:isolate;padding:0 0 40px}
+.hero-copy{position:relative;z-index:2;width:49%;padding-bottom:24px}
 .launch-kicker,.launch-story h1,.launch-promise{max-width:650px;pointer-events:none}
 .launch-kicker{position:relative;z-index:2}
-.launch-story h1{font-size:clamp(42px,4.6vw,72px);line-height:1.2;margin:24px 0 18px}
+.launch-story h1{font-size:clamp(40px,4.1vw,64px);line-height:1.24;margin:22px 0 22px;letter-spacing:-1.4px;animation:none!important;transform:none!important}
 .launch-art{position:absolute;left:30%;right:-8vw;top:0;bottom:0;width:auto;height:auto;margin:0;z-index:-1;opacity:1;pointer-events:auto}
 .launch-art .signal-scene{inset:0;width:100%;height:100%}
 .launch-art .scene-controls{bottom:40px;right:8vw}
@@ -50,6 +54,7 @@
 .evidence-story{padding:28px 0 32px}.evidence-story h2{font-size:29px;margin-top:14px}.evidence-copy{padding-top:0}.evidence-links{display:none}.evidence-copy>.text-button{margin-top:14px}
 @media(max-width:760px){
  .launch-story{height:calc(100svh - 96px);min-height:570px;max-height:850px;justify-content:flex-start;padding:32px 0 0;width:100%}
+ .hero-copy{width:100%;padding-bottom:0}
  .launch-story h1{font-size:clamp(32px,8.8vw,48px);max-width:none;margin:16px 0 12px}.launch-promise{max-width:none;font-size:12px}
  .launch-art{inset:180px -24px 50px;width:auto;height:auto;opacity:1;overflow:visible;pointer-events:auto}.launch-art .signal-scene{height:100%;inset:0}.launch-art canvas{pointer-events:auto}
  .journey-link{bottom:24px}.launch-form{grid-template-columns:1fr;gap:20px;padding:28px 0}.launch-form h2{font-size:28px;margin:12px 0 8px}.launch-explain{margin-bottom:0}

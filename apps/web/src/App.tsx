@@ -77,20 +77,29 @@ export default function App() {
     const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;let after=0;
     async function sync(){
       try{
-        const [detail,page]=await Promise.all([
-          read(`/api/runs/${encodeURIComponent(runId)}`,RunDetailSchema,controller.signal),
-          read(`/api/runs/${encodeURIComponent(runId)}/events?after=${after}`,EventsResponseSchema,controller.signal),
-        ]);
+        const detail=await read(`/api/runs/${encodeURIComponent(runId)}`,RunDetailSchema,controller.signal);
         if(controller.signal.aborted)return;
-        if(detail.runId!==runId||page.events.some(e=>e.runId!==runId))throw new Error('返回记录与本次分析不匹配');
-        setRun(detail);setEvents(old=>mergeEvents(old,page.events));after=page.nextAfter;setUpdated(new Date().toISOString());setSyncError('');remember(runId);
-        try{
-          const notes=await read(`/api/announcements?runId=${encodeURIComponent(runId)}`,AnnouncementsResponseSchema,controller.signal);
-          if(notes.announcements.some(n=>n.runId!==runId))throw new Error('公告与本次分析不匹配');
-          if(!controller.signal.aborted){setAnnouncements(notes.announcements);setNotesError('');setNotesUpdated(new Date().toISOString());}
-        }catch(e){if(!controller.signal.aborted)setNotesError(message(e));}
+        if(detail.runId!==runId)throw new Error('返回记录与本次分析不匹配');
+        setRun(detail);setUpdated(new Date().toISOString());setSyncError('');remember(runId);
+        const page=await read(`/api/runs/${encodeURIComponent(runId)}/events?after=${after}`,EventsResponseSchema,controller.signal);
+        if(controller.signal.aborted)return;
+        if(page.events.some(e=>e.runId!==runId))throw new Error('返回事件与本次分析不匹配');
+        setEvents(old=>mergeEvents(old,page.events));after=page.nextAfter;
       }catch(e){if(!controller.signal.aborted)setSyncError(message(e));}finally{if(!controller.signal.aborted)timer=setTimeout(sync,2000);}
     }void sync();return()=>{controller.abort();clearTimeout(timer);};
+  },[runId,config.configured]);
+  useEffect(()=>{
+    if(!runId||!config.configured)return;
+    const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;
+    async function syncNotes(){
+      try{
+        const notes=await read(`/api/announcements?runId=${encodeURIComponent(runId)}`,AnnouncementsResponseSchema,controller.signal);
+        if(notes.announcements.some(n=>n.runId!==runId))throw new Error('公告与本次分析不匹配');
+        if(!controller.signal.aborted){setAnnouncements(notes.announcements);setNotesError('');setNotesUpdated(new Date().toISOString());}
+      }catch(e){if(!controller.signal.aborted)setNotesError(message(e));}
+      finally{if(!controller.signal.aborted)timer=setTimeout(syncNotes,2000);}
+    }
+    void syncNotes();return()=>{controller.abort();clearTimeout(timer);};
   },[runId,config.configured]);
   async function create(e:FormEvent){
     e.preventDefault();if(busy)return;setBusy(true);setCreateError('');
@@ -113,7 +122,7 @@ export default function App() {
   const reports=run?.artifacts.filter(a=>a.taskId===selectedTask?.taskId&&a.attempt===selectedTask.attempt)??[];
   const selectedArtifact=run?.artifacts.find(a=>a.artifactId===artifactId);
   const handoff=run?.handoffs.find(h=>h.handoffId===handoffId);
-  const collaboration=<CollaborationBoard key={runId||'unstarted'} run={run} runId={runId} notes={announcements} updated={notesUpdated} error={notesError||(runId&&!config.configured?'服务未连接，暂时无法读取公告。':syncError)} onRole={role=>setModal(role)} onHandoff={setHandoffId}/>;
+  const collaboration=<CollaborationBoard key={runId||'unstarted'} run={run} runId={runId} notes={announcements} updated={notesUpdated} error={notesError||(runId&&!config.configured?'服务未连接，暂时无法读取公告。':'')} onRole={role=>setModal(role)} onHandoff={setHandoffId}/>;
   return <>
     <PointerFeedback/>
     <a className="skip" href="#main">跳至工作台</a>
@@ -130,7 +139,6 @@ export default function App() {
       {runId&&collaboration}
       {runId&&<section className="run-summary panel"><div><span className="overline">本次分析</span><p className="mono">{runId}</p><span className="muted small">{run?`${time(run.createdAt)} · ${stateName[run.runtimeStatus]}`:'正在读取分析记录'}</span></div><div className="summary-actions">{run&&<Badge value={runState(run)}/>}<button className="secondary" onClick={()=>setView('compare')} disabled={!run}><GitCompareArrows size={16}/>比较另一轮</button><button className="text-button" onClick={()=>openRun('')}>新建分析</button></div></section>}
       {(syncError||runId&&!config.configured)&&<p className="notice" role="status">{syncError||'暂时无法读取这份分析，请稍后再试。'}{updated&&` 保留上次状态：${time(updated)}`}</p>}
-      {runId&&<section className="workflow" aria-label="三步协作流程">{roles.map((role,index)=>{const Icon=icons[role];const task=run?.tasks.find(t=>t.role===role);const decision=run?currentDecision(run,role):undefined;const handoffs=run?.handoffs.filter(h=>h.fromTaskId===task?.taskId)??[];return <article className={`role-card ${task?.status==='RUNNING'?'executing':''}`} key={role}><div className="role-top"><span className="role-icon"><Icon size={21}/></span><span className="step">0{index+1}</span></div><h3>{roleName[role]}</h3><p className="role-description">{descriptions[role]}</p><div className="role-state">{task?<Badge value={task.status}/>:<span className="muted small">{runId?'正在读取进度':'开始后按履历分工'}</span>}</div>{task&&<><p className="mono small">{task.assignee?short(task.assignee):'尚未指派执行者'}</p>{run?.taskRuntime.filter(t=>t.taskId===task.taskId&&t.reason).map(t=><p className="small muted" key={t.taskId}>{t.reason}</p>)}<p className="selection-reason">{decision?.selectionReason??'分工依据尚未生成'}</p><button className="text-button" onClick={()=>setModal(role)}>查看分工依据<ChevronRight size={14}/></button>{handoffs.map(h=><button className="handoff" key={h.handoffId} onClick={()=>setHandoffId(h.handoffId)}>交接 · {stateName[h.status]}<ArrowRight size={14}/></button>)}</>}</article>;})}</section>}
       {run&&<><div className="section-line"><h2>成果与证据</h2><span className="small muted">查看报告及验证结果</span></div><section className="panel results">{reports.length?<><div className="result-header"><div><FileText size={22}/><h3>分析报告</h3></div><span className="muted small">{completed(run)?'分析已通过验证，记录已确认':'验证进度见各文件下方'}</span></div><div className="artifact-tabs">{reports.map(a=><button className={artifactId===a.artifactId?'chosen':''} onClick={()=>setArtifactId(a.artifactId)} key={a.artifactId}>{short(a.artifactId)}</button>)}</div>{artifactId&&selectedArtifact?<ArtifactText id={artifactId}/>:<p className="muted">选择一份报告开始阅读。</p>}</>:<div className="empty"><FileText size={28}/><h3>报告尚未生成</h3><p>报告完成后会显示在这里。你可以先查看分析进度。</p></div>}<div className="artifacts">{run.artifacts.map(a=>{const assessment=run.assessments.find(s=>s.taskId===a.taskId&&s.attempt===a.attempt);return <div className="artifact" key={a.artifactId}><div><strong>{(run.tasks.find(t=>t.taskId===a.taskId)?.role ? roleName[run.tasks.find(t=>t.taskId===a.taskId)!.role] : '分析')}成果</strong><p className="small mono muted">{short(a.artifactId)} · 第 {a.attempt} 次执行</p><p className="small">验收：{assessment?assessment.verdict==='PASS'?'通过':assessment.verdict==='FAIL'?'未通过':'待定':'尚未验收'} · 链上：{assessment?.receipt?stateName[assessment.receipt.status]:'暂无回执'}</p>{a.limitations.length>0&&<p className="small muted">限制：{a.limitations.join('；')}</p>}</div><a className="secondary" href={endpoint(`/api/artifacts/${encodeURIComponent(a.artifactId)}`)}><ArrowDownToLine size={15}/>下载</a><details><summary>查看来源与技术凭证</summary><p>文件格式 {a.schemaVersion}</p><p>由谁完成 <code>{a.producer}</code></p><p>文件校验值 <code>{a.contentHash}</code></p><p>引用文件：{a.parentArtifactIds.join('、')||'原始输入'}</p>{assessment&&<><p>验收项：{assessment.checks.map(c=>`${c.passed?'通过':'未通过'}：${c.message}`).join('；')}</p><a href={endpoint(`/api/tasks/${encodeURIComponent(a.taskId)}/assessments/${a.attempt}/evidence`)} target="_blank" rel="noreferrer">读取验收证据</a>{assessment.receipt&&<p>交易 <code>{assessment.receipt.txHash}</code>区块 {assessment.receipt.blockNumber??'等待确认'}</p>}</>}</details></div>;})}</div></section><section className="panel activity-panel"><div className="result-header"><h3>运行证据</h3><span className="small muted">{updated?`最近同步 ${time(updated)}`:'等待同步'}</span></div><details><summary>技术记录（最近 {events.length} 条）</summary>{events.map(e=><div className="event" key={e.eventId}><span className="mono small">#{e.seq} {e.type}</span><time>{time(e.createdAt)}</time><pre>{JSON.stringify(e.data,null,2)}</pre>{e.receipt&&<Badge value={e.receipt.status}/>}</div>)}</details></section></>}
       {run&&<section className="panel"><h3>成果文件</h3>{run.artifacts.map(a=><div className="artifact" key={a.artifactId}><span>{roleName[run.tasks.find(t=>t.taskId===a.taskId)!.role]}</span>{(run.tasks.find(t=>t.taskId===a.taskId)!.role==='DATA'?['data.csv','data-plan.json']:run.tasks.find(t=>t.taskId===a.taskId)!.role==='ANALYSIS'?['metrics.json']:['report.md','report.json']).map(name=><a className="text-button" key={name} href={endpoint(`/api/artifacts/${encodeURIComponent(a.artifactId)}/files/${name}`)}>下载 {name}</a>)}</div>)}</section>}
       {run&&<section className="panel"><h3>链上回执</h3>{run.taskReceipts.map(r=><details key={`${r.taskId}-${r.attempt}-${r.operation}`}><summary>{roleName[run.tasks.find(t=>t.taskId===r.taskId)!.role]} · {r.operation} · {stateName[r.receipt.status]}</summary><p>链 ID {r.receipt.chainId} · 区块 {r.receipt.blockNumber??'等待确认'}</p><code>{r.receipt.txHash}</code>{r.receipt.chainId===10143&&<p><a href={`https://testnet.monadexplorer.com/tx/${r.receipt.txHash}`} target="_blank" rel="noreferrer">查看区块浏览器</a></p>}</details>)}</section>}
@@ -161,6 +169,6 @@ export default function App() {
           <p className="small muted">最近在线时间：{a.lastSeenAt?time(a.lastSeenAt):'尚未获取'}<br/>正在处理 {a.activeTasks} 项任务 · 最多同时处理 {a.maxConcurrency} 项</p></div>):<p className="muted">暂未获取成员信息。</p>}
       </>:<Decision decision={run?currentDecision(run,modal):undefined}/>}
     </Dialog>}
-    {handoff&&<Dialog title="交接详情" onClose={()=>setHandoffId(null)}><Badge value={handoff.status}/><p>{handoff.reason}</p><details><summary>查看文件凭证</summary><p>文件编号 <code>{handoff.artifactId}</code></p><p>文件格式 {handoff.schemaVersion}</p><p>文件校验值 <code>{handoff.contentHash}</code></p></details><p className="muted">{time(handoff.createdAt)}</p><a className="secondary" href={endpoint(`/api/artifacts/${encodeURIComponent(handoff.artifactId)}`)}>下载交接文件<ArrowDownToLine size={15}/></a></Dialog>}
+    {handoff&&<Dialog title="交接详情" onClose={()=>setHandoffId(null)}><p>{run?.tasks.find(t=>t.taskId===handoff.fromTaskId)?.role?roleName[run.tasks.find(t=>t.taskId===handoff.fromTaskId)!.role]:'上游任务'} → {run?.tasks.find(t=>t.taskId===handoff.toTaskId)?.role?roleName[run.tasks.find(t=>t.taskId===handoff.toTaskId)!.role]:'下游任务'}</p><Badge value={handoff.status}/><p>交付文件：<code>{handoff.artifactId}</code></p><p className="small muted">下游验收条件：当前接口未提供可读说明。</p><p>{handoff.reason}</p><details><summary>查看文件凭证</summary><p>文件编号 <code>{handoff.artifactId}</code></p><p>文件格式 {handoff.schemaVersion}</p><p>文件校验值 <code>{handoff.contentHash}</code></p></details><p className="muted">{time(handoff.createdAt)}</p><a className="secondary" href={endpoint(`/api/artifacts/${encodeURIComponent(handoff.artifactId)}`)}>下载交接文件<ArrowDownToLine size={15}/></a></Dialog>}
   </>;
 }
