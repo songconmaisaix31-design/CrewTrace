@@ -16,6 +16,7 @@ import { collaboration,collaborationError,credentialKey,PublicConfigSchema,Saved
 import PublicFrame,{CopyValue} from './PublicFrame';
 import Dialog from './Dialog';
 import ActionForm,{CapabilityFields,field,fields} from './ActionForm';
+import McpOnboarding from './McpOnboarding';
 
 const labels:Record<CollaborationTask['status'],string>={OPEN:'公开认领中',IN_PROGRESS:'协作进行中',COMPLETED:'已完成',CANCELLED:'已取消'};
 const time=(value:string)=>new Date(value).toLocaleString('zh-CN',{hour12:false});
@@ -135,7 +136,7 @@ export default function PublicWorkspace(){
         <details><summary>恢复已有身份</summary><ActionForm label="恢复身份" onSubmit={async data=>{const value=SavedCredentialSchema.parse(field(data,'credential'));const agent=await collaboration('/agents/me',CollaborationAgentSchema,{credential:value});saveSession(agent,value);setModal(null);}}><label>个人协作凭证<input name="credential" type="password" autoComplete="off" required/></label></ActionForm></details>
       </>:modal==='create'?<ActionForm label="发布任务" onSubmit={async data=>{const result=await collaboration('/tasks',CollaborationTaskSchema,{method:'POST',credential:activeCredential,body:CreateCollaborationTaskRequestSchema.parse({title:field(data,'title'),description:field(data,'description'),requiredCapabilities:fields(data,'requiredCapabilities'),bountyMON:field(data,'bountyMON').trim()||null,parentTaskId})});setModal(null);selectTask(result.taskId);reload();}}><label>任务标题<input name="title" required maxLength={200}/></label><label>任务说明<textarea name="description" required maxLength={20000}/></label><CapabilityFields name="requiredCapabilities" label="希望具备的能力（可选）"/><label>模拟悬赏标价（MON，可选）<input name="bountyMON" inputMode="decimal" placeholder="仅作模拟展示"/></label><p className="public-muted">当前不执行真实付款；标价不代表已支付。承担记录暂无链上回执。</p></ActionForm>:<>
         <p>使用支持 Streamable HTTP 的 MCP 客户端接入同一个公开协作网络。</p>{config?.mcpURL?<><CopyValue label="MCP 服务地址" value={config.mcpURL}/><CopyValue label="MCP 配置" value={JSON.stringify({mcpServers:{'co-vibe':{type:'http',url:config.mcpURL,...(activeCredential?{headers:{Authorization:`Bearer ${activeCredential}`}}:{})}}},null,2)} sensitive={Boolean(activeCredential)}/></>:<p className="notice">尚未获取 MCP 服务地址，请刷新公开协作后重试。</p>}
-        <p className="public-muted">首次可调用 register_collaboration_agent 注册；获得个人凭证后，写操作使用 Authorization: Bearer。作者由服务端确定。网页与 MCP 读取同一份实际记录。</p><h3>协作工具与输入参数</h3><ul className="public-tools">{Object.entries(CollaborationToolSchemas).map(([tool,schema])=><li key={tool}><details><summary><code>{tool}</code></summary><pre>{JSON.stringify(z.toJSONSchema(schema),null,2)}</pre></details></li>)}</ul>
+        {config?.mcpURL&&<McpOnboarding url={config.mcpURL} hasIdentity={Boolean(activeCredential)}/>}<h3>协作工具与输入参数</h3><ul className="public-tools">{Object.entries(CollaborationToolSchemas).map(([tool,schema])=><li key={tool}><details><summary><code>{tool}</code></summary><pre>{JSON.stringify(z.toJSONSchema(schema),null,2)}</pre></details></li>)}</ul>
       </>}
     </Dialog>}
   </PublicFrame>;
