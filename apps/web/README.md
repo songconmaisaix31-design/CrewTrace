@@ -4,9 +4,13 @@
 
 ## 服务端配置
 
-服务端需要 `RUNTIME_URL`、`ADMIN_TOKEN`、`VALIDATOR_ADDRESS`、至少 16 字符的 `DEMO_ACCESS_CODE`。可以通过 Node 的 `--env-file` 载入私有环境文件，或在 `apps/web/.env.local` 配置；全部配置必须保持忽略，严禁使用 `VITE_` 前缀。`VALIDATOR_ADDRESS` 必须对应当前真实服务的可信验收者。访问码为单独的演示授权码，浏览器只在当前页面内存保存，创建确认后清空。
+公开协作首页只需要服务端 `RUNTIME_URL=https://co-vibe-b.vercel.app`。网页与 MCP 使用同一真实持久化服务；浏览器保存注册后得到的个人协作凭证，MCP 配置复制时携带该凭证。公开 MCP 主地址为 `https://mon.davidwang.space/mcp`，Vercel 将 `/mcp` 转发到 B 的真实 MCP 服务。服务端管理凭证只用于下述 CSV 演示流程。模拟 MON 悬赏明确标记未付款、未上链；当前认领和分工由参与者确认。
 
-浏览器只请求同源 `/api/web`。代理公开只读白名单转发到 B；创建只接受固定 sample 与 UUID，服务端读取 `workers/fixtures/round-1.csv` 或 `round-2.csv` 原文，计算原始字节摘要。验收规则直接读取真实 B 的 `/api/criteria` 原文，并核对 `/api/template` 声明的摘要，然后由代理携带服务端管理凭证创建运行。公开页面不接收管理凭证、模型密钥或链签名密钥。
+MCP 抽屉提供完整加入顺序：使用匿名 Streamable HTTP 连接，调用 `join_collaboration({name})`，私下保存返回的 `credential`，再调用 `onboarding.nextCall` 确认身份；同一连接通过工具顶层 `credential` 参数继续发言。已有网页身份可直接复制带自身 Authorization 的配置。参数凭证与请求头同时提供时必须相同，凭证不得写入公开正文；完整参数来自共享 `CollaborationToolSchemas`。
+
+CSV 演示流程服务端需要 `RUNTIME_URL`、`ADMIN_TOKEN`、`VALIDATOR_ADDRESS`、至少 16 字符的 `DEMO_ACCESS_CODE`。可以通过 Node 的 `--env-file` 载入私有环境文件，或在 `apps/web/.env.local` 配置；全部配置必须保持忽略，严禁使用 `VITE_` 前缀。`VALIDATOR_ADDRESS` 必须对应当前真实服务的可信验收者。访问码为单独的演示授权码，浏览器只在当前页面内存保存，创建确认后清空。
+
+浏览器只请求同源 `/api/web`。公开协作代理按方法和路径白名单转发请求，以个人凭证识别写入者。CSV 演示提供公开读取白名单，创建只接受固定 sample 与 UUID，服务端读取 `workers/fixtures/round-1.csv` 或 `round-2.csv` 原文，计算原始字节摘要。验收规则直接读取真实 B 的 `/api/criteria` 原文，并核对 `/api/template` 声明的摘要，然后由代理携带服务端管理凭证创建运行。公开页面不接收管理凭证、模型密钥或链签名密钥。
 
 `POST /api/runs` 保存 OPEN 运行，后续执行由真实协调流程与独立 Worker 完成。页面明确显示等待分工、暂停、取消、阻塞、回执确认及当前在线条件。`chain.configured` 与 `chain.writable` 分开处理；缺少签名时允许获授权用户创建等待分工的运行，并明确提示尚不能生成已确认结果。节点的准入、接单确认、心跳和空闲槽位不满足条件时，入口说明对应的等待角色。
 
@@ -29,4 +33,8 @@ node --env-file=<私有配置绝对路径> --import tsx --test apps/web/test/liv
 node --env-file=<私有配置绝对路径> node_modules/@playwright/test/cli.js test --config apps/web/playwright.config.ts apps/web/test/browser-live.spec.ts
 ```
 
-实际已测范围、命令与剩余限制见 [前端集成验证](../../docs/b-web-integration.md)。普通静态托管需要独立运行 gateway。Vercel 配置适用于项目 Root Directory 为 `apps/web` 且允许包含根目录以外源码的形态；部署拓扑由主 Agent 确认，当前未发布前端。
+实际已测范围、命令与剩余限制见 [前端集成验证](../../docs/b-web-integration.md)。普通静态托管需要独立运行 gateway。Vercel 配置适用于项目 Root Directory 为 `apps/web` 且允许包含根目录以外源码的形态；项目发布由主 Agent 负责。
+
+公开前端地址为 https://mon.davidwang.space ，Vercel 地址为 https://co-vibe-web.vercel.app 。函数入口及其服务端相对导入使用 `.js` 路径，使 Vercel 编译产物可由 Node 加载；源文件保持 TypeScript，Vite 与 tsx 按相同路径解析。
+
+`npm --prefix apps/web run test:public` 使用两个独立 Chromium 身份执行真实注册、消息互读、任务发布与认领、公开 CSV 原始摘要交付与接受、任务完成、刷新恢复、MCP 配置复制和 390px 布局检查。设置 `WEB_BASE_URL` 选择实际前端地址，`PUBLIC_REFERENCE_TASK` 指定另一 MCP 客户端实际完成的任务，`BROWSER_REPORT` 指定忽略目录中的 JSON 报告。需要网络代理时设置 `BROWSER_PROXY`；测试关闭截图、录屏和 trace。测试会在实际服务中留下明确命名的已完成验收任务。

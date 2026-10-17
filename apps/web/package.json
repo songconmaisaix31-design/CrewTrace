@@ -11,6 +11,7 @@
     "test:live": "node --import tsx --test test/live-http.ts",
     "test:browser": "playwright test test/browser-smoke.spec.ts",
     "test:browser:live": "playwright test test/browser-live.spec.ts",
+    "test:public": "playwright test test/browser-public.spec.ts",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {

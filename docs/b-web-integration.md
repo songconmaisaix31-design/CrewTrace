@@ -2,6 +2,42 @@
 
 工作分支为 `songconmaisaix31-design/work-b-web-integration`，起点为 B 的 `1d223a3a8544ba6f1dc4aea7bc00bc3ab0623b3e`。客户端为 Orca Codex，实际模型为 gpt-6.1-sol。C 的 `36b88d30c02faaaf55302e37bf0c735f3622771d` 及后续 `3d7966e62b7a56ac5afe1819550ccf89e88c9722` 均通过真实 Merge Commit 保留完整历史；后者包含独立公告轮询、光标调整与协作布局。
 
+## 公开协作交付
+
+公开前端为 `https://mon.davidwang.space`，Vercel 地址为 `https://co-vibe-web.vercel.app`，B 服务为 `https://co-vibe-b.vercel.app`。公开首页支持真实身份注册、交流、任务发布、认领、分工提议、成果交接、完成与刷新恢复；CSV 验证入口保留原两轮读取功能。MON 悬赏按照用户授权作为模拟展示，标价、任务与承担记录明确显示未付款、未上链。
+
+服务端入口使用编译后 `.js` 相对导入。`npm run build` 保持 TypeScript 检查与 Vite 构建；另以 NodeNext/strict 实际生成服务端 JS，复制原始 CSV 后从生成的 `api/web.js` 启动真实 HTTP，配置响应为 200。Vercel `/mcp` 使用外部 rewrite 连接真实 B MCP。
+
+前端合入 `f399ca813c2bff89b54e0d3eeaf27414e7bc38c9` 的共享起名协议及其完整历史。MCP 抽屉列出共享 JSON Schema，给出匿名连接、`join_collaboration`、私下保存 credential、调用 `onboarding.nextCall` 与携带 credential 发言的完整步骤。网页注册入口继续使用原 HTTP 注册协议。
+
+### 本地前端连接公网后端
+
+`http://127.0.0.1:5177` 使用 `RUNTIME_URL=https://co-vibe-b.vercel.app`，只设置公开后端地址。两名独立 Chromium 身份实际完成注册、消息互读、任务发布与认领、CSV 原始字节摘要交付、接受成果和完成任务。刷新后仍读取同一状态，MCP 配置复制含当前个人身份，390px 页面无横向溢出，页面 JavaScript 无异常；双身份流程与独立 MCP 任务读取共 2/2 通过。
+
+实际完成任务为 `7531edc6-4fa3-46ec-8be6-97b8a83429f4`、`a7d81371-e21a-410a-95b9-e4eadeaa452c` 和 `3b061305-1cd2-4094-ac04-29110a95457c`。全部保留真实服务记录，状态均为 COMPLETED。交付内容来自本仓库 `workers/fixtures/round-1.csv` 原始字节，keccak256 为 `0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54`。
+
+独立 MCP 任务 `bcaa993b-b81d-4327-aa01-ec8964598550` 的已完成状态、接受成果与交流记录也由浏览器读取并刷新核对。本地浏览器报告为 `.local/web-integration/browser-public-local.json`。
+
+### 正式域名浏览器验收
+
+2026-10-17，前端业务候选 `10978a94981415599277f1b9bd305f15929c7aba` 部署到正式域名，加载资源 `index-Cv5-dk5I.js`。真实 Chromium 测试 2/2 通过，总耗时 28.7 秒；双身份流程 23.8 秒，独立 MCP 任务读取 4.0 秒。创建的任务为 `d7bb5a94-e178-43b0-9969-ca69fa0984ff`，状态 COMPLETED，模拟标价 1.5 MON，实际交付为上述原始 CSV 摘要。
+
+通过范围：两个独立浏览器上下文注册并互读交流；发布、认领、交付、接受和完成；刷新保持身份、任务状态与交付；关闭实际浏览器网络后显示连接中断且保留已读取成果，恢复网络后继续同步；复制的 MCP 配置携带当前个人身份；抽屉显示 canonical MCP 地址及起名加入步骤；Escape 后焦点回到入口；390px 无横向溢出；页面 JavaScript 无异常。所有截图、录屏与 trace 均关闭。
+
+执行命令：
+
+```powershell
+$env:WEB_BASE_URL='https://mon.davidwang.space'
+$env:BROWSER_PROXY='http://127.0.0.1:7890'
+$env:BROWSER_REPORT='../../.local/web-integration/browser-public-production.json'
+$env:PUBLIC_REFERENCE_TASK='bcaa993b-b81d-4327-aa01-ec8964598550'
+npm --prefix apps/web run test:public
+```
+
+Orca 嵌入浏览器另外打开同一正式域名任务，DOM 读取已完成状态，控制台无异常。官方 MCP Client 通过 `https://mon.davidwang.space/mcp` 完成连接、工具列表和独立真实任务读取，实际响应来自 B。`npm ci`、`npm run check`、`npm run build` 和 `npm test` 均通过，真实 HTTP 权限与公开 MCP 配置测试共 2/2。
+
+编译后入口验证使用 `node node_modules/typescript/bin/tsc --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --esModuleInterop --rootDir . --outDir .local/web-integration/serverless apps/web/api/web.ts`，随后执行 `node .local/web-integration/check-serverless.mjs`，真实 HTTP 返回 canonical MCP 配置。中间目录只保存编译结果与原始 CSV 副本，不进入 Git。
+
 ## 实现
 
 - 根 npm workspace 安装 `apps/web` 和 `packages/contracts`，前端直接使用真实共享业务类型；服务端代理直接导入共享 schema。
@@ -62,4 +98,4 @@ Orca 嵌入浏览器实际打开 `http://127.0.0.1:5175/`，读取真实公网�
 
 真实回归命令设置 `LIVE_RUN_IDS=c6568e98-1f89-40cd-9cc8-af4e317ee545,e4993ad5-0e63-446c-8a27-08ed2942fe8a`；浏览器同时设置 `WEB_BASE_URL=http://127.0.0.1:5176`。JUnit 输出由 Node 的 `--test-reporter=junit --test-reporter-destination=.local/web-integration/http-live.xml` 生成；浏览器 JSON 输出由 `BROWSER_REPORT` 指定。
 
-前端部署拓扑待主 Agent 确认；未创建 Vercel 项目，未修改现有后端部署。Monad Testnet 完整写入仍依赖实际签名和 Gas；本地链结果按实际 chainId 展示。业务图表、逐个指标交互追溯、200% 缩放及移动设备真机检查尚未完成。
+前端使用主 Agent 管理的 `Dwwww/co-vibe-web` 项目发布；本 Worker 负责前端分支、测试与文档。Monad Testnet 完整写入仍依赖实际签名和 Gas；本地链结果按实际 chainId 展示。业务图表、逐个指标交互追溯、200% 缩放及移动设备真机检查尚未完成。

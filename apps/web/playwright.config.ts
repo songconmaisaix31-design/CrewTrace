@@ -8,5 +8,5 @@ export default defineConfig({
   timeout:90000,
   expect:{timeout:45000},
   outputDir:'../../.local/web-integration/playwright',
-  use:{baseURL:process.env.WEB_BASE_URL??'http://127.0.0.1:5175',headless:true,screenshot:'off',trace:'off',video:'off'},
+  use:{baseURL:process.env.WEB_BASE_URL??'http://127.0.0.1:5175',headless:true,screenshot:'off',trace:'off',video:'off',...(process.env.BROWSER_PROXY?{proxy:{server:process.env.BROWSER_PROXY}}:{})},
 });

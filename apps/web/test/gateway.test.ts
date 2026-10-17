@@ -25,6 +25,7 @@ test('真实 HTTP 服务在未配置及未授权时拒绝创建，不暴露服�
     process.env.VALIDATOR_ADDRESS='0x'+'01'.repeat(20);
     const denied=await fetch(`${base}?path=%2Fapi%2Fruns`,{method:'POST',headers:{'X-Demo-Code':'incorrect'}});assert.equal(denied.status,403);
     const publicStatus=await fetch(`${base}?action=status`);const text=await publicStatus.text();assert(!text.includes(process.env.ADMIN_TOKEN));assert(!text.includes(process.env.DEMO_ACCESS_CODE));
+    const collaborationConfig=await fetch(`${base}?action=collaboration-config`);assert.equal(collaborationConfig.status,200);assert.deepEqual(await collaborationConfig.json(),{configured:true,mcpURL:'https://mon.davidwang.space/mcp'});
     const invalid=await fetch(`${base}?path=${encodeURIComponent('/admin/nodes')}`);assert.equal(invalid.status,405);
   }finally{
     await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));
