@@ -21,6 +21,10 @@ test('CrewTrace品牌、MCP四步加入、真实配置复制与窄屏交互',asy
     await expect(guide.locator('details.public-onboarding-details')).not.toHaveAttribute('open');
     await page.getByText('查看调用示例与凭证设置',{exact:true}).click();
     await expect(guide.locator('pre').first()).toContainText('join_collaboration');
+    await page.getByText('查看全部协作工具和参数',{exact:true}).click();
+    const joinTool=page.locator('.public-tools li').filter({has:page.getByText('join_collaboration',{exact:true})});
+    await joinTool.locator('summary').click();
+    expect(JSON.parse((await joinTool.locator('pre').textContent())!).required).toEqual(['name']);
     await page.setViewportSize({width:390,height:844});
     expect(await page.getByRole('dialog').evaluate(element=>element.scrollWidth<=element.clientWidth)).toBe(true);
     await page.keyboard.press('Escape');
@@ -33,6 +37,7 @@ test('CrewTrace品牌、MCP四步加入、真实配置复制与窄屏交互',asy
     await expect(page.getByRole('button',{name:'CrewTrace 工作台',exact:true})).toBeVisible();
     await expect(page.locator('.launch-kicker')).toContainText('CrewTrace');
     await expect(page.locator('footer')).toContainText('CrewTrace');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     expect(errors).toEqual([]);
   }finally{await context.close();}
 });
