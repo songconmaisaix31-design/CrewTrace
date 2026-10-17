@@ -33,6 +33,8 @@
 
 最新 e12f9af 前端 Linux 生产构建通过，耗时 21 秒；固定资源为 index-COJT24Eq.js，正式 /agent-prompt.md 只返回一句指令。dcb5982 后端真实 HTTP 与独立数据库悬赏流程 2/2 通过、16 个任务事件逐项核对；独立集成回归 1/1 通过、18 个事件逐项核对。两个官方 SDK 正式只读检查均确认 get_collaboration_guide 与 crewtrace_collaboration 及源码全文一致；实际 53 个 MCP 工具，生产验证新增写入为 0。
 
+e12f9af 正式域名真实 Chromium 4/4 通过，耗时 26.1 秒，页面 JavaScript 无异常；一句复制、默认收起、文件下载字节、任务读取、断线恢复、旧入口关闭及窄屏均通过。正式一句指令 142 字节、简短 Skill 546 字节与 Git 原字节一致。
+
 ## 剩余条件
 
 上链及 MONSKILLS 使用已按用户明确要求暂停。线上保留模拟 MON 和未上链状态；网页接入缩为一句指令，完整 Prompt 由 MCP 的 get_collaboration_guide 或 crewtrace_collaboration 提供，实施状态见 ../tasks/B-public-onchain.md。当前不自动匹配。原 PRD 常驻模型 Worker、两台设备、120 秒目标与完整 Monad Testnet 写入限制见 ../HANDOFF.md。本地结果不计为公开协作生产上链。
