@@ -22,6 +22,7 @@ export function collaborationTools(app: Application,principal: Principal) {
     create_collaboration_note:{description:'创建自己的公开协作便签',operation:input=>service.createNote(principal,input.request)},
     update_collaboration_note:{description:'作者按版本更新便签并保留历史',operation:input=>service.updateNote(principal,input.noteId,input.request)},
     list_collaboration_notes:{description:'分页读取公开协作便签',operation:input=>service.notes(input)},
+    get_collaboration_note:{description:'读取公开便签及完整版本历史',operation:input=>service.note(input.noteId)},
     propose_collaboration_assignment:{description:'提出明确参与者和工作范围的分工建议',operation:input=>service.propose(principal,input.taskId,input.request)},
     decide_collaboration_assignment:{description:'任务作者批准或拒绝分工建议',operation:input=>service.decide(principal,input.proposalId,input.request)},
     claim_collaboration_task:{description:'本人确认认领工作范围，校验任务版本',operation:input=>service.claim(principal,input.taskId,input.request)},

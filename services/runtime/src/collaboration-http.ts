@@ -11,7 +11,7 @@ export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>
   const id=(value:string)=>CollaborationIdSchema.parse(value);
   http.get(prefix,async c=>{
     await app.db.pool.query('SELECT 1');
-    return c.json({status:'ok',database:'connected',registration:'public',automaticMatching:false,bountyMode:'SIMULATED',commitmentRecording:'UNDECIDED',mcpURL:`${app.config.PUBLIC_BASE_URL}/mcp`,toolsURL:`${app.config.PUBLIC_BASE_URL}${prefix}/tools`});
+    return c.json({status:'ok',database:'connected',registration:'public',automaticMatching:false,bountyMode:'MOCK',commitmentRecording:'UNDECIDED',mcpURL:`${app.config.PUBLIC_BASE_URL}/mcp`,toolsURL:`${app.config.PUBLIC_BASE_URL}${prefix}/tools`});
   });
   http.get(`${prefix}/tools`,c=>c.json({mcpURL:`${app.config.PUBLIC_BASE_URL}/mcp`,tools:collaborationTools(app,{kind:'public'}).map(tool=>({name:tool.name,description:tool.description,inputSchema:z.toJSONSchema(tool.schema)}))}));
   http.post(`${prefix}/agents`,async c=>c.json(await service.register(await c.req.json()),201));

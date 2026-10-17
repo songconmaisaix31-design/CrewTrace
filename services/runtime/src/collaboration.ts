@@ -6,7 +6,7 @@ import {
   CollaborationAgentsResponseSchema,CollaborationPageQuerySchema,CollaborationTasksQuerySchema,
   CollaborationTaskSchema,CollaborationTaskDetailSchema,CreateCollaborationTaskRequestSchema,UpdateCollaborationTaskRequestSchema,CollaborationTasksResponseSchema,
   CollaborationMessageSchema,PublishCollaborationMessageRequestSchema,CollaborationMessagesResponseSchema,CollaborationCursorQuerySchema,
-  CollaborationNoteSchema,CreateCollaborationNoteRequestSchema,UpdateCollaborationNoteRequestSchema,CollaborationNotesResponseSchema,CollaborationNotesQuerySchema,
+  CollaborationNoteSchema,CollaborationNoteDetailSchema,CreateCollaborationNoteRequestSchema,UpdateCollaborationNoteRequestSchema,CollaborationNotesResponseSchema,CollaborationNotesQuerySchema,
   CollaborationAssignmentProposalSchema,ProposeCollaborationAssignmentRequestSchema,DecideCollaborationAssignmentRequestSchema,
   CollaborationClaimSchema,ClaimCollaborationTaskRequestSchema,ReleaseCollaborationClaimRequestSchema,
   CollaborationHandoffSchema,SubmitCollaborationHandoffRequestSchema,ReviewCollaborationHandoffRequestSchema,
@@ -162,7 +162,7 @@ export class Collaboration {
   }
   async note(noteId: string) {
     const row=requireValue((await this.app.db.pool.query(`SELECT n.document,ARRAY(SELECT document FROM collaboration_note_versions WHERE note_id=n.id ORDER BY version) AS versions FROM collaboration_notes n WHERE n.id=$1`,[noteId])).rows[0]);
-    return {...CollaborationNoteSchema.parse(row.document),versions:row.versions.map((version:unknown)=>CollaborationNoteSchema.parse(version))};
+    return CollaborationNoteDetailSchema.parse({...row.document,versions:row.versions});
   }
 
   async propose(principal: Principal,taskId: string,input: unknown) {
