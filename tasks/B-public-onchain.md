@@ -24,6 +24,10 @@
 
 本次不实施线上钱包或真实支付，不改变历史 MOCK 金额的含义。
 
+## MONSKILLS
+
+用户指定 https://skills.devnads.com。已完整读取安装说明，并通过 skills CLI 在忽略目录 .local 安装 monskill 与 scaffold，依次读取本地 SKILL.md。按技能复用既有合约、核对实际网络与回执、检查构建并记录根目录 .monskills；当前网络按用户决定记录 local-evm / 31337。现有 Vite、Hono、PostgreSQL 与 Vercel 项目继续使用。公网合约部署、验证 API、Para 钱包与 Alchemy 会话不在本次已确认范围。
+
 ## 并行轨道
 
 | 轨道 | 固定 Worktree / Branch | write_paths | 当前动作 |
