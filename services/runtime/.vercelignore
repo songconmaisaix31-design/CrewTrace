@@ -1,0 +1,6 @@
+.local/
+.firecrawl/
+.env
+.env.*
+node_modules/
+test/
