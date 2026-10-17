@@ -2,6 +2,9 @@
   "installCommand": "cd ../.. && npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/mcp", "destination": "https://co-vibe-b.vercel.app/mcp" }
+  ],
   "functions": {
     "api/web.ts": { "includeFiles": "../../workers/fixtures/*.csv", "maxDuration": 60 }
   }
