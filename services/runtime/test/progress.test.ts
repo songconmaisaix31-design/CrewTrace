@@ -24,9 +24,9 @@ test('真实链配置下独立推进、快速心跳与持久化创建', { timeou
   await migrate(db);
   const actualSchema = (await db.pool.query('SELECT current_schema() AS schema')).rows[0].schema;
   assert.ok(actualSchema.startsWith('b_startup_'),'必须使用独立的启动回归 schema');
-  const { chain,validator } = await dependencies(config,db);
+  const { chain,validator,collaborationChain } = await dependencies(config,db);
   assert.ok(chain && validator);
-  const app = new Application(db,config,chain,validator);
+  const app = new Application(db,config,chain,validator,collaborationChain);
   const http = createHttp(app);
   const server = serve({ fetch: http.fetch,hostname: '127.0.0.1',port: 0 });
   await new Promise<void>(resolve=>server.once('listening',resolve));

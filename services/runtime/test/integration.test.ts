@@ -20,7 +20,7 @@ test('真实 PostgreSQL、HTTP 与官方 MCP Client', async () => {
   assert.ok(process.env.DATABASE_URL, '真实 DATABASE_URL 必须配置');
   const db = new Database(process.env.DATABASE_URL);
   await migrate(db);
-  const config: Config = { DATABASE_URL: process.env.DATABASE_URL, ADMIN_TOKEN: randomBytes(32).toString('hex'), PUBLIC_BASE_URL: 'http://127.0.0.1:3000', PORT: 0, ALLOWED_ORIGINS: '', CHAIN_ID: 10143 };
+  const config: Config = { DATABASE_URL: process.env.DATABASE_URL, ADMIN_TOKEN: randomBytes(32).toString('hex'), PUBLIC_BASE_URL: 'http://127.0.0.1:3000', PORT: 0, ALLOWED_ORIGINS: '', CHAIN_ID: 10143, COLLABORATION_CHAIN_ID: 10143, COLLABORATION_CHAIN_EXPLORER: 'https://testnet.monadscan.com', COLLABORATION_CHAIN_TIMEOUT_MS: 15000 };
   const http = createHttp(new Application(db,config));
   const server = serve({ fetch: http.fetch, hostname: '127.0.0.1', port: 0 });
   await new Promise<void>(resolve => server.once('listening',resolve));

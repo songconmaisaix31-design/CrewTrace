@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CountSchema, TimestampSchema } from './schemas.ts';
+import { BlockNumberSchema, CountSchema, TimestampSchema } from './schemas.ts';
 
 export const CollaborationIdSchema = z.uuid();
 export const CollaborationCredentialSchema = z.string().min(32).max(512);
@@ -181,6 +181,36 @@ export const CollaborationEventSchema = z.strictObject({
 });
 export const CollaborationEventsResponseSchema = z.strictObject({ events: z.array(CollaborationEventSchema), ...cursorResponse });
 
+export const CollaborationCommitmentKindSchema = z.enum(['AGENT', 'TASK', 'PROPOSAL', 'CLAIM', 'HANDOFF']);
+export const CollaborationCommitmentStatusSchema = z.enum(['PENDING', 'CONFIRMED', 'FAILED']);
+export const CollaborationCommitmentKeySchema = z.string().regex(/^(AGENT|TASK|PROPOSAL|CLAIM|HANDOFF):[0-9a-f-]{36}:[1-9][0-9]*$/);
+export const CollaborationCommitmentSchema = z.strictObject({
+  recordKey: CollaborationCommitmentKeySchema,
+  kind: CollaborationCommitmentKindSchema,
+  recordId: CollaborationIdSchema,
+  taskId: CollaborationIdSchema.nullable(),
+  version: CollaborationVersionSchema,
+  contentHash: z.string().regex(/^0x[0-9a-f]{64}$/),
+  uri: z.url().max(2048),
+  status: CollaborationCommitmentStatusSchema,
+  chainId: z.number().int().positive().nullable(),
+  contract: z.string().regex(/^0x[0-9a-f]{40}$/).nullable(),
+  txHash: z.string().regex(/^0x[0-9a-f]{64}$/).nullable(),
+  blockNumber: BlockNumberSchema.nullable(),
+  createdAt: TimestampSchema,
+  confirmedAt: TimestampSchema.nullable(),
+});
+export const CollaborationCommitmentDetailSchema = CollaborationCommitmentSchema.extend({
+  document: z.record(z.string(), z.unknown()),
+});
+export const CollaborationCommitmentsResponseSchema = z.strictObject({
+  commitments: z.array(CollaborationCommitmentSchema),
+  chain: z.strictObject({
+    configured: z.boolean(), chainId: z.number().int().positive().nullable(),
+    contract: z.string().regex(/^0x[0-9a-f]{40}$/).nullable(), explorer: z.url().nullable(),
+  }),
+});
+
 const mcpCredential = {
   credential: CollaborationCredentialSchema.optional().describe('自己的私密 Agent 凭证；匿名 MCP 连接可逐次传入。不得写入公开正文；与 Authorization 同时提供时必须相同。'),
 };
@@ -222,6 +252,10 @@ export type CollaborationAssignmentProposal = z.infer<typeof CollaborationAssign
 export type CollaborationClaim = z.infer<typeof CollaborationClaimSchema>;
 export type CollaborationHandoff = z.infer<typeof CollaborationHandoffSchema>;
 export type CollaborationEvent = z.infer<typeof CollaborationEventSchema>;
+export type CollaborationCommitmentKind = z.infer<typeof CollaborationCommitmentKindSchema>;
+export type CollaborationCommitment = z.infer<typeof CollaborationCommitmentSchema>;
+export type CollaborationCommitmentDetail = z.infer<typeof CollaborationCommitmentDetailSchema>;
+export type CollaborationCommitmentsResponse = z.infer<typeof CollaborationCommitmentsResponseSchema>;
 export type RegisterCollaborationAgentRequest = z.infer<typeof RegisterCollaborationAgentRequestSchema>;
 export type RegisterCollaborationAgentResponse = z.infer<typeof RegisterCollaborationAgentResponseSchema>;
 export type JoinCollaborationAgentRequest = z.infer<typeof JoinCollaborationAgentRequestSchema>;

@@ -7,6 +7,6 @@ import { dependencies } from './dependencies.js';
 
 const config = loadConfig();
 const db = new Database(config.DATABASE_URL);
-const { chain,validator } = await dependencies(config,db);
-export const runtime = new Application(db, config,chain,validator);
+const { chain,validator,collaborationChain } = await dependencies(config,db);
+export const runtime = new Application(db, config,chain,validator,collaborationChain);
 export default new Hono().route('/', createHttp(runtime));

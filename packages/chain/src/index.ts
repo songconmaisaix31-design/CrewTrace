@@ -17,6 +17,11 @@ import {
 
 export { ledgerAbi } from "./abi.js";
 export * from "./types.js";
+export {
+  CollaborationKind, collaborationLedgerAbi, CollaborationLedgerClient, createCollaborationLedgerClient,
+  canonicalJson, hashCollaborationDocument, deriveCollaborationRecordId,
+  type CollaborationLedgerConfig, type CollaborationCommitmentInput, type OnchainCommitment,
+} from "./collaboration.js";
 
 // 摘要直接使用持久化文件字节；调用方不得重新序列化 JSON。
 export function hashFileBytes(bytes: Uint8Array): Hash {

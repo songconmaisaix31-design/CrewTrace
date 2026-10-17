@@ -11,6 +11,7 @@ import { CRITERIA_BYTES, CRITERIA_HASH } from '../../../workers/src/criteria.ts'
 import { FIXED_WORKFLOW,TEMPLATE_VERSION } from './domain/workflow.ts';
 import type { Config } from './config.js';
 import type { Database } from './db.js';
+import type { CollaborationChain } from './collaboration-chain.js';
 import { Store } from './store.js';
 import { admin, node, sameAgent, tokenHash, type Principal } from './auth.js';
 import { AppError, requireValue } from './errors.js';
@@ -25,13 +26,16 @@ export type Validator = (input: ValidationInput) => AssessmentCheck[] | Promise<
 
 export class Application {
   readonly store: Store;
-  constructor(readonly db: Database, readonly config: Config, readonly chain: ChainPort | null = null, readonly validator: Validator | null = null) { this.store = new Store(db); }
+  constructor(readonly db: Database, readonly config: Config, readonly chain: ChainPort | null = null, readonly validator: Validator | null = null, readonly collaborationChain: CollaborationChain | null = null) { this.store = new Store(db); }
   async health() {
     await this.db.pool.query('SELECT 1');
     const writable = Boolean(this.chain && this.config.CHAIN_COORDINATOR_PRIVATE_KEY && this.config.CHAIN_VALIDATOR_PRIVATE_KEY);
+    const commitmentRows = await this.db.pool.query(`SELECT to_regclass('collaboration_commitments') IS NOT NULL AS exists`);
+    const commitmentReady = Boolean(commitmentRows.rows[0]?.exists);
     return {
       status: writable && this.validator ? 'ok' : 'degraded', database: 'connected',
       chain: { configured: Boolean(this.chain),writable, code: writable ? null : 'CHAIN_NOT_CONFIGURED' },
+      collaborationChain: { configured: Boolean(this.collaborationChain?.configured), writable: Boolean(this.collaborationChain?.configured && commitmentReady), code: this.collaborationChain?.configured ? (this.collaborationChain && commitmentReady ? null : 'CHAIN_NOT_CONFIGURED') : 'CHAIN_NOT_CONFIGURED' },
       validator: { configured: Boolean(this.validator), code: this.validator ? null : 'VALIDATOR_NOT_CONFIGURED' },
     };
   }

@@ -31,7 +31,7 @@ test('真实 MCP 仅接受配置的 API Host 和公开 MCP Host',{timeout:60_000
         assert.equal(JSON.parse(guideText).text,text);
         assert.ok(client.getInstructions()?.includes('get_collaboration_guide'));
         assert.ok(text.includes(runtime.config.PUBLIC_MCP_URL));assert.ok(text.includes('join_collaboration'));
-        assert.ok(text.includes('review_collaboration_handoff'));assert.ok(text.includes('UNDECIDED'));
+        assert.ok(text.includes('review_collaboration_handoff'));assert.ok(text.includes('Monad Testnet'));
         assert.ok(text.includes('tools/list'));assert.ok(text.includes('isError'));assert.ok(text.includes('Proposal.version'));
         assert.ok(text.includes('/skills/crewtrace/SKILL.md'));assert.ok(text.includes('/agent-prompt.md'));
       } finally {await client.close();}

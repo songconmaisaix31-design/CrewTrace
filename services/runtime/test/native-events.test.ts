@@ -22,7 +22,7 @@ test('真实 Monad 注册事件在 PostgreSQL 按原 eventId 持久化与去重'
   const db = new Database(process.env.DATABASE_URL);
   try {
     await migrate(db);
-    const app = new Application(db,{ DATABASE_URL: process.env.DATABASE_URL,ADMIN_TOKEN: randomBytes(32).toString('hex'),PUBLIC_BASE_URL: 'http://127.0.0.1:3000',PORT: 0,ALLOWED_ORIGINS: '',CHAIN_ID: deployment.chainId },port);
+    const app = new Application(db,{ DATABASE_URL: process.env.DATABASE_URL,ADMIN_TOKEN: randomBytes(32).toString('hex'),PUBLIC_BASE_URL: 'http://127.0.0.1:3000',PORT: 0,ALLOWED_ORIGINS: '',CHAIN_ID: deployment.chainId,COLLABORATION_CHAIN_ID: 10143,COLLABORATION_CHAIN_EXPLORER: 'https://testnet.monadscan.com',COLLABORATION_CHAIN_TIMEOUT_MS: 15000 },port);
     const state = new ChainState(app);
     await app.store.write(client=>state.ingest(client,receipt));
     await app.store.write(client=>state.ingest(client,receipt));

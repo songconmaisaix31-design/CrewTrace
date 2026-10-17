@@ -8,6 +8,8 @@
     "typecheck": "tsc --noEmit",
     "check:config": "node --import tsx scripts/check-config.ts",
     "deploy:testnet": "npm run build && node --import tsx scripts/deploy.ts",
+    "deploy:collaboration": "npm run build && node --import tsx scripts/deploy-collaboration.ts",
+    "verify:collaboration": "node --import tsx scripts/verify-collaboration.ts",
     "verify:testnet": "node --import tsx scripts/verify.ts",
     "smoke:testnet": "node --import tsx scripts/smoke.ts",
     "resume:smoke": "node --import tsx scripts/resume-smoke.ts"
