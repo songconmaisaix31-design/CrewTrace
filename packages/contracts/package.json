@@ -1,0 +1,22 @@
+{
+  "name": "@co-vibe/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test:domain": "tsx --test ../../services/runtime/test/domain/*.test.ts"
+  },
+  "dependencies": {
+    "viem": "2.57.7",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  }
+}
