@@ -1,17 +1,15 @@
 # B 角色交接
 
-最新交付以 tasks/B-web-integration.md 的公开协作要求为准：面向所有 Agent 的 MON 悬赏、交流、认领和分工，当前不自动匹配；MCP 与前端读取同一持久化状态。用户明确要求此次悬赏先 Mock 并优先部署，界面清楚标注模拟数据；当前不执行真实付款，承担记录如实显示未上链。网站采用独立 co-vibe-web 前端与 co-vibe-b API，原 A 协议与历史证据保留。
+当前交付以 [公开协作计划](tasks/B-web-integration.md) 和用户最新决定为准：面向所有 Agent 开放注册、交流、公告、便签、任务发布、分工认领及成果交接，网页与 MCP 使用同一真实 PostgreSQL 状态，当前不自动匹配。悬赏按照用户明确要求显示模拟 MON，未执行真实付款，承担记录显示未上链。用户追加要求 MCP 独立完成“起名加入”，该入口及同一连接下的凭证调用正在完成公网验收。
 
-当前任务以 PRD.md 与 tasks/B-plan.md 为准。用户已确认完整 B 职责，并要求产品运行中的 Agent 使用轻量 MCP 公告板与便签交流任务、执行情况和成果交接。
+网站为 https://mon.davidwang.space，备用地址为 https://co-vibe-web.vercel.app；前端项目为 Dwwww/co-vibe-web，真实后端为 Dwwww/co-vibe-b，API 为 https://co-vibe-b.vercel.app。阿里云 mon CNAME 已绑定 Vercel，HTTPS 实际返回 200。MCP 主地址采用 https://mon.davidwang.space/mcp，原 https://co-vibe-b.vercel.app/mcp 保持可用；发布与当前验收状态见 STATUS.md。
 
-当前新增任务为集成 work/c-web、真实可用性测试及数据库性能改进，执行计划见 [tasks/B-web-integration.md](tasks/B-web-integration.md)。原 Neon 项目正在认领，旧密码已撤销；公开服务恢复需要认领后的有效连接。独立测试项目与原生产项目分别记录，不把新项目当作原数据迁移完成。
+新生产数据库为 Neon Ohio 项目 withered-boat-53378262 的 b_public_collaboration_20261017 schema，已实际应用迁移 001–007；独立测试使用 b_public_collaboration_test_20261017。新项目于 **2026-10-20 18:12:55 北京时间**到期，持续使用需要用户认领。原项目 snowy-voice-65085749 的凭证在认领过程中撤销，原记录保持原项目，未宣称迁移完成。
 
-B 在 work/b-runtime 交付；共享业务类型由 B 维护。A 保持链上源码、ABI 与适配器所有权；C 保持前端、根配置与锁文件所有权。B 使用包内配置与锁文件，不占用 A/C 文件。
+B 在 work/b-runtime 交付完整 PRD 职责，共享类型、任务服务、信誉分工、独立 Worker、产物验收及 MCP 均由 B 维护。A 原始协议和 C 分支历史保留。并行轨道分别拥有 apps/web 与根配置、services/runtime、共享协议与独立验证；主 Agent 维护计划、状态、最终检查和部署，独立集成 Agent 合并各分支并 push。
 
-开始工作前先读取 STATUS.md 与 tasks/B-plan.md。密钥位于本地忽略目录或部署服务端配置，禁止加入交接文档、测试输出及 Git。
+先读取 STATUS.md、tasks/B-web-integration.md 与 PRD.md，原 B 任务见 tasks/B-plan.md。密钥仅保存在忽略目录和部署服务端环境，禁止写入文档、测试输出或 Git。发布从已提交 Git 文件导出目录进行，禁止上传工作目录中的私有配置。
 
-集成与原始证据见 [docs/b-integration.md](docs/b-integration.md)，公网部署和回归见 [docs/b-deployment.md](docs/b-deployment.md)。API 为 https://co-vibe-b.vercel.app，MCP 为 https://co-vibe-b.vercel.app/mcp。公开数据库已应用迁移 001–005。
+公开协作服务与实测见 [docs/b-public-collaboration.md](docs/b-public-collaboration.md)，MCP 接入见 [docs/mcp.md](docs/mcp.md)，前端及独立验证分别见 [docs/b-web-integration.md](docs/b-web-integration.md) 与 [docs/b-web-verification.md](docs/b-web-verification.md)。既有完整 B 证据见 docs/b-integration.md 和 docs/b-deployment.md，各报告按其实际日期、数据库和网络记录。
 
-A 的 Monad Testnet 合约已完成真实只读核对；完整两轮写入验证发生在本地 chainId 31337。公网当前没有授权签名配置，健康检查准确报告 CHAIN_NOT_CONFIGURED。接入测试网前，使用 A 部署中协调者和验收者的私有配置，并为四名 Worker 准备真实 Gas；保持原部署和公开身份。
-
-Worker 为独立进程，不能放入 Vercel 请求函数长期轮询。常驻主机与两台设备安排仍待用户确认；本地验证进程已经停止。Neon 项目 snowy-voice-65085749 于 2026-10-20 08:10 UTC 前需要认领；认领后的数据库凭证须更新私有配置与 Vercel 环境，然后重新部署和检查。
+四个独立 StepFun Worker 已在本地真实 chainId 31337 完成两轮三角色任务，六项 VERIFIED_PASS；最近两轮服务端耗时 243228 / 252213 ms，120 秒目标未通过。Monad Testnet 10143 已完成真实只读协议核对，完整写入仍需授权签名与 Gas。Worker 常驻主机和两台设备尚未确认；验证用 Worker 已停止，公开协作不依赖这些本地进程。
