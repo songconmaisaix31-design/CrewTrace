@@ -1,5 +1,14 @@
 # B 角色状态
 
+- 2026-10-17 18:40 用户要求优先发布面向所有 Agent 的协作与 MON 悬赏网站；主流程允许进入后交流、认领、分工和交接，当前不做自动匹配。三条原 Orca 轨道按 tasks/B-web-integration.md 扩展职责，分别负责前端、持久化 HTTP/MCP、共享协议和承担记录验证。悬赏资金方式与链上记录形式已询问，答复前保持未决定。
+- 最新真实前端流程两轮均完成三项 VERIFIED_PASS；每轮实际调用模型 3 次，服务端最终确认耗时 243228/252213 ms，120 秒目标未通过。119 个运行时事件、18 个任务原生事件及原始字节已逐项核对。数据库完整详情两轮各 30 组 p50 从约 2 秒降至约 0.4 秒，Singapore 实测更慢，保留 Ohio。
+
+- 2026-10-17 18:05 起，按用户新要求集成 work/c-web 并处理数据库性能；执行计划见 tasks/B-web-integration.md。C 基线为 36b88d30c02faaaf55302e37bf0c735f3622771d，前端集成、数据库优化、独立真实流程验证三个 Orca 轨道正在进行。
+- 当前公网 /health 返回 500，真实数据库连接报告 SQLSTATE 28P01。原 Neon 项目 state=pending、reconciled=false，credentials 返回 409 claim_in_progress；认领已撤销旧密码，需要用户完成认领并提供有效连接文件。原项目记录保持原样。
+- 数据库轨道已创建独立真实验证项目 withered-boat-53378262（aws-us-east-2），仅用于性能和功能测试，2026-10-20 10:12:55 UTC 到期。各轨道使用独立 schema，不切换生产。查询合并已通过类型检查和构建，真实性能与完整流程正在验证。
+- 原本地 RPC 18545 仍在运行，chainId 31337 已重新读取；旧 HTTP 服务 3410 未监听。新 RPC 18546、新验证服务 3412 和前端 5176 已启动，新的原 A 合约与独立 Worker 验证使用单独 schema。前端部署入口等待用户选择，尚未决定。
+- C 分支最新 3d7966e 已完整合入前端轨道；共享类型、原始规则与输入、产物包摘要校验和子文件下载已接入。真实 Chromium 桌面/390px 交互 3/3、权限 2/2、构建与五个 B 包独立安装通过。实际任务创建与完成后的两轮数据读取正在验证。
+- 同地区真实 Neon、本地 HTTP 交替 30 组对照：运行详情 p50/p95 从 1639.6/1846.2 ms 降为 245.6/268.1 ms，事件读取从 472.7/721.2 ms 降为 232.5/258.5 ms。该对照当前使用真实创建的未执行运行；已通过真实权限、版本、事件与重启回归 2/2，完整已完成运行的原始 bytea 对照继续验证。
 - 已确认完整 B 角色及产品 Agent 的 MCP 公告板、便签交流范围。
 - 工作分支：work/b-runtime；四条开发轨道与独立集成均已完成，全部八次 Orca Worker 已释放。实际客户端/模型为 Orca Codex / gpt-6.1-sol。
 - 最终业务代码的集成 Commit 为 46bc9168e360263df3b5a5f0a29d90e200c679b0。类型与规则、A 协议接入、Worker、服务的原始提交及后续返修均保留在合并历史中。
@@ -16,7 +25,7 @@
 - Worker 常驻主机待用户确认，可先在本机验证。
 - 托管 Neon PostgreSQL 已创建，项目 snowy-voice-65085749；尚未认领，于 2026-10-20 08:10 UTC 到期。连接保存在本地忽略配置。
 - 服务固定使用官方 @neondatabase/serverless Pool 与 Node.js 原生 WebSocket，公开 schema 已应用迁移 001–005。
-- Dwwww/co-vibe-b 已部署，公开服务 https://co-vibe-b.vercel.app，MCP 为 /mcp。实际健康检查 HTTP 200，database=connected；chain.configured=false，链写入返回 CHAIN_NOT_CONFIGURED。
+- Dwwww/co-vibe-b 已部署，公开服务 https://co-vibe-b.vercel.app，MCP 为 /mcp。当前数据库因认领冻结不可用，链写入没有配置授权签名。
 - 两个真实独立 Worker 已通过公网官方 MCP Client 发布和互读公告，将便签更新到版本 2；分别收到 SIGINT 后独立终止，第二进程在第一进程终止后继续读取。测试运行已取消；17 个事件逐个查库通过，模型调用为 0，无链写入。完整记录见 docs/b-deployment.md 与 docs/evidence/b-vercel/。
 - Worker 常驻主机、至少两台设备运行、Monad Testnet 签名与 Gas、Neon 认领仍未完成。偶发本地冷启动 CPU 增加原因尚未定位；后续新进程启动及完整重启回归通过。
 
