@@ -1,0 +1,47 @@
+[
+  {
+    "step": "DATA",
+    "attempt": 1,
+    "requestedModel": "step-3.5-flash",
+    "startedAt": "2026-10-17T08:15:04.625Z",
+    "durationMs": 4715,
+    "status": "SUCCEEDED",
+    "actualModel": "step-3.5-flash",
+    "responseId": "8d507cadd90c3201d3fa3c623252424b.39f46e8109e328fb2ebb7d60bf3e1b8d",
+    "usage": {
+      "promptTokens": 1070,
+      "completionTokens": 595,
+      "totalTokens": 1665
+    }
+  },
+  {
+    "step": "ANALYSIS",
+    "attempt": 1,
+    "requestedModel": "step-3.5-flash",
+    "startedAt": "2026-10-17T08:15:09.366Z",
+    "durationMs": 10507,
+    "status": "SUCCEEDED",
+    "actualModel": "step-3.5-flash",
+    "responseId": "b841a3dfff4d97914a82c81fc815314b.90daaffe88bf377c21ecdf15c879b126",
+    "usage": {
+      "promptTokens": 4212,
+      "completionTokens": 1395,
+      "totalTokens": 5607
+    }
+  },
+  {
+    "step": "REPORT",
+    "attempt": 1,
+    "requestedModel": "step-3.5-flash",
+    "startedAt": "2026-10-17T08:15:19.896Z",
+    "durationMs": 11801,
+    "status": "SUCCEEDED",
+    "actualModel": "step-3.5-flash",
+    "responseId": "eb8fc9e8f6119c7467316242c912a9fb.8894ecdb3a9a9bcf8d5b4ccb4fea5887",
+    "usage": {
+      "promptTokens": 3898,
+      "completionTokens": 1515,
+      "totalTokens": 5413
+    }
+  }
+]

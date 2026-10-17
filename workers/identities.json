@@ -1,0 +1,10 @@
+{
+  "description": "本项目受控演示 Worker 的公开钱包与角色说明，钱包私钥仅在本机忽略目录保存。身份的链上登记与实际履历以真实链回执为准。",
+  "source": "PROJECT_CREATED_DEMO_IDENTITIES",
+  "identities": [
+    { "name": "data-a", "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58", "roles": ["DATA"], "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f", "model": "step-3.5-flash" },
+    { "name": "data-b", "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63", "roles": ["DATA"], "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8", "model": "step-3.5-flash" },
+    { "name": "analysis", "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613", "roles": ["ANALYSIS"], "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69", "model": "step-3.5-flash" },
+    { "name": "report", "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79", "roles": ["REPORT"], "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37", "model": "step-3.5-flash" }
+  ]
+}
