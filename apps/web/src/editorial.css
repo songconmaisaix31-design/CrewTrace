@@ -17,6 +17,9 @@
 }
 @keyframes word-drift{to{transform:translateX(100px);opacity:0}}@keyframes scene-drift{to{transform:translateY(90px) scale(.86);opacity:.25}}@keyframes rise-in{from{opacity:.8;transform:translateY(35px)}to{opacity:1;transform:none}}
 .hero-stage{overflow:clip}
+.pointer-orbit span{border-color:#e6ceff;box-shadow:0 0 16px #bf8fff55,inset 0 0 12px #bf8fff22}
+.pointer-orbit[data-active=true] span{box-shadow:0 0 26px #bf8fff88,inset 0 0 18px #bf8fff33}
+.pointer-orbit i{box-shadow:0 0 20px #b78aff88}
 @media(max-width:650px){.scene-controls{bottom:65px}}
 @media(min-width:1600px){main{padding:0 70px}}
 @media(max-width:1050px){.topbar{gap:40px}.hero-stage{min-height:620px;max-height:760px}.intro{padding-top:85px}.signal-scene{right:-6%;width:70%;opacity:.8}.intro>div:first-child{max-width:70%}.task-panel{grid-template-columns:minmax(0,1fr) 260px;gap:35px}.role-card{grid-template-columns:70px 140px 1fr;gap:20px}.role-state{grid-column:2/-1;text-align:left}.step{font-size:48px}}

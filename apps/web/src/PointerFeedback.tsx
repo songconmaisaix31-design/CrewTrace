@@ -21,7 +21,7 @@ export default function PointerFeedback() {
       if(!media.matches||e.pointerType==='touch'||(e.target as Element).closest('dialog,input,textarea,button:disabled'))return;
       const ripple=ring.querySelector('i')!;
       ripple.getAnimations().forEach(a=>a.cancel());
-      ripple.animate([{transform:'scale(.4)',opacity:.7},{transform:'scale(3)',opacity:0}],{duration:650,easing:'cubic-bezier(.2,.6,.2,1)'});
+      ripple.animate([{transform:'scale(.4)',opacity:1},{transform:'scale(4.5)',opacity:0}],{duration:900,easing:'cubic-bezier(.2,.6,.2,1)'});
     };
     document.addEventListener('pointermove',move,{passive:true});document.addEventListener('pointerdown',click);document.documentElement.addEventListener('pointerleave',hide);window.addEventListener('blur',hide);media.addEventListener('change',hide);
     return()=>{hide();document.removeEventListener('pointermove',move);document.removeEventListener('pointerdown',click);document.documentElement.removeEventListener('pointerleave',hide);window.removeEventListener('blur',hide);media.removeEventListener('change',hide);};

@@ -17,10 +17,16 @@ export default function SignalScene() {
       if(now-last<30 && !paused && !reduced.matches){frame=requestAnimationFrame(draw);return;}
       last=now;
       const moving=!paused && !reduced.matches && visible && !document.hidden;
-      if(moving){tick+=.006;mx+=(tx-mx)*.07;my+=(ty-my)*.07;burst*=.95;}
+      if(moving){tick+=.025;mx+=(tx-mx)*.09;my+=(ty-my)*.09;burst*=.965;}
       ctx.clearRect(0,0,width,height);
-      const radius=Math.min(width*.36,height*.35);
-      const cx=width*.52+mx*18, cy=height*.48+my*18;
+      const radius=Math.min(width*.33,height*.32)*(1+Math.sin(tick*.8)*.055+burst*.12);
+      const cx=width*.52+mx*32, cy=height*.48+my*28;
+      const halo=ctx.createRadialGradient(cx,cy,radius*.35,cx,cy,radius*1.45);
+      halo.addColorStop(0,'rgba(120,67,220,0)');
+      halo.addColorStop(.52,'rgba(133,79,233,.14)');
+      halo.addColorStop(.72,'rgba(174,120,255,.09)');
+      halo.addColorStop(1,'rgba(120,67,220,0)');
+      ctx.fillStyle=halo;ctx.fillRect(0,0,width,height);
       ctx.globalCompositeOperation='lighter';
       for(let band=0;band<38;band++){
         const phase=band/38*Math.PI*2;
@@ -28,18 +34,30 @@ export default function SignalScene() {
         for(let p=0;p<=180;p++){
           const a=p/180*Math.PI*2;
           const braid=phase+a*3+tick;
-          const r=radius+(Math.cos(braid)*(.14+burst*.06))*radius;
+          const r=radius+(Math.cos(braid)*(.18+burst*.13))*radius;
           const x=Math.cos(a)*r;
           const y=Math.sin(a)*r;
           const z=Math.sin(braid)*radius*.3;
-          const tilt=.52+my*.12;
-          const px=cx+x*Math.cos(.36+mx*.12)-y*Math.sin(.36+mx*.12)*tilt;
-          const py=cy+x*Math.sin(.36+mx*.12)+y*Math.cos(.36+mx*.12)*tilt+z;
+          const tilt=.62+my*.22+Math.sin(tick*.6)*.12;
+          const angle=.36+mx*.28+Math.sin(tick*.55)*.28;
+          const px=cx+x*Math.cos(angle)-y*Math.sin(angle)*tilt;
+          const py=cy+x*Math.sin(angle)+y*Math.cos(angle)*tilt+z;
           if(p===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
         }
-        ctx.strokeStyle=band%5===0?'rgba(216,211,247,.30)':'rgba(141,113,211,.12)';
-        ctx.lineWidth=band%5===0?1:.7;ctx.stroke();
+        const bright=band%6===0;
+        ctx.strokeStyle=bright?'rgba(234,218,255,.78)':'rgba(161,123,238,.32)';
+        ctx.shadowColor='rgba(171,117,255,.8)';ctx.shadowBlur=bright?12:0;
+        ctx.lineWidth=bright?1.5:.8;ctx.stroke();
       }
+      ctx.shadowBlur=0;
+      // 移动高光让光环的方向变化可见，不通过闪烁吸引注意。
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(.36+Math.sin(tick*.55)*.28);
+      ctx.scale(1,.78);
+      ctx.beginPath();ctx.arc(0,0,radius*1.08,tick*.65,tick*.65+1.25);
+      ctx.strokeStyle='rgba(242,226,255,.9)';ctx.lineWidth=2;
+      ctx.shadowColor='#b997ff';ctx.shadowBlur=18;ctx.stroke();
+      if(burst>.02){ctx.beginPath();ctx.arc(0,0,radius*(1.15+(1-burst)*.65),0,Math.PI*2);ctx.strokeStyle=`rgba(211,172,255,${burst*.65})`;ctx.lineWidth=1.5;ctx.stroke();}
+      ctx.restore();ctx.shadowBlur=0;
       ctx.globalCompositeOperation='source-over';
       if(moving)frame=requestAnimationFrame(draw);
     };
