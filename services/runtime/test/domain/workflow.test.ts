@@ -7,7 +7,7 @@ import {
 } from "../../../../packages/contracts/src/index.ts";
 import {
   aggregateRoleReputation, assertDependenciesReady, assertExecutionBudget, assertTaskTransition,
-  collectConfirmedQuality, createFixedRun, deriveRunStatus, requireChainPort, transitionTask,
+  collectConfirmedQuality, createFixedRun, deriveRunStatus, isQualityEligible, requireChainPort, transitionTask,
 } from "../../src/domain/index.ts";
 
 const actor: Address = "0x0000000000000000000000000000000000000001";
@@ -87,11 +87,22 @@ test("未解决、未确认和没有回执的记录不会进入质量统计", ()
   assert.throws(() => requireChainPort(undefined), errorCode("CHAIN_NOT_CONFIGURED"));
 });
 
+test("质量政策只允许已确认 PASS/FAIL，取消和运行中断不产生质量失败", () => {
+  assert.equal(isQualityEligible({ verdict: "PASS", transactionStatus: "CONFIRMED", cancelled: false }), true);
+  assert.equal(isQualityEligible({ verdict: "FAIL", transactionStatus: "CONFIRMED", cancelled: false }), true);
+  assert.equal(isQualityEligible({ verdict: "PASS", transactionStatus: "CONFIRMED", cancelled: true }), false);
+  assert.equal(isQualityEligible({ verdict: "FAIL", transactionStatus: "PENDING", cancelled: false }), false);
+  assert.equal(isQualityEligible({ verdict: "UNRESOLVED", transactionStatus: null, cancelled: false }), false);
+  assert.equal(isQualityEligible({ verdict: "UNRESOLVED", transactionStatus: "FAILED", cancelled: false }), false);
+});
+
 test("schema 拒绝缺少必需字段、无效确认结构和伪装的旧 attempt", () => {
   const { validator: removed, ...incomplete } = data;
   assert.ok(removed);
   assert.equal(TaskSchema.safeParse(incomplete).success, false);
   assert.equal(TaskSchema.safeParse({ ...data, attempt: 0 }).success, false);
+  assert.equal(TaskSchema.safeParse({ ...data, status: "RUNNING", assignee: null }).success, false);
+  assert.equal(TaskSchema.safeParse({ ...data, assignee: actor }).success, false);
   assert.equal(ChainReceiptSchema.safeParse({ status: "CONFIRMED", blockNumber: null }).success, false);
   assert.equal(ArtifactSchema.safeParse({ artifactId: "missing-fields" }).success, false);
   assert.equal(AssessmentSchema.safeParse({ taskId: data.taskId, verdict: "PASS" }).success, false);

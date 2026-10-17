@@ -176,6 +176,7 @@ export const QualityRecordSchema = z.strictObject({
 export const OutcomeRecordSchema = QualityRecordSchema.extend({
   verdict: VerdictSchema,
   receipt: ChainReceiptSchema.nullable(),
+  cancelled: z.boolean().optional(),
 });
 export const RuntimeEventSchema = z.strictObject({
   eventId: IdSchema,
@@ -251,6 +252,25 @@ export const ArtifactUploadRequestSchema = z.strictObject({
   contentHash: HashSchema,
 });
 
+export const RuntimeStatusSchema = z.enum(["ACTIVE", "PAUSED", "CANCELLED", "WAITING_MANUAL", "INTERRUPTED"]);
+export const TaskRuntimeSchema = z.strictObject({ taskId: HashSchema, status: RuntimeStatusSchema, reason: z.string().nullable() });
+export const RunDetailSchema = RunSchema.extend({
+  runtimeStatus: RuntimeStatusSchema,
+  taskRuntime: z.array(TaskRuntimeSchema),
+  inputURI: UriSchema,
+  artifacts: z.array(ArtifactSchema),
+  assessments: z.array(AssessmentSchema),
+  handoffs: z.array(HandoffSchema),
+  decisions: z.array(AssignmentDecisionSchema),
+});
+export const WorkerJobSchema = z.strictObject({ task: TaskSchema, runtimeStatus: RuntimeStatusSchema, reason: z.string().nullable(), run: RunDetailSchema });
+export const WorkerJobsResponseSchema = z.strictObject({ jobs: z.array(WorkerJobSchema) });
+export const AgentsResponseSchema = z.strictObject({ agents: z.array(AgentProfileSchema) });
+export const EventsResponseSchema = z.strictObject({ events: z.array(RuntimeEventSchema), nextAfter: CountSchema });
+export const AnnouncementsResponseSchema = z.strictObject({ announcements: z.array(AnnouncementSchema) });
+export const NotesResponseSchema = z.strictObject({ notes: z.array(AgentNoteSchema) });
+export const ModelCallReservationSchema = z.strictObject({ callId: IdSchema, modelCalls: CountSchema.min(1).max(6), stepCalls: CountSchema.min(1).max(2) });
+
 export type Role = z.infer<typeof RoleSchema>;
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
 export type TransactionStatus = z.infer<typeof TransactionStatusSchema>;
@@ -295,3 +315,13 @@ export type HandoffUpdateRequest = z.infer<typeof HandoffUpdateRequestSchema>;
 export type AcceptTaskRequest = z.infer<typeof AcceptTaskRequestSchema>;
 export type SubmitTaskRequest = z.infer<typeof SubmitTaskRequestSchema>;
 export type ArtifactUploadRequest = z.infer<typeof ArtifactUploadRequestSchema>;
+export type RuntimeStatus = z.infer<typeof RuntimeStatusSchema>;
+export type TaskRuntime = z.infer<typeof TaskRuntimeSchema>;
+export type RunDetail = z.infer<typeof RunDetailSchema>;
+export type WorkerJob = z.infer<typeof WorkerJobSchema>;
+export type WorkerJobsResponse = z.infer<typeof WorkerJobsResponseSchema>;
+export type AgentsResponse = z.infer<typeof AgentsResponseSchema>;
+export type EventsResponse = z.infer<typeof EventsResponseSchema>;
+export type AnnouncementsResponse = z.infer<typeof AnnouncementsResponseSchema>;
+export type NotesResponse = z.infer<typeof NotesResponseSchema>;
+export type ModelCallReservation = z.infer<typeof ModelCallReservationSchema>;
