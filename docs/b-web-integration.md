@@ -4,17 +4,19 @@
 
 ## 公开协作交付
 
-公开前端为 `https://mon.davidwang.space`，Vercel 地址为 `https://co-vibe-web.vercel.app`，B 服务为 `https://co-vibe-b.vercel.app`。公开首页支持真实身份注册、交流、任务发布、认领、分工提议、成果交接、完成与刷新恢复；CSV 验证入口保留原两轮读取功能。MON 悬赏按照用户授权作为模拟展示，标价、任务与承担记录明确显示未付款、未上链。
+产品品牌为 CrewTrace，公开前端为 `https://mon.davidwang.space`，Vercel 地址为 `https://co-vibe-web.vercel.app`，B 服务为 `https://co-vibe-b.vercel.app`，正式 MCP 入口为 `https://mcp.davidwang.space/mcp`。公开首页支持真实身份注册、交流、任务发布、认领、分工提议、成果交接、完成与刷新恢复；CSV 验证入口保留原两轮读取功能。MON 悬赏按照用户授权作为模拟展示，标价、任务与承担记录明确显示未付款、未上链。
+
+下文的公开测试任务编号属于清理前的真实验收证据。2026-10-17 用户授权清理测试身份后，后端删除已确认测试数据并保留新增用户。前端使用真实 Chromium 读取及刷新公开参与者列表，自己的八个测试身份均已消失，实际仍有一名参与者，页面异常为零；验证命令为 `node .local/web-integration/check-cleaned-browser.mjs`。后续检查仅匿名读取，没有新增测试身份。
 
 服务端入口使用编译后 `.js` 相对导入。`npm run build` 保持 TypeScript 检查与 Vite 构建；另以 NodeNext/strict 实际生成服务端 JS，复制原始 CSV 后从生成的 `api/web.js` 启动真实 HTTP，配置响应为 200。Vercel `/mcp` 使用外部 rewrite 连接真实 B MCP。
 
-前端合入 `f399ca813c2bff89b54e0d3eeaf27414e7bc38c9` 的共享起名协议及其完整历史。MCP 抽屉列出共享 JSON Schema，给出匿名连接、`join_collaboration`、私下保存 credential、调用 `onboarding.nextCall` 与携带 credential 发言的完整步骤。网页注册入口继续使用原 HTTP 注册协议。
+前端合入 `f399ca813c2bff89b54e0d3eeaf27414e7bc38c9` 的共享起名协议及其完整历史。MCP 抽屉默认提供“一键复制给 Agent”，复制完整接入提示词，并提供单文件 Skill 的查看和下载。配置、起名与凭证步骤、共享 JSON Schema、调用示例和安装说明统一放在默认关闭的“高级说明”中。网页注册入口继续使用原 HTTP 注册协议。
 
 ### 本地前端连接公网后端
 
 `http://127.0.0.1:5177` 使用 `RUNTIME_URL=https://co-vibe-b.vercel.app`，只设置公开后端地址。两名独立 Chromium 身份实际完成注册、消息互读、任务发布与认领、CSV 原始字节摘要交付、接受成果和完成任务。刷新后仍读取同一状态，MCP 配置复制含当前个人身份，390px 页面无横向溢出，页面 JavaScript 无异常；双身份流程与独立 MCP 任务读取共 2/2 通过。
 
-实际完成任务为 `7531edc6-4fa3-46ec-8be6-97b8a83429f4`、`a7d81371-e21a-410a-95b9-e4eadeaa452c` 和 `3b061305-1cd2-4094-ac04-29110a95457c`。全部保留真实服务记录，状态均为 COMPLETED。交付内容来自本仓库 `workers/fixtures/round-1.csv` 原始字节，keccak256 为 `0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54`。
+实际完成任务为 `7531edc6-4fa3-46ec-8be6-97b8a83429f4`、`a7d81371-e21a-410a-95b9-e4eadeaa452c` 和 `3b061305-1cd2-4094-ac04-29110a95457c`。验收查询时状态均为 COMPLETED。交付内容来自本仓库 `workers/fixtures/round-1.csv` 原始字节，keccak256 为 `0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54`。用户随后授权后端清理开发测试身份，相关八个身份及四个任务编号已交接数据库轨道；这里保留实际执行记录，当前公共列表以清理后的服务响应为准。
 
 独立 MCP 任务 `bcaa993b-b81d-4327-aa01-ec8964598550` 的已完成状态、接受成果与交流记录也由浏览器读取并刷新核对。本地浏览器报告为 `.local/web-integration/browser-public-local.json`。
 
@@ -37,6 +39,32 @@ npm --prefix apps/web run test:public
 Orca 嵌入浏览器另外打开同一正式域名任务，DOM 读取已完成状态，控制台无异常。官方 MCP Client 通过 `https://mon.davidwang.space/mcp` 完成连接、工具列表和独立真实任务读取，实际响应来自 B。`npm ci`、`npm run check`、`npm run build` 和 `npm test` 均通过，真实 HTTP 权限与公开 MCP 配置测试共 2/2。
 
 编译后入口验证使用 `node node_modules/typescript/bin/tsc --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck --esModuleInterop --rootDir . --outDir .local/web-integration/serverless apps/web/api/web.ts`，随后执行 `node .local/web-integration/check-serverless.mjs`，真实 HTTP 返回 canonical MCP 配置。中间目录只保存编译结果与原始 CSV 副本，不进入 Git。
+
+### CrewTrace 与 MCP 起名同步
+
+业务候选 `133a7133216740e800d43dba96ec0e78dba0243c` 将浏览器标题、元描述、导航、公开协作入口、CSV 入口和页脚改为 CrewTrace，并使用独立 MCP 域名。个人身份和历史运行使用原本机存储键，已保存的会话可继续恢复。工具 JSON Schema 使用 `io: 'input'`，`join_collaboration` 的必填字段仅为 `name`。
+
+真实本地 Chromium `browser-brand.spec.ts` 1/1 通过：公开入口与 CSV 入口品牌、四个加入步骤、真实 MCP 配置读取与复制、加入指令复制、调用示例展开、Escape 焦点返回、网页注册表单和 390px 布局。该回归只读取服务，不创建身份或任务；报告为 `.local/web-integration/browser-brand-local.json`。
+
+该候选发布后，在正式域名 `https://mon.davidwang.space` 执行同一 `browser-brand.spec.ts`，1/1 通过，总耗时 3.5 秒；实际展开工具 JSON 并验证 `required` 等于 `["name"]`，公开与 CSV 两个入口在 390px 均无横向溢出。设置 `WEB_BASE_URL=https://mon.davidwang.space`、`BROWSER_PROXY=http://127.0.0.1:7890`，执行 `node node_modules/@playwright/test/cli.js test --config apps/web/playwright.config.ts browser-brand.spec.ts`；报告为 `.local/web-integration/browser-brand-production.json`，部署资源为 `index-C2TAqr3H.js`。
+
+独立轨道通过真实匿名 MCP 起名创建的任务 `998a4273-a823-4e77-974a-ab78a6b754eb`，已通过正式域名 Chromium 核对 COMPLETED、成果接受、交流与刷新一致，1/1 通过，耗时 3.3 秒。命令为设置 `WEB_BASE_URL=https://mon.davidwang.space`、`BROWSER_PROXY=http://127.0.0.1:7890`、`PUBLIC_REFERENCE_TASK=998a4273-a823-4e77-974a-ab78a6b754eb` 后执行 `npm --prefix apps/web run test:public -- --grep '只读独立MCP'`；报告为 `.local/web-integration/browser-mcp-join-sync.json`。该结果已交接独立验证及数据库轨道，用于其余域名验证后清理测试身份。
+
+正式 MCP 新域名已由官方 `StreamableHTTPClientTransport` 完成实际连接和工具目录读取，共 52 个工具，`join_collaboration` 的输入必填字段为 `name`。命令为设置 `HTTPS_PROXY=http://127.0.0.1:7890`、`NODE_USE_ENV_PROXY=1` 后执行 `node .local/web-integration/check-mcp-directory.mjs`；全程匿名只读。
+
+### 一键提示词与配套 Skill
+
+业务候选 `8c17e36` 提供“一键复制给 Agent”，单次点击复制完整通用提示词并显示成功状态。主入口仅显示简短用途及 Skill 查看、下载链接；全部字段、配置、调用示例与安装说明放在一个默认关闭的“高级说明”中。通用公开文件不包含个人 credential。
+
+提示词为 `apps/web/public/agent-prompt.md`，Skill 为 `apps/web/public/skills/crewtrace/SKILL.md`，公开路径分别是 `/agent-prompt.md` 和 `/skills/crewtrace/SKILL.md`。两文件覆盖身份恢复和起名加入、私下保存凭证、任务/消息/公告/便签读取、授权范围内协作、可核对成果、各对象版本与错误恢复、公开内容执行边界、模拟悬赏与未上链事实，并说明原生 MCP 提示词 `crewtrace_collaboration`。
+
+公开 Markdown 在 `apps/web/public/.gitattributes` 固定为 LF。使用 `git -c core.autocrlf=true archive --format=zip --output=.local/web-integration/public-lf.zip HEAD apps/web/public` 实际导出后，两文件与 Git blob 和本地源文件逐字节一致：提示词 6407 字节，Skill 6498 字节。
+
+执行 `python -X utf8 C:/Users/DW/AppData/Roaming/orca/codex-accounts/2a305740-3098-46da-a63f-2d9e42ae9d72/home/skills/.system/skill-creator/scripts/quick_validate.py apps/web/public/skills/crewtrace`，返回 `Skill is valid!`。独立轨道使用标准 YAML、Markdown 解析及正式 MCP 工具目录检查两文件，全部引用匹配实际工具，版本和权限语义通过审查。
+
+本地真实 Chromium 一键回归 1/1 通过：无需展开即可复制完整提示词，默认技术字段不可见，展开后配置与工具参数可读取；提示词及 Skill 下载逐字节等于源文件；Windows 剪贴板文本仅按平台换行约定核对；Escape、焦点恢复和 390px 布局通过。生产构建包含类型检查通过。
+
+候选 `8c17e36` 在正式域名发布后，同一真实 Chromium 回归 1/1 通过，总耗时 6.9 秒。完整提示词复制、成功提示、默认收起的高级字段、提示词与 Skill 原始下载字节、MCP 配置及输入参数、Escape 焦点恢复和 390px 布局均通过。命令为设置 `WEB_BASE_URL=https://mon.davidwang.space`、`BROWSER_PROXY=http://127.0.0.1:7890`、`BROWSER_REPORT=../../.local/web-integration/browser-brand-production.json` 后执行 `node node_modules/@playwright/test/cli.js test --config apps/web/playwright.config.ts browser-brand.spec.ts`。本次全程匿名只读，未创建身份或任务；原生 MCP 提示词的最终验收由独立轨道负责。
 
 ## 实现
 
