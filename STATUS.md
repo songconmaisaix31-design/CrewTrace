@@ -2,33 +2,32 @@
 
 ## 当前公开交付
 
-- 网站：https://mon.davidwang.space；备用地址：https://co-vibe-web.vercel.app。阿里云 CNAME 和 HTTPS 已实际验证。前端为 Dwwww/co-vibe-web，真实 API 为 Dwwww/co-vibe-b。
-- 前端已发布 74391f83d0a972d41c38bf62d2db782c45d8e908，公网协作配置与任务读取返回 200，Vercel 生产构建通过；域名 MCP 路由与窄屏布局提交 f3c6da2 正在发布。
-- 公开后端已发布 774dcbcfbdd23a55d2df92ff844f14800369f6e5，真实数据库连接正常。注册、独立凭证、消息公告、便签历史、任务分工认领、成果交接与事件均已实现，HTTP 和 MCP 使用同一业务逻辑及持久记录。
-- 悬赏按用户明确要求使用 Mock，bountyMode=MOCK，页面标注模拟 MON；未执行真实支付。当前不自动匹配，承担记录的链上形式为 UNDECIDED，不显示虚构交易或上链回执。
-- 用户追加要求 MCP 独立完成“起名加入”。三个原轨道正在补齐 join_collaboration({name})、同一匿名连接使用个人 credential 的后续操作、域名 /mcp 入口和完整接入示例；网页注册和 Bearer 接入保持兼容。
-- 最终交付分支为 work/b-runtime。C 的 3d7966e62b7a56ac5afe1819550ccf89e88c9722 和 B 各轨道均保留完整合并历史。
+- CrewTrace 网站：https://mon.davidwang.space；备用：https://co-vibe-web.vercel.app。正式 MCP：https://mcp.davidwang.space/mcp。阿里云 CNAME、Vercel 域名验证与实际 HTTPS 均通过；旧 mon/mcp 与 co-vibe-b/mcp 继续可用。
+- 前端已发布 8c17e36e976c9937f1815bab64495a34473bb542，READY 部署为 dpl_8HA7wZR1kqdGQk91XvLEaLXNxybM。用户可见品牌统一为 CrewTrace；MCP 页一个主按钮复制接入提示词，字段、JSON 和工具参数默认隐藏在高级说明，提供标准 Skill 下载。
+- 后端已发布 9de221a7be941c13e39aa68901edc3cd01881797，READY 部署为 dpl_4V28xmQxTUCYqwCHDN9zPyp7Tdjb。MCP 起名加入、原连接个人凭证、消息公告、便签、任务分工、交接和验收均使用真实数据库；25 个公开协作工具和 27 个原受权限限制工具共存。
+- 原生无参数提示词 crewtrace_collaboration 已发布；本地真实 HTTP 与官方 MCP SDK prompts/list/get、Host 检查 1/1 通过，正式域名匿名 SDK 返回全文与源码一致。公开提示词和 Skill 已随前端发布，见 docs/mcp.md。
+- 用户最新要求正在实施：上链限定本地运行，线上保留当前状态；MCP 补全悬赏操作与完整服务端 Prompt，网页仅复制一句连接指令，网站演示案例及旧入口移除。详情见 tasks/B-public-onchain.md。
+- 模拟 MON 悬赏的 bountyMode 为 MOCK，没有真实付款。公开承担记录尚未上链，commitmentRecording 为 UNDECIDED，当前不自动匹配。
+- 最终交付分支为 work/b-runtime，保留 A 协议、C 的 3d7966e62b7a56ac5afe1819550ccf89e88c9722 与各 B 轨道完整合并历史。
 
 ## 已完成真实验证
 
-- 两个独立官方 MCP Client 进程完成公网注册、消息互读、便签更新、任务认领、真实成果交接；任务 bcaa993b-b81d-4327-aa01-ec8964598550 已 COMPLETED。13 个 event_id 在生产 schema 逐条核对，权限、轮换与域名 CORS 通过，客户端正常退出。见 docs/b-public-collaboration.md。
-- 真实 PostgreSQL、HTTP、MCP 和两个服务重启的回归 1/1 通过，耗时约 48.7 秒；并发认领返回 201/409，其他身份释放返回 403。
-- 独立双 Node MCP 完整交接两次通过，最终一次包含实际 MCP VERSION_CONFLICT，耗时 47.643 秒；两次各 11 个事件逐条定位于真实测试库。
-- 本地 Vite 连接公网后端的 Chromium 双身份流程和独立 MCP 任务读取 2/2 通过，实际任务 a7d81371-e21a-410a-95b9-e4eadeaa452c 已完成；正式域名浏览器检查继续进行。没有截图、录屏、trace 或伪造响应。
-- 根 npm ci、类型检查、构建、真实 HTTP 权限测试 2/2 通过；最终合并候选由集成轨道检查。Vercel Linux 构建成功，已发布前端安装审计为 0 vulnerabilities。
+- 正式域名 Chromium 双身份完整协作 2/2 通过：注册、消息互读、认领、实际 CSV 产物摘要、作者接受、任务完成、刷新及断线恢复。CrewTrace 品牌与 MCP 参数页面正式域名 1/1 通过；8c17e36 一键复制、默认隐藏字段、Skill 下载原字节与窄屏的正式只读浏览器 1/1 通过，耗时 6.9 秒。独立检查确认静态提示词 6407 字节、Skill 6498 字节与已发布 Git blob 一致。
+- mon/mcp 真实匿名起名与安全回归 1/1 通过，耗时 25588.2163 ms，7 个 event_id 逐一核对生产数据库。独立双客户端起名、交接验收 1/1 通过，耗时 12269.7828 ms，8 个事件逐一核对。新 mcp 域名与两个兼容地址的官方 SDK、个人凭证、已完成任务及 Bearer 读取一致，未新增验证身份。
+- 2026-10-17 11:34:43 UTC 事务清理准确核实的 16 个测试身份、19 个凭证、6 个任务、13 条消息、2 个便签及 3 个版本、1 个提议、6 个认领、6 个交接和 64 个事件。新增的一名非测试身份及全部关联记录原样保留，全部非选中记录前后严格一致；公开 HTTP 与正式浏览器刷新均确认测试身份消失。测试报告中的任务及事件为清理前已通过的真实证据。
+- 根与各包的适用类型检查、构建及真实 HTTP 测试通过；Vercel Linux 前端和后端生产构建成功，安装审计均为 0 vulnerabilities。没有截图、录屏、虚假接口或伪造链回执。
 
-## 数据库与既有 B 验收
+## 数据库及既有 B 验收限制
 
-- 当前 Neon 项目为 withered-boat-53378262（aws-us-east-2）。生产 schema 为 b_public_collaboration_20261017，测试 schema 为 b_public_collaboration_test_20261017，迁移 001–007 已实际应用。
-- 新项目于 **2026-10-20 18:12:55 北京时间**到期，需要用户认领以持续使用。原 snowy-voice-65085749 在认领过程中撤销旧密码，原记录保留，未完成旧数据迁移。
-- 完整运行详情由 7 次数据库往返合并为 1 次一致快照查询；两轮各 30 组的 p50 从约 2 秒降至约 0.4 秒。Singapore 实测更慢，保留 Ohio；原始字节、事件、事务和权限保持一致。
-- 四个独立 Worker 使用 step-3.5-flash 和 A 原始合约，在本地 chainId 31337 完成两轮三角色任务，六项 VERIFIED_PASS，每轮实际模型调用 3 次。最近两轮服务端耗时 243228 / 252213 ms，120 秒目标未通过。
-- 独立流程的 133 个运行时事件和 24 个原生事件逐项查库；六份产物重算、原始输入、冻结决策、验收证据和真实交易核对通过。见 docs/b-web-verification.md。
-- A Monad Testnet 10143 合约 0x3645579b40fcee562cd86fda3fba25b90c924418 已完成真实只读核对；完整测试网写入仍需授权签名和 Gas。本地链结果不计为测试网写入。
-- Worker 常驻主机和两台设备尚未确认，验证用 Worker 已停止。公开协作允许用户自己的 Agent 通过 MCP 加入，不依赖本机常驻 Worker。
+- 当前真实 PostgreSQL 为 Neon Ohio 项目 withered-boat-53378262，生产 schema 为 b_public_collaboration_20261017，独立测试 schema 为 b_public_collaboration_test_20261017，迁移 001–007 已应用。
+- 数据库项目于 **2026-10-20 18:12:55 北京时间**到期，持续使用需要用户认领。原 snowy-voice-65085749 的记录保留，旧数据尚未迁移。
+- 运行详情查询由 7 次数据库往返合为 1 次一致快照查询；两轮各 30 组的 p50 从约 2 秒降至约 0.4 秒，原始字节、事件和事务语义保持一致。
+- 四个独立 Worker 使用 step-3.5-flash 与 A 合约，在本地 chainId 31337 完成两轮三角色流程，六项 VERIFIED_PASS，每轮实际模型调用 3 次；耗时 243228 / 252213 ms，120 秒目标未通过。
+- A Monad Testnet 10143 合约 0x3645579b40fcee562cd86fda3fba25b90c924418 已完成真实只读核对，完整测试网写入仍需授权签名和 Gas。本地链结果不能计为公开生产上链。
+- Worker 常驻主机和两台设备尚未确认，验证用 Worker 已停止。公开协作支持用户自己的 Agent 通过 MCP 加入。
 
 ## 执行与证据
 
-原开发使用 Orca Codex / gpt-6.1-sol；2026-10-17 恢复后的三个固定轨道实际为 Orca Codex / gpt-6-astra。分工见 tasks/B-web-integration.md。密钥、数据库连接、个人凭证和私有日志保存在忽略目录或服务端环境，未加入 Git。
+原开发使用 Orca Codex / gpt-6.1-sol；2026-10-17 恢复后的三个固定轨道使用 Orca Codex / gpt-6-astra。主 Agent 维护计划与部署，原 Worker 负责各自目录的开发、测试、文档与返修，独立轨道负责合并；分工见 tasks/B-web-integration.md。
 
-公开协作见 docs/b-public-collaboration.md，MCP 说明见 docs/mcp.md，前端验证见 docs/b-web-integration.md，完整 PRD B 结果见 docs/b-integration.md 与 tasks/B-plan.md。
+当前部署见 docs/b-public-deployment.md；协议见 docs/mcp.md；公开协作、前端与独立验证分别见 docs/b-public-collaboration.md、docs/b-web-integration.md、docs/b-web-verification.md。密钥、凭证及清理前后原始证据保存在忽略目录或服务端环境，不进入 Git。
