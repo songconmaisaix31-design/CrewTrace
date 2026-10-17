@@ -19,8 +19,11 @@
 | 类型与规则 | work/b-domain | packages/contracts/**、services/runtime/src/domain/**、services/runtime/test/domain/**、docs/contracts.md、docs/b-domain.md | 共享 schema、信誉与快照、固定模板、状态约束、链上端口及文档 |
 | 服务与公告板 | work/b-service | services/runtime/**（排除 src/domain/**、test/domain/**）、docs/b-service.md | 包配置、PostgreSQL、HTTP、MCP、权限、公告板/便签、持久化和部署配置 |
 | Worker 与验收 | work/b-workers | workers/**、docs/b-workers.md | 阶跃星辰调用、独立 Worker、CSV 库、两份合成输入、三角色工具与确定性验收、实际调用验证 |
+| A 协议接入 | work/b-chain | packages/runtime-chain/**、packages/contracts/src/ports.ts、docs/contracts.md、docs/b-chain.md；原样导入 packages/chain/** 与 deployments/monad-testnet.json | 消费用户提供的 A 原始交付，转换枚举、bigint 和事件回执，增加指派所需的 runId/decisionHash |
 
 服务代码和 Worker 通过共享业务类型集成。类型轨道首先交付 docs/contracts.md 与可导入的类型，然后继续规则与测试；跨轨道修改通过交接提出。所有代码与测试禁止 mock 和伪造协议；固定合成 CSV 为 PRD 明确要求的公开演示输入，须标明来源。
+
+类型与规则轨道已完成并释放。用户随后提供 co-vibe-A-cd1d82a.zip，其中包括 A 原始适配器和部署记录；A 协议接入是新增轨道，接管已完成轨道的 ports.ts 与公共端口文档，只增加实际接入所需字段。其他轨道保持只读消费这些文件。A 的原始源文件只原样导入，不修改。
 
 ## 集成与验收
 
