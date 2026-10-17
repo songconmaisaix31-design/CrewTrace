@@ -38,7 +38,7 @@ test('真实公开协作：两身份注册、消息互读、认领、实际CSV�
     console.log(JSON.stringify({baseURL:new URL(owner.url()).origin,taskId,phase:'created'}));
     await worker.goto(`/?task=${taskId}`);
     await expect(worker.locator('.public-task-detail h2')).toContainText(suffix);
-    await expect(worker.locator('.public-task-detail')).toContainText('模拟标价，未付款、未上链');
+    await expect(worker.locator('.public-task-detail .public-amount')).toHaveText('1.5 MON');
     await expect(worker.locator('.public-identity')).toContainText(workerName);
     await worker.getByLabel('我愿意承担的工作',{exact:true}).fill('核对公开CSV原始字节的摘要');
     await worker.getByRole('button',{name:'认领这部分工作',exact:true}).click();
