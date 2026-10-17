@@ -40,6 +40,12 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
   const ready = Boolean(config.RUNTIME_URL && config.ADMIN_TOKEN && config.VALIDATOR_ADDRESS && config.DEMO_ACCESS_CODE && config.DEMO_ACCESS_CODE.length >= 16);
   try {
     const url = new URL(req.url ?? '/', 'http://localhost');
+    if(req.method==='GET'&&url.searchParams.get('action')==='collaboration-config'){
+      if(!config.RUNTIME_URL){json(200,{configured:false,mcpURL:null});return;}
+      const base=new URL(config.RUNTIME_URL);
+      if(!['http:','https:'].includes(base.protocol)||base.username||base.password)throw new Error('服务地址无效');
+      json(200,{configured:true,mcpURL:new URL('/mcp',base).href});return;
+    }
     if (req.method === 'GET' && url.searchParams.get('action') === 'status') {
       json(200, { configured: Boolean(config.RUNTIME_URL), creationConfigured: ready }); return;
     }
