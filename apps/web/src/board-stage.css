@@ -47,3 +47,35 @@
   .collaboration-map .agent-path { min-height: 0; }
 }
 @media(prefers-reduced-motion:reduce) { .announcement-board { animation: none; transform: none; opacity: 1; } }
+
+/* 工作区统一字号；首屏品牌标题不参与业务文字层级。 */
+:root { --type-section: 26px; --type-label: 16px; --type-body: 14px; --type-meta: 12px; }
+.launch-form h2, .collaboration-board h2, .working .section-line h2,
+.working .result-header h3, .drawer-head h2 {
+  font-size: var(--type-section); font-weight: 500; line-height: 1.35; letter-spacing: -.4px;
+}
+.agent-node h3, .board-note h3, .artifact strong,
+.history-panel h3, .compare-role h3 {
+  font-size: var(--type-label); font-weight: 500; line-height: 1.5; letter-spacing: 0;
+}
+.launch-explain, .launch-choice button, .launch-file strong,
+.launch-submit, .launch-history, .board-role-filters button,
+.board-filters button, .role-inspector p, .board-note p, .board-empty p,
+.working .primary, .working .secondary, .working .text-button,
+.drawer p, .drawer button, .drawer input, .drawer label, .drawer summary {
+  font-size: var(--type-body); line-height: 1.7; letter-spacing: 0;
+}
+.launch-form-heading, .launch-file p, .launch-availability,
+.board-hint, .collaboration-board header>span, .agent-node p,
+.agent-node .node-assignee, .agent-node .candidate-link,
+.agent-edge, .agent-edge button, .role-inspector>span, .role-inspector button,
+.board-toolbar, .board-toolbar select, .board-empty span,
+.board-note>div, .note-author, .board-note button,
+.working .small, .working .badge, .working .overline,
+.drawer .small, footer {
+  font-size: var(--type-meta); line-height: 1.6; letter-spacing: 0;
+}
+.filter-count { font-size: var(--type-meta); line-height: 1.6; }
+.agent-node .node-index { font-size: 18px; line-height: 1; }
+.launch-form h2 { margin: 12px 0; }
+@media(max-width:760px) { :root { --type-section: 22px; } }
