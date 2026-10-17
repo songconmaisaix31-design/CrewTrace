@@ -1,6 +1,20 @@
 # 前端集成、可用性与数据库性能
 
+## 2026-10-17 公开协作交付
+
+用户最新要求以公开 Agent 协作为主流程：进入网站即可交流、发布 MON 悬赏、认领任务、协商分工与交接成果；交流同步到前端与 MCP。当前关闭自动匹配入口，各自承担记录写入 Monad，供未来匹配使用。既有 CSV、真实模型和原 A 协议结果保留，继续按其实际网络记录证据。
+
+三个原轨道继续按互斥目录并行：前端 Worker 负责 apps/web/** 与根配置；数据库 Worker 负责 services/runtime/**（仍排除 src/domain/** 与 test/domain/**），新增公开协作持久化、身份凭证、HTTP/MCP；独立流程 Worker 负责 packages/contracts/src/collaboration.ts、index.ts 导出、packages/contracts/test/collaboration*.ts、packages/collaboration-chain/**、docs/mcp.md，以及最终独立验证与少量合并。共享协议由第三轨道统一维护，前后端只消费。主 Agent 维护计划、状态、决策、最终检查与部署。
+
+发布入口采用 Dwwww/co-vibe-web 前端与既有 co-vibe-b API。原数据库认领冻结，旧记录保持原项目；新增公开协作使用已实测可用的独立 Ohio PostgreSQL schema，不宣称旧数据已迁移。项目认领与过期时间须在实际发布记录中说明。
+
+两项关键决定已向用户询问，答复前保持未决定：MON 悬赏直接付款或合约托管及是否转向主网；自由分工采用钱包交易内容记录或新增智能合约。先完成不依赖这些决定的公开注册、交流、任务分工、MCP 说明和前端同步；资金与上链模块待答复后实现。
+
+验收覆盖真实数据库、两名独立 Agent 通过 HTTP/MCP 发布和互读消息、任务认领与成果交接、前端实际 Chromium 操作与刷新同步、权限与并发冲突、生产构建及公开网站同一流程。未产生真实链回执不得显示已上链，未付款不得显示已支付。网络继续依据已确认部署配置显示。
+
 用户要求集成 `work/c-web`、实际测试可用性并加速数据库，必要时更换数据库。基线为 B 的 `5f2c02545632c01356c21a99d74824347a841ac9` 与 C 的 `36b88d30c02faaaf55302e37bf0c735f3622771d`。交付保持开发分支，保护 A 原始协议、C 既有交互和原始证据。客户端与模型使用 Orca Codex 的实际启动配置，完成后记录返回值。
+
+执行期间 C 分支更新至 `3d7966e62b7a56ac5afe1819550ccf89e88c9722`，前端轨道已通过独立合并提交保留其完整历史。
 
 用户操作流程：进入前端、预览两份固定输入、通过服务端授权创建运行、读取真实任务及公告、查看已完成产物和决策、刷新恢复及比较两轮。没有测试网签名时如实显示运行条件，不能产生虚构结果。
 
@@ -10,8 +24,9 @@
 | --- | --- | --- | --- |
 | 前端集成 | Orca 独立子 Worktree / work/b-web-integration | apps/web/**、根 package.json、根锁文件、.gitignore；合并 C 时处理 HANDOFF.md/STATUS.md 冲突，保留 B 内容；docs/b-web-integration.md | 合并完整 C 历史；改用当前共享类型；真实 B HTTP 联调、权限与产物读取、构建和适用测试通过；无 mock、无截图。 |
 | 数据库性能 | Orca 独立子 Worktree / work/b-db-performance | services/runtime/**（排除 src/domain/**、test/domain/**）、docs/b-db-performance.md | 测量真实数据库与 API 延迟、定位查询/连接成本并修复；保持事务、权限、事件、原始字节、容量和快照语义；必要时提供实际替代 PostgreSQL 及迁移结果；不改生产连接直到主 Agent 核对。 |
+| 真实流程验证与最终集成 | 主 Worktree / work/b-runtime 的独立 Orca Agent | .local/web-flow/**、docs/b-web-verification.md；其他轨道结束后仅合并与必要配置衔接 | 在独立真实数据库 schema、A 原始本地合约和独立阶跃星辰 Worker 上验证前端流程；记录真实耗时与证据。最终合并前端和数据库分支，领域问题交回原 Worker。 |
 
-两轨道从同一 B 基线开发，互不修改对方目录；开发、适用测试、返修、Commit 与 push 由原 Worker 完成。最终独立集成 Agent 合并到 work/b-runtime，仅处理少量配置、导入、类型衔接，领域问题退回原 Worker。主 Agent 维护状态、决策、最终检查、部署与提交。
+前两个轨道从同一 B 基线开发，互不修改对方目录；开发、适用测试、返修、Commit 与 push 由原 Worker 完成。独立验证与集成 Agent 使用主 Worktree，验证期间只修改自己的文件。最终合并到 work/b-runtime，仅处理少量配置、导入、类型衔接，领域问题退回原 Worker。主 Agent 维护状态、决策、最终检查、部署与提交。三个轨道实际使用 Orca Codex / gpt-6.1-sol。
 
 ## 数据库与发布边界
 
