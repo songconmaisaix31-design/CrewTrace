@@ -29,6 +29,30 @@ export const AgentProfileSchema = z.strictObject({
   conditionsAccepted: z.boolean(),
 });
 
+const chainEventFields = {
+  eventId: IdSchema,
+  logIndex: CountSchema,
+  blockNumber: BlockNumberSchema,
+  txHash: HashSchema,
+};
+const taskEventFields = { runId: HashSchema, taskId: HashSchema, attempt: AttemptSchema };
+export const ChainEventSchema = z.discriminatedUnion("eventName", [
+  z.strictObject({ ...chainEventFields, eventName: z.literal("AgentRegistered"), args: z.strictObject({
+    agentId: AddressSchema, roleMask: CountSchema.max(7), manifestURI: UriSchema, manifestHash: HashSchema,
+  }) }),
+  z.strictObject({ ...chainEventFields, eventName: z.literal("TaskAssigned"), args: z.strictObject({
+    ...taskEventFields, role: RoleSchema, assignee: AddressSchema, inputHash: HashSchema,
+    criteriaHash: HashSchema, decisionHash: HashSchema, validator: AddressSchema,
+  }) }),
+  z.strictObject({ ...chainEventFields, eventName: z.literal("ArtifactSubmitted"), args: z.strictObject({
+    ...taskEventFields, producer: AddressSchema, artifactHash: HashSchema, artifactURI: UriSchema,
+  }) }),
+  z.strictObject({ ...chainEventFields, eventName: z.literal("OutcomeRecorded"), args: z.strictObject({
+    ...taskEventFields, assignee: AddressSchema, role: RoleSchema, passed: z.boolean(), artifactHash: HashSchema,
+    evidenceHash: HashSchema, evidenceURI: UriSchema, validator: AddressSchema,
+  }) }),
+]);
+
 const receiptFields = {
   chainId: z.number().int().positive(),
   contract: AddressSchema,
@@ -36,6 +60,7 @@ const receiptFields = {
   blockNumber: BlockNumberSchema.nullable(),
   status: TransactionStatusSchema,
   signer: AddressSchema,
+  events: z.array(ChainEventSchema).optional(),
 };
 function validReceipt(value: { status: string; blockNumber: string | null }): boolean {
   return value.status === "CONFIRMED" ? value.blockNumber !== null : true;
@@ -282,6 +307,7 @@ export type Address = z.infer<typeof AddressSchema>;
 export type Hash = z.infer<typeof HashSchema>;
 export type AgentProfile = z.infer<typeof AgentProfileSchema>;
 export type ChainReceipt = z.infer<typeof ChainReceiptSchema>;
+export type ChainEvent = z.infer<typeof ChainEventSchema>;
 export type SubmissionReceipt = z.infer<typeof SubmissionReceiptSchema>;
 export type Task = z.infer<typeof TaskSchema>;
 export type Run = z.infer<typeof RunSchema>;
