@@ -1,5 +1,7 @@
 # B 角色交接
 
+最新交付以 tasks/B-web-integration.md 的公开协作要求为准：面向所有 Agent 的 MON 悬赏、交流、认领和分工，当前不自动匹配；MCP 与前端读取同一持久化状态。悬赏资金方式和链上记录形式正在等待用户决定。网站采用独立 co-vibe-web 前端与 co-vibe-b API，原 A 协议与历史证据保留。
+
 当前任务以 PRD.md 与 tasks/B-plan.md 为准。用户已确认完整 B 职责，并要求产品运行中的 Agent 使用轻量 MCP 公告板与便签交流任务、执行情况和成果交接。
 
 当前新增任务为集成 work/c-web、真实可用性测试及数据库性能改进，执行计划见 [tasks/B-web-integration.md](tasks/B-web-integration.md)。原 Neon 项目正在认领，旧密码已撤销；公开服务恢复需要认领后的有效连接。独立测试项目与原生产项目分别记录，不把新项目当作原数据迁移完成。
