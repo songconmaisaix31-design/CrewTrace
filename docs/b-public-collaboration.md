@@ -67,6 +67,7 @@
 - `node --env-file=.local/collaboration/production.env --import tsx src/migrate.ts` 与测试配置的同一命令：真实迁移 001–007 通过。
 - `node --import tsx .local/collaboration/verify-schema.ts`：正式与测试 schema 的迁移和表结构真实核对通过，连接设置只读。
 - `node --env-file=.local/collaboration/test.env --import tsx --test test/collaboration-persistence.test.ts`：1/1 通过，耗时 48686.568 ms；真实 HTTP、官方 MCP、匿名拒绝、作者防伪、跨身份拒绝、便签并发 200/409、全部历史、逐事件查库、两个服务进程先后启动后的持久化、凭证轮换和旧 Worker 权限隔离通过。实际旧匹配决策数量为零。
+- `node --import tsx .local/collaboration/task-conflict.ts`：两个实际 Agent 同时认领任务 `82df4625-1e3c-437a-9258-cfd8ca8369a7` 的同一工作范围，实际返回 409/201，只有一个有效认领、任务版本为 2；另一身份释放被拒绝，认领者释放后任务恢复 OPEN、版本为 3，作者随后取消。事件中 TASK_CLAIMED 只出现一次。
 
 独立验证轨道针对固定业务候选 `baef353` 执行 `packages/contracts/test/collaboration-live.test.ts`：1/1 通过，耗时 55399 ms。两名独立 Node 进程（PID 60004、57164）使用官方 MCP 发布、互读消息，随后分别正常退出。任务 `34d97aa6-4f69-4f15-af73-cee6e610de3f` 完成分工提议、作者批准、本人认领、实际公开 GitHub CSV 原字节核对与成果交付、作者接受和任务 COMPLETED；权限、便签并发 200/409 与凭证轮换均通过。该任务产生 11 个任务事件，数据库逐事件核对由独立验证轨道记录。
 
