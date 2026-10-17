@@ -12,6 +12,8 @@
 
 如果测试网签名配置尚未到达，应使用 A 原始合约在真实本地 EVM 与实际 HTTP RPC 上验证 B 的指派、Worker 模型执行、提交、可信验收、第二轮回读和原交易对账，作为 B 功能检查；不得伪造协议、适配器或回执，也不得把本地结果标为 Monad Testnet 验证。A 的 Hardhat 项目位于 .local/a-handoff/contracts，依赖由主 Agent 准备。使用真实部署交易、独立生成钱包和实际转账；不改 A 源码、不操作已有测试网部署或 A 资金。Windows 执行 Hardhat 时在当前进程设置 HARDHAT_DISABLE_TELEMETRY，直接调用包内 hardhat，避免改写 A 的原始 package.json。
 
-A 原始合约已用 Hardhat 3.20.0 / solc 0.8.28 编译通过。主 Agent 已启动真实本地 RPC http://127.0.0.1:18545，chainId 31337，进程 42396；已通过原生 evm_setIntervalMining 设置一秒出块。日志位于 .local/hardhat-node.stdout.log 与 .local/hardhat-node.stderr.log，包含开发钱包信息，禁止打印或公开。集成 Agent 可以使用该本地节点，私有部署配置保存在 .local/，不得复用公开开发钱包作为产品身份；为协调者、验收者和四个 Worker 分别生成钱包并实际转账。需要缩短本地 finalized 等待时，可使用此真实节点的原生区块生成参数，保留实际交易与区块证据。不要改写 Monad RPC 或公共部署。
+A 原始合约已用 Hardhat 3.20.0 / solc 0.8.28 编译通过。主 Agent 已启动真实本地 RPC http://127.0.0.1:18545，chainId 31337，进程 42396；已通过原生 evm_setIntervalMining 设置一秒出块。日志位于 .local/hardhat-node.stdout.log 与 .local/hardhat-node.stderr.log，包含开发钱包信息，禁止打印或公开。集成 Agent 可以使用该本地节点，私有部署配置保存在 .local/，不得复用公开开发钱包作为产品身份；为协调者和验收者生成独立钱包，沿用 Worker 轨道已生成的四个独立 Worker 钱包并实际转账。需要缩短本地 finalized 等待时，可使用此真实节点的原生区块生成参数，保留实际交易与区块证据。不要改写 Monad RPC 或公共部署。
+
+四个 Worker 的公开身份位于 workers/identities.json，公开 manifest 的固定 URI 为 https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json，已被真实 enroll 校验字节并用于登记。私有环境文件在 Worker 轨道的 .local/ 内，由该轨道交接路径。可复制到集成工作区的忽略目录并配置真实本地部署，不打印凭证。实际 Neon 已保留这四个签名身份；同一数据库上不重复 enroll，如需更新节点凭证，使用授权 rotate 接口。原 MCP 通信进程已停止。
 
 提供可复现的 Vercel 部署配置与命令，目标仅 Dwwww/co-vibe-b。当前 Vercel 连接器创建项目返回 403，本机 CLI token 无效，用户恢复访问前不进行账号切换或其他团队部署。完成本机验证后列出部署所需配置。验证成功后提交必要衔接，push work/b-runtime，报告实际命令、结果、Commit 和真实阻塞。不要自行发布到 main。
