@@ -39,7 +39,7 @@ ArtifactUploadRequest 为 taskId/attempt/artifactId/parentArtifactIds/schemaVers
 
 读取响应同步导出类型及 Schema：`RunDetail`、`TaskRuntime`、`WorkerJob`、`WorkerJobsResponse`、`AgentsResponse`、`EventsResponse`、`AnnouncementsResponse`、`NotesResponse`、`ModelCallReservation`。`RuntimeStatus/RuntimeStatusSchema` 为 ACTIVE/PAUSED/CANCELLED/WAITING_MANUAL/INTERRUPTED，仅描述运行控制与等待，不加入 TaskStatus，也不计为质量失败。
 
-`RunDetail` 为 Run 加 runtimeStatus/taskRuntime/inputURI/artifacts/assessments/handoffs/decisions；TaskRuntime 为 taskId/status/reason。`WorkerJob` 为 task/runtimeStatus/reason/run，run 为 RunDetail，reason 可为 null；GET /worker/jobs 返回 `{jobs: WorkerJob[]}`。GET /api/agents 返回 `{agents: AgentProfile[]}`；增量事件返回 `{events: RuntimeEvent[], nextAfter: number}`；公告与便签查询分别返回 `{announcements: Announcement[]}` 和 `{notes: AgentNote[]}`。模型调用预留返回 ModelCallReservation，字段 callId/modelCalls/stepCalls，计数包含本次已预留调用。
+`RunDetail` 为 Run 加 runtimeStatus/taskRuntime/inputURI/artifacts/assessments/handoffs/decisions/taskReceipts；TaskRuntime 为 taskId/status/reason。`taskReceipts` 默认 []，元素 `TaskReceipt/TaskReceiptSchema` 为 taskId/attempt/operation/receipt，operation 为 ASSIGN/SUBMIT/OUTCOME，receipt 为已持久化真实 ChainReceipt，供 Worker 按原 txHash 对账。服务不返回签名交易。`WorkerJob` 为 task/runtimeStatus/reason/run，run 为 RunDetail，reason 可为 null；GET /worker/jobs 返回 `{jobs: WorkerJob[]}`。GET /api/agents 返回 `{agents: AgentProfile[]}`；增量事件返回 `{events: RuntimeEvent[], nextAfter: number}`；公告与便签查询分别返回 `{announcements: Announcement[]}` 和 `{notes: AgentNote[]}`。模型调用预留返回 ModelCallReservation，字段 callId/modelCalls/stepCalls，计数包含本次已预留调用。
 
 ## 公告与便签
 

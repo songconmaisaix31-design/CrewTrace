@@ -279,6 +279,12 @@ export const ArtifactUploadRequestSchema = z.strictObject({
 
 export const RuntimeStatusSchema = z.enum(["ACTIVE", "PAUSED", "CANCELLED", "WAITING_MANUAL", "INTERRUPTED"]);
 export const TaskRuntimeSchema = z.strictObject({ taskId: HashSchema, status: RuntimeStatusSchema, reason: z.string().nullable() });
+export const TaskReceiptSchema = z.strictObject({
+  taskId: HashSchema,
+  attempt: AttemptSchema,
+  operation: z.enum(["ASSIGN", "SUBMIT", "OUTCOME"]),
+  receipt: ChainReceiptSchema,
+});
 export const RunDetailSchema = RunSchema.extend({
   runtimeStatus: RuntimeStatusSchema,
   taskRuntime: z.array(TaskRuntimeSchema),
@@ -287,6 +293,7 @@ export const RunDetailSchema = RunSchema.extend({
   assessments: z.array(AssessmentSchema),
   handoffs: z.array(HandoffSchema),
   decisions: z.array(AssignmentDecisionSchema),
+  taskReceipts: z.array(TaskReceiptSchema).default([]),
 });
 export const WorkerJobSchema = z.strictObject({ task: TaskSchema, runtimeStatus: RuntimeStatusSchema, reason: z.string().nullable(), run: RunDetailSchema });
 export const WorkerJobsResponseSchema = z.strictObject({ jobs: z.array(WorkerJobSchema) });
@@ -344,6 +351,7 @@ export type ArtifactUploadRequest = z.infer<typeof ArtifactUploadRequestSchema>;
 export type RuntimeStatus = z.infer<typeof RuntimeStatusSchema>;
 export type TaskRuntime = z.infer<typeof TaskRuntimeSchema>;
 export type RunDetail = z.infer<typeof RunDetailSchema>;
+export type TaskReceipt = z.infer<typeof TaskReceiptSchema>;
 export type WorkerJob = z.infer<typeof WorkerJobSchema>;
 export type WorkerJobsResponse = z.infer<typeof WorkerJobsResponseSchema>;
 export type AgentsResponse = z.infer<typeof AgentsResponseSchema>;
