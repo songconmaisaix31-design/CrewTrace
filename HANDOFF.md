@@ -8,4 +8,4 @@
 
 仓库现有 AGENTS.md 包含 Astrocyte 的历史内容。其历史 S0 状态、其他项目费用授权及专用验证对象不能作为 co-vibe 的业务事实或新增授权；本项目以当前用户指令和 PRD 为准。未在本轮改写团队共享规则。
 
-尚未创建 apps/web，尚未选择前端框架或连接真实服务。不得把讨论中的页面、运行记录、链上结果或 Firecrawl 使用写成已实现。涉及公共业务 schema 的变更先与 B 的实际定义核对，避免 C 自行维护第二套业务状态。
+apps/web 已建立 Vite + React + TypeScript 前端，根目录 npm run dev 启动。说明见 apps/web/README.md。实际服务、链适配和公网尚未连接，不能将页面代码与本地验证写成完整真实运行。B 的 a014c46 原始 schema 暂存 apps/web/vendor/contracts（Git fetch DNS 失败），集成团队分支后改为引用 packages/contracts，C 不修改其业务定义。Firecrawl 未安装或调用。

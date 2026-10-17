@@ -1,0 +1,30 @@
+{
+  "name": "@co-vibe/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "check": "tsc --noEmit",
+    "test": "node --import tsx --test test/*.test.ts",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "lucide-react": "0.468.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-markdown": "^10.1.0",
+    "viem": "^2.38.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.3",
+    "tsx": "^4.20.0",
+    "typescript": "5.9.3",
+    "vite": "8.1.5"
+  }
+}
