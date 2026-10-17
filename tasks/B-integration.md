@@ -10,4 +10,6 @@
 
 至少两个独立进程通过 MCP 发布/读取公告、创建/更新便签的验证已由 Worker 轨道执行；可以在真实创建的 OPEN 任务上交流，不把缺链签名时的交流测试声称为已完成链上工作。真实模型两份输入的执行已有 workers/.local/ 实际产物，由原 Worker 保留并记录；无需无原因重复付费调用。A 原始交付现已提供，链上完整两轮写入验证还依赖协调者/验收者签名配置与 Worker Gas，缺失时保持未通过。
 
+如果测试网签名配置尚未到达，应使用 A 原始合约在真实本地 EVM 与实际 HTTP RPC 上验证 B 的指派、Worker 模型执行、提交、可信验收、第二轮回读和原交易对账，作为 B 功能检查；不得伪造协议、适配器或回执，也不得把本地结果标为 Monad Testnet 验证。A 的 Hardhat 项目位于 .local/a-handoff/contracts，依赖由主 Agent 准备。使用真实部署交易、独立生成钱包和实际转账；不改 A 源码、不操作已有测试网部署或 A 资金。Windows 执行 Hardhat 时在当前进程设置 HARDHAT_DISABLE_TELEMETRY，直接调用包内 hardhat，避免改写 A 的原始 package.json。
+
 提供可复现的 Vercel 部署配置与命令，目标仅 Dwwww/co-vibe-b。当前 Vercel 连接器创建项目返回 403，本机 CLI token 无效，用户恢复访问前不进行账号切换或其他团队部署。完成本机验证后列出部署所需配置。验证成功后提交必要衔接，push work/b-runtime，报告实际命令、结果、Commit 和真实阻塞。不要自行发布到 main。
