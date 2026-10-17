@@ -1,0 +1,23 @@
+{
+  "name": "@co-vibe/ledger-contracts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "HARDHAT_DISABLE_TELEMETRY=true hardhat build",
+    "test": "HARDHAT_DISABLE_TELEMETRY=true hardhat test",
+    "typecheck": "tsc --noEmit",
+    "check:config": "tsx scripts/check-config.ts",
+    "deploy:testnet": "npm run build && tsx scripts/deploy.ts",
+    "smoke:testnet": "tsx scripts/smoke.ts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-node-test-runner": "^3.0.0",
+    "@nomicfoundation/hardhat-viem": "^3.0.0",
+    "@types/node": "^22.0.0",
+    "dotenv": "^17.0.0",
+    "hardhat": "3.20.0",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.3",
+    "viem": "^2.38.0"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@co-vibe/chain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "viem": "^2.38.0" },
+  "devDependencies": { "typescript": "~5.9.3", "@types/node": "^22.0.0" }
+}
