@@ -8,6 +8,8 @@
 - 部署目标：Dwwww/co-vibe-b，用户已授权新建测试项目和选择托管数据库。
 - A/C 已有负责人。用户已提供 co-vibe-A-cd1d82a.zip，包含 A 原始适配器、ABI 与 Monad Testnet 部署记录；B 接入轨道正在处理枚举、bigint、指派字段与真实事件回执。
 - A 部署记录：10143，0x3645579b40fcee562cd86fda3fba25b90c924418，部署区块 71765088。完整写入验证仍需协调者/验收者签名配置和 Worker Gas，已向用户询问私有配置位置。
+- A 协议接入已推送 056bccd 与 a815973，真实 Monad RPC 已核对部署字节码、部署回执、finalized 快照、既有 OutcomeRecorded 及历史信誉读取；7 项回执绑定与类型边界测试通过。A 既有测试交易只作为协议读取证据，不计入 B 产品任务验收。
+- A 原始合约在本机使用 Hardhat 3.20.0 / solc 0.8.28 编译通过，真实 HTTP RPC 31337 已启动，等待开发轨道完成后进行独立集成。
 - Worker 常驻主机待用户确认，可先在本机验证。
 - 托管 Neon PostgreSQL 已创建，项目 snowy-voice-65085749；尚未认领，于 2026-10-20 08:10 UTC 到期。连接保存在本地忽略配置。
 - 服务固定使用官方 @neondatabase/serverless Pool 与 Node.js 原生 WebSocket 连接同一真实 Neon。两项集成测试全部通过，覆盖实际 HTTP/MCP、签名身份、权限、便签版本冲突、逐个事件入库、真实进程重启持久化、凭证轮换与运行名额限制。
