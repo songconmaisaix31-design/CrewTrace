@@ -10,8 +10,9 @@
 | --- | --- | --- | --- |
 | 前端集成 | Orca 独立子 Worktree / work/b-web-integration | apps/web/**、根 package.json、根锁文件、.gitignore；合并 C 时处理 HANDOFF.md/STATUS.md 冲突，保留 B 内容；docs/b-web-integration.md | 合并完整 C 历史；改用当前共享类型；真实 B HTTP 联调、权限与产物读取、构建和适用测试通过；无 mock、无截图。 |
 | 数据库性能 | Orca 独立子 Worktree / work/b-db-performance | services/runtime/**（排除 src/domain/**、test/domain/**）、docs/b-db-performance.md | 测量真实数据库与 API 延迟、定位查询/连接成本并修复；保持事务、权限、事件、原始字节、容量和快照语义；必要时提供实际替代 PostgreSQL 及迁移结果；不改生产连接直到主 Agent 核对。 |
+| 真实流程验证与最终集成 | 主 Worktree / work/b-runtime 的独立 Orca Agent | .local/web-flow/**、docs/b-web-verification.md；其他轨道结束后仅合并与必要配置衔接 | 在独立真实数据库 schema、A 原始本地合约和独立阶跃星辰 Worker 上验证前端流程；记录真实耗时与证据。最终合并前端和数据库分支，领域问题交回原 Worker。 |
 
-两轨道从同一 B 基线开发，互不修改对方目录；开发、适用测试、返修、Commit 与 push 由原 Worker 完成。最终独立集成 Agent 合并到 work/b-runtime，仅处理少量配置、导入、类型衔接，领域问题退回原 Worker。主 Agent 维护状态、决策、最终检查、部署与提交。
+前两个轨道从同一 B 基线开发，互不修改对方目录；开发、适用测试、返修、Commit 与 push 由原 Worker 完成。独立验证与集成 Agent 使用主 Worktree，验证期间只修改自己的文件。最终合并到 work/b-runtime，仅处理少量配置、导入、类型衔接，领域问题退回原 Worker。主 Agent 维护状态、决策、最终检查、部署与提交。三个轨道实际使用 Orca Codex / gpt-6.1-sol。
 
 ## 数据库与发布边界
 
