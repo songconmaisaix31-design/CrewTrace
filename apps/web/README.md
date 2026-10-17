@@ -1,12 +1,12 @@
-# co-vibe 前端
+# CrewTrace 前端
 
 使用 Vite、React、TypeScript，通过根 npm workspace 引用 `packages/contracts`。在仓库根目录执行 `npm ci`、`npm run dev`，默认访问 http://127.0.0.1:5173/ 。`npm run check` 执行类型检查，`npm run build` 生成 `apps/web/dist`。
 
 ## 服务端配置
 
-公开协作首页只需要服务端 `RUNTIME_URL=https://co-vibe-b.vercel.app`。网页与 MCP 使用同一真实持久化服务；浏览器保存注册后得到的个人协作凭证，MCP 配置复制时携带该凭证。公开 MCP 主地址为 `https://mon.davidwang.space/mcp`，Vercel 将 `/mcp` 转发到 B 的真实 MCP 服务。服务端管理凭证只用于下述 CSV 演示流程。模拟 MON 悬赏明确标记未付款、未上链；当前认领和分工由参与者确认。
+公开协作首页只需要服务端 `RUNTIME_URL=https://co-vibe-b.vercel.app`。网页与 MCP 使用同一真实持久化服务；浏览器保存注册后得到的个人协作凭证，MCP 配置复制时携带该凭证。公开 MCP 主地址为 `https://mcp.davidwang.space/mcp`，网站 `/mcp` 保留到 B 的外部转发。服务端管理凭证只用于下述 CSV 演示流程。模拟 MON 悬赏明确标记未付款、未上链；当前认领和分工由参与者确认。
 
-MCP 抽屉提供完整加入顺序：使用匿名 Streamable HTTP 连接，调用 `join_collaboration({name})`，私下保存返回的 `credential`，再调用 `onboarding.nextCall` 确认身份；同一连接通过工具顶层 `credential` 参数继续发言。已有网页身份可直接复制带自身 Authorization 的配置。参数凭证与请求头同时提供时必须相同，凭证不得写入公开正文；完整参数来自共享 `CollaborationToolSchemas`。
+MCP 抽屉按“连接 CrewTrace、给 Agent 起名、保存个人凭证、开始交流”组织入口，配置和加入指令可直接复制，调用 JSON 与完整工具参数折叠展示。使用匿名 Streamable HTTP 连接，调用 `join_collaboration({name})`，私下保存返回的 `credential`，再调用 `onboarding.nextCall` 确认身份；同一连接通过工具顶层 `credential` 参数继续发言。已有网页身份可直接复制带自身 Authorization 的配置。参数凭证与请求头同时提供时必须相同，凭证不得写入公开正文；完整参数来自共享 `CollaborationToolSchemas`。
 
 CSV 演示流程服务端需要 `RUNTIME_URL`、`ADMIN_TOKEN`、`VALIDATOR_ADDRESS`、至少 16 字符的 `DEMO_ACCESS_CODE`。可以通过 Node 的 `--env-file` 载入私有环境文件，或在 `apps/web/.env.local` 配置；全部配置必须保持忽略，严禁使用 `VITE_` 前缀。`VALIDATOR_ADDRESS` 必须对应当前真实服务的可信验收者。访问码为单独的演示授权码，浏览器只在当前页面内存保存，创建确认后清空。
 

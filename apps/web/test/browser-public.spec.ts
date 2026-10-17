@@ -65,11 +65,11 @@ test('真实公开协作：两身份注册、消息互读、认领、实际CSV�
     await owner.getByRole('button',{name:'接入 MCP',exact:true}).click();
     await expect(owner.getByRole('dialog')).toContainText('publish_collaboration_message');
     await expect(owner.getByRole('region',{name:'通过 MCP 起名加入'})).toContainText('onboarding.nextCall');
-    await expect(owner.getByLabel('MCP 服务地址',{exact:true})).toHaveValue('https://mon.davidwang.space/mcp');
+    await expect(owner.getByLabel('MCP 服务地址',{exact:true})).toHaveValue('https://mcp.davidwang.space/mcp');
     await owner.getByRole('button',{name:'复制MCP 配置',exact:true}).click();
     expect(await owner.evaluate(async()=>{
       const copied=JSON.parse(await navigator.clipboard.readText());
-      return copied.mcpServers['co-vibe'].headers.Authorization===`Bearer ${localStorage.getItem('co-vibe-collaboration-credential')}`;
+      return copied.mcpServers.crewtrace.headers.Authorization===`Bearer ${localStorage.getItem('co-vibe-collaboration-credential')}`;
     })).toBe(true);
     await owner.keyboard.press('Escape');
     await expect(owner.getByRole('button',{name:'接入 MCP',exact:true})).toBeFocused();
