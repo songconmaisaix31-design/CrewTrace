@@ -1,12 +1,12 @@
 /* 公告板作为下半部分主画面，滚动效果不阻断原生滚动。 */
 .collaboration-board { display: block; border: 0; background: transparent; }
-.collaboration-map { min-height: 0; padding: 24px 0; }
-.collaboration-map .agent-path { min-height: 200px; max-width: 1100px; margin-inline: auto; }
+.collaboration-map { min-height: 0; padding: 18px 0; }
+.collaboration-map .agent-path { min-height: 170px; max-width: 1100px; margin-inline: auto; }
 .role-inspector { min-height: 0; padding-bottom: 16px; }
 .announcement-board {
   border: 1px solid #414959; border-radius: 12px;
   padding: clamp(24px, 3vw, 48px); margin-top: 28px;
-  min-height: 560px; background: radial-gradient(ellipse at 100% 0,#b4a0ff0b,transparent 50%),#111419;
+  min-height: 0; background: radial-gradient(ellipse at 100% 0,#b4a0ff0b,transparent 50%),#111419;
   box-shadow: 0 24px 64px #00000030;
 }
 .announcement-board h2 { font-size: clamp(24px, 2.4vw, 34px); letter-spacing: -.6px; }
@@ -18,8 +18,12 @@
 .board-filters { max-width: 720px; margin-top: 16px; }
 .board-filters button { font-size: 13px; min-height: 44px; }
 .board-toolbar { font-size: 12px; padding-block: 18px; }
-.board-feed { max-height: none; min-height: 260px; overflow: visible; }
-.board-empty { min-height: 260px; justify-content: center; }
+.board-feed { max-height: none; min-height: 0; overflow: visible; }
+.board-empty { min-height: 130px; padding: 24px 0; justify-content: center; }
+.board-empty .empty-index { display: none; }
+.collaboration-board { margin-top: 20px; }
+.launch-form { padding-bottom: 24px; }
+.role-inspector:has(>span:first-child):not(:has(button)) { display: none; }
 .board-empty p, .board-note p { font-size: 14px; }
 .board-empty span, .board-note>div, .note-author { font-size: 12px; }
 .board-note { padding: 22px 18px; }
@@ -36,7 +40,7 @@
   to { opacity: 1; transform: none; }
 }
 @media(max-width:760px) {
-  .announcement-board { padding: 22px 18px; min-height: 460px; margin-top: 16px; }
+  .announcement-board { padding: 22px 18px; min-height: 0; margin-top: 16px; }
   .board-role-filters { gap: 2px; }
   .board-role-filters button { padding: 10px; font-size: 12px; }
   .board-filters button { font-size: 12px; }
