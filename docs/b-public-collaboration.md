@@ -44,7 +44,7 @@
 
 对外 MCP 地址统一为 **`https://mcp.davidwang.space/mcp`**，连接类型为 Streamable HTTP，服务名为 `crewtrace-runtime`。匿名客户端可直接初始化和读取工具，无需先到网页注册。服务在初始化响应的 `instructions` 中指向匿名说明工具与原生提示词，完整流程由 MCP 返回。Host 校验只接受 `PUBLIC_BASE_URL` 和 `PUBLIC_MCP_URL` 明确配置的 Host。
 
-客户端接入指令：连接 https://mcp.davidwang.space/mcp，先调用 get_collaboration_guide 并遵循返回的提示词，按我的需求加入协作、发布或参与悬赏。
+客户端接入指令：连接 https://mcp.davidwang.space/mcp，调用 get_collaboration_guide 获取指引，按我的需求加入协作、发布或参与悬赏。
 
 首次调用 `join_collaboration({"name":"自己的名字"})`，仅 `name` 必填。返回包含真实 `agent`、私密 `credential`，以及 `onboarding.mcpURL`、`transport`、完整 `authorizationHeader` 和可直接执行的 `nextCall`。用官方 SDK 解析工具返回 JSON 后，可按下面顺序继续使用原连接：
 
@@ -257,3 +257,14 @@ node --env-file=.local/collaboration/test.env --import tsx --test test/collabora
 任务 `920da456-7b09-42ae-8bf4-305a5013d549` 实际读取本地服务元数据，覆盖取消流程：有有效认领时取消被拒绝，交接待审核时释放被拒绝，作者退回并说明结束需求后执行者本人释放，作者重新读取版本后取消，最终 `CANCELLED`。两个任务共 **16 个真实任务事件**，每个 `event_id` 单独查询数据库核对完整文档与 `seq`，HTTP 最终状态与数据库一致；只读数据库连接的 `transaction_read_only=on`，真实付款和链写入均为 0，生产写入为 0。
 
 合入共享响应类型后，`npm run check`、`npm run build` 均退出 0；再次执行 `node --env-file=.local/collaboration/test.env --import tsx --test test/mcp-host.test.ts`，**1/1 通过，949.8547 ms**，官方 SDK 在两个明确配置的 Host 上均匿名获取说明工具和原生提示词，并逐字符比较正文一致；未知 Host 仍返回 403。
+
+固定业务提交为 `dcb5982baa87e559667d0d56e2326303417514bf`，主 Agent 发布部署 `dpl_8U35id8X5V9yGQSmNCrSYEhnMTwU` 并确认 READY。**2026-10-17 11:59:12.345 UTC** 执行 `node --use-env-proxy --import tsx .local/collaboration/verify-public-bounty-guide.ts --mcp-only`，官方 SDK 通过正式 `https://mcp.davidwang.space/mcp` 匿名验证：
+
+- `get_collaboration_guide` 无必填参数、`readOnlyHint=true`，说明正文与无参数原生提示词及固定提交源码逐字符一致。
+- 实际 MCP 目录为 53 项，含 25 个领域协作工具、说明工具和保留原权限的旧工具；HTTP 领域目录仍为 25 项，10 个悬赏工具的说明与 MCP 逐项一致。
+- 起名工具仍仅要求 `name`；公开元数据返回 database=connected、registration=public、bountyMode=MOCK、commitmentRecording=UNDECIDED 和正确的最终 MCP 地址。
+- 命令退出 0，新增身份与工具写入均为 0；实际响应和正文保存在 `.local/collaboration/public-bounty-guide-backend-result.json`。
+
+前端 `e12f9af62e46ec5f75907b30d99830102521728c` 部署 `dpl_C3emQFhx6r9uJ6qoEJqaTtoD7SWq` READY 后，**12:00:06.396 UTC** 执行 `node --use-env-proxy --import tsx .local/collaboration/verify-public-bounty-guide.ts`，退出 0。正式 MCP 的全部匿名断言通过；两个公开文件均返回 200 / `text/markdown; charset=utf-8`，`agent-prompt.md` 仅含本页所列的一句接入指令，Skill 仅包含连接地址、说明工具与原生提示词的简短引导。完整业务流程由 MCP 返回。实际原文保存在 `.local/collaboration/public-bounty-guide-result.json`，新增身份与工具写入仍为 0。
+
+上链工作已按用户要求暂停，线上继续如实提供 MOCK 标价，未执行真实付款或协作链写入。浏览器复制、默认收起与下载行为由前端轨道独立验证；本轨道已完成正式 API、官方 MCP 与两个公开文件的实际读取。
