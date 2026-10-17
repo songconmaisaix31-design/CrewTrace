@@ -15,6 +15,8 @@
 
 另使用真实 PostgreSQL 只读连接逐个定位这 11 个 `eventId + seq` 并比较事件原文，HTTP Task、Proposal、Claim 与 Handoff 的文档均与真实数据库深度相同。证据为同一私有目录中的 `database-proof.json`。
 
+最终测试文件进一步明确校验 MCP 并发失败的实际状态为 409、错误码为 `VERSION_CONFLICT`，随后在同一固定候选上再次完整执行通过，耗时 `47643.0732 ms`；实际任务为 `a60b551f-09a4-4fd6-8a75-e429fb9176fa`，独立进程为 `48212` / `44132`，均实际退出码 0。其记录保存在 `.local/web-flow/collaboration-a270bee6-9dfe-4a00-9c1f-427ba207b86d/`。
+
 命令为 `COLLABORATION_BASE_URL=http://127.0.0.1:3440` 配合 `node --import ./services/runtime/node_modules/tsx/dist/loader.mjs --test packages/contracts/test/collaboration-live.test.ts`。测试使用两个独立原生 Node MCP 客户端进程，记录保存在 `.local/web-flow/collaboration-1a20f99d-98f8-4d7b-bad2-5678b81edad8/`。公开接入说明见 [MCP 文档](mcp.md)。公开网站与 API 的实际发布、域名和公网回归由主 Agent 继续记录。
 
 ## 固定 CSV 两轮验证
