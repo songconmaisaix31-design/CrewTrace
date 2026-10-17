@@ -19,7 +19,9 @@ export class WorkerBoard {
       fetch: async (input, init) => {
         const url = new URL(input);
         requireValue(url.origin === endpoint.origin, "UNAUTHORIZED", "禁止向其他源发送 MCP 凭证");
-        return fetch(input, { ...init, redirect: "error", signal: AbortSignal.any([signal, AbortSignal.timeout(20_000)]) });
+        const signals = [signal, AbortSignal.timeout(20_000)];
+        if (init?.signal) signals.push(init.signal);
+        return fetch(input, { ...init, redirect: "error", signal: AbortSignal.any(signals) });
       },
     });
   }

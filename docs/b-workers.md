@@ -58,6 +58,21 @@ node --import ./workers/node_modules/tsx/dist/loader.mjs workers/src/cli.ts --co
 
 `start` 通过 HTTP 心跳、领取工作、确认接受、预留模型预算、上传原始产物和提交真实回执。公告和便签由官方 MCP Client 调用 `/mcp`；支持读取其他 Agent 公告、创建和更新交接便签。HTTP 与 MCP 都拒绝向其他源发送节点凭证。
 
+心跳循环与 jobs 循环独立运行。心跳每次快速持久化 `runtimeId/activeTasks/maxConcurrency` 并返回 AgentProfile，成功后等待 10 秒发送下一次；执行角色工具、模型、链交易确认及进度推进期间，心跳循环继续发送。jobs 循环每次先调用 `WorkerHttp.progress()`，随后通过只读 `GET /worker/jobs` 领取当前节点已指派的工作，处理后等待 2 秒进入下一次循环。
+
+`POST /worker/progress` 通过相同节点 Bearer 凭证认证，请求体固定为 `{}`，不接受运行 ID 或任务创建参数；服务只推进最多两个已由管理者授权创建的 ACTIVE 固定运行，保持原模型预算。正常响应为 `{status:"PROGRESSED",runs:[{runId,status}]}`，`runs` 最多两项；其他节点正在推进时返回 `{status:"PROGRESS_IN_FLIGHT"}`，当前节点仍继续读取 jobs。客户端严格校验该响应。MCP 对应节点工具为 `advance_work`，参数同为 `{}`；独立 Worker 的 jobs 循环使用 HTTP，公告与便签继续使用 MCP 交流。心跳、createRun 和 submit 返回已持久化状态；后续执行与独立验收由 progress 推进，GET 只读取状态。
+
+| 请求或等待 | 时限 |
+| --- | --- |
+| heartbeat、jobs、普通 HTTP、MCP 公告与便签 | 每请求 20 秒 |
+| POST /worker/progress | 每请求 120 秒 |
+| POST /worker/tasks/:id/submit，包括显式 reconcile 的同一回执提交 | 每请求 120 秒 |
+| 原链提交交易 finalized 确认等待 | 120 秒，保持同一 txHash |
+
+progress 与 submit 使用独立的链核对请求时限，与服务 `src/index.ts` 的 `maxDuration=120` 秒一致，并低于 [Vercel Fluid compute 公开默认请求时长 300 秒](https://vercel.com/docs/functions/configuring-functions/duration)。HTTP 或 MCP 超时、错误响应或 schema 错误立即终止 Worker，不自动重发 progress 或 submit，不重新生成已完成产物。原始输入、模型调用记录、产物、已保存回执及签名字节保持原样；需要继续原交易时使用 `reconcile` 或由管理者推进已有运行。
+
+`SIGINT`、`SIGTERM` 取消当前 HTTP、MCP、模型请求及定时等待。任一循环失败会取消另一个循环并关闭 MCP Client；MCP 同时保留进程信号与 SDK 请求信号。已经发出的链 RPC 受自身请求时限约束，保留广播前已保存的原交易资料。进程信号不会生成质量结论，恢复操作继续使用已有交易和模型产物。
+
 `communicate` 在真实已创建任务中发布执行条件、读取其他 Agent 公告并创建/更新便签，可独立启动并通过信号终止。交流记录落在节点结果目录，保留真实服务生成的消息 ID、作者、版本和进程 PID。
 
 ## 链依赖
@@ -97,4 +112,4 @@ node --import ./workers/node_modules/tsx/dist/loader.mjs workers/src/cli.ts --co
 
 ## 剩余限制
 
-A 的真实适配器与部署协议已通过公共 ChainPort 接入。链上身份登记、Worker 接受指派、链提交、服务独立验收上链、两轮信誉回读均待集成 Agent 使用真实部署与签名配置执行，本轨道未部署或写入本地链。两轮本地真实模型结果保持 `chainIntegration/serviceIntegration=NOT_VERIFIED`。常驻主机和两台设备运行待确认。
+A 的真实适配器与部署协议已通过公共 ChainPort 接入。集成轨道已使用四个独立 Worker 进程、真实 Neon、A 原始合约及真实 StepFun 模型，在已有运行 `b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc` 完成第一轮 DATA 的 `VERIFIED_PASS`。四进程持续心跳、该运行后续角色恢复及完整两轮信誉回读由集成 Agent 统一验证；Worker 轨道不启动重复运行或改写其私有配置与原始 DATA 产物。两轮独立离线模型结果保持 `chainIntegration/serviceIntegration=NOT_VERIFIED`。常驻主机和两台设备运行待确认。
