@@ -18,22 +18,23 @@ export default function LandingExperience({sample,onSample,unavailable,onPreview
         <h1>以履历驱动的<br/><span>Agent 协作网络</span></h1>
         <p className="launch-promise">让这次合作的成果，成为下次分工的依据。</p>
         <div className="launch-art"><SignalScene/></div>
-        <a className="journey-link" href="#collaboration">看看它们如何合作 <ChevronDown size={16}/></a>
+        <a className="journey-link" href="#analysis">向下探索 <ChevronDown size={16}/></a>
       </div>
       <section className="launch-form" aria-labelledby="launch-title" id="analysis">
-        <div className="launch-form-heading"><span>业务数据分析</span><span className="launch-format">CSV → 报告</span></div>
-        <h2 id="launch-title">把数据交给它们。<br/>把依据留给你。</h2>
-        <p className="launch-explain">选择一份示例数据，由不同 Agent 接力完成整理、分析和报告。</p>
+        <div className="launch-form-intro"><div className="launch-form-heading"><span>业务数据分析</span></div>
+        <h2 id="launch-title">从一份数据开始。</h2>
+        <p className="launch-explain">选择示例，查看 Agent 如何协作生成报告。</p></div>
+        <div className="launch-inputs">
         <div className="launch-choice" role="group" aria-label="选择合成示例数据">{(['round-1','round-2'] as const).map((item,index)=><button key={item} aria-pressed={sample===item} className={sample===item?'selected':''} onClick={()=>onSample(item)}><span>示例数据 0{index+1}</span>{sample===item&&<Check size={15}/>}</button>)}</div>
         <div className="launch-file"><FileText size={26}/><div><strong>{sample}.csv</strong><p>合成示例数据 · 不含真实经营信息</p></div><button aria-label="预览数据" onClick={onPreview}><ArrowUpRight size={21}/></button></div>
-        <div className="launch-outputs"><span>本次交付</span><p>整理后的数据 <i/> 统计指标 <i/> 分析报告</p></div>
         <button className="primary launch-submit" disabled={Boolean(unavailable)} onClick={onStart}>开始分析 <ArrowRight size={20}/></button>
         <p className="launch-availability">{unavailable||'凭访问码开始，提交后等待分工。'}</p>
         <button className="launch-history" onClick={onHistory}>已有分析？查看进度与结果 <ArrowUpRight size={15}/></button>
+        </div>
       </section>
     </section>
     <section className="collaboration-layout" id="collaboration" aria-labelledby="collaboration-title">
-      <div className="collaboration-intro"><span className="section-caption">协作过程</span><h2 id="collaboration-title">各有所长。<br/>步步有据。</h2><p>三个角色接力工作。每一步通过验收，才交给下一位。</p><span className="flow-direction">数据 → 指标 → 报告</span></div>
+      <div className="collaboration-intro"><span className="section-caption">协作过程</span><h2 id="collaboration-title">各有所长，步步有据。</h2><p>每一步通过验收，再交给下一位。</p></div>
       <div className="stage-explorer">
         <div className="stage-tabs" role="tablist" aria-label="了解协作角色">{stages.map((item,index)=><button key={item.name} id={`stage-tab-${index}`} role="tab" aria-selected={stage===index} aria-controls="stage-panel" tabIndex={stage===index?0:-1} onClick={()=>setStage(index)} onKeyDown={event=>{let next=stage;if(event.key==='ArrowRight')next=(stage+1)%3;else if(event.key==='ArrowLeft')next=(stage+2)%3;else if(event.key==='Home')next=0;else if(event.key==='End')next=2;else return;event.preventDefault();setStage(next);document.getElementById(`stage-tab-${next}`)?.focus();}}><span>0{index+1}</span>{item.name}</button>)}</div>
         <article className="stage-detail" id="stage-panel" role="tabpanel" aria-labelledby={`stage-tab-${stage}`} tabIndex={0}>

@@ -10,4 +10,4 @@
 
 apps/web 已建立 Vite + React + TypeScript 前端，根目录 npm run dev 启动。说明见 apps/web/README.md。实际服务、链适配和公网尚未连接，不能将页面代码与本地验证写成完整真实运行。B 的 a014c46 原始 schema 暂存 apps/web/vendor/contracts（Git fetch DNS 失败），集成团队分支后改为引用 packages/contracts，C 不修改其业务定义。
 
-2026-10-17 最新布局已改为首屏品牌与任务双栏、可切换协作说明和履历入口。Firecrawl 已实际调用，提取月之暗面、Monad、Linear 并提交反馈，记录见 docs/firecrawl-layout-review.md。桌面首屏入口、示例预览、键盘页签和历史入口已验证；390px 窄屏无横向溢出。
+2026-10-17 最新用户要求：首屏只突出大圆环和品牌，操作入口下滑看到，下方内容减少冗余文字与留白。已实现桌面与手机独立主视觉首屏、下滑数据入口及紧凑协作说明。构建与浏览器布局验证通过，390px 窄屏无横向溢出。Firecrawl 此前已实际调用，提取月之暗面、Monad、Linear 并提交反馈，记录见 docs/firecrawl-layout-review.md；其中首屏任务双栏方案已被本轮用户反馈替代。
