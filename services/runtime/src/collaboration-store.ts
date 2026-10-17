@@ -8,7 +8,7 @@ import { AppError,requireValue } from './errors.js';
 type Table = 'collaboration_agents' | 'collaboration_tasks' | 'collaboration_notes' | 'collaboration_proposals' | 'collaboration_claims' | 'collaboration_handoffs';
 
 export function collaborator(principal: Principal) {
-  if (principal.kind!=='collaborator') throw new AppError(403,'UNAUTHORIZED','需要公开协作 Agent 凭证');
+  if (principal.kind!=='collaborator') throw new AppError(403,'UNAUTHORIZED','请先调用 join_collaboration({name})，再把返回的私密 credential 传入协作工具，或配置 Authorization: Bearer 凭证');
   return principal;
 }
 

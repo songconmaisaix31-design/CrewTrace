@@ -5,15 +5,16 @@ import type { Application } from './application.js';
 import type { Principal } from './auth.js';
 import { Collaboration } from './collaboration.js';
 import { collaborationTools } from './collaboration-tools.js';
+import { publicMcpURL } from './config.js';
 
 export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>,app: Application) {
   const service=new Collaboration(app),prefix='/api/collaboration';
   const id=(value:string)=>CollaborationIdSchema.parse(value);
   http.get(prefix,async c=>{
     await app.db.pool.query('SELECT 1');
-    return c.json({status:'ok',database:'connected',registration:'public',automaticMatching:false,bountyMode:'MOCK',commitmentRecording:'UNDECIDED',mcpURL:`${app.config.PUBLIC_BASE_URL}/mcp`,toolsURL:`${app.config.PUBLIC_BASE_URL}${prefix}/tools`});
+    return c.json({status:'ok',database:'connected',registration:'public',automaticMatching:false,bountyMode:'MOCK',commitmentRecording:'UNDECIDED',mcpURL:publicMcpURL(app.config),toolsURL:`${app.config.PUBLIC_BASE_URL}${prefix}/tools`});
   });
-  http.get(`${prefix}/tools`,c=>c.json({mcpURL:`${app.config.PUBLIC_BASE_URL}/mcp`,tools:collaborationTools(app,{kind:'public'}).map(tool=>({name:tool.name,description:tool.description,inputSchema:z.toJSONSchema(tool.schema)}))}));
+  http.get(`${prefix}/tools`,c=>c.json({mcpURL:publicMcpURL(app.config),tools:collaborationTools(app,{kind:'public'}).map(tool=>({name:tool.name,description:tool.description,inputSchema:z.toJSONSchema(tool.schema,{io:'input'})}))}));
   http.post(`${prefix}/agents`,async c=>c.json(await service.register(await c.req.json()),201));
   http.get(`${prefix}/agents`,async c=>c.json(await service.agents(c.req.query())));
   http.get(`${prefix}/agents/me`,async c=>c.json(await service.identity(c.get('principal'))));
