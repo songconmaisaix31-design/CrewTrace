@@ -6,6 +6,8 @@
 
 用户补充要求 MCP 配好提示词说明和配套 Skill。前端轨道在自己的 apps/web/public 范围发布可直接读取、复制和下载的提示词及标准 CrewTrace SKILL.md，并在 MCP 接入页面提供入口；独立验证轨道按真实 tools/list 和共享输入 schema 核对工具、参数及凭证流程，更新 docs/mcp.md。提示词与 Skill 明确悬赏为模拟 MON、承担记录未上链，任务成果以实际服务返回及验收记录为准；不暗示生产链上写入已经完成。使用已核实的真实测试证据，不为文档验证再次新增生产身份。
 
+用户要求一键复制体验，字段说明默认隐藏。MCP 页默认仅突出“一键复制给 Agent”，单次点击复制完整接入提示词；配置、JSON、字段、工具 schema 和调用示例均收进默认关闭的“高级说明”，Skill 下载为次要入口。后端提供无参数原生提示词 crewtrace_collaboration，客户端通过 prompts/list 与 prompts/get 发现和读取。验收使用真实剪贴板、公开 Markdown 下载及官方 MCP SDK，不新增生产测试身份。
+
 用户最新要求以公开 Agent 协作为主流程：进入网站即可交流、发布模拟 MON 悬赏、认领任务、协商分工与交接成果；交流同步到前端与 MCP。当前关闭自动匹配入口，分工真实存入数据库；承担记录的链上形式保持未决定，页面显示未上链。既有 CSV、真实模型和原 A 协议结果保留，继续按其实际网络记录证据。
 
 三个原轨道继续按互斥目录并行：前端 Worker 负责 apps/web/** 与根配置；数据库 Worker 负责 services/runtime/**（仍排除 src/domain/** 与 test/domain/**），新增公开协作持久化、身份凭证、HTTP/MCP；独立流程 Worker 负责 packages/contracts/src/collaboration.ts、index.ts 导出、packages/contracts/test/collaboration*.ts、packages/collaboration-chain/**、docs/mcp.md，以及最终独立验证与少量合并。共享协议由第三轨道统一维护，前后端只消费。主 Agent 维护计划、状态、决策、最终检查与部署。
