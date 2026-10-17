@@ -4,6 +4,7 @@ const configSchema = z.object({
   DATABASE_URL: z.url(),
   ADMIN_TOKEN: z.string().min(32),
   PUBLIC_BASE_URL: z.url(),
+  PUBLIC_MCP_URL: z.url().optional(),
   PORT: z.coerce.number().int().min(0).max(65535).default(3000),
   CHAIN_ADAPTER_MODULE: z.string().min(1).optional(),
   CHAIN_ID: z.coerce.number().int().positive().default(10143),
@@ -20,3 +21,7 @@ const configSchema = z.object({
 
 export function loadConfig() { return configSchema.parse(process.env); }
 export type Config = z.infer<typeof configSchema>;
+
+export function publicMcpURL(config: Config) {
+  return config.PUBLIC_MCP_URL ?? `${config.PUBLIC_BASE_URL}/mcp`;
+}
