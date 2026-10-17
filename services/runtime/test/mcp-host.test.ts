@@ -20,6 +20,14 @@ test('真实 MCP 仅接受配置的 API Host 和公开 MCP Host',{timeout:60_000
         await client.connect(new StreamableHTTPClientTransport(new URL(url)));
         assert.equal(client.getServerVersion()?.name,'crewtrace-runtime');
         assert.ok((await client.listTools()).tools.some(tool=>tool.name==='join_collaboration'));
+        const prompts=await client.listPrompts();
+        const prompt=prompts.prompts.find(item=>item.name==='crewtrace_collaboration');assert.ok(prompt);
+        assert.equal(prompt.arguments?.length??0,0);
+        const result=await client.getPrompt({name:'crewtrace_collaboration'});
+        const text=result.messages.map(message=>message.content.type==='text'?message.content.text:'').join('\n');
+        assert.ok(text.includes(runtime.config.PUBLIC_MCP_URL));assert.ok(text.includes('join_collaboration'));
+        assert.ok(text.includes('review_collaboration_handoff'));assert.ok(text.includes('UNDECIDED'));
+        assert.ok(text.includes('/skills/crewtrace/SKILL.md'));assert.ok(text.includes('/agent-prompt.md'));
       } finally {await client.close();}
     }
     const response=await new Promise<{status:number|undefined;body:string}>((resolve,reject)=>{
