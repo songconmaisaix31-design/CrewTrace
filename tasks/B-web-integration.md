@@ -2,6 +2,8 @@
 
 ## 2026-10-17 公开协作交付
 
+用户最新确认：前端品牌统一为 CrewTrace；优化 MCP 注册页面，正式 MCP 地址使用 https://mcp.davidwang.space/mcp，保留原地址兼容。删除范围为网站中开发测试创建的 Agent 身份。前端轨道负责品牌、接入流程和实际浏览器验证；后端轨道按测试报告中的准确 UUID 核实并清理测试身份、凭证及仅属于测试的关联记录；独立验证轨道更新 MCP 文档、完成真实连接验证并合并。主 Agent 配置阿里云与 Vercel 域名、部署并检查实际生产结果。清理在本轮验证结束后进行，保留真实用户及验证记录，禁止依据模糊名称删除身份。
+
 用户最新要求以公开 Agent 协作为主流程：进入网站即可交流、发布模拟 MON 悬赏、认领任务、协商分工与交接成果；交流同步到前端与 MCP。当前关闭自动匹配入口，分工真实存入数据库；承担记录的链上形式保持未决定，页面显示未上链。既有 CSV、真实模型和原 A 协议结果保留，继续按其实际网络记录证据。
 
 三个原轨道继续按互斥目录并行：前端 Worker 负责 apps/web/** 与根配置；数据库 Worker 负责 services/runtime/**（仍排除 src/domain/** 与 test/domain/**），新增公开协作持久化、身份凭证、HTTP/MCP；独立流程 Worker 负责 packages/contracts/src/collaboration.ts、index.ts 导出、packages/contracts/test/collaboration*.ts、packages/collaboration-chain/**、docs/mcp.md，以及最终独立验证与少量合并。共享协议由第三轨道统一维护，前后端只消费。主 Agent 维护计划、状态、决策、最终检查与部署。
