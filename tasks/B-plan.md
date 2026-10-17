@@ -6,13 +6,13 @@
 
 ## 基线与边界
 
-起点为 main 的 14e31ed08b47000abaee9949847fa876e84c1a5e，只有 AGENTS.md、PRD.md、LICENSE。HANDOFF.md 和 STATUS.md 尚不存在。A/C 已有负责人，目前没有交付代码。B 不修改 contracts/、packages/chain/、deployments/、apps/web/、根 package.json 或根锁文件。B 的包独立安装，供 C 后续整合。交付分支 work/b-runtime，保留 main。
+起点为 main 的 14e31ed08b47000abaee9949847fa876e84c1a5e，只有 AGENTS.md、PRD.md、LICENSE；HANDOFF.md 和 STATUS.md 由主 Agent 建立。A/C 已有负责人，A 后续通过用户提供的压缩包交付。B 原样导入 A 的 packages/chain/ 与 deployments/，保持其内容一致；不修改 contracts/、apps/web/、根 package.json 或根锁文件。B 的包独立安装，供 C 后续整合。交付分支 work/b-runtime，保留 main。
 
 链上接口由 A 负责。B 定义应用需要的端口并依赖实际适配器，缺配置时立即返回明确错误；不得模拟回执、信誉或部署地址。链上集成待 A 交付后验证，不把缺依赖记作质量失败。Worker 常驻主机尚待用户确认，本机真实验证可以先进行。
 
 ## 并行轨道
 
-每条轨道使用一个 Orca Codex Agent、一个 Worktree 和一个分支。实际三条轨道均继承用户配置，Orca 运行状态报告模型 gpt-6.1-sol。各 Worker 自行实现、测试、返修、提交并 push，只能修改自己的 write_paths。
+每条轨道使用一个 Orca Codex Agent、一个 Worktree 和一个分支。实际四条轨道均继承用户配置，Orca 运行状态报告模型 gpt-6.1-sol。各 Worker 自行实现、测试、返修、提交并 push，只能修改自己的 write_paths。
 
 | 轨道 | 分支 | write_paths | 交付 |
 | --- | --- | --- | --- |
@@ -27,4 +27,10 @@
 
 ## 集成与验收
 
-三条轨道完成后，由独立集成 Agent 在 work/b-runtime 合并，限于导入、路由、配置与类型衔接，领域问题退回原 Worker。主 Agent 维护本计划、状态与决策，完成最终检查、提交和 push。验证真实 PostgreSQL、实际 HTTP 与 MCP 客户端、跨身份权限、便签并发更新、事件增量读取和服务重启持久化；运行至少两个独立 Worker，记录真实模型调用与产物。部署 Vercel 后重复远程验证。链上两轮完整验证须使用 A 的真实适配器与部署，未取得时保持未通过。
+四条轨道完成后，由独立集成 Agent 在 work/b-runtime 合并，限于导入、路由、配置与类型衔接，领域问题退回原 Worker。主 Agent 维护本计划、状态与决策，完成最终检查、提交和 push。验证真实 PostgreSQL、实际 HTTP 与 MCP 客户端、跨身份权限、便签并发更新、事件增量读取和服务重启持久化；运行至少两个独立 Worker，记录真实模型调用与产物。部署 Vercel 后重复远程验证。链上两轮完整验证须使用 A 的真实适配器与部署，未取得时保持未通过。
+
+## 当前验收记录
+
+四轨道、独立集成与领域返修均已合并并推送。八次 Orca Worker 已释放。各包类型检查、构建和适用测试通过，真实服务重启回归 2/2 通过。两轮完整链路使用四个独立 Worker、真实阶跃星辰模型、真实 Neon 和本地 A 原合约完成；第二轮 304114 ms，120 秒目标未通过。Monad Testnet 仅完成真实只读协议验证，写入等待授权签名配置和 Gas。
+
+Vercel 公网 API/MCP 已部署，两个独立 Worker 的公告与便签互读、版本更新、分别终止及数据库持久化通过。此次公网交流验证没有链写入和模型调用。详细命令、原始记录与剩余限制见 docs/b-integration.md、docs/b-deployment.md。

@@ -72,4 +72,4 @@ Vercel 项目根目录设为 `services/runtime`，开启 **Include source files 
 
 原生事件验证：`node --env-file=<本地忽略配置> --import tsx --test test/native-events.test.ts` 通过，实际从 Monad RPC 获取注册交易 `0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e`，eventId `10143:0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e:1` 在真实 chain_events 中唯一存在，重复入库保持一致。该验证归档 A 的真实注册事件，没有生成产品质量记录。
 
-真实限制：A 的源码、部署与桥接已接入；自动流程的实际链上注册、指派、提交、验收及完整两轮信誉变化由协调者安排的独立集成轨道验证。当前通信实例未配置签名账户，健康端点明确报告 CHAIN_NOT_CONFIGURED。Vercel 公网部署与远程回归由协调者继续处理。当前 Neon 临时项目需要在 2026-10-20 08:10 UTC 前认领，认领由用户完成。
+独立集成已使用 A 原合约、真实 Neon 与四个独立 Worker，在本地 chainId 31337 完成两轮注册、指派、提交、验收及信誉读取；容量测试实际覆盖 PENDING/CONFIRMED 预留、冻结决策保持和取消释放，见 [集成报告](b-integration.md)。Vercel 公网部署及两个真实独立 Worker 的 MCP 交流验证通过，见 [部署报告](b-deployment.md)。公网未配置测试网签名账户，健康端点明确报告 CHAIN_NOT_CONFIGURED。Monad Testnet 写入、Worker 常驻主机和两台设备运行尚未完成。Neon 临时项目需要用户在 2026-10-20 08:10 UTC 前认领。

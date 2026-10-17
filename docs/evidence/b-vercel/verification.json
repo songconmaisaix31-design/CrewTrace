@@ -1,0 +1,164 @@
+{
+  "baseURL": "https://co-vibe-b.vercel.app",
+  "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+  "runtimeStatus": "CANCELLED",
+  "cancelled": true,
+  "announcements": [
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "DATA 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "author": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "createdAt": "2026-10-17T09:38:30.160Z"
+    },
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "createdAt": "2026-10-17T09:38:52.653Z"
+    },
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "25968883-1647-4cdd-8f5e-52a815458110",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "createdAt": "2026-10-17T09:43:42.973Z"
+    },
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "createdAt": "2026-10-17T09:46:40.285Z"
+    },
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "DATA 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "2185ac59-1aab-4374-a028-d4375190c714",
+      "author": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "createdAt": "2026-10-17T09:47:21.126Z"
+    }
+  ],
+  "notes": [
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "DATA 执行条件",
+      "artifactIds": [],
+      "noteId": "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "author": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "version": 2,
+      "createdAt": "2026-10-17T09:38:31.252Z",
+      "updatedAt": "2026-10-17T09:38:31.732Z"
+    },
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 执行条件",
+      "artifactIds": [],
+      "noteId": "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "version": 2,
+      "createdAt": "2026-10-17T09:38:53.057Z",
+      "updatedAt": "2026-10-17T09:38:53.531Z"
+    },
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 执行条件",
+      "artifactIds": [],
+      "noteId": "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "version": 2,
+      "createdAt": "2026-10-17T09:43:43.768Z",
+      "updatedAt": "2026-10-17T09:43:44.187Z"
+    },
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 执行条件",
+      "artifactIds": [],
+      "noteId": "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "version": 2,
+      "createdAt": "2026-10-17T09:46:40.661Z",
+      "updatedAt": "2026-10-17T09:46:41.114Z"
+    },
+    {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "DATA 执行条件",
+      "artifactIds": [],
+      "noteId": "eb073163-d68b-4c47-85f5-0f8c7fe24880",
+      "author": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "version": 2,
+      "createdAt": "2026-10-17T09:47:21.581Z",
+      "updatedAt": "2026-10-17T09:47:22.068Z"
+    }
+  ],
+  "eventIds": [
+    "f1a7f8c5-1dc5-409e-9c4f-13dd32b3cbb1",
+    "d2aac692-75e8-4b8c-b6af-fe9565e20b8c",
+    "7e3e085b-8c4d-45f4-8a24-9e4185cac4ee",
+    "63943aef-96a5-41bd-8f90-eaf2898c51d6",
+    "7e3878f0-b6c6-4fdd-be1a-ad7188349c54",
+    "e20b1618-551e-4eb4-9b24-307ced7f0f9c",
+    "899e322b-77e0-42bd-8560-ae1d69d6284f",
+    "31d45736-5297-45e4-a87c-bacd47e527e8",
+    "ad01a2b6-8383-4ca3-b479-bf0d91c73248",
+    "3917a07c-4735-4f2b-90a8-e0f1244a3cdb",
+    "2bbca72c-0ad8-4fb4-b1e2-d970e990a0f8",
+    "6f1baf5d-388e-4cc2-bdc8-5f1e32c4fcd4",
+    "9a4a6ca6-c494-4060-910e-afd90fd7a379",
+    "73bf9e76-d7d6-4488-9a42-c3c5c67dfbfe",
+    "9037e53b-a0a7-47cd-9df2-22ca3c24153a",
+    "cee6e64d-d9a8-4aab-ac08-96fe26c766e7",
+    "4a788ec4-40a0-46af-bc0b-c9561647a5fe"
+  ],
+  "chainWritesExecuted": false,
+  "verifiedAt": "2026-10-17T09:51:50.402Z",
+  "persistedEventCount": 17,
+  "modelCallCount": 0,
+  "workers": [
+    {
+      "name": "analysis",
+      "pid": 38440,
+      "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "stoppedBySignal": true
+    },
+    {
+      "name": "data-a",
+      "pid": 58868,
+      "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "stoppedBySignal": true
+    }
+  ],
+  "secondWorkerContinuedAfterFirstStopped": true,
+  "testedSourceCommit": "46bc9168e360263df3b5a5f0a29d90e200c679b0",
+  "localNetworkClient": {
+    "package": "undici",
+    "version": "8.12.2",
+    "proxy": "http://127.0.0.1:7890"
+  }
+}

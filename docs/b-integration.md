@@ -113,9 +113,9 @@ $bDeployDirectory = Join-Path .local/vercel "source-$bDeployCommit"
 git archive --format=zip --output=".local/vercel/source-$bDeployCommit.zip" $bDeployCommit
 Expand-Archive -LiteralPath ".local/vercel/source-$bDeployCommit.zip" -DestinationPath $bDeployDirectory
 vercel link --project co-vibe-b --scope Dwwww --cwd $bDeployDirectory --yes
-vercel pull --environment=production --scope Dwwww --cwd $bDeployDirectory --yes
-vercel build --prod --scope Dwwww --cwd $bDeployDirectory
-vercel deploy --prebuilt --prod --scope Dwwww --cwd $bDeployDirectory
+vercel project inspect co-vibe-b --scope dwwww --cwd $bDeployDirectory --non-interactive
+vercel deploy --dry --format json --project co-vibe-b --scope dwwww --cwd $bDeployDirectory --non-interactive
+vercel deploy --prod --yes --project co-vibe-b --scope dwwww --cwd $bDeployDirectory --meta "sourceCommit=$bDeployCommit" --non-interactive
 ```
 
 ## 真实剩余限制
@@ -124,6 +124,6 @@ Monad Testnet 两轮写入仍需要实际协调者、验收者签名配置与四
 
 第二轮全流程 304114 ms，120 秒目标未通过。全部模型、数据库、独立 Worker、链确认与确定性验收均计入该耗时。
 
-公网部署与远程回归由主 Agent 独立执行，结果以其最终交付记录为准。
+公网部署与远程回归已由主 Agent 独立执行，公开 API/MCP 与两个真实独立进程通信通过，完整结果见 [公网部署报告](b-deployment.md)。公网当前没有链签名配置，交流验证没有链写入。
 
 首次新工作区测试曾触及子进程 20 秒启动上限；偶发冷启动 CPU 增加的原因尚未定位。后续独立新进程启动与完整重启回归均已通过。

@@ -112,4 +112,4 @@ progress 与 submit 使用独立的链核对请求时限，与服务 `src/index.
 
 ## 剩余限制
 
-A 的真实适配器与部署协议已通过公共 ChainPort 接入。集成轨道已使用四个独立 Worker 进程、真实 Neon、A 原始合约及真实 StepFun 模型，在已有运行 `b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc` 完成第一轮 DATA 的 `VERIFIED_PASS`。四进程持续心跳、该运行后续角色恢复及完整两轮信誉回读由集成 Agent 统一验证；Worker 轨道不启动重复运行或改写其私有配置与原始 DATA 产物。两轮独立离线模型结果保持 `chainIntegration/serviceIntegration=NOT_VERIFIED`。常驻主机和两台设备运行待确认。
+A 的真实适配器与部署协议已通过公共 ChainPort 接入。集成轨道已使用四个独立 Worker、真实 Neon、A 原始合约及真实 StepFun 模型，在本地 chainId 31337 完成两轮三个角色的 VERIFIED_PASS，四进程持续心跳、原交易恢复及完整两轮信誉回读通过，原始证据见 [集成报告](b-integration.md)。此前两轮独立离线模型结果保持 `chainIntegration/serviceIntegration=NOT_VERIFIED`，与后续真实集成结果分别记录。公网两个独立 Worker 的 MCP 交流通过，见 [部署报告](b-deployment.md)。Monad Testnet 写入、常驻主机和两台设备运行尚未完成。

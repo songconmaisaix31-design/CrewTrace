@@ -53,4 +53,4 @@ ChainReceipt 与 SubmissionReceipt 可选 `events` 保存 eventId/eventName/args
 
 原始 eventId 均保留为 `10143:<txHash>:<logIndex>`。对应任务和产物/证据一致，执行者 DATA 记录为 PASS=2、FAIL=0，同快照返回；部署区块回读为真实 0/0，不存在任务返回 null。
 
-协调者与验收者私钥尚未提供，本轨道没有执行真实写入验证；两轮产品任务、Worker 与服务写入链路仍需对应轨道和集成验收。
+Monad Testnet 协调者与验收者私钥尚未提供，测试网未执行 B 产品任务写入。独立集成已使用 A 原始合约在本地 chainId 31337 完成四 Worker 的两轮实际注册、指派、提交、验收与信誉回读，原始证据见 [集成报告](b-integration.md)。
