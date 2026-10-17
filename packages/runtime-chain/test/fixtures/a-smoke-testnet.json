@@ -1,0 +1,639 @@
+{
+  "mode": "DEV_FIXTURE",
+  "scope": "A 链端口独立验证；未执行真实 Worker、模型或业务验收",
+  "status": "CONFIRMED",
+  "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+  "runIds": [
+    "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+    "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254"
+  ],
+  "receipts": [
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e",
+      "blockNumber": "71765583",
+      "signer": "0x408ca6f1a96a9524c9ca6c56f9ca0c9190fac50d",
+      "events": [
+        {
+          "eventName": "AgentRegistered",
+          "args": {
+            "agentId": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+            "roleMask": 1,
+            "manifestURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B6Lqr5Lu977yb5LiN5Luj6KGo5a6e6ZmFIFdvcmtlciDmiJbmqKHlnovog73lipsifQo=",
+            "manifestHash": "0x75bd5ee87402e65d9c9d2b8ac78a6b90e0b7b15feb6de2b489fec78538c12fd8"
+          },
+          "eventId": "10143:0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e:1",
+          "logIndex": 1,
+          "blockNumber": "71765583",
+          "txHash": "0xd4077fbf06b82b9c0d14e7309de0485cacfac10de69bc172adf007c8f6bc366e"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x70f5964f87735d56cbe5b98b36c0445a40c4c38b1e4a288e9d620428336d905a",
+      "blockNumber": "71765602",
+      "signer": "0x50749770f5d354e4b49460edd8ec6042410c443d",
+      "events": [
+        {
+          "eventName": "AgentRegistered",
+          "args": {
+            "agentId": "0x50749770F5D354e4b49460edD8eC6042410c443D",
+            "roleMask": 1,
+            "manifestURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B6Lqr5Lu977yb5LiN5Luj6KGo5a6e6ZmFIFdvcmtlciDmiJbmqKHlnovog73lipsifQo=",
+            "manifestHash": "0x75bd5ee87402e65d9c9d2b8ac78a6b90e0b7b15feb6de2b489fec78538c12fd8"
+          },
+          "eventId": "10143:0x70f5964f87735d56cbe5b98b36c0445a40c4c38b1e4a288e9d620428336d905a:39",
+          "logIndex": 39,
+          "blockNumber": "71765602",
+          "txHash": "0x70f5964f87735d56cbe5b98b36c0445a40c4c38b1e4a288e9d620428336d905a"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x6ff92faf4e5fb0fb5bf019715181b5e7e4eccbc1def497370157bc0eb5b357a7",
+      "blockNumber": "71765614",
+      "signer": "0xe53645c791a7a4288e595c5fe17c5fe2a1937819",
+      "events": [
+        {
+          "eventName": "AgentRegistered",
+          "args": {
+            "agentId": "0xe53645C791A7a4288E595c5fe17C5FE2A1937819",
+            "roleMask": 2,
+            "manifestURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B6Lqr5Lu977yb5LiN5Luj6KGo5a6e6ZmFIFdvcmtlciDmiJbmqKHlnovog73lipsifQo=",
+            "manifestHash": "0x75bd5ee87402e65d9c9d2b8ac78a6b90e0b7b15feb6de2b489fec78538c12fd8"
+          },
+          "eventId": "10143:0x6ff92faf4e5fb0fb5bf019715181b5e7e4eccbc1def497370157bc0eb5b357a7:26",
+          "logIndex": 26,
+          "blockNumber": "71765614",
+          "txHash": "0x6ff92faf4e5fb0fb5bf019715181b5e7e4eccbc1def497370157bc0eb5b357a7"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x003ca2f51a4fb24c389d28df5a6d7f11deb3f1c39099b1bc7e4af89e30f59a0b",
+      "blockNumber": "71765627",
+      "signer": "0xca835677ed9865193a372aa729424b54fbda2c5e",
+      "events": [
+        {
+          "eventName": "AgentRegistered",
+          "args": {
+            "agentId": "0xca835677ED9865193A372aa729424b54FBDA2c5e",
+            "roleMask": 4,
+            "manifestURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B6Lqr5Lu977yb5LiN5Luj6KGo5a6e6ZmFIFdvcmtlciDmiJbmqKHlnovog73lipsifQo=",
+            "manifestHash": "0x75bd5ee87402e65d9c9d2b8ac78a6b90e0b7b15feb6de2b489fec78538c12fd8"
+          },
+          "eventId": "10143:0x003ca2f51a4fb24c389d28df5a6d7f11deb3f1c39099b1bc7e4af89e30f59a0b:1",
+          "logIndex": 1,
+          "blockNumber": "71765627",
+          "txHash": "0x003ca2f51a4fb24c389d28df5a6d7f11deb3f1c39099b1bc7e4af89e30f59a0b"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x5fc76cb1325f132f066b0eafd098a11f60457b5168daedececb3b70bb51f5d16",
+      "blockNumber": "71765658",
+      "signer": "0x02f15c12e9ded7d44ca4c6a22a652f7d229ed914",
+      "events": [
+        {
+          "eventName": "TaskAssigned",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0xaf19130d634902acd3454712d19ac53cd6fde4e540acfee06ef244cad407566d",
+            "attempt": 1,
+            "role": 0,
+            "assignee": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+            "inputHash": "0x2018725383758ce6d267f3b5f2f674e2e9b2a322d06e56d440fbf01b92c1a03b",
+            "criteriaHash": "0x70db0f46b0cd7ff0394d2233a8e841c21202044071064d17c6f7d39399d625cd",
+            "decisionHash": "0x00e95003bf9090b5cd0f3f493cc6e202f3e7e226ba6863753d24395f8ee481b6",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0x5fc76cb1325f132f066b0eafd098a11f60457b5168daedececb3b70bb51f5d16:7",
+          "logIndex": 7,
+          "blockNumber": "71765658",
+          "txHash": "0x5fc76cb1325f132f066b0eafd098a11f60457b5168daedececb3b70bb51f5d16"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xb10f6d1d7922feac89f5f6ef9151d9aacb7abbc4d1b24bf05ca1b322c62dce5c",
+      "blockNumber": "71765675",
+      "signer": "0x408ca6f1a96a9524c9ca6c56f9ca0c9190fac50d",
+      "events": [
+        {
+          "eventName": "ArtifactSubmitted",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0xaf19130d634902acd3454712d19ac53cd6fde4e540acfee06ef244cad407566d",
+            "attempt": 1,
+            "producer": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "artifactURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B5Lqn54mp77yb5pyq5omn6KGM5Lia5Yqh5YiG5p6Q5oiW5qih5Z6L6LCD55SoIn0K"
+          },
+          "eventId": "10143:0xb10f6d1d7922feac89f5f6ef9151d9aacb7abbc4d1b24bf05ca1b322c62dce5c:37",
+          "logIndex": 37,
+          "blockNumber": "71765675",
+          "txHash": "0xb10f6d1d7922feac89f5f6ef9151d9aacb7abbc4d1b24bf05ca1b322c62dce5c"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c",
+      "blockNumber": "71765687",
+      "signer": "0x1dd95748fa62797ad86cbab53e192b0782cf84fe",
+      "events": [
+        {
+          "eventName": "OutcomeRecorded",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0xaf19130d634902acd3454712d19ac53cd6fde4e540acfee06ef244cad407566d",
+            "attempt": 1,
+            "assignee": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+            "role": 0,
+            "passed": true,
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "evidenceHash": "0xf9f98f1b72482e6eabc758f108dec6d74a7dfa65b59226ba26a54efd97b424d1",
+            "evidenceURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg5ZCI57qm5rWL6K+V6aqM5pS26L6T5YWl77yb5LiN6K+B5piO55yf5a6e5Lia5Yqh5Lqn54mp6LSo6YePIn0K",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c:79",
+          "logIndex": 79,
+          "blockNumber": "71765687",
+          "txHash": "0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x22b1236d57f9ac08112eb3d71dd5e3f8a45b76d136a0407e6bd295a997cb5414",
+      "blockNumber": "71765704",
+      "signer": "0x02f15c12e9ded7d44ca4c6a22a652f7d229ed914",
+      "events": [
+        {
+          "eventName": "TaskAssigned",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0x8e056370c0bb51f5d9eefaee7dd1d7b344e3b359df71c882492f2f150c3fb2a0",
+            "attempt": 1,
+            "role": 1,
+            "assignee": "0xe53645C791A7a4288E595c5fe17C5FE2A1937819",
+            "inputHash": "0x2018725383758ce6d267f3b5f2f674e2e9b2a322d06e56d440fbf01b92c1a03b",
+            "criteriaHash": "0x70db0f46b0cd7ff0394d2233a8e841c21202044071064d17c6f7d39399d625cd",
+            "decisionHash": "0xcad68ce596693828900b955b4bfb767132a1fe9ecb09363adfe3e5381f21ee29",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0x22b1236d57f9ac08112eb3d71dd5e3f8a45b76d136a0407e6bd295a997cb5414:46",
+          "logIndex": 46,
+          "blockNumber": "71765704",
+          "txHash": "0x22b1236d57f9ac08112eb3d71dd5e3f8a45b76d136a0407e6bd295a997cb5414"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xd254e0156745908eb8a7166479051f160c0868e3ce3da4603213c32d86d11662",
+      "blockNumber": "71765718",
+      "signer": "0xe53645c791a7a4288e595c5fe17c5fe2a1937819",
+      "events": [
+        {
+          "eventName": "ArtifactSubmitted",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0x8e056370c0bb51f5d9eefaee7dd1d7b344e3b359df71c882492f2f150c3fb2a0",
+            "attempt": 1,
+            "producer": "0xe53645C791A7a4288E595c5fe17C5FE2A1937819",
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "artifactURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B5Lqn54mp77yb5pyq5omn6KGM5Lia5Yqh5YiG5p6Q5oiW5qih5Z6L6LCD55SoIn0K"
+          },
+          "eventId": "10143:0xd254e0156745908eb8a7166479051f160c0868e3ce3da4603213c32d86d11662:4",
+          "logIndex": 4,
+          "blockNumber": "71765718",
+          "txHash": "0xd254e0156745908eb8a7166479051f160c0868e3ce3da4603213c32d86d11662"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x3a7a16f714a77564883b0f9dd5038ee6b06098f10b12b438d66ff484d5af5ae3",
+      "blockNumber": "71765730",
+      "signer": "0x1dd95748fa62797ad86cbab53e192b0782cf84fe",
+      "events": [
+        {
+          "eventName": "OutcomeRecorded",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0x8e056370c0bb51f5d9eefaee7dd1d7b344e3b359df71c882492f2f150c3fb2a0",
+            "attempt": 1,
+            "assignee": "0xe53645C791A7a4288E595c5fe17C5FE2A1937819",
+            "role": 1,
+            "passed": true,
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "evidenceHash": "0xf9f98f1b72482e6eabc758f108dec6d74a7dfa65b59226ba26a54efd97b424d1",
+            "evidenceURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg5ZCI57qm5rWL6K+V6aqM5pS26L6T5YWl77yb5LiN6K+B5piO55yf5a6e5Lia5Yqh5Lqn54mp6LSo6YePIn0K",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0x3a7a16f714a77564883b0f9dd5038ee6b06098f10b12b438d66ff484d5af5ae3:1",
+          "logIndex": 1,
+          "blockNumber": "71765730",
+          "txHash": "0x3a7a16f714a77564883b0f9dd5038ee6b06098f10b12b438d66ff484d5af5ae3"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x4b0b08d4478d8a2660ed6a639cbd007e8ac111b98ac9defd59ff301d8d65d8ad",
+      "blockNumber": "71765745",
+      "signer": "0x02f15c12e9ded7d44ca4c6a22a652f7d229ed914",
+      "events": [
+        {
+          "eventName": "TaskAssigned",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0x1832751d053a0a5e13ebae80c925042b617bceb707feb52ef5ecd60f002278ee",
+            "attempt": 1,
+            "role": 2,
+            "assignee": "0xca835677ED9865193A372aa729424b54FBDA2c5e",
+            "inputHash": "0x2018725383758ce6d267f3b5f2f674e2e9b2a322d06e56d440fbf01b92c1a03b",
+            "criteriaHash": "0x70db0f46b0cd7ff0394d2233a8e841c21202044071064d17c6f7d39399d625cd",
+            "decisionHash": "0xb97ad3dff2f6433494462ef18f1debaaa2648b6c5c16e9b9290c1e98762e1b30",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0x4b0b08d4478d8a2660ed6a639cbd007e8ac111b98ac9defd59ff301d8d65d8ad:5",
+          "logIndex": 5,
+          "blockNumber": "71765745",
+          "txHash": "0x4b0b08d4478d8a2660ed6a639cbd007e8ac111b98ac9defd59ff301d8d65d8ad"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x099f41efd5063067aa9e6082a6415a46f2a0cd30ab9403f92bb391f23f8bd4ca",
+      "blockNumber": "71765764",
+      "signer": "0xca835677ed9865193a372aa729424b54fbda2c5e",
+      "events": [
+        {
+          "eventName": "ArtifactSubmitted",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0x1832751d053a0a5e13ebae80c925042b617bceb707feb52ef5ecd60f002278ee",
+            "attempt": 1,
+            "producer": "0xca835677ED9865193A372aa729424b54FBDA2c5e",
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "artifactURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B5Lqn54mp77yb5pyq5omn6KGM5Lia5Yqh5YiG5p6Q5oiW5qih5Z6L6LCD55SoIn0K"
+          },
+          "eventId": "10143:0x099f41efd5063067aa9e6082a6415a46f2a0cd30ab9403f92bb391f23f8bd4ca:59",
+          "logIndex": 59,
+          "blockNumber": "71765764",
+          "txHash": "0x099f41efd5063067aa9e6082a6415a46f2a0cd30ab9403f92bb391f23f8bd4ca"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x11c1c423867474f9674194cf038d5063aa77231339b16306bb2685cfd38874d4",
+      "blockNumber": "71765778",
+      "signer": "0x1dd95748fa62797ad86cbab53e192b0782cf84fe",
+      "events": [
+        {
+          "eventName": "OutcomeRecorded",
+          "args": {
+            "runId": "0x2053803f62541c7ce7dcb631c23c08b7b93168d9088ec506eca568ae718fd124",
+            "taskId": "0x1832751d053a0a5e13ebae80c925042b617bceb707feb52ef5ecd60f002278ee",
+            "attempt": 1,
+            "assignee": "0xca835677ED9865193A372aa729424b54FBDA2c5e",
+            "role": 2,
+            "passed": true,
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "evidenceHash": "0xf9f98f1b72482e6eabc758f108dec6d74a7dfa65b59226ba26a54efd97b424d1",
+            "evidenceURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg5ZCI57qm5rWL6K+V6aqM5pS26L6T5YWl77yb5LiN6K+B5piO55yf5a6e5Lia5Yqh5Lqn54mp6LSo6YePIn0K",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0x11c1c423867474f9674194cf038d5063aa77231339b16306bb2685cfd38874d4:1",
+          "logIndex": 1,
+          "blockNumber": "71765778",
+          "txHash": "0x11c1c423867474f9674194cf038d5063aa77231339b16306bb2685cfd38874d4"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xa312c83a6db3e1ab570dca9c86c2f0b0ae85113f266635d7125d361dc18e6c20",
+      "blockNumber": "71765797",
+      "signer": "0x02f15c12e9ded7d44ca4c6a22a652f7d229ed914",
+      "events": [
+        {
+          "eventName": "TaskAssigned",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0x306609603c7aba950adb531fdf8a5e73974cb0dd89dd6e09a78904d5bfc78b69",
+            "attempt": 1,
+            "role": 0,
+            "assignee": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+            "inputHash": "0x2018725383758ce6d267f3b5f2f674e2e9b2a322d06e56d440fbf01b92c1a03b",
+            "criteriaHash": "0x70db0f46b0cd7ff0394d2233a8e841c21202044071064d17c6f7d39399d625cd",
+            "decisionHash": "0xf17bac6cf1359dc726359e41d32ccb9b6f0e97bceee31a0a9e06b77f57037c6d",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0xa312c83a6db3e1ab570dca9c86c2f0b0ae85113f266635d7125d361dc18e6c20:11",
+          "logIndex": 11,
+          "blockNumber": "71765797",
+          "txHash": "0xa312c83a6db3e1ab570dca9c86c2f0b0ae85113f266635d7125d361dc18e6c20"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x75c4ba97714eac051f61e3db3acb2172f8733498c86a32447a41ef888d6b6a79",
+      "blockNumber": "71765815",
+      "signer": "0x408ca6f1a96a9524c9ca6c56f9ca0c9190fac50d",
+      "events": [
+        {
+          "eventName": "ArtifactSubmitted",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0x306609603c7aba950adb531fdf8a5e73974cb0dd89dd6e09a78904d5bfc78b69",
+            "attempt": 1,
+            "producer": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "artifactURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B5Lqn54mp77yb5pyq5omn6KGM5Lia5Yqh5YiG5p6Q5oiW5qih5Z6L6LCD55SoIn0K"
+          },
+          "eventId": "10143:0x75c4ba97714eac051f61e3db3acb2172f8733498c86a32447a41ef888d6b6a79:1",
+          "logIndex": 1,
+          "blockNumber": "71765815",
+          "txHash": "0x75c4ba97714eac051f61e3db3acb2172f8733498c86a32447a41ef888d6b6a79"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xca32836443ce0167c61da75558c531bb37e36070048c2a78e1fa849a26b05c30",
+      "blockNumber": "71765830",
+      "signer": "0x1dd95748fa62797ad86cbab53e192b0782cf84fe",
+      "events": [
+        {
+          "eventName": "OutcomeRecorded",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0x306609603c7aba950adb531fdf8a5e73974cb0dd89dd6e09a78904d5bfc78b69",
+            "attempt": 1,
+            "assignee": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+            "role": 0,
+            "passed": true,
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "evidenceHash": "0xf9f98f1b72482e6eabc758f108dec6d74a7dfa65b59226ba26a54efd97b424d1",
+            "evidenceURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg5ZCI57qm5rWL6K+V6aqM5pS26L6T5YWl77yb5LiN6K+B5piO55yf5a6e5Lia5Yqh5Lqn54mp6LSo6YePIn0K",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0xca32836443ce0167c61da75558c531bb37e36070048c2a78e1fa849a26b05c30:34",
+          "logIndex": 34,
+          "blockNumber": "71765830",
+          "txHash": "0xca32836443ce0167c61da75558c531bb37e36070048c2a78e1fa849a26b05c30"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xd2b4c19430b1a8534ecf6ba62a11fb877d936ac509993536e00c3bd1871e9909",
+      "blockNumber": "71765846",
+      "signer": "0x02f15c12e9ded7d44ca4c6a22a652f7d229ed914",
+      "events": [
+        {
+          "eventName": "TaskAssigned",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0xdfc3679f8646c97121633b531bceabed0fcb6b75cc4a880daf2b3913047a3568",
+            "attempt": 1,
+            "role": 1,
+            "assignee": "0xe53645C791A7a4288E595c5fe17C5FE2A1937819",
+            "inputHash": "0x2018725383758ce6d267f3b5f2f674e2e9b2a322d06e56d440fbf01b92c1a03b",
+            "criteriaHash": "0x70db0f46b0cd7ff0394d2233a8e841c21202044071064d17c6f7d39399d625cd",
+            "decisionHash": "0x2bf4890932ff0341a1dfabc7cd513799cc8e2b391ff8604bac46a1580e9adb5a",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0xd2b4c19430b1a8534ecf6ba62a11fb877d936ac509993536e00c3bd1871e9909:1",
+          "logIndex": 1,
+          "blockNumber": "71765846",
+          "txHash": "0xd2b4c19430b1a8534ecf6ba62a11fb877d936ac509993536e00c3bd1871e9909"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x5ade2f3d1bc8e71050aa53ef7ad01923dc7fc72043863757ce77d317f7171dea",
+      "blockNumber": "71765862",
+      "signer": "0xe53645c791a7a4288e595c5fe17c5fe2a1937819",
+      "events": [
+        {
+          "eventName": "ArtifactSubmitted",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0xdfc3679f8646c97121633b531bceabed0fcb6b75cc4a880daf2b3913047a3568",
+            "attempt": 1,
+            "producer": "0xe53645C791A7a4288E595c5fe17C5FE2A1937819",
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "artifactURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B5Lqn54mp77yb5pyq5omn6KGM5Lia5Yqh5YiG5p6Q5oiW5qih5Z6L6LCD55SoIn0K"
+          },
+          "eventId": "10143:0x5ade2f3d1bc8e71050aa53ef7ad01923dc7fc72043863757ce77d317f7171dea:5",
+          "logIndex": 5,
+          "blockNumber": "71765862",
+          "txHash": "0x5ade2f3d1bc8e71050aa53ef7ad01923dc7fc72043863757ce77d317f7171dea"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xb5739cd53af9ab8b7fb4dc36e2bdc0d82307f9ec64a1adc23eed6cf9061faa4b",
+      "blockNumber": "71767066",
+      "signer": "0x1dd95748fa62797ad86cbab53e192b0782cf84fe",
+      "events": [
+        {
+          "eventName": "OutcomeRecorded",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0xdfc3679f8646c97121633b531bceabed0fcb6b75cc4a880daf2b3913047a3568",
+            "attempt": 1,
+            "assignee": "0xe53645C791A7a4288E595c5fe17C5FE2A1937819",
+            "role": 1,
+            "passed": true,
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "evidenceHash": "0xf9f98f1b72482e6eabc758f108dec6d74a7dfa65b59226ba26a54efd97b424d1",
+            "evidenceURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg5ZCI57qm5rWL6K+V6aqM5pS26L6T5YWl77yb5LiN6K+B5piO55yf5a6e5Lia5Yqh5Lqn54mp6LSo6YePIn0K",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0xb5739cd53af9ab8b7fb4dc36e2bdc0d82307f9ec64a1adc23eed6cf9061faa4b:3",
+          "logIndex": 3,
+          "blockNumber": "71767066",
+          "txHash": "0xb5739cd53af9ab8b7fb4dc36e2bdc0d82307f9ec64a1adc23eed6cf9061faa4b"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xc53fc9fd99979211bb232e3c94a92c22c932008dc185d2f141eaf19c21640a07",
+      "blockNumber": "71767255",
+      "signer": "0x02f15c12e9ded7d44ca4c6a22a652f7d229ed914",
+      "events": [
+        {
+          "eventName": "TaskAssigned",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0x24d5fd00e630346e17bff5864b2fbb08e3c0ba6109c5c4dd3cbc7a206f26243e",
+            "attempt": 1,
+            "role": 2,
+            "assignee": "0xca835677ED9865193A372aa729424b54FBDA2c5e",
+            "inputHash": "0x2018725383758ce6d267f3b5f2f674e2e9b2a322d06e56d440fbf01b92c1a03b",
+            "criteriaHash": "0x70db0f46b0cd7ff0394d2233a8e841c21202044071064d17c6f7d39399d625cd",
+            "decisionHash": "0x24d5fd00e630346e17bff5864b2fbb08e3c0ba6109c5c4dd3cbc7a206f26243e",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0xc53fc9fd99979211bb232e3c94a92c22c932008dc185d2f141eaf19c21640a07:15",
+          "logIndex": 15,
+          "blockNumber": "71767255",
+          "txHash": "0xc53fc9fd99979211bb232e3c94a92c22c932008dc185d2f141eaf19c21640a07"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0xf92ab973d491ac6a963d67361a45bed5d98aa30b3f8318a37ea3e2df50cbb428",
+      "blockNumber": "71767356",
+      "signer": "0xca835677ed9865193a372aa729424b54fbda2c5e",
+      "events": [
+        {
+          "eventName": "ArtifactSubmitted",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0x24d5fd00e630346e17bff5864b2fbb08e3c0ba6109c5c4dd3cbc7a206f26243e",
+            "attempt": 1,
+            "producer": "0xca835677ED9865193A372aa729424b54FBDA2c5e",
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "artifactURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg6ZO+56uv5Y+j6aqM6K+B5Lqn54mp77yb5pyq5omn6KGM5Lia5Yqh5YiG5p6Q5oiW5qih5Z6L6LCD55SoIn0K"
+          },
+          "eventId": "10143:0xf92ab973d491ac6a963d67361a45bed5d98aa30b3f8318a37ea3e2df50cbb428:4",
+          "logIndex": 4,
+          "blockNumber": "71767356",
+          "txHash": "0xf92ab973d491ac6a963d67361a45bed5d98aa30b3f8318a37ea3e2df50cbb428"
+        }
+      ],
+      "status": "CONFIRMED"
+    },
+    {
+      "chainId": 10143,
+      "contract": "0x3645579b40fcee562cd86fda3fba25b90c924418",
+      "txHash": "0x74b820cda8a28070dc57f6000189f98aaa098748b36bd7e9c5d88a0b0294f358",
+      "blockNumber": "71767385",
+      "signer": "0x1dd95748fa62797ad86cbab53e192b0782cf84fe",
+      "events": [
+        {
+          "eventName": "OutcomeRecorded",
+          "args": {
+            "runId": "0xa7fd4a504b2c233b1e754e3e985e34668e2a7975d0780c7697ec3ad3cd7ec254",
+            "taskId": "0x24d5fd00e630346e17bff5864b2fbb08e3c0ba6109c5c4dd3cbc7a206f26243e",
+            "attempt": 1,
+            "assignee": "0xca835677ED9865193A372aa729424b54FBDA2c5e",
+            "role": 2,
+            "passed": true,
+            "artifactHash": "0x0c6a586ad05da274b6f1267f9ca8950c27518fb02c79d754b95c5147de475b19",
+            "evidenceHash": "0xf9f98f1b72482e6eabc758f108dec6d74a7dfa65b59226ba26a54efd97b424d1",
+            "evidenceURI": "data:application/json;base64,eyJtb2RlIjoiREVWX0ZJWFRVUkUiLCJkZXNjcmlwdGlvbiI6IkEg5ZCI57qm5rWL6K+V6aqM5pS26L6T5YWl77yb5LiN6K+B5piO55yf5a6e5Lia5Yqh5Lqn54mp6LSo6YePIn0K",
+            "validator": "0x1Dd95748Fa62797aD86cBAB53E192b0782cF84fe"
+          },
+          "eventId": "10143:0x74b820cda8a28070dc57f6000189f98aaa098748b36bd7e9c5d88a0b0294f358:1",
+          "logIndex": 1,
+          "blockNumber": "71767385",
+          "txHash": "0x74b820cda8a28070dc57f6000189f98aaa098748b36bd7e9c5d88a0b0294f358"
+        }
+      ],
+      "status": "CONFIRMED"
+    }
+  ],
+  "snapshots": [
+    {
+      "stage": "BASELINE",
+      "agentId": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+      "role": 0,
+      "passCount": "0",
+      "failCount": "0",
+      "sampleCount": "0",
+      "reputation": 0.5,
+      "repBlockNumber": "71765636"
+    },
+    {
+      "stage": "BEFORE_ROUND_1",
+      "agentId": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+      "role": 0,
+      "passCount": "0",
+      "failCount": "0",
+      "sampleCount": "0",
+      "reputation": 0.5,
+      "repBlockNumber": "71765642"
+    },
+    {
+      "stage": "BEFORE_ROUND_2",
+      "agentId": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+      "role": 0,
+      "passCount": "1",
+      "failCount": "0",
+      "sampleCount": "1",
+      "reputation": 0.6666666666666666,
+      "repBlockNumber": "71765784"
+    },
+    {
+      "stage": "AFTER_ROUND_2",
+      "agentId": "0x408CA6f1A96A9524C9Ca6c56f9Ca0C9190Fac50D",
+      "role": 0,
+      "passCount": "2",
+      "failCount": "0",
+      "sampleCount": "2",
+      "reputation": 0.75,
+      "repBlockNumber": "71767404"
+    }
+  ],
+  "completedAt": "2026-10-17T07:57:23.835Z"
+}

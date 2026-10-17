@@ -31,12 +31,18 @@ ChainReceipt 与 SubmissionReceipt 可选 `events` 保存 eventId/eventName/args
 
 写方法返回 PENDING 和 A 生成的原 txHash，不等待最终确认。服务与 Worker 先持久化该回执，再调用 `getReceipts({txHash})`；该查询只对账同一交易。显式恢复时可以使用 `{taskId,attempt,snapshot?}` 查询历史；该查询从部署区块扫描，不用于常规轮询。
 
+配置支持可选 `onPreparedTransaction({operation,input,receipt,serializedTransaction})` 异步函数。operation 为 REGISTER/ASSIGN/SUBMIT/OUTCOME，input 为对应应用请求，receipt 为标准化 PENDING。签名使用真实 LocalAccount；本包在原始签名完成后等待该函数持久化成功，再把原始签名交易交回 A 广播。函数失败立即传播，广播尚未进行。服务可在此保存私有 PostgreSQL 记录；Worker 可在此保存本地忽略目录。RunDetail.taskReceipts 默认 []，返回 taskId/attempt/operation/receipt，供 Worker 读取指派原 hash。
+
 `ChainBroadcastError` 从 A 原样重新导出并直接抛给调用方，保留原始 `receipt`、`serializedTransaction`、受控调试的 cause。调用方必须在服务端私有持久化原始信息；禁止重新生成结果或自动再次调用写方法。原始 PENDING receipt 的 blockNumber 为 null，可使用共享 ChainReceiptSchema 标准化地址后存储。若节点尚未提供回执，本包只从真实交易读取 signer；节点连交易也未找到时传播查询错误，调用方保留原 PENDING 状态。禁止把原始错误、签名交易或账户配置写入公开日志或浏览器。
 
 服务负责把 runId/decisionHash 传入指派、保存全部事件、核对业务预期，并使用两个独立服务端账户。Worker 负责使用自身账户登记与提交，按原 txHash 查询确认并核对真实 ArtifactSubmitted。所有私钥仅存在各自的本地忽略配置或服务端密钥中。
 
 ## 验证状态
 
-`npm run typecheck --prefix packages/runtime-chain`、`npm run typecheck --prefix packages/contracts`、`npm run typecheck --prefix packages/chain` 和 `npm run build --prefix packages/chain` 已通过。runtime-chain 的 TypeScript 与 A 一致使用 5.9.3，viem 固定 2.57.7，各自锁文件保持独立。公开 RPC 只读验证正在执行。
+`npm run typecheck --prefix packages/runtime-chain`、`npm run typecheck --prefix packages/contracts`、`npm run typecheck --prefix packages/chain` 和 `npm run build --prefix packages/chain` 已通过。runtime-chain 的 TypeScript 与 A 一致使用 5.9.3，viem 固定 2.57.7，各自锁文件保持独立。
+
+`npm test --prefix packages/runtime-chain`：7 项通过。测试使用原样保存的 A 公开测试网真实交易记录，检查提交、验收与指派的绑定拒绝、同合约登记交易无法替代提交、角色映射和计数溢出；这些记录标记 DEV_FIXTURE，只代表 A 的历史链端口验证。
+
+`npm run verify:readonly --prefix packages/runtime-chain`：2026-10-17 实际公开 RPC 读取通过，chainId=10143。部署回执 `0x5bdb6afff9b72a15175f0124b922a0c40e86396663f5b82044c223dec0b163fd` 为 success，部署区块=71765088；部署字节码 keccak256=`0x1f6512e60af3c66e4ce468cc7745e0465d4144208ff1d9e4b5d0fc75c1f706a2`，与 A 记录一致。finalized 快照=71775542，验收交易 `0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c` 返回 CONFIRMED，原始 eventId=`10143:0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c:79`。对应任务和产物/证据一致，执行者 DATA 记录为 PASS=2、FAIL=0，同快照返回；部署区块回读为真实 0/0，不存在任务返回 null。只读脚本还读取交付中的指派与提交交易。
 
 协调者与验收者私钥尚未提供，本轨道没有执行真实写入验证；两轮产品任务、Worker 与服务写入链路仍需对应轨道和集成验收。

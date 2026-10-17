@@ -1,6 +1,6 @@
 import {
-  createPublicClient, createWalletClient, defineChain, http, zeroHash,
-  type Chain, type LocalAccount,
+  createPublicClient, createWalletClient, defineChain, http, keccak256, zeroHash,
+  type Chain, type Hex, type LocalAccount,
 } from "viem";
 import {
   ChainError, createLedgerClient, ledgerAbi, Role as LedgerRole,
@@ -12,7 +12,8 @@ import {
   BlockNumberSchema, ChainEventSchema, ChainReceiptSchema, ChainTaskSchema, HashSchema,
   OutcomeSubmissionSchema, RoleReputationSchema, SnapshotReadSchema, SubmissionReceiptSchema,
   TaskAssignmentSchema,
-  type ChainEvent, type ChainPort, type ChainReceipt, type ChainTask, type Role,
+  type AgentRegistration, type ArtifactSubmission, type ChainEvent, type ChainPort, type ChainReceipt, type ChainTask,
+  type OutcomeSubmission, type Role, type TaskAssignment,
   type SnapshotRead,
 } from "../../contracts/src/index.ts";
 import { toChainRunId } from "./receipts.ts";
@@ -29,8 +30,15 @@ export interface ChainPortConfig {
   validatorAccount?: LocalAccount;
   workerAccount?: LocalAccount;
   timeoutMs?: number;
+  onPreparedTransaction?: (transaction: PreparedChainTransaction) => Promise<void>;
 }
 export interface RuntimeChainPort extends ChainPort { getSnapshot(): Promise<SnapshotRead> }
+export type ChainOperation =
+  | { operation: "REGISTER"; input: AgentRegistration }
+  | { operation: "ASSIGN"; input: TaskAssignment }
+  | { operation: "SUBMIT"; input: ArtifactSubmission }
+  | { operation: "OUTCOME"; input: OutcomeSubmission };
+export type PreparedChainTransaction = ChainOperation & { receipt: ChainReceipt; serializedTransaction: Hex };
 
 export function toLedgerRole(role: Role): LedgerRole {
   if (role === "DATA") return LedgerRole.DATA;
@@ -100,9 +108,22 @@ export async function createChainPort(config: ChainPortConfig): Promise<RuntimeC
   if (config.coordinatorAccount && AddressSchema.parse(config.coordinatorAccount.address) !== coordinator) {
     throw new ChainError("UNAUTHORIZED", "协调者账户与部署合约不一致");
   }
-  async function writer(account: LocalAccount | undefined, name: string): Promise<LedgerClient> {
+  async function writer(account: LocalAccount | undefined, name: string, operation: ChainOperation): Promise<LedgerClient> {
     if (!account) throw new ApplicationError("CHAIN_NOT_CONFIGURED", `缺少 ${name} 签名账户`);
-    return createLedgerClient({ ...base, walletClient: createWalletClient({ chain, account, transport: transport() }) });
+    const signingAccount: LocalAccount = {
+      ...account,
+      async signTransaction(transaction, options) {
+        const serializedTransaction = await account.signTransaction(transaction, options);
+        if (config.onPreparedTransaction) {
+          await config.onPreparedTransaction({ ...operation, serializedTransaction, receipt: {
+            chainId: config.chainId, contract: contractAddress, txHash: keccak256(serializedTransaction),
+            blockNumber: null, status: "PENDING", signer: AddressSchema.parse(account.address),
+          } });
+        }
+        return serializedTransaction;
+      },
+    };
+    return createLedgerClient({ ...base, walletClient: createWalletClient({ chain, account: signingAccount, transport: transport() }) });
   }
   async function snapshot(input?: SnapshotRead): Promise<SnapshotRead> {
     if (input) {
@@ -152,24 +173,24 @@ export async function createChainPort(config: ChainPortConfig): Promise<RuntimeC
     getSnapshot: () => snapshot(),
     async registerAgent(input) {
       const checked = AgentRegistrationSchema.parse(input);
-      const client = await writer(config.workerAccount, "workerAccount");
+      const client = await writer(config.workerAccount, "workerAccount", { operation: "REGISTER", input: checked });
       match(checked.agentId, AddressSchema.parse(config.workerAccount!.address), "agentId");
       return convertReceipt(await client.registerAgent({ roles: checked.roles.map(toLedgerRole), manifestURI: checked.manifestURI, manifestHash: checked.manifestHash }));
     },
     async assignTask(input) {
       const checked = TaskAssignmentSchema.parse(input);
-      const client = await writer(config.coordinatorAccount, "coordinatorAccount");
+      const client = await writer(config.coordinatorAccount, "coordinatorAccount", { operation: "ASSIGN", input: checked });
       return convertReceipt(await client.assignTask({ ...checked, runId: toChainRunId(checked.runId), role: toLedgerRole(checked.role) }));
     },
     async submitArtifact(input) {
       const checked = ArtifactSubmissionSchema.parse(input);
-      const client = await writer(config.workerAccount, "workerAccount");
+      const client = await writer(config.workerAccount, "workerAccount", { operation: "SUBMIT", input: checked });
       const receipt = convertReceipt(await client.submitArtifact(checked));
       return SubmissionReceiptSchema.parse({ ...receipt, taskId: checked.taskId, attempt: checked.attempt, artifactHash: checked.artifactHash });
     },
     async recordOutcome(input) {
       const checked = OutcomeSubmissionSchema.parse(input);
-      const client = await writer(config.validatorAccount, "validatorAccount");
+      const client = await writer(config.validatorAccount, "validatorAccount", { operation: "OUTCOME", input: checked });
       const selected = await snapshot();
       const task = convertTask(await ledger.getTask(checked.taskId, BigInt(selected.blockNumber)));
       match(task.attempt, checked.attempt, "attempt");

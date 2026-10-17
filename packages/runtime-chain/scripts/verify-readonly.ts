@@ -25,6 +25,15 @@ console.log(JSON.stringify({ check: "deploymentReceipt", txHash: deployed.transa
 const port = await createChainPort({ rpcUrl, chainId, contractAddress: address, deploymentBlock: deployment.deploymentBlock });
 const snapshot = await port.getSnapshot();
 console.log(JSON.stringify({ check: "finalizedSnapshot", ...snapshot }));
+const delivered = JSON.parse(await readFile(new URL("../test/fixtures/a-smoke-testnet.json", import.meta.url), "utf8"));
+for (const eventName of ["TaskAssigned", "ArtifactSubmitted"] as const) {
+  const source = delivered.receipts.find((value: { events: { eventName: string }[] }) => value.events.some(event => event.eventName === eventName));
+  assert.ok(source);
+  const [actual] = await port.getReceipts({ txHash: HashSchema.parse(source.txHash), snapshot });
+  assert.equal(actual?.status, "CONFIRMED");
+  assert.ok(actual.events?.some(event => event.eventName === eventName));
+  console.log(JSON.stringify({ check: eventName, receipt: actual }));
+}
 // A 交付中第一轮 DATA 的真实验收交易，仅读取既有证据。
 const txHash = HashSchema.parse("0xd9ed46d9236b46438711b0a6a8ce8f4477d49a654a7fa906c5d9aedf43f59d8c");
 const receipts = await port.getReceipts({ txHash, snapshot });
