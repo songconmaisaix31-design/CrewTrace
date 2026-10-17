@@ -4,7 +4,7 @@
 
 ## 可用性与实际资源
 
-原公开服务为 `https://co-vibe-b.vercel.app`，原数据库项目为 `snowy-voice-65085749`，地区为 `aws-us-east-2`。真实 PostgreSQL 连接返回 SQLSTATE `28P01`。原项目身份仍可交换短期 token；只读 `GET /claim` 返回 `state=pending`、`reconciled=false`，`GET /credentials` 返回 HTTP 409、`claim_in_progress`。认领流程已撤销旧数据库密码，当前需要用户完成认领并提供新连接。
+原公开服务为 `https://co-vibe-b.vercel.app`，原数据库项目为 `snowy-voice-65085749`，地区为 `aws-us-east-2`。真实 PostgreSQL 连接返回 SQLSTATE `28P01`。2026-10-17 10:36 UTC 复查时，原项目身份仍可交换短期 token；只读 `GET /claim` 返回 `state=expired`、`reconciled=false`、窗口到期时间 `2026-10-17T10:15:35Z`，`GET /credentials` 返回 HTTP 409、`claim_in_progress`、`claim_state=pending`。当前需要重新生成认领码、由用户完成转移，再提供有效新连接。[Neon 官方认领协议](https://neon.com/docs/reference/claimable-neon)说明，进入转移流程会撤销数据库密码，窗口过期后原密码仍失效。
 
 公网每个端点实际请求 10 次，经过本机 HTTP 代理，包含首次请求。响应头记录为 `sfo1::iad1::…`。
 
@@ -34,7 +34,7 @@ Node.js 24.16.0，Windows 本机 HTTP 服务至真实远程 PostgreSQL。基线 
 
 | 操作 | 原 p50 / p95，ms | 优化 p50 / p95，ms |
 | --- | --- | --- |
-| HTTP 运行详情 | 1639.6 / 1846.2 | 245.6 / 268.1 |
+| HTTP 运行详情，空决策和产物集合 | 1639.6 / 1846.2 | 245.6 / 268.1 |
 | HTTP 增量事件 | 472.7 / 721.2 | 232.5 / 258.5 |
 | HTTP health | 224.7 / 247.2 | 225.2 / 245.9 |
 | HTTP agents，空节点集合 | 237.8 / 250.8 | 231.5 / 310.4 |
@@ -53,7 +53,20 @@ Node.js 24.16.0，Windows 本机 HTTP 服务至真实远程 PostgreSQL。基线 
 
 Store 的 p95 未改善。测量期间另一个 schema 同时执行权限与版本回归，同一数据库的 advisory 锁仍会互相等待；该结果包含真实竞争，不能声称尾延迟已经消除。所有请求使用实际数据库，没有缓存在线状态。
 
-原实现与优化实现返回的完整 RunDetail 已做深度比较，一致。当前该样本的决策、验收和产物集合为空；含实际链回执、冻结决策原始字节和完整产物的完成运行对照，等待独立流程验证产生新记录。
+独立流程在新真实本地 A 合约、四个 Worker 与 schema `b_web_flow_20261017102313` 产生完成运行后，再使用 `default_transaction_read_only=on` 的连接进行完整对照。新链 RPC 为 `18546`，流程服务为 `3412`；既有 `18545` 节点继续运行。基线源码从 Git `1d223a3` 归档加载，优化源码固定为 `16992a5`。
+
+首轮 `c6568e98-1f89-40cd-9cc8-af4e317ee545` 的三个任务均为 VERIFIED_PASS。三份冻结决策、三份产物、三份验收、九份链回执和两份交接的完整 RunDetail，在原实现与优化实现中深度比较一致。输入、产物和决策原始字节及摘要核对通过，`bytea[]` 元素均为官方驱动解析的 Buffer；61 个运行时 eventId 和九个原生 eventId 逐个在真实数据库中定位。没有写入该 schema。
+
+第二轮 `e4993ad5-0e63-446c-8a27-08ed2942fe8a` 同样完成三个角色，完整 RunDetail 深度比较一致，三份决策、三份产物、三份验收、九份回执及原始字节检查通过，58 个运行时 eventId 和九个原生 eventId 逐个定位。两轮共 119 个运行时事件、18 个任务原生事件；另实际读取六份验收 `evidence_bytes` 并逐一核对 `evidenceHash`，全部一致。
+
+| 完成运行详情，30 组实际 HTTP | 原 p50 / p95，ms | 优化 p50 / p95，ms |
+| --- | --- | --- |
+| 首轮，含实际决策、产物、验收和回执 | 2005.3 / 2339.3 | 419.7 / 510.4 |
+| 第二轮，含实际决策、产物、验收和回执 | 2029.8 / 2655.1 | 408.2 / 465.9 |
+
+首轮完成详情的 p50 减少 79.1%，p95 减少 78.2%；第二轮 p50 减少 79.9%，p95 减少 82.5%。首轮服务端查询计划执行时间为 0.397 ms。独立流程轨道首次从 HTTP 观察到首轮完成为 248061 ms，第二轮最后链确认事件为 252213 ms；两轮的 120 秒目标均未通过。这些时间包含实际模型、四个 Worker、数据库和链操作，不能单独归因于数据库供应商。
+
+两轮原始只读测量和执行计划分别保存于 `.local/completed-run-c6568e98-1f89-40cd-9cc8-af4e317ee545.json`、`.local/completed-run-e4993ad5-0e63-446c-8a27-08ed2942fe8a.json`；验收字节检查保存于 `.local/evidence-bytes.json`。
 
 ## 查询、连接与锁检查
 
@@ -63,7 +76,33 @@ Store 的 p95 未改善。测量期间另一个 schema 同时执行权限与版�
 
 源码检查确认：Store 在所有写操作内持有全局事务锁；公告和便签重复读取会延长锁持有时间，本次已删除重复任务读取。冻结指派时仍在 Store 锁内读取真实链快照和信誉，实际 RPC 延迟会影响心跳等待。流程推进和链互斥另外各持有一个事务连接，真实签名和广播继续由现有恢复机制处理。本次未修改这些业务边界。
 
-当前证据表明串行网络往返是详情读取的主要成本，查询合并后 p95 为 268.1 ms。暂不切换数据库供应商。正式迁移或切换仍须核对原数据库全部记录、原始字节、事件及关系，由主 Agent 发布。
+在新独立完整流程实际执行期间，2026-10-17 10:27:28–10:27:32 UTC 只读采样 `pg_locks` 与 `pg_stat_activity` 20 次。实际观察到 Store 锁等待，等待事务年龄为 0.066–0.123 秒；持有 Store 锁的事务年龄最高 1.107 秒。流程互斥锁对应的事务年龄最高 13.702 秒，链互斥锁为 5.360 秒，多数状态为 idle in transaction / ClientRead。事务年龄从 `xact_start` 计算，包含取锁前的时间，不能用作精确锁持有时长。原始采样保存于 `.local/flow-locks.json`。
+
+当前证据表明串行网络往返是详情读取的主要成本，完整首轮详情合并查询后的 HTTP p95 为 510.4 ms。暂不切换数据库供应商。正式迁移或切换仍须核对原数据库全部记录、原始字节、事件及关系，由主 Agent 发布。
+
+## 亚洲地区实际对照与迁移条件
+
+协调者另行授权建立真实新加坡项目 `lively-truth-23164246`，地区为 `aws-ap-southeast-1`，到期时间 **2026-10-20 10:29:39 UTC**。私有连接为当前工作区 `services/runtime/.local/asia/database.env`。两个地区各执行 direct / pooler 各 30 次独立新连接，每条连接再执行一次复用查询；脚本、Node 版本和当前实际网络路径相同，没有重试。
+
+| 地区 / 端点 | 新连接并查询 p50 / p95，ms | 复用 SELECT 1 p50 / p95，ms |
+| --- | --- | --- |
+| Ohio / direct | 1780.6 / 2143.0 | 249.2 / 285.9 |
+| Ohio / pooler | 1743.9 / 2034.2 | 249.9 / 295.5 |
+| Singapore / direct | 2236.8 / 2779.2 | 361.5 / 400.2 |
+| Singapore / pooler | 2199.6 / 2526.1 | 357.3 / 378.4 |
+
+新加坡项目已实际连接可用，但当前路径下复用查询 p50 约慢 43%–45%，不满足本次加速目的。未向该项目迁移任何既有记录，也未切换现有服务。地区结果只适用于本次应用主机和网络路径；正式部署应从实际服务主机重新测量。Neon 官方确认 [Singapore 提供 PostgreSQL，现有项目地区固定](https://neon.com/docs/introduction/regions)，需要在目标地区新建项目再迁移。
+
+匿名资源可在未配置用户账户时创建，限 72 小时、100 MB 存储和 1 GB 传输，长期保留需要用户认领。[官方临时项目限制](https://neon.com/docs/reference/claimable-neon)。2026-10-17 查询的[官方价格](https://neon.com/pricing)：Free 为 $0，100 CU-hours/月/项目、1 GB 存储/项目；Launch 计算为 $0.106/CU-hour，数据库存储为 $0.35/GB-month。实际认领账户、可用额度和套餐尚未取得，不能保证临时资源自动获得长期额度。
+
+若之后从实际部署主机证明某个目标地区更快，迁移采用 PostgreSQL 官方 `pg_dump -Fc` / `pg_restore --single-transaction --exit-on-error`，两端使用 direct connection。[Neon 官方迁移方法](https://neon.com/docs/import/migrate-from-postgres)。执行顺序为：
+
+1. 取得原项目有效连接，协调停止新增业务写入；保存全部业务 schema、表、约束、索引、identity sequence 及私有字段的完整导出。
+2. 在独立目标数据库恢复，遇到任何错误立即终止。保留节点凭证摘要、便签全部版本、原始输入/产物/决策/验收字节、冻结快照、事件序号和签名原交易。
+3. 对所有表逐条按主键核对，逐个核对 eventId、seq、原交易哈希和原始字节，检查外键及 identity sequence；再执行真实权限、容量、版本、HTTP/MCP 与重启回归。
+4. 全部核对通过后由主 Agent 更新正式连接并发布，实际回读旧记录；保留旧库供继续核对。
+
+当前 `pg_dump` / `pg_restore` 不在 PATH，完整原库连接仍不可用，迁移未执行。新加坡实测也没有支持切换地区，未为此安装或启动额外基础设施。
 
 ## 执行命令与结果
 
@@ -78,10 +117,16 @@ Store 的 p95 未改善。测量期间另一个 schema 同时执行权限与版�
 | `node --import tsx .local/benchmark.ts` | 30 组真实前后对照通过，RunDetail 深度比较一致。 |
 | `node --import tsx .local/public-baseline.ts` | 记录三端点各 10 次的真实状态和响应耗时。 |
 | `node --import tsx .local/connections.ts` | direct / pooler 各 10 次实际连接与复用查询完成。 |
+| `node --import tsx .local/connections.ts perf.env 30 aws-us-east-2 connections-30.json` | Ohio direct / pooler 各 30 次冷连接与复用查询完成。 |
+| `node --import tsx .local/connections.ts asia/database.env 30 aws-ap-southeast-1 asia/connections.json` | Singapore direct / pooler 各 30 次冷连接与复用查询完成。 |
 | `node --import tsx .local/agents.ts` | 两名真实签名客户端、实际心跳和固定输入运行的 30 组 agents 对照，执行计划已保存。 |
 | `node --import tsx .local/failure-http.ts` | 真实失效凭证得到 HTTP 503 DATABASE_UNAVAILABLE，日志为 28P01。 |
 | `node --import tsx .local/explain-capacity.ts` | 当前实际容量查询执行计划已保存。 |
+| `node --import tsx .local/flow-locks.ts` | 独立新链流程运行期间完成 20 次真实锁与事务状态采样，只读连接。 |
+| `node --import tsx .local/completed-run.ts <流程轨道私有service.env> c6568e98-1f89-40cd-9cc8-af4e317ee545` | 完成首轮完整详情、原始字节和 61 个运行时事件逐个核对，30 组旧/新实际 HTTP 对照通过。 |
+| `node --import tsx .local/completed-run.ts <流程轨道私有service.env> e4993ad5-0e63-446c-8a27-08ed2942fe8a` | 完成第二轮完整详情、原始字节和 58 个运行时事件逐个核对，30 组旧/新实际 HTTP 对照通过。 |
+| `node --import tsx .local/evidence-bytes.ts` | 两轮六份真实验收证据的原始字节摘要逐一核对通过，只读连接。 |
 
 ## 剩余条件
 
-原数据库认领与新凭证尚未完成，公网仍运行旧代码并报告 500。独立验证项目属于临时资源，未承担生产数据库或完整迁移的角色。原两轮记录尚不能通过失效连接读取；新完整流程的 120 秒目标、完成运行对照和公网优化后的性能尚未验收。生产部署、正式连接切换及用户数据库认领由主 Agent 继续处理。
+原数据库认领与新凭证尚未完成，公网仍运行旧代码并报告 500。独立验证项目属于临时资源，未承担生产数据库或完整迁移的角色。原两轮记录尚不能通过失效连接读取；新完整流程的 120 秒目标未通过，优化后的公网性能尚未验收。生产部署、正式连接切换及用户数据库认领由主 Agent 继续处理。
