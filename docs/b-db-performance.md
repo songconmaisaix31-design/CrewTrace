@@ -42,13 +42,22 @@ Node.js 24.16.0，Windows 本机 HTTP 服务至真实远程 PostgreSQL。基线 
 
 真实 `SELECT 1` 的 p50 / p95 为 **224.5 / 242.4 ms**；普通 BEGIN、SELECT、COMMIT 的 p50 / p95 为 **693.0 / 866.1 ms**。首次连接与查询为 1579.2 ms。运行详情 p50 减少 85.0%，p95 减少 85.5%；事件读取 p50 减少 50.8%。
 
+另行建立和关闭 10 次独立连接，直接比较官方 WebSocket 的 direct 与 pooler endpoint：
+
+| 端点 | 新连接并查询 p50 / p95，ms | 同连接第二次查询 p50 / p95，ms |
+| --- | --- | --- |
+| direct | 1813.7 / 1876.1 | 260.9 / 317.3 |
+| pooler | 1807.7 / 1938.9 | 261.5 / 290.6 |
+
+两名测试客户端分别用真实钱包签名登记并发送实际心跳，再由管理员通过 HTTP 创建一份固定输入运行。在两个真实节点、三个 OPEN 任务下，agents 的 30 组对照为原 p50 / p95 **251.2 / 283.5 ms**，优化实现 **257.3 / 327.6 ms**，两者返回相同身份、心跳和实时容量。agents 的 SQL 保持原样，此项没有表现出加速。
+
 Store 的 p95 未改善。测量期间另一个 schema 同时执行权限与版本回归，同一数据库的 advisory 锁仍会互相等待；该结果包含真实竞争，不能声称尾延迟已经消除。所有请求使用实际数据库，没有缓存在线状态。
 
 原实现与优化实现返回的完整 RunDetail 已做深度比较，一致。当前该样本的决策、验收和产物集合为空；含实际链回执、冻结决策原始字节和完整产物的完成运行对照，等待独立流程验证产生新记录。
 
 ## 查询、连接与锁检查
 
-运行详情已实际执行 `EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON)`；实际容量 SQL 通过 TypeScript AST 从当前 Application 提取并执行同类计划。原始计划位于 `.local/plans.json` 和 `.local/capacity-plan.json`。当前容量样本无节点，实际执行时间 0.150 ms，计划保留 `decisions_by_task_attempt` 的索引查找。这个样本不能代表大量活跃任务下的负载。
+运行详情已实际执行 `EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON)`，服务端执行时间 **0.258 ms**；实际容量 SQL 通过 TypeScript AST 从当前 Application 提取并执行同类计划，两个节点与三个 OPEN 任务的服务端执行时间 **0.166 ms**。原始计划位于 `.local/plans.json`、`.local/capacity-plan.json` 和 `.local/agents.json`。容量计划包含 `decisions_by_task_attempt` 的索引查找。这个样本仍不能代表大量活跃任务下的负载。
 
 实际数据库会话采样显示一个 active 查询、一个 idle / ClientRead 连接；本基准连接池 total=1、idle=1、waiting=0。该采样未出现连接池排队或 idle in transaction，不能代表整个业务流程。
 
@@ -64,10 +73,12 @@ Store 的 p95 未改善。测量期间另一个 schema 同时执行权限与版�
 | --- | --- |
 | `npm run check` | 通过。 |
 | `npm run build` | 通过。 |
-| `node --env-file=.local/regression.env --import tsx --test test/integration.test.ts` | 2/2 通过，总耗时 62774.245 ms；真实 PostgreSQL、HTTP、官方 MCP、签名登记、跨身份拒绝、预算、并发便签 200/409、事件逐个查库、凭证轮换、取消释放及两进程重启。 |
+| `node --env-file=.local/regression.env --import tsx --test test/integration.test.ts` | 2/2 通过，总耗时 61014.211 ms；真实 PostgreSQL、HTTP、官方 MCP、签名登记、跨身份拒绝、预算、并发便签 200/409、事件逐个查库、凭证轮换、取消释放及两进程重启。另核对不存在运行的详情与事件均为 404、空集合结构和空页游标。 |
 | `node --env-file=.local/regression.env --import tsx --test test/domain/*.test.ts` | 19/19 通过。 |
 | `node --import tsx .local/benchmark.ts` | 30 组真实前后对照通过，RunDetail 深度比较一致。 |
 | `node --import tsx .local/public-baseline.ts` | 记录三端点各 10 次的真实状态和响应耗时。 |
+| `node --import tsx .local/connections.ts` | direct / pooler 各 10 次实际连接与复用查询完成。 |
+| `node --import tsx .local/agents.ts` | 两名真实签名客户端、实际心跳和固定输入运行的 30 组 agents 对照，执行计划已保存。 |
 | `node --import tsx .local/failure-http.ts` | 真实失效凭证得到 HTTP 503 DATABASE_UNAVAILABLE，日志为 28P01。 |
 | `node --import tsx .local/explain-capacity.ts` | 当前实际容量查询执行计划已保存。 |
 
