@@ -15,6 +15,12 @@ const FileViewSchema = z.object({
   files: z.array(z.object({name:z.string(),mediaType:z.string(),content:z.string(),contentHash:HashSchema})),
 });
 const fileRoute = /^\/api\/artifacts\/([^/?]+)\/files\/(data\.csv|data-plan\.json|metrics\.json|report\.json|report\.md)$/;
+const publicRoutes:Record<string,RegExp[]>={
+  GET:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/],
+  POST:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|credentials\/rotate)$/,/^\/api\/collaboration\/agents\/me\/heartbeat$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:claims|proposals|handoffs)$/,/^\/api\/collaboration\/claims\/[^/?#]+\/release$/,/^\/api\/collaboration\/proposals\/[^/?#]+\/decision$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/review$/],
+  PATCH:[/^\/api\/collaboration\/(?:agents\/me|tasks\/[^/?#]+|notes\/[^/?#]+)$/],
+};
+export function allowedPublicPath(method:string,path:string){return !/%2f|%5c|%2e|\.\.|\\|#/i.test(path)&&Boolean(publicRoutes[method]?.some(rule=>rule.test(path)));}
 const readRoutes = [
   /^\/health$/, /^\/api\/agents$/, /^\/api\/(?:template|criteria)$/,
   /^\/api\/runs\/[^/?]+(?:\/input|\/events\?after=\d+)?$/,
@@ -55,7 +61,18 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
     const path = url.searchParams.get('path') ?? '';
     let body: string | undefined;
     const headers: Record<string,string> = {};
-    if (req.method === 'POST' && path === '/api/runs') {
+    if(allowedPublicPath(req.method??'',path)){
+      if(req.headers.authorization)headers.Authorization=req.headers.authorization;
+      if(req.method!=='GET'){
+        let parsed:unknown=(req as IncomingMessage&{body?:unknown}).body;
+        if(parsed===undefined){
+          const chunks:Buffer[]=[];let size=0;
+          for await(const chunk of req){size+=Buffer.byteLength(chunk);if(size>2*1024*1024){json(413,{error:{code:'BODY_TOO_LARGE',message:'请求内容过大'}});return;}chunks.push(Buffer.from(chunk));}
+          parsed=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+        }else if(typeof parsed==='string')parsed=JSON.parse(parsed);
+        body=JSON.stringify(parsed);headers['Content-Type']='application/json';
+      }
+    }else if (req.method === 'POST' && path === '/api/runs') {
       if (!ready || !authorized(req.headers['x-demo-code'], config.DEMO_ACCESS_CODE)) {
         json(403, {error:{message:'需要有效的演示授权码',code:'UNAUTHORIZED'}}); return;
       }

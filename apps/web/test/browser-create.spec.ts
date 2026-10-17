@@ -7,7 +7,7 @@ if(sample!=='round-1'&&sample!=='round-2')throw new Error('SAMPLE 必须明确�
 if(!process.env.DEMO_ACCESS_CODE)throw new Error('需要私有演示访问码');
 
 test('通过真实页面创建指定轮次并读取持久记录',async({page})=>{
-  await page.goto('/');
+  await page.goto('/?view=csv');
   await page.getByRole('button',{name:`示例数据 0${sample==='round-1'?'1':'2'}`}).click();
   const start=page.getByRole('button',{name:'开始分析',exact:true});await expect(start).toBeEnabled();await start.click();
   const input=page.getByLabel('访问码',{exact:true});await expect(input).toBeVisible();await input.fill(process.env.DEMO_ACCESS_CODE!);

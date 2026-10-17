@@ -54,7 +54,7 @@ test('真实两轮页面：公告筛选排序、报告、下载、比较、离�
 });
 
 test('实际 Worker 下线后，已完成结果可读且创建入口说明等待条件',async({page})=>{
-  await page.goto('/');
+  await page.goto('/?view=csv');
   await expect(page.getByRole('button',{name:'开始分析',exact:true})).toBeEnabled();
   await expect(page.locator('.launch-form .notice')).toContainText('协作成员暂未就绪，创建后将等待分工');
   await page.getByRole('button',{name:'开始分析',exact:true}).click();

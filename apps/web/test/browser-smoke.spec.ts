@@ -5,7 +5,7 @@ for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
   test(`真实页面 ${viewport.width}px：原始输入、抽屉键盘与焦点、公告控件及角色页签`,async({page})=>{
     await page.setViewportSize(viewport);
     const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
-    await page.goto('/');
+    await page.goto('/?view=csv');
     await expect(page.getByRole('heading',{level:1})).toBeVisible();
     await expect(page.locator('vite-error-overlay')).toHaveCount(0);
     for(const [index,sample] of ['round-1','round-2'].entries()){

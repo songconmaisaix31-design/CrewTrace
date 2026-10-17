@@ -23,6 +23,7 @@ export async function request(path:string, init?:RequestInit) {
       ARTIFACT_MISMATCH:'输入或成果的校验值与服务记录不一致，请联系活动负责人。',
       CRITERIA_UNAVAILABLE:'暂时无法读取验收规则，请稍后重试。',
       DATABASE_UNAVAILABLE:'分析服务的数据库暂时无法访问，请稍后重试。',
+      VERSION_CONFLICT:'记录已被更新，请刷新后确认最新内容再提交。',
       BUDGET_EXCEEDED:'当前分析名额已用完，请等待已有任务结束。',
       INVALID_STATE:'当前记录状态不支持此操作，请先查询原分析编号。',
       NOT_CONFIGURED:'任务服务尚未配置。',

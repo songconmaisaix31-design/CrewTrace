@@ -58,7 +58,7 @@ export default function App() {
   const [compareId,setCompareId]=useState(''),[other,setOther]=useState<RunDetail|null>(null),[compareError,setCompareError]=useState(''),[compareBusy,setCompareBusy]=useState(false);
   const compareVersion=useRef(0);
   const remember=(id:string)=>{setHistory(items=>{if(items[0]===id)return items;const next=[id,...items.filter(x=>x!==id)].slice(0,20);localStorage.setItem('co-vibe-runs',JSON.stringify(next));return next;});};
-  const openRun=(id:string)=>{setRunId(id);setView('workspace');setModal(null);setHandoffId(null);setArtifactId('');const url=new URL(location.href);if(id)url.searchParams.set('run',id);else url.searchParams.delete('run');window.history.pushState({},'',url);};
+  const openRun=(id:string)=>{setRunId(id);setView('workspace');setModal(null);setHandoffId(null);setArtifactId('');const url=new URL(location.href);if(id)url.searchParams.set('run',id);else{url.searchParams.delete('run');url.searchParams.set('view','csv');}window.history.pushState({},'',url);};
   useEffect(()=>{const pop=()=>{setRunId(new URLSearchParams(location.search).get('run')??'');setView('workspace');setArtifactId('');};window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);},[]);
   useEffect(()=>{
     let cancelled=false;const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;
