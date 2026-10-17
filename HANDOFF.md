@@ -1,8 +1,8 @@
 # B 角色交接
 
-当前交付以 [公开协作计划](tasks/B-web-integration.md)、[本地链与 MCP 悬赏计划](tasks/B-public-onchain.md) 和用户最新决定为准：前端品牌为 CrewTrace，面向所有 Agent 开放起名加入、交流、公告、便签、任务发布、分工认领及成果交接。网页与 MCP 使用同一真实 PostgreSQL 状态，当前不自动匹配。最新用户决定为上链现在本地运行，线上保留模拟 MON、未付款和未上链的状态，优先补全 MCP 悬赏流程；接入页面缩为一句复制指令，全部业务 Prompt 由 MCP 提供。MCP 的 join_collaboration 与同一连接使用个人 credential 的真实公网流程已经通过。
+当前交付以 [公开协作计划](tasks/B-web-integration.md)、[MCP 悬赏计划](tasks/B-public-onchain.md) 和用户最新决定为准：前端品牌为 CrewTrace，面向所有 Agent 开放起名加入、交流、公告、便签、任务发布、分工认领及成果交接。网页与 MCP 使用同一真实 PostgreSQL 状态，当前不自动匹配。上链及 MONSKILLS 使用已按用户明确要求暂停，线上保持模拟 MON、未付款和未上链。当前交付一句复制接入指令，全部业务 Prompt 由 MCP 提供，包含完整悬赏流程。MCP 的 join_collaboration 与同一连接使用个人 credential 的真实公网流程已经通过。
 
-网站为 https://mon.davidwang.space，备用地址为 https://co-vibe-web.vercel.app；前端项目为 Dwwww/co-vibe-web，真实后端为 Dwwww/co-vibe-b，API 为 https://co-vibe-b.vercel.app。阿里云 mon 和 mcp 子域 CNAME 已分别绑定前后端项目，HTTPS 实际验证通过。MCP 主地址为 https://mcp.davidwang.space/mcp，原 mon 域名的 /mcp 与后端原地址保持可用。网页 MCP 入口提供“一键复制给 Agent”，字段、JSON 与工具参数收在默认关闭的高级说明；提示词为 /agent-prompt.md，标准 Skill 为 /skills/crewtrace/SKILL.md。发布和验收状态见 STATUS.md。
+网站为 https://mon.davidwang.space，备用地址为 https://co-vibe-web.vercel.app；前端项目为 Dwwww/co-vibe-web，真实后端为 Dwwww/co-vibe-b，API 为 https://co-vibe-b.vercel.app。阿里云 mon 和 mcp 子域 CNAME 已分别绑定前后端项目，HTTPS 实际验证通过。MCP 主地址为 https://mcp.davidwang.space/mcp，原 mon 域名的 /mcp 与后端原地址保持可用。网页“一键复制给 Agent”仅提供一句连接指令，协议配置收在默认关闭的高级说明；完整业务 Prompt 通过匿名只读 get_collaboration_guide 或原生 crewtrace_collaboration 获取，正文同源。/agent-prompt.md 与 /skills/crewtrace/SKILL.md 仅保留简短接入引导。发布和验收状态见 STATUS.md。
 
 2026-10-17 11:34:43 UTC 已按用户要求清理准确确认的 16 个测试身份及 19 个凭证、6 个测试任务和仅属于测试的关联记录。清理过程中新增的一名非测试参与者及全部记录保持不变。验证报告中的测试任务与事件为清理前实际核对结果，原始证据保留于忽略目录，不继续展示废弃测试身份。
 

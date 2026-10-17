@@ -6,8 +6,8 @@
 
 | 项目 | 用途 | 已发布源码 | READY 部署 |
 | --- | --- | --- | --- |
-| Dwwww/co-vibe-web | 网站、同域 API 代理与 MCP 转发 | 8c17e36e976c9937f1815bab64495a34473bb542 | dpl_8HA7wZR1kqdGQk91XvLEaLXNxybM |
-| Dwwww/co-vibe-b | PostgreSQL、HTTP、MCP 与原生提示词 | 9de221a7be941c13e39aa68901edc3cd01881797 | dpl_4V28xmQxTUCYqwCHDN9zPyp7Tdjb |
+| Dwwww/co-vibe-web | 一句 MCP 接入与公开协作网站 | e12f9af62e46ec5f75907b30d99830102521728c | dpl_C3emQFhx6r9uJ6qoEJqaTtoD7SWq |
+| Dwwww/co-vibe-b | PostgreSQL、HTTP、MCP 与完整指南 | dcb5982baa87e559667d0d56e2326303417514bf | dpl_8U35id8X5V9yGQSmNCrSYEhnMTwU |
 
 前端根目录为 apps/web，使用 Vite；后端根目录为 services/runtime，使用 Hono。两个项目均运行 Node.js 24。发布先使用 git archive 导出固定 Commit，再绑定准确项目、预检上传文件，最后通过已登录 Dwwww 的 Vercel CLI 发布生产环境。私有配置、数据库连接和用户凭证不在上传目录中。
 
@@ -31,8 +31,10 @@
 
 完整命令与结果见 b-public-collaboration.md、b-web-integration.md 和 b-web-verification.md。
 
+最新 e12f9af 前端 Linux 生产构建通过，耗时 21 秒；固定资源为 index-COJT24Eq.js，正式 /agent-prompt.md 只返回一句指令。dcb5982 后端真实 HTTP 与独立数据库悬赏流程 2/2 通过、16 个任务事件逐项核对；独立集成回归 1/1 通过、18 个事件逐项核对。两个官方 SDK 正式只读检查均确认 get_collaboration_guide 与 crewtrace_collaboration 及源码全文一致；实际 53 个 MCP 工具，生产验证新增写入为 0。
+
 ## 剩余条件
 
-最新用户决定为上链现在本地运行，线上保留模拟 MON 和未上链状态，优先完善 MCP 悬赏；网页接入缩为一句指令，完整 Prompt 由 MCP 提供，实施状态见 ../tasks/B-public-onchain.md。当前不自动匹配。原 PRD 常驻模型 Worker、两台设备、120 秒目标与完整 Monad Testnet 写入限制见 ../HANDOFF.md。本地结果不计为公开协作生产上链。
+上链及 MONSKILLS 使用已按用户明确要求暂停。线上保留模拟 MON 和未上链状态；网页接入缩为一句指令，完整 Prompt 由 MCP 的 get_collaboration_guide 或 crewtrace_collaboration 提供，实施状态见 ../tasks/B-public-onchain.md。当前不自动匹配。原 PRD 常驻模型 Worker、两台设备、120 秒目标与完整 Monad Testnet 写入限制见 ../HANDOFF.md。本地结果不计为公开协作生产上链。
 
 真实数据库为 Neon Ohio 项目 withered-boat-53378262，生产 schema 为 b_public_collaboration_20261017，迁移 001–007 已应用。项目于 **2026-10-20 18:12:55 北京时间**到期，用户需要认领以持续使用。原 snowy-voice-65085749 的记录仍保留，未完成旧数据迁移。
