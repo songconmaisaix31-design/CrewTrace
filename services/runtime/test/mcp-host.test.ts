@@ -25,6 +25,11 @@ test('真实 MCP 仅接受配置的 API Host 和公开 MCP Host',{timeout:60_000
         assert.equal(prompt.arguments?.length??0,0);
         const result=await client.getPrompt({name:'crewtrace_collaboration'});
         const text=result.messages.map(message=>message.content.type==='text'?message.content.text:'').join('\n');
+        const guide=await client.callTool({name:'get_collaboration_guide',arguments:{}});
+        assert.notEqual(guide.isError,true);
+        const guideText=(guide.content as {type:string;text?:string}[]).find(item=>item.type==='text')!.text!;
+        assert.equal(JSON.parse(guideText).text,text);
+        assert.ok(client.getInstructions()?.includes('get_collaboration_guide'));
         assert.ok(text.includes(runtime.config.PUBLIC_MCP_URL));assert.ok(text.includes('join_collaboration'));
         assert.ok(text.includes('review_collaboration_handoff'));assert.ok(text.includes('UNDECIDED'));
         assert.ok(text.includes('tools/list'));assert.ok(text.includes('isError'));assert.ok(text.includes('Proposal.version'));
