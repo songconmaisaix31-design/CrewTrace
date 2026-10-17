@@ -4,7 +4,7 @@ import { createServer } from "node:http";
 import { setTimeout } from "node:timers/promises";
 import { it } from "node:test";
 import hre from "hardhat";
-import { createPublicClient, createTestClient, createWalletClient, http, parseEther, toBytes, type Hex } from "viem";
+import { createPublicClient, createTestClient, createWalletClient, http, keccak256, parseEther, toBytes, type Hex } from "viem";
 import { hardhat } from "viem/chains";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { ChainBroadcastError, createLedgerClient, hashFileBytes, ledgerAbi, Role } from "../../packages/chain/dist/index.js";
@@ -64,6 +64,7 @@ it("真实 HTTP 广播响应超时后，使用预计算哈希对账同一笔交�
     }
     assert.ok(unknown, "必须出现真实 HTTP timeout");
     assert.equal(unknown.receipt.status, "PENDING");
+    assert.equal(keccak256(unknown.serializedTransaction), unknown.receipt.txHash);
     await createTestClient({ mode: "hardhat", chain: hardhat, transport: http(upstream) }).mine({ blocks: 64 });
     const reader = await createLedgerClient({ ...common, publicClient: rpc });
     const [receipt] = await reader.getReceipts({ txHash: unknown.receipt.txHash });

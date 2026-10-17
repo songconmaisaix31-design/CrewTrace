@@ -62,7 +62,7 @@ const snapshot = await ledger.getRoleReputation(agentAddress, Role.DATA);
 
 所有写方法返回 `PENDING`、真实 txHash 和 signer。回执成功且所在规范区块达到 finalized 时，getReceipts 返回 `CONFIRMED`；已 finalized 的 reverted 交易返回 `FAILED`。尚未找到回执或区块未 finalized 时保持 `PENDING`。查询任意未知哈希不证明该交易已被节点接受。
 
-写方法在广播前完成本地签名并计算 txHash。广播错误抛出 `ChainBroadcastError`，其中 `receipt.txHash` 仍可查询。调用方须持久化该 receipt，并继续对账原交易；不要重新生成业务结果或直接再次调用写方法。错误的 cause 保留供受控调试，禁止把完整底层 RPC 错误或配置直接公开。
+写方法在广播前完成本地签名并计算 txHash。广播错误抛出 `ChainBroadcastError`，其中 `receipt.txHash` 仍可查询，`serializedTransaction` 保留原始签名交易。调用方须持久化该 receipt 和签名交易，并继续对账原交易；不要重新生成业务结果或直接再次调用写方法。错误的 cause 保留供受控调试，禁止把完整底层 RPC 错误或配置直接公开。
 
 读取信誉前选择一个 finalized 区块；对同次候选决策，将返回的 repBlockNumber 传给其他候选查询，保证全部读取同一快照。指定尚未 finalized 的区块返回 CHAIN_PENDING；早于部署的区块被拒绝。计数和区块为 bigint，HTTP 序列化时由 B 显式转为十进制字符串。
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createWalletClient, getAddress, keccak256, toBytes, type Hash } from "viem";
 import { monadTestnet } from "viem/chains";
 import {
@@ -35,14 +35,13 @@ async function main() {
   const agents = await Promise.all(accounts.map((account) => createLedgerClient({ ...common,
     walletClient: createWalletClient({ account, chain: monadTestnet, transport: connection().transport }),
   })));
-  const baseURI = `https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/${deployment.sourceCommit}/contracts/fixtures`;
   const fixtures = new Map<string, { hash: Hash; uri: string }>();
   for (const name of ["manifest", "input", "criteria", "artifact", "evidence"]) {
     const bytes = await readFile(new URL(`../fixtures/${name}.json`, import.meta.url));
-    const uri = `${baseURI}/${name}.json`;
+    const uri = `data:application/json;base64,${bytes.toString("base64")}`;
     const response = await fetch(uri);
-    if (!response.ok) throw new ChainError("ARTIFACT_UNAVAILABLE", `公开夹具不可读取：${name}`);
-    assert.equal(hashFileBytes(new Uint8Array(await response.arrayBuffer())), hashFileBytes(bytes), `公开夹具摘要不一致：${name}`);
+    if (!response.ok) throw new ChainError("ARTIFACT_UNAVAILABLE", `内嵌夹具不可读取：${name}`);
+    assert.equal(hashFileBytes(new Uint8Array(await response.arrayBuffer())), hashFileBytes(bytes), `内嵌夹具摘要不一致：${name}`);
     fixtures.set(name, { hash: hashFileBytes(bytes), uri });
   }
   const fixture = (name: string) => {
@@ -64,6 +63,10 @@ async function main() {
       pending = await action();
     } catch (error) {
       if (error instanceof ChainBroadcastError) {
+        await mkdir(new URL("../.local/", import.meta.url), { recursive: true });
+        await saveJSON(new URL("../.local/smoke-broadcast-pending.json", import.meta.url), {
+          txHash: error.receipt.txHash, serializedTransaction: error.serializedTransaction,
+        });
         report.receipts.push(error.receipt);
         report.status = "CHAIN_PENDING";
         await persist();
@@ -84,7 +87,7 @@ async function main() {
     }));
   }
   const baseline = await reader.getRoleReputation(accounts[0].address, Role.DATA);
-  report.snapshots.push({ stage: "BEFORE_ROUND_1", ...baseline });
+  report.snapshots.push({ stage: "BASELINE", ...baseline });
   const token = randomUUID();
   for (let round = 1; round <= 2; round++) {
     const runId = keccak256(toBytes(`DEV_FIXTURE:${token}:round:${round}`));

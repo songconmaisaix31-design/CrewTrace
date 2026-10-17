@@ -6,9 +6,11 @@
     "build": "HARDHAT_DISABLE_TELEMETRY=true hardhat build",
     "test": "HARDHAT_DISABLE_TELEMETRY=true hardhat test",
     "typecheck": "tsc --noEmit",
-    "check:config": "tsx scripts/check-config.ts",
-    "deploy:testnet": "npm run build && tsx scripts/deploy.ts",
-    "smoke:testnet": "tsx scripts/smoke.ts"
+    "check:config": "node --import tsx scripts/check-config.ts",
+    "deploy:testnet": "npm run build && node --import tsx scripts/deploy.ts",
+    "verify:testnet": "node --import tsx scripts/verify.ts",
+    "smoke:testnet": "node --import tsx scripts/smoke.ts",
+    "resume:smoke": "node --import tsx scripts/resume-smoke.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-node-test-runner": "^3.0.0",

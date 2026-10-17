@@ -83,7 +83,7 @@ export class LedgerClient {
       const broadcastHash = await this.config.publicClient.sendRawTransaction({ serializedTransaction });
       if (broadcastHash !== txHash) throw new ChainError("RECEIPT_MISMATCH", "广播节点返回的哈希不一致");
     } catch (error) {
-      throw new ChainBroadcastError(pending, error);
+      throw new ChainBroadcastError(pending, error, serializedTransaction);
     }
     return pending;
   }

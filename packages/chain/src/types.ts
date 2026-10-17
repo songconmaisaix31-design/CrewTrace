@@ -1,4 +1,4 @@
-import type { Address, Chain, Hash, LocalAccount, PublicClient, Transport, WalletClient, decodeEventLog } from "viem";
+import type { Address, Chain, Hash, Hex, LocalAccount, PublicClient, Transport, WalletClient, decodeEventLog } from "viem";
 import type { ledgerAbi } from "./abi.js";
 
 export const Role = { DATA: 0, ANALYSIS: 1, REPORT: 2 } as const;
@@ -74,7 +74,7 @@ export class ChainError extends Error {
 }
 
 export class ChainBroadcastError extends ChainError {
-  constructor(public readonly receipt: ChainReceipt, cause: unknown) {
+  constructor(public readonly receipt: ChainReceipt, cause: unknown, public readonly serializedTransaction: Hex) {
     super("CHAIN_PENDING", "广播结果未知；保存 receipt.txHash 并查询同一交易", { cause });
     this.name = "ChainBroadcastError";
   }

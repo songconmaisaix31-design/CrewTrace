@@ -27,13 +27,18 @@ npm run typecheck --prefix contracts
 ```sh
 npm run check:config --prefix contracts
 npm run deploy:testnet --prefix contracts
+npm run verify:testnet --prefix contracts
 npm run smoke:testnet --prefix contracts
 ```
 
-部署前先将源码 Commit push，使夹具可以通过固定 Commit 的公开 URL 下载。部署脚本记录当时的 Commit，检查回执、finalized、规范区块、实际字节码及协调者，然后生成 `deployments/monad-testnet.json`。
+部署脚本记录当时的源码 Commit，检查回执、finalized、规范区块、实际字节码及协调者，然后生成 `deployments/monad-testnet.json`。源码与部署记录应一并 push。
+
+源码验证使用 Monad 技能指定的验证 API，提交 Hardhat 的标准编译输入、编译 metadata 与公开构造参数；实际返回结果保存到 `deployments/verification-testnet.json`。API 接受请求与各浏览器验证成功分别记录，以实际结果为准。
 
 部署前先将原始签名交易与预计算 hash 保存到被忽略的 `.local/deployment-pending.json`。进程中断后再次执行部署命令，脚本先查询同一 hash；节点未找到时广播同一原始交易。已存在最终部署记录时明确停止，避免重复部署。任何未知交易先继续查询原 hash。
 
-独立验证从固定 Commit 下载夹具并核对原始字节摘要，然后用四个地址登记，执行两轮三角色合约调用。第二轮读取第一轮 finalized 信誉，最终回读第一轮之前的历史快照，生成 `deployments/a-smoke-testnet.json`。该记录只验证 A 的链端口；真实 Worker、模型执行、业务产物与完整产品验收由 B/C 集成完成。
+独立验证将夹具原始字节编码为可直接读取的 `data:application/json;base64` URI，并重新读取 URI 核对原始字节摘要，然后用四个地址登记，执行两轮三角色合约调用。输入、产物和证据 URI 可独立读取，文件版本由内容摘要确定。第二轮读取第一轮 finalized 信誉，最终回读第一轮之前的历史快照，生成 `deployments/a-smoke-testnet.json`。该记录只验证 A 的链端口；真实 Worker、模型执行、业务产物与完整产品验收由 B/C 集成完成。
 
 独立验证记录在每次广播返回后写入真实 txHash，并逐笔对账。若中断，先使用适配器查询已有记录；脚本拒绝覆盖记录，避免自动开始第二次验证。尚未确认的交易不得计入信誉或改写为 FAIL。
+
+`npm run resume:smoke --prefix contracts -- --check` 查询并核对本次第二轮验收中断的原交易，必要时在忽略目录保存签名交易，不发起转账或广播；签名交易必须与保存的哈希完全一致。确认授权后，`npm run resume:smoke --prefix contracts` 可从配置的部署钱包向验收钱包补充 0.1 测试 MON 用作 Gas，广播同一签名交易并接续第二轮剩余步骤；补充测试币的交易单独记录。该命令用于本次验收钱包缺少 Gas 的具体中断状态，不处理任意业务任务恢复。已完成验证时再次执行只报告现有结果。

@@ -11,6 +11,7 @@ export default defineConfig({
       optimizer: { enabled: true, runs: 200 },
       viaIR: true,
       evmVersion: "cancun",
+      outputSelection: { "*": { "*": ["metadata"] } },
     },
   },
   networks: { hardhat: { type: "edr-simulated", chainType: "l1" } },
