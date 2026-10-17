@@ -3,7 +3,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { keccak256, toBytes } from 'viem';
 import { z } from 'zod';
-import { ArtifactSchema, CreateRunWithInputRequestSchema, HashSchema } from '../../../packages/contracts/src/schemas.ts';
+import { ArtifactSchema, CreateRunWithInputRequestSchema, HashSchema } from '../../../packages/contracts/src/schemas.js';
 
 const inputs = {
   'round-1': readFileSync(new URL('../../../workers/fixtures/round-1.csv', import.meta.url), 'utf8'),
