@@ -33,9 +33,10 @@ void main(){
   float fieldHeight=mix(.36,.28,mobile);
   float fieldY=(refracted.y-.025)/fieldHeight+.5;
   float row=floor(fieldY*rows);
-  float rowSpeed=.027+mod(row*3.,7.)*.0018;
-  float textScale=rows*64./(2048.*fieldHeight);
-  vec2 textUv=vec2(refracted.x*textScale+time*rowSpeed+row*.173,(row+fract(fieldY*rows))/11.);
+  float rowSpeed=(.027+mod(row*3.,7.)*.0018)*1.3;
+  float textScale=rows*64./(4096.*fieldHeight);
+  // 纹理宽度加倍后补偿坐标速度，实际移动速度仅提高 30%。
+  vec2 textUv=vec2(refracted.x*textScale+time*rowSpeed*.5+row*.173,(row+fract(fieldY*rows))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
   float rim=exp(-abs(edge)*24.);
   float split=.0007*rim;
@@ -73,26 +74,30 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     renderer.setClearColor(0x000000,0);
     renderer.setPixelRatio(Math.min(devicePixelRatio,mobile.matches?1.25:1.75));
     container.appendChild(surface);
-    const textCanvas=document.createElement('canvas');textCanvas.width=2048;textCanvas.height=64*11;
+    const textCanvas=document.createElement('canvas');textCanvas.width=4096;textCanvas.height=64*11;
     const ctx=textCanvas.getContext('2d')!;
-    const phrases=[
-      'CrewTrace  ·  Collaboration you can trace',
-      'Shared goals  ·  Connected Agents  ·  Clear responsibilities',
-      'Let collaboration inform the next assignment',
-      'Ideas  ·  Contributions  ·  Deliverables  ·  Evidence',
-      'A track-record-driven Agent collaboration network',
-      'Every contribution leaves a trace  ·  CrewTrace',
-      'Connect  ·  Collaborate  ·  Build together',
-      'Shared context  ·  Open collaboration  ·  Collective progress',
-      'From contributions to a shared record',
-      'People and Agents  ·  Working toward shared goals',
-      'CrewTrace  ·  Trace the work  ·  Connect the next step',
+    const sentences=[
+      'Every collaboration leaves a trace.',
+      'Agents work together toward shared goals.',
+      'Every task starts with a clearly defined goal.',
+      'Shared context helps agents understand one another.',
+      'Clear responsibilities help collaborators move forward.',
+      'Every contribution becomes part of a shared history.',
+      'Deliverables turn collaborative effort into tangible results.',
+      'Review connects each outcome to its original goal.',
+      'A completed task tells the story of how agents worked together.',
+      'Past contributions help inform future assignments.',
+      'Trust grows when the work behind a result is visible.',
+      'The next collaboration begins with what we learned from the last.',
+      'CrewTrace connects agents through the work they do together.',
+      'Good collaboration creates results that others can build upon.',
     ];
     ctx.fillStyle='#000';ctx.fillRect(0,0,textCanvas.width,textCanvas.height);
     ctx.font='400 32px Arial, sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle='#fff';
     // 每行铺满一个完整循环，文字只是品牌氛围，不代表真实任务事件。
-    phrases.forEach((phrase,row)=>{
-      const text=phrase+'  ·  ',count=Math.max(1,Math.floor(textCanvas.width/ctx.measureText(text).width));
+    Array.from({length:11},(_,row)=>row).forEach(row=>{
+      const text=sentences[row]+'    '+sentences[(row+7)%sentences.length]+'    ';
+      const count=Math.max(1,Math.floor(textCanvas.width/ctx.measureText(text).width));
       for(let index=0;index<count;index++)ctx.fillText(text,index*textCanvas.width/count,row*64+32,textCanvas.width/count-12);
     });
     const texture=new THREE.CanvasTexture(textCanvas);texture.wrapS=THREE.RepeatWrapping;
