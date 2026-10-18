@@ -94,10 +94,10 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         ctx.beginPath();points.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));
         // 前景主线压住交叉的背面线，让倾斜具有可辨认的前后关系。
         if(bright&&depth>.56){ctx.strokeStyle=`rgba(12,9,20,${depth*.72})`;ctx.lineWidth=3;ctx.shadowBlur=0;ctx.stroke();}
-        const light=Math.min(1,highlight*.82*(.94+breath*.12)+proximity*.65);
-        ctx.strokeStyle=`rgba(${Math.round(165+depth*65+light*24)},${Math.round(121+depth*100+light*28)},255,${Math.min(1,(bright?.28:.12)+depth*(bright?.52:.28)+breath*.06+light*.38)})`;
-        ctx.lineWidth=(bright?.85:.45)+depth*.65+light*.55;
-        ctx.shadowColor='#c4a2ff';ctx.shadowBlur=bright?Math.round(light*12):0;ctx.stroke();
+        const light=Math.min(1,highlight*1.08*(.84+breath*.28)+proximity*.65);
+        ctx.strokeStyle=`rgba(${Math.min(255,Math.round(165+depth*65+light*38))},${Math.min(255,Math.round(121+depth*100+light*48))},255,${Math.min(1,(bright?.3:.12)+depth*(bright?.54:.28)+breath*.06+light*.48)})`;
+        ctx.lineWidth=(bright?.9:.45)+depth*.65+light*.85;
+        ctx.shadowColor='#d8c4ff';ctx.shadowBlur=bright?Math.round(light*18):0;ctx.stroke();
       }
       ctx.shadowBlur=0;
       ctx.globalCompositeOperation='source-over';

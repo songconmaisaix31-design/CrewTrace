@@ -37,7 +37,8 @@ void main(){
   // 球面厚度控制采样位移，形成中心放大和环边挤压的连续变化。
   float thickness=sqrt(max(0.,1.-min(d*d,1.)));
   vec2 refracted=p-q*inside*(.16+thickness*.22+impulse*.07);
-  refracted+=vec2(q.x*.38,q.y*.23)*rim+q*(1.-inside)*approach*.07;
+  float surge=.5+.5*sin(time*1.23);
+  refracted+=vec2(q.x*(.46+surge*.06),q.y*.28)*rim+q*(1.-inside)*approach*.07;
   refracted.y+=sin(local.x*3.6+time*.48)*inside*.021+local.x*rim*.018;
   vec2 cursor=pointer*vec2(aspect*.5,.5);
   vec2 cursorOffset=p-cursor;
@@ -67,7 +68,7 @@ void main(){
   letters=mix(letters,soft*textMask,.03+rim*.28);
   vec3 tint=mix(vec3(.95,.91,1.),vec3(.76,.94,1.),rim*energy*.55);
   vec3 color=letters*tint;
-  float streak=texture2D(lettering,textUv+vec2(.0035,0.)).r*textMask*rim*energy*.16;
+  float streak=texture2D(lettering,textUv+vec2(.005,0.)).r*textMask*rim*energy*.25;
   color+=vec3(.65,.8,1.)*streak;
   // 淡出按屏幕宽度计算，文字到接近画面边缘才消散。
   float screenEdge=abs(p.x)/(.5*aspect);
@@ -80,11 +81,14 @@ void main(){
   float textAlpha=clamp(alpha*vignette*strength*passage*mix(departure,1.,inside),0.,1.);
   // 银白亮弧沿倾斜环口移动，散射只围绕亮弧局部展开。
   float angle=atan(local.y,local.x);
-  float crescent=pow(max(0.,cos(angle-time*.28-1.9-pointer.x*.3)),10.);
+  float crescent=pow(max(0.,cos(angle-time*.42-1.9-pointer.x*.3)),8.);
   float arcWidth=max(fwidth(d)*1.4,.007)+motion*.003;
   float arcCore=exp(-pow((d-1.03)/arcWidth,2.));
-  float arcGlow=exp(-abs(d-1.03)*29.);
-  float arcAlpha=clamp(crescent*(arcCore*.82+arcGlow*.19)*(.82+breath*.18+motion*.12),0.,.92);
+  float arcGlow=exp(-abs(d-1.03)*21.);
+  // 亮弧带出一段逐渐消散的弯曲光尾，强调环口的厚度。
+  float wake=pow(max(0.,cos(angle-time*.42-1.3)),16.);
+  float wakeBand=exp(-pow((d-1.09)/.045,2.));
+  float arcAlpha=clamp(crescent*(arcCore*.96+arcGlow*.3)*(.78+breath*.22+motion*.12)+wake*wakeBand*.16,0.,.98);
   vec3 arcColor=mix(vec3(.74,.59,1.),vec3(.98,.96,1.),arcCore);
   float combined=textAlpha+arcAlpha*(1.-textAlpha);
   vec3 composed=(color/max(alpha,.001)*textAlpha+arcColor*arcAlpha*(1.-textAlpha))/max(combined,.001);
