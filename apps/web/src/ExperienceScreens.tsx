@@ -22,8 +22,8 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
     const modalOpen=()=>!!element.querySelector('dialog[open]');
     function step(direction:number){
       if(currentScreen.current===0){if(direction>0)enter();return;}
-      if(direction<0){if(currentPanel.current===1){currentPanel.current=0;setPanel(0);}else home();}
-      else if(currentPanel.current===0){currentPanel.current=1;setPanel(1);}
+      if(direction<0){if(currentPanel.current>0){currentPanel.current-=1;setPanel(currentPanel.current);}else home();}
+      else if(currentPanel.current<2){currentPanel.current+=1;setPanel(currentPanel.current);}
     }
     function canRead(target:EventTarget|null,direction:number){
       const box=(target as HTMLElement)?.closest<HTMLElement>('.stage-card-scroll');

@@ -45,12 +45,17 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
   await page.mouse.wheel(0,-400);
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
-  await page.getByRole('button',{name:'下一屏：交流与公告',exact:true}).click();
+  await page.locator('.stage-directions').getByRole('button',{name:'交流',exact:true}).click();
   await page.waitForTimeout(350);
   const second=(await page.locator('.stage-discussion').boundingBox())!;
   expect(Math.abs(first.y-second.y)).toBeLessThan(1);
   expect(Math.abs(first.height-second.height)).toBeLessThan(1);
   await expect(page.locator('.stage-discussion')).toHaveCSS('transition-property','opacity, transform');
+  await page.mouse.move(6,350);
+  await page.mouse.wheel(0,100);
+  await expect(page.locator('.stage-announcements')).toHaveAttribute('aria-hidden','false');
+  await page.mouse.wheel(0,-100);
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
   const reading=page.locator('.stage-discussion .stage-card-scroll');
   if(await reading.evaluate(el=>el.scrollHeight>el.clientHeight)){
     const box=(await reading.boundingBox())!;
@@ -73,7 +78,7 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
   expect(caption.y+caption.height).toBeLessThan(entry.y);
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
-  await page.getByRole('button',{name:'02 交流与公告',exact:true}).click();
+  await page.getByRole('button',{name:'02 交流',exact:true}).click();
   await expect(page.locator('.stage-tasks')).toBeHidden();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:'.local/stage-mobile.png'});

@@ -15,6 +15,12 @@
 .experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]::after{animation:none;opacity:0}
 .experience-shell[data-screen] .collaboration-stage .stage-tasks[aria-hidden="true"]{transform:translateY(-20px);opacity:0;filter:none;pointer-events:none}
 .experience-shell[data-screen] .collaboration-stage .stage-discussion[aria-hidden="true"]{transform:translateY(20px);opacity:0;filter:none;pointer-events:none}
+.experience-shell[data-screen] .collaboration-stage .stage-announcements[aria-hidden="true"]{transform:translateY(20px);opacity:0;filter:none;pointer-events:none}
+.experience-shell[data-screen] .collaboration-stage[data-panel="2"] .stage-discussion[aria-hidden="true"]{transform:translateY(-20px)}
+.experience-shell .stage-switch{grid-template-columns:repeat(3,minmax(0,1fr));max-width:660px}
+.experience-shell .stage-switch::after{width:calc(100% / 3)}
+.experience-shell [data-panel="2"] .stage-switch::after{transform:translateX(200%)}
+@media(max-width:760px){.experience-shell .stage-switch{gap:6px;flex-wrap:nowrap}.experience-shell .stage-switch-line{width:10px}.experience-shell .stage-switch button{flex:1;justify-content:center;min-width:0}}
 .experience-shell[data-screen="1"] .stage-card[aria-hidden="false"] .stage-card-scroll{animation:none}
 .experience-shell .stage-directions{height:48px;min-height:48px;padding:0;align-items:center}
 .experience-shell .stage-direction{min-height:44px;padding:8px 14px}
