@@ -28,7 +28,7 @@ void main(){
   float inside=1.-smoothstep(radius*.85,radius*1.12,d);
   float rim=exp(-abs(edge)*24.);
   // 中心放大保持可读，边缘用连续位移表现有厚度的折射面。
-  vec2 refracted=p-q*inside*(.44+impulse*.08);
+  vec2 refracted=p-q*inside*(.5+impulse*.08);
   refracted.x+=q.x*rim*.16;
   refracted.y+=sin(q.x*9.+time*.22)*inside*.018+q.y*rim*.12;
   float mobile=1.-step(760.,resolution.x);
@@ -50,12 +50,13 @@ void main(){
   for(int i=-2;i<=2;i++){
     soft+=texture2D(lettering,textUv+vec2(float(i)*(.0003+rim*.0008),0.)).rgb*.2;
   }
-  letters=mix(letters,soft*textMask,.08+rim*.5);
-  vec3 color=letters*vec3(.88,.84,1.);
-  float vignette=1.-smoothstep(.22,.7,abs(p.x));
+  letters=mix(letters,soft*textMask,.03+rim*.4);
+  vec3 color=letters*vec3(.95,.91,1.);
+  float vignette=1.-smoothstep(.3,.82,abs(p.x));
   float alpha=max(color.r,max(color.g,color.b));
   float focus=1.-smoothstep(radius*.55,radius*1.35,d);
-  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*(.08+focus*.48-mobile*.04)*(1.-rim*.25));
+  float strength=mix(.22+focus*.7,.3+focus*.68,1.-step(.5,abs(row-floor(rows*.5))));
+  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*strength*(1.-rim*.16));
 }`;
 
 export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
