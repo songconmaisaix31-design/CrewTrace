@@ -107,4 +107,23 @@ html:has(.experience-shell),body:has(.experience-shell){overflow:hidden;height:1
 @keyframes stage-surface-in{0%{opacity:0;transform:translateY(64px) scale(.91) rotateX(9deg);filter:blur(12px)}70%{opacity:1;transform:translateY(-5px) scale(1.008) rotateX(0deg);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 @keyframes stage-light-in{0%{opacity:0}35%{opacity:.65}100%{opacity:0}}
 @keyframes home-surface-in{from{opacity:0;transform:scale(1.045);filter:blur(14px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
+.experience-shell .stage-card{border-color:transparent;background:radial-gradient(ellipse at 12% 0%,#b395db12,transparent 65%),linear-gradient(155deg,#17151ec9,#0d0f16c9);box-shadow:0 24px 70px #0005,0 0 60px #a47ad20a}
+.experience-shell .stage-card::before{background:radial-gradient(ellipse at 18% 0%,#b999fa12,transparent 65%)}
+.experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]::after{border-color:transparent;box-shadow:inset 0 0 60px #b68af51c,0 0 45px #b68af51a}
+.experience-shell .stage-card .public-message{border-color:transparent;background:#b69ad307}
+.experience-shell .public-record,.experience-shell .public-task-subsection,.experience-shell .public-tabs,.experience-shell .public-tools li{border-color:#b8a1d110}
+.experience-shell .public-pill{border-color:transparent;background:#b69ad30d}
+.experience-shell .header-mcp,.experience-shell .secondary{border-color:transparent;background:#b69ad30b}
+.experience-shell .header-mcp:hover,.experience-shell .secondary:hover{border-color:#bfa3e11c;background:#b69ad31a}
+.experience-shell .orbit-join{border-color:#c4a5ff26;background:linear-gradient(120deg,#2f224640,#100d1c80);box-shadow:0 0 36px #9d75ec14}
+.experience-shell .orbit-join::before{border-color:transparent}
+.experience-shell .orbit-join:hover{border-color:#d5c4ff55;box-shadow:0 0 40px #b28aef30}
+.experience-shell .stage-read{border-bottom-color:transparent!important}
+.experience-shell .stage-switch-line{background:#a58cc31f}
+.experience-shell .public-dialog,.experience-shell .drawer.centered-dialog{border-color:#bca5dc1a;box-shadow:0 30px 100px #0008,0 0 70px #b68af50b}
+.experience-shell .public-mcp-resources,.experience-shell .public-onboarding pre,.experience-shell .public-form fieldset{border-color:#bca5dc18;background:#b69ad307}
+.experience-shell .public-onboarding li,.experience-shell .public-onboarding-details,.experience-shell details{border-color:#bca5dc14}
+.experience-shell input,.experience-shell textarea,.experience-shell select,.experience-shell .public-filter select{border-color:#bca5dc30;background:#100d1780}
+.experience-shell .public-form input:focus-visible,.experience-shell .public-form textarea:focus-visible,.experience-shell .public-form select:focus-visible{outline:2px solid #c4afff;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.experience-shell .stage-card::after{opacity:0}}
 @media(prefers-reduced-motion:reduce){.experience-home,.experience-shell .public-workspace>.public-content,.experience-shell .stage-card{animation:none!important;transition:none;filter:none!important;transform:none!important}.experience-shell .stage-card[aria-hidden=true]{visibility:hidden}.lens-caption h1,.lens-caption h1 span{background:none;color:#d9c9ef}}

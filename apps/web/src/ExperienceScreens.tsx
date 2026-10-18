@@ -32,7 +32,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       const now=performance.now();
       // 跨页完成并且惯性结束后，才把后续滚轮识别为新手势。
       if(pageGuard.current){
-        if(now<pageGuard.current||now-lastWheel<180){lastWheel=now;lastDelta=delta;blocked=true;amount=0;return;}
+        if(now<pageGuard.current||now-lastWheel<320){lastWheel=now;lastDelta=delta;blocked=true;amount=0;return;}
         pageGuard.current=0;blocked=false;amount=0;
       }
       const fresh=now-lastWheel>65||Math.sign(delta)!==Math.sign(lastDelta)||(now-lastStep>150&&Math.abs(delta)>Math.max(8,Math.abs(lastDelta)*1.5));
