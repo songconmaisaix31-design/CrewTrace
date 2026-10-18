@@ -21,16 +21,21 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
     let width=0, height=0, frame=0, visible=true, tick=0, last=0;
     let mx=0, my=0, tx=0, ty=0, burst=0, pointerInside=false, px=0, py=0, lensStrength=0;
+    // 固定几何只计算一次，逐帧只旋转与投影。
+    const samples=Array.from({length:181},(_,p)=>{
+      const a=p/180*Math.PI*2;
+      return {a,x:Math.cos(a),y:Math.sin(a),braidSin:Math.sin(a*3),braidCos:Math.cos(a*3)};
+    });
     const draw = (now:number) => {
       frame=0;
-      if(now-last<30 && !pauseRef.current && !reduced.matches){frame=requestAnimationFrame(draw);return;}
       const delta=Math.min((now-last)/1000,.05);last=now;
       const moving=!pauseRef.current && !reduced.matches && visible && !document.hidden;
-      if(moving){tick+=delta*.75;mx+=(tx-mx)*.09;my+=(ty-my)*.09;burst*=.965;}
+      const follow=1-Math.exp(-delta*7);
+      if(moving){tick+=delta*.75;mx+=(tx-mx)*follow;my+=(ty-my)*follow;burst*=Math.exp(-delta*2.2);}
       el.dataset.phase=String(tick);
       ctx.clearRect(0,0,width,height);
-      const radius=Math.min(width*.33,height*.32)*scale*(1+Math.sin(tick*.8)*.055+burst*.12);
-      const cx=width*.52+mx*32, cy=height*.48+my*28;
+      const radius=Math.min(width*(width<600?.315:.33),height*.32)*scale*(1+Math.sin(tick*.6)*.018+burst*.045);
+      const cx=width*.52+mx*12, cy=height*.48+my*10;
       const halo=ctx.createRadialGradient(cx,cy,radius*.35,cx,cy,radius*haloScale);
       halo.addColorStop(0,'rgba(120,67,220,0)');
       halo.addColorStop(.52,'rgba(145,91,245,.15)');
@@ -40,27 +45,31 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       ctx.globalCompositeOperation='source-over';
       const paths:{points:{x:number;y:number}[];depth:number;bright:boolean;highlight:number}[]=[];
       const orbitShape:{x:number;y:number}[]=[];
+      const tilt=1.02+my*.13+Math.sin(tick*.24)*.075;
+      const yaw=-.32+mx*.16;
+      const roll=.53+Math.sin(tick*.2)*.08;
+      const ct=Math.cos(tilt),st=Math.sin(tilt),cr=Math.cos(roll),sr=Math.sin(roll),
+        co=Math.cos(yaw),so=Math.sin(yaw);
       for(let band=0;band<38;band++){
         const phase=band/38*Math.PI*2;
-        for(let segment=0;segment<6;segment++){
+        const sb=Math.sin(phase+tick*.7),cb=Math.cos(phase+tick*.7);
+        for(let segment=0;segment<12;segment++){
         const points:{x:number;y:number}[]=[];
-        for(let p=segment*30;p<=segment*30+30;p++){
-          const a=p/180*Math.PI*2;
-          const braid=phase+a*3+tick;
-          const r=radius+(Math.cos(braid)*(.18+burst*.13))*radius;
-          const x=Math.cos(a)*r;
-          const y=Math.sin(a)*r;
-          const z=Math.sin(braid)*radius*.3;
-          const tilt=.62+my*.22+Math.sin(tick*.6)*.12;
-          const angle=.36+mx*.28+Math.sin(tick*.55)*.28;
-          const px=cx+x*Math.cos(angle)-y*Math.sin(angle)*tilt;
-          const py=cy+x*Math.sin(angle)+y*Math.cos(angle)*tilt+z;
-          points.push({x:px,y:py});
-          if(band===0&&(segment===0||p>segment*30))orbitShape.push({x:px,y:py});
+        let meanDepth=0;
+        for(let p=segment*15;p<=segment*15+15;p++){
+          const sample=samples[p];
+          const r=radius*(1+(sample.braidCos*cb-sample.braidSin*sb)*(.19+burst*.04));
+          const x=sample.x*r,y=sample.y*r,z=(sample.braidSin*cb+sample.braidCos*sb)*radius*.23;
+          const ry=y*ct-z*st,rz=y*st+z*ct;
+          const rx=x*co+rz*so,depth=rz*co-x*so;
+          const perspective=1/(1-depth/(radius*5.5));
+          const point={x:cx+(rx*cr-ry*sr)*perspective,y:cy+(rx*sr+ry*cr)*perspective};
+          points.push(point);meanDepth+=depth/radius;
+          if(band===0&&(segment===0||p>segment*15))orbitShape.push(point);
         }
-        const a=(segment+.5)/6*Math.PI*2;
-        const depth=(Math.sin(phase+a*3+tick)+1)/2;
-        const highlight=Math.pow(Math.max(0,Math.cos(a-tick*.45)),12);
+        const a=(segment+.5)/12*Math.PI*2;
+        const depth=Math.max(0,Math.min(1,(meanDepth/16+1.2)/2.4));
+        const highlight=Math.pow(Math.max(0,Math.cos(a-tick*.85)),18)*(band%6===0?1:.22);
         const bright=band%6===0;
         paths.push({points,depth,bright,highlight});
         }
@@ -70,22 +79,16 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       paths.sort((a,b)=>a.depth-b.depth);
       for(const {points,depth,bright,highlight} of paths){
         ctx.beginPath();points.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));
-        ctx.strokeStyle=`rgba(${Math.round(169+depth*75)},${Math.round(134+depth*103)},255,${(bright?.38:.2)+depth*(bright?.5:.22)+highlight*.1})`;
-        ctx.lineWidth=(bright?1.05:.6)+depth*.55;
-        ctx.shadowBlur=0;ctx.stroke();
+        // 前景主线压住交叉的背面线，让倾斜具有可辨认的前后关系。
+        if(bright&&depth>.56){ctx.strokeStyle=`rgba(12,9,20,${depth*.72})`;ctx.lineWidth=3;ctx.shadowBlur=0;ctx.stroke();}
+        ctx.strokeStyle=`rgba(${Math.round(165+depth*80)},${Math.round(121+depth*119)},255,${Math.min(1,(bright?.3:.12)+depth*(bright?.6:.3)+highlight*.4)})`;
+        ctx.lineWidth=(bright?.85:.45)+depth*.65+highlight*.65;
+        ctx.shadowColor='#c4a2ff';ctx.shadowBlur=bright&&highlight>.35?9:0;ctx.stroke();
       }
       ctx.shadowBlur=0;
-      // 移动高光让光环的方向变化可见，不通过闪烁吸引注意。
-      ctx.save();ctx.translate(cx,cy);ctx.rotate(.36+Math.sin(tick*.55)*.28);
-      ctx.scale(1,.78);
-      ctx.beginPath();ctx.arc(0,0,radius*1.08,tick*.65,tick*.65+1.25);
-      ctx.strokeStyle='rgba(242,226,255,.9)';ctx.lineWidth=2;
-      ctx.shadowColor='#b997ff';ctx.shadowBlur=18;ctx.stroke();
-      if(burst>.02){ctx.beginPath();ctx.arc(0,0,radius*(1.15+(1-burst)*.65),0,Math.PI*2);ctx.strokeStyle=`rgba(211,172,255,${burst*.65})`;ctx.lineWidth=1.5;ctx.stroke();}
-      ctx.restore();ctx.shadowBlur=0;
       ctx.globalCompositeOperation='source-over';
       // 对已绘制的真实光环局部采样放大，边缘渐隐，离开后平滑恢复。
-      if(moving)lensStrength+=((pointerInside?1:0)-lensStrength)*.15;
+      if(moving)lensStrength+=((pointerInside?1:0)-lensStrength)*(1-Math.exp(-delta*10));
       if(lensContext&&lensStrength>.005){
         const size=240, zoom=1+.14*lensStrength, dpr=el.width/width;
         if(lens.width!==size){lens.width=lens.height=size;}
