@@ -36,7 +36,7 @@ void main(){
   float rim=exp(-abs(edge)*11.);
   float approach=1.-smoothstep(1.,2.4,d);
   // 球面厚度控制采样位移，形成中心放大和环边挤压的连续变化。
-  float thickness=sqrt(max(.04,1.-min(d*d,1.)))-.2;
+  float thickness=sqrt(.04+pow(1.-smoothstep(0.,1.,d),2.))-.2;
   vec2 refracted=p-q*inside*(.16+thickness*.22+impulse*.07);
   float surge=breath;
   refracted+=vec2(q.x*(.46+surge*.06),q.y*.28)*rim+q*(1.-inside)*approach*.07;
@@ -68,7 +68,7 @@ void main(){
   float glyphY=(fract(fieldY*rows)-.5)/mix(1.,depthScale,outside)+.5;
   vec2 textUv=vec2(mod(flow,period),(10.-row+clamp(glyphY,0.,1.))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
-  textMask*=step(0.,glyphY)*step(glyphY,1.);
+  textMask*=smoothstep(0.,.035,glyphY)*(1.-smoothstep(.965,1.,glyphY));
   float angle=atan(local.y,local.x);
   float sweepEnvelope=pow(.5+.5*sin(sweepPhase),4.);
   float energy=pow(max(0.,cos(angle-sweepPhase)),14.)*sweepEnvelope;

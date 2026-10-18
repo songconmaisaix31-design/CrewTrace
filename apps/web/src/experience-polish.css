@@ -46,6 +46,9 @@
 .trace-track button[data-recorded="true"] .trace-node{background:radial-gradient(circle at 32% 25%,#e8dcff 0 8%,#9271bd 28%,#30223f 72%);box-shadow:inset 0 0 0 3px #120e1b}
 .trace-track button[aria-pressed="true"] .trace-node{border-color:#eee2ff;box-shadow:0 0 14px #bd93ff66,inset 0 0 0 3px #39284e}
 .trace-records{border-image:linear-gradient(#ddc8ff99,#a67bc922,transparent) 1}
+.trace-records h4{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin:4px 0 14px;font-size:15px;font-weight:500;color:#e7def1}
+.trace-records h4 span{font-size:11px;font-weight:400;color:#a99bb8;font-variant-numeric:tabular-nums}
+.trace-records p{max-width:68ch;padding-block:8px;margin:0;border-bottom:1px solid #c7a7e80c}
 .trace-branch [data-accepted="true"]{border-left:2px solid #cbb2ec;padding-left:10px;background:linear-gradient(90deg,#b890ea0c,transparent)}
 .trace-branch a:focus-visible{outline:2px solid #dfcaff;outline-offset:4px}
 @media(max-width:760px) and (min-height:561px){.experience-shell .lens-dock{top:68%;gap:14px}}

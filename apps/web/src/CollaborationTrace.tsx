@@ -27,12 +27,13 @@ export default function CollaborationTrace({task,name}:{task:CollaborationTaskDe
     {label:t('验收','Accepted'),records:accepted.map(item=>`${name(item.author)} · ${t('成果已被接受','Delivery accepted')}${item.reason?` · ${item.reason}`:''}`)},
   ];
   const latest=groups.reduce((last,group,index)=>group.records.length?index:last,0);
+  const recordCount=selected===0?1:groups[selected].records.length;
   return <section ref={root} className="collaboration-trace" aria-label={t('协作记录','Collaboration history')}>
     <svg className="trace-connector" aria-hidden="true"><path key={selected} ref={connection} fill="none" pathLength="1"/></svg>
     <div className="trace-track" style={{'--trace-position':`${12.5+selected*25}%`} as CSSProperties} role="group" aria-label={t('查看阶段记录','View stage records')}>
       {groups.map((group,index)=><button key={index} disabled={!group.records.length} aria-pressed={selected===index} data-recorded={!!group.records.length} data-latest={index===latest} onClick={()=>setSelected(index)}><span className="trace-node"/>{group.label}<small>{group.records.length?t('有记录','Recorded'):t('暂无记录','No record')}</small></button>)}
     </div>
-    <div className="trace-records" aria-live="polite">{groups[selected].records.map((record,index)=><p key={index}>{record}</p>)}</div>
+    <div className="trace-records" aria-live="polite"><h4>{groups[selected].label}<span>{recordCount} {t('条记录',recordCount===1?'record':'records')}</span></h4>{groups[selected].records.map((record,index)=><p key={index}>{record}</p>)}</div>
     {selected>0&&task.claims.length>0&&<div className="trace-branches">{task.claims.map(claim=><div className="trace-branch" key={claim.claimId}><strong>{name(claim.agentId)}</strong><p>{claim.scope}</p>{task.handoffs.filter(handoff=>handoff.claimId===claim.claimId).map(handoff=><p key={handoff.handoffId} data-accepted={handoff.status==='ACCEPTED'}>{handoff.status==='ACCEPTED'?t('成果已接受','Delivery accepted'):handoff.status==='RETURNED'?t('退回修改','Returned for revision'):t('等待验收','Awaiting review')}{handoff.artifactURI&&/^https?:\/\//.test(handoff.artifactURI)&&<> · <a href={handoff.artifactURI} target="_blank" rel="noreferrer">{t('查看成果','View deliverable')}</a></>}</p>)}</div>)}</div>}
     <p className="public-muted">{t('依据实际协作记录展示；成果被接受不代表整个任务已完成。','Based on actual collaboration records. Accepted delivery does not mean the entire task is complete.')}</p>
   </section>;

@@ -72,7 +72,14 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         }
         const a=(segment+.5)/12*Math.PI*2;
         const depth=Math.max(0,Math.min(1,(meanDepth/16+1.2)/2.4));
-        const highlight=Math.pow(Math.max(0,Math.cos(a-tick*.72-phase*.12)),8)*(band%6===0?1:.18);
+        // 用环面朝向计算固定光源反射，几何旋转时高光自然变化。
+        const tube=a*3+phase+tick*.7;
+        const nx=Math.cos(a)*Math.cos(tube),ny=Math.sin(a)*Math.cos(tube),nz=Math.sin(tube);
+        const normalY=ny*ct-nz*st,normalZ=ny*st+nz*ct;
+        const normalX=nx*co+normalZ*so,normalDepth=normalZ*co-nx*so;
+        const lighting=Math.max(0,(normalX*cr-normalY*sr)*-.32+(normalX*sr+normalY*cr)*-.44+normalDepth*.84);
+        const specular=Math.pow(lighting,14);
+        const highlight=(specular*.75+Math.pow(Math.max(0,Math.cos(a-tick*.72-phase*.12)),8)*.45)*(band%6===0?1:.18);
         const bright=band%6===0;
         const middle=points[8],reach=Math.min(radius*.65,160);
         const proximity=lensStrength*Math.exp(-((middle.x-px)**2+(middle.y-py)**2)/(reach*reach));
