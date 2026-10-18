@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { ArrowUpRight, Check, Copy, Layers, Plug, UserRound } from 'lucide-react';
+import { ArrowUpRight, Check, Copy, Plug, UserRound } from 'lucide-react';
 import LensHero from './LensHero';
 import './public-workspace.css';
 import { LanguageSwitch, useI18n } from './i18n';
@@ -11,10 +11,9 @@ export default function PublicFrame({children,identity,onIdentity,onMcp}:Props){
   return <>
     <a className="skip" href="#collaborate">{t('跳至公开协作','Skip to collaboration')}</a>
     <header className="topbar public-topbar">
-      <a className="brand" href="/" aria-label={t('CrewTrace 公开协作','CrewTrace collaboration')}><span className="brand-mark"><Layers size={22}/></span>CrewTrace</a>
+      <a className="brand" href="/" aria-label={t('CrewTrace 公开协作','CrewTrace collaboration')}><img className="crewtrace-mark" src="/crewtrace-mark.svg" width="38" height="38" alt=""/>CrewTrace</a>
       <nav aria-label={t('主导航','Main navigation')}><a className="nav active" href="#collaborate">{t('工作台','Workspace')}</a><button className="nav" onClick={onMcp}>{t('接入 MCP','Connect MCP')}</button></nav>
-      <button className="secondary public-identity" onClick={onIdentity}><UserRound size={16}/>{identity}</button>
-      <LanguageSwitch/>
+      <div className="header-actions"><LanguageSwitch/><button className="secondary public-identity" onClick={onIdentity}><UserRound size={16}/>{identity}</button></div>
     </header>
     <main className="landing public-workspace" id="main">
       <LensHero/>

@@ -26,7 +26,7 @@ void main(){
   // 改变文字纹理的采样坐标，产生球体折射。
   vec2 refracted=p-q*inside*(.48+impulse*.12);
   refracted.y+=sin(q.x*12.+time*.3)*inside*.022;
-  vec2 textUv=vec2(refracted.x*.60-time*.065+.5,refracted.y*7.+.5);
+  vec2 textUv=vec2(refracted.x*.22-time*.065+.12,refracted.y*7.+.5);
   float textMask=step(0.,textUv.y)*step(textUv.y,1.);
   float split=.0025*exp(-abs(edge)*35.);
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
@@ -51,11 +51,11 @@ export default function LensHero(){
     renderer.setClearColor(0x000000,0);
     renderer.setPixelRatio(Math.min(devicePixelRatio,mobile.matches?1.25:1.75));
     container.appendChild(surface);
-    const textCanvas=document.createElement('canvas');textCanvas.width=2048;textCanvas.height=256;
+    const textCanvas=document.createElement('canvas');textCanvas.width=4096;textCanvas.height=128;
     const ctx=textCanvas.getContext('2d')!;
-    ctx.fillStyle='#000';ctx.fillRect(0,0,2048,256);
-    ctx.font='500 190px Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff';
-    ctx.fillText('CrewTrace',1024,132);
+    ctx.fillStyle='#000';ctx.fillRect(0,0,4096,128);
+    ctx.font='500 90px Arial, sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle='#fff';
+    ctx.fillText('CrewTrace  ·  A track-record-driven Agent collaboration network  ·',40,66);
     const texture=new THREE.CanvasTexture(textCanvas);texture.wrapS=THREE.RepeatWrapping;
     const uniforms={resolution:{value:new THREE.Vector2()},pointer:{value:new THREE.Vector2()},
       time:{value:0},progress:{value:0},impulse:{value:0},lettering:{value:texture}};

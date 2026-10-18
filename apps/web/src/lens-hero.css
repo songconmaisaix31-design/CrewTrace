@@ -1,7 +1,7 @@
 .public-workspace:has(.lens-hero){max-width:none;padding-inline:0}
 .public-workspace:has(.lens-hero)>.public-content,.public-workspace:has(.lens-hero)>.public-mcp-strip,.public-workspace:has(.lens-hero)>footer{width:min(1320px,calc(100% - 64px));margin-inline:auto}
-.lens-hero{--lens-scroll:0;position:relative;isolation:isolate;min-height:700px;height:calc(100svh - 78px);max-height:1100px;background:#050508;overflow:clip;color:#eeeef4}
-.lens-scene{position:absolute;inset:0 0 24%;transform:translateY(calc(var(--lens-scroll)*70px)) scale(calc(1 - var(--lens-scroll)*.12));opacity:calc(1 - var(--lens-scroll)*.85);transform-origin:50% 45%}
+.lens-hero{--lens-scroll:0;position:relative;isolation:isolate;min-height:820px;height:calc(100svh - 78px);max-height:1200px;background:#050508;overflow:clip;color:#eeeef4}
+.lens-scene{position:absolute;inset:0 0 32%;transform:translateY(calc(var(--lens-scroll)*70px)) scale(calc(1 - var(--lens-scroll)*.12));opacity:calc(1 - var(--lens-scroll)*.85);transform-origin:50% 45%}
 .lens-scene canvas{display:block;width:100%;height:100%}
 .lens-scene .signal-scene{position:absolute;inset:0;width:100%;height:100%;transform:none!important;animation:none!important;opacity:1}
 .lens-scene .scene-controls{display:none}
@@ -11,10 +11,10 @@
 .lens-caption .lens-eyebrow span{margin-inline:12px;color:#777084}
 .language-toggle{display:flex;align-items:center;gap:9px;font-size:12px;color:#827a91;padding:12px;margin-left:16px;white-space:nowrap}
 .language-toggle .selected{color:#f0e9fb}.language-toggle:focus-visible{outline:2px solid #c7b5ed;outline-offset:3px}
-.lens-caption{position:absolute;z-index:1;top:69%;left:24px;right:24px;text-align:center;pointer-events:none;opacity:calc(1 - var(--lens-scroll));transform:translateY(calc(var(--lens-scroll)*-30px))}
-.lens-caption .lens-eyebrow{font-size:11px;letter-spacing:.23em;color:#b7a9d0;margin:0 0 16px}
-.lens-caption h1{font-size:clamp(26px,3vw,40px);font-weight:450;letter-spacing:-.04em;line-height:1.2;margin:0 0 14px}
-.lens-caption>p:last-child{font-size:14px;line-height:1.7;color:#a6a4b3;margin:0}
+.lens-caption{position:absolute;z-index:1;top:65%;left:24px;right:24px;text-align:center;pointer-events:none;opacity:calc(1 - var(--lens-scroll));transform:translateY(calc(var(--lens-scroll)*-30px))}
+.lens-caption .lens-eyebrow{font-size:11px;letter-spacing:.18em;color:#b7a9d0;margin:0 0 26px}
+.lens-caption h1{font-size:clamp(26px,3vw,40px);font-weight:450;letter-spacing:.015em;line-height:1.55;margin:0 0 24px}
+.lens-caption>p:last-child{font-size:14px;line-height:1.95;letter-spacing:.04em;color:#a6a4b3;margin:0}
 .lens-enter{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:13px;color:#e2dcea;font-size:13px;text-decoration:none;padding:12px;z-index:2}
 .lens-enter svg{transition:transform .25s}.lens-enter:hover svg{transform:translateY(5px)}
 .lens-pause{position:absolute;bottom:28px;right:32px;display:flex;gap:8px;align-items:center;font-size:11px;color:#a6a4b3;padding:10px;z-index:2}
@@ -22,4 +22,11 @@
 .lens-static{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(48px,10vw,150px);letter-spacing:-.07em;background:radial-gradient(circle,transparent 27%,#ad92df55 28%,transparent 30%)}
 @media(max-width:760px){.lens-hero{min-height:600px;height:calc(100svh - 110px)}.lens-scene{inset:0 -30% 17%}.lens-caption{top:69%;left:20px;right:20px}.lens-caption>p:last-child{font-size:13px;max-width:270px;margin:auto}.lens-pause{right:12px}.lens-pause span{display:none}.public-workspace:has(.lens-hero)>.public-content,.public-workspace:has(.lens-hero)>.public-mcp-strip,.public-workspace:has(.lens-hero)>footer{width:calc(100% - 32px)}}
 @media(prefers-reduced-motion:reduce){.lens-scene,.lens-caption{transform:none;opacity:1}.lens-enter svg{transition:none}.lens-pause{display:none}}
-@media(max-width:760px){.lens-caption{top:64%}.lens-caption h1{font-size:27px}.language-toggle{margin-left:4px;padding:8px;gap:6px}.public-topbar .public-identity{max-width:130px}.lens-scene{inset:0 -15% 25%}.lens-hero{min-height:660px}}
+@media(max-width:760px){.lens-caption{top:57%}.lens-caption h1{font-size:25px;line-height:1.6;letter-spacing:.01em;margin-bottom:22px}.lens-caption .lens-eyebrow{margin-bottom:24px}.language-toggle{margin-left:4px;padding:8px;gap:6px}.public-topbar .public-identity{max-width:130px}.lens-scene{inset:0 -15% 40%}.lens-hero{min-height:780px}}
+.public-topbar .brand{gap:10px;letter-spacing:-.6px;color:#eae4f5;font-size:25px}
+.crewtrace-mark{display:block;flex:none;width:38px;height:38px}
+.header-actions{display:flex;align-items:center;gap:22px;margin-left:auto}
+.header-actions .language-toggle{margin:0}
+.public-topbar .header-actions .public-identity{margin:0}
+@media(max-width:650px){.public-topbar{display:grid;grid-template-columns:auto 1fr;gap:12px 8px;padding-inline:18px}.public-topbar .brand{font-size:21px;gap:6px}.crewtrace-mark{width:30px;height:30px}.header-actions{grid-column:2;grid-row:1;gap:8px}.public-topbar nav{grid-column:1/-1;grid-row:2;width:100%}.public-topbar .header-actions .public-identity{padding:9px 8px;font-size:11px;max-width:110px}.header-actions .language-toggle{font-size:11px;padding:8px 4px;gap:4px}}
+html[lang=en] .lens-caption h1{letter-spacing:0;font-size:clamp(25px,2.8vw,38px)}
