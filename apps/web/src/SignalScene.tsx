@@ -35,7 +35,7 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       el.dataset.phase=String(tick);
       ctx.clearRect(0,0,width,height);
       const radius=Math.min(width*(width<600?.315:.33),height*.32)*scale*(1+Math.sin(tick*.6)*.018+burst*.045);
-      const cx=width*.52+mx*12, cy=height*.48+my*10;
+      const cx=width*.5+mx*6, cy=height*.48+my*5;
       const halo=ctx.createRadialGradient(cx,cy,radius*.35,cx,cy,radius*haloScale);
       halo.addColorStop(0,'rgba(120,67,220,0)');
       halo.addColorStop(.52,'rgba(145,91,245,.15)');
@@ -45,9 +45,9 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       ctx.globalCompositeOperation='source-over';
       const paths:{points:{x:number;y:number}[];depth:number;bright:boolean;highlight:number}[]=[];
       const orbitShape:{x:number;y:number}[]=[];
-      const tilt=1.02+my*.13+Math.sin(tick*.24)*.075;
-      const yaw=-.32+mx*.16;
-      const roll=.53+Math.sin(tick*.2)*.08;
+      const tilt=.76+my*.07+Math.sin(tick*.24)*.035;
+      const yaw=-.14+mx*.08;
+      const roll=.2+Math.sin(tick*.2)*.035;
       const ct=Math.cos(tilt),st=Math.sin(tilt),cr=Math.cos(roll),sr=Math.sin(roll),
         co=Math.cos(yaw),so=Math.sin(yaw);
       for(let band=0;band<38;band++){
