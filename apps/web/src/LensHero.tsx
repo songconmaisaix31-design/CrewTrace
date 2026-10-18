@@ -33,23 +33,24 @@ void main(){
   float inside=1.-smoothstep(.76,1.14,d);
   float rim=exp(-abs(edge)*11.);
   float approach=1.-smoothstep(1.,2.4,d);
-  // 中心适度放大以保留句子，强变形集中在穿过环口的窄带。
+  // 中心保留尺度层次，强变形集中在穿过环口的窄带。
   vec2 refracted=p-q*inside*(.35+impulse*.07);
-  refracted+=vec2(q.x*.36,q.y*.2)*rim+q*(1.-inside)*approach*.07;
-  refracted.y+=sin(local.x*3.2+time*.15)*inside*.016+local.x*rim*.012;
+  refracted+=vec2(q.x*.46,q.y*.23)*rim+q*(1.-inside)*approach*.07;
+  refracted.y+=sin(local.x*3.6+time*.48)*inside*.021+local.x*rim*.018;
   float mobile=1.-step(760.,resolution.x);
   float rows=mix(11.,7.,mobile);
   float fieldHeight=mix(.36,.28,mobile);
   float fieldY=(refracted.y-.025)/fieldHeight+.5;
   float row=clamp(floor(fieldY*rows),0.,rows-1.);
-  float rowSpeed=(.03+mod(row*3.,7.)*.0009)*1.3*mix(1.,.94,mobile);
+  float rowSpeed=(.03+mod(row*3.,7.)*.0021)*2.6;
   float textScale=rows*64./(4096.*fieldHeight);
-  // 纹理宽度加倍后补偿坐标速度，实际移动速度仅提高 30%。
+  // 纹理宽度加倍后补偿坐标速度，各行保持连续向左流动。
   float period=lineWidths[int(row)]/4096.;
   float flow=refracted.x*textScale+time*rowSpeed*.5+row*.07;
   vec2 textUv=vec2(mod(flow,period),(10.-row+fract(fieldY*rows))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
-  float split=.0022*rim;
+  float energy=pow(.5+.5*sin(time*1.7-local.x*2.8+row*.65),6.);
+  float split=(.0028+energy*.0012)*rim;
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
     texture2D(lettering,textUv).g,texture2D(lettering,textUv-vec2(split,0.)).b)*textMask;
   vec3 soft=vec3(0.);
@@ -57,14 +58,17 @@ void main(){
     soft+=texture2D(lettering,textUv+vec2(float(i)*(.0003+rim*.0008),0.)).rgb*.2;
   }
   letters=mix(letters,soft*textMask,.03+rim*.28);
-  vec3 color=letters*vec3(.95,.91,1.);
+  vec3 tint=mix(vec3(.95,.91,1.),vec3(.76,.94,1.),rim*energy*.55);
+  vec3 color=letters*tint;
+  float streak=texture2D(lettering,textUv+vec2(.0035,0.)).r*textMask*rim*energy*.16;
+  color+=vec3(.65,.8,1.)*streak;
   // 淡出按屏幕宽度计算，文字到接近画面边缘才消散。
   float screenEdge=abs(p.x)/(.5*aspect);
   float vignette=1.-smoothstep(.66,1.08,screenEdge);
   float alpha=max(color.r,max(color.g,color.b));
   float focus=1.-smoothstep(.65,1.65,d);
   float strength=mix(.24+focus*.59,.3+focus*.64,1.-step(.5,abs(row-floor(rows*.5))));
-  float passage=(.94+breath*.06)*(1.-rim*.12);
+  float passage=(.94+breath*.06)*(1.-rim*.12)+rim*energy*.1;
   float departure=mix(.82,1.,smoothstep(-2.6,.4,local.x));
   gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*strength*passage*mix(departure,1.,inside));
 }`;
