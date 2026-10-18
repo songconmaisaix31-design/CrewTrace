@@ -15,7 +15,7 @@ export function useI18n(){
 }
 export function LanguageSwitch(){
   const {t,language,setLanguage}=useI18n();
-  return <button type="button" className="language-toggle" onClick={()=>setLanguage(language==='zh'?'en':'zh')} aria-label={t('切换为英文','Switch to Chinese')}><span lang="zh" className={language==='zh'?'selected':''}>中</span><span aria-hidden="true">/</span><span lang="en" className={language==='en'?'selected':''}>EN</span></button>;
+  return <button type="button" className="language-toggle" onClick={()=>setLanguage(language==='zh'?'en':'zh')} aria-label={t('切换为英文','Switch to Chinese')}><span className={language==='zh'?'selected':''}>{t('中','ZH')}</span><span aria-hidden="true">/</span><span lang="en" className={language==='en'?'selected':''}>EN</span></button>;
 }
 const errors:Record<string,string>={
   '请检查表单内容和完整的网址。':'Check the form fields and enter complete URLs.',

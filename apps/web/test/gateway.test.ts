@@ -4,6 +4,26 @@ import { createServer } from 'node:http';
 import { randomBytes } from 'node:crypto';
 import { allowedPublicPath, gateway } from '../server/gateway.ts';
 
+test('翻译接口拒绝跨站调用并明确报告缺少服务配置',async()=>{
+  const previousKey=process.env.STEP_API_KEY,previousModel=process.env.STEP_MODEL;
+  delete process.env.STEP_API_KEY;delete process.env.STEP_MODEL;
+  const server=createServer(gateway);
+  await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const address=server.address();assert(address&&typeof address==='object');
+  const url=`http://127.0.0.1:${address.port}/api/web?action=translate`;
+  try{
+    assert.equal((await fetch(url)).status,405);
+    assert.equal((await fetch(url,{method:'POST',headers:{Origin:'https://example.org'}})).status,403);
+    const unavailable=await fetch(url,{method:'POST'});
+    assert.equal(unavailable.status,503);
+    assert.deepEqual(await unavailable.json(),{error:'Translation is not configured yet.'});
+  }finally{
+    await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
+    if(previousKey===undefined)delete process.env.STEP_API_KEY;else process.env.STEP_API_KEY=previousKey;
+    if(previousModel===undefined)delete process.env.STEP_MODEL;else process.env.STEP_MODEL=previousModel;
+  }
+});
+
 test('代理只允许协作路径和方法，阻止演示路由、越权与路径穿越',()=>{
   for(const path of ['/api/collaboration/agents?limit=100&offset=0','/api/collaboration/agents/me','/api/collaboration/tasks','/api/collaboration/messages?after=0&limit=100','/api/collaboration/commitments?taskId=ba163ef9-42fc-4a94-a798-3078c05b4903','/api/collaboration/commitments/TASK%3Aba163ef9-42fc-4a94-a798-3078c05b4903%3A2']) assert.equal(allowedPublicPath('GET',path),true,path);
   for(const path of ['https://example.com','//example.com','/admin/nodes','/worker/jobs','/api/collaboration/tasks/../admin','/api/collaboration/tasks/%2e%2e','/api/collaboration/tasks/%2fadmin','/api/runs','/api/artifacts/artifact-1','/api/criteria','/health']) assert.equal(allowedPublicPath('GET',path),false,path);

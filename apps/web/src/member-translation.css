@@ -1,0 +1,3 @@
+.translation-control{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:10px 0;color:#b8adc9;font-size:12px;line-height:1.5}
+.translation-control button{border:0;padding:4px 0;background:transparent;color:#eee5ff;font:inherit;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.translation-control button:focus-visible{outline:2px solid #c3a8ed;outline-offset:4px}

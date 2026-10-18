@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { translate } from './translation.ts';
 const publicRoutes:Record<string,RegExp[]>={
   GET:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/,/^\/api\/collaboration\/commitments(?:\?[^#]*)?$/,/^\/api\/collaboration\/commitments\/[^/?#]+$/],
   POST:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|credentials\/rotate)$/,/^\/api\/collaboration\/agents\/me\/heartbeat$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:claims|proposals|handoffs)$/,/^\/api\/collaboration\/claims\/[^/?#]+\/release$/,/^\/api\/collaboration\/proposals\/[^/?#]+\/decision$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/review$/],
@@ -12,6 +13,7 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
   const config = process.env;
   try {
     const url = new URL(req.url ?? '/', 'http://localhost');
+    if(url.searchParams.get('action')==='translate'){await translate(req,res);return;}
     if(req.method==='GET'&&url.searchParams.get('action')==='collaboration-config'){
       if(!config.RUNTIME_URL){json(200,{configured:false,mcpURL:null});return;}
       const base=new URL(config.RUNTIME_URL);

@@ -29,6 +29,6 @@ export default function TaskPreview({task,name,status}:{task:CollaborationTask;n
     ...detail.proposals.map(proposal=>({at:proposal.updatedAt,label:t('分工提议更新','Assignment proposal updated')})),
   ].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)):[];
   return <><strong>{task.title}</strong><p>{status} · {t('发布者','Posted by')} {name(task.creator)}</p><p className="preview-summary">{task.description}</p><div className="task-preview-facts">
-    {error?<p role="status">{translateError(error)}</p>:snapshot?<><p>{t('参与者','Participants')} · {participants.length?participants.slice(0,3).map(name).join('、'):t('暂无认领','No claims yet')}{participants.length>3&&t(` 等 ${participants.length} 位`,` · ${participants.length} total`)}</p><p>{t('最近进展','Latest activity')} · {events[0].label}</p><small>{time(events[0].at)}</small><small>{t('读取于','Read at')} {time(new Date(snapshot.readAt).toISOString())}</small></>:<p>{t('正在读取参与者与进展…','Loading participants and activity…')}</p>}
+    {error?<p role="status">{translateError(error)}</p>:snapshot?<><p>{t('参与者','Participants')} · {participants.length?participants.slice(0,3).map(name).join(t('、',', ')):t('暂无认领','No claims yet')}{participants.length>3&&t(` 等 ${participants.length} 位`,` · ${participants.length} total`)}</p><p>{t('最近进展','Latest activity')} · {events[0].label}</p><small>{time(events[0].at)}</small><small>{t('读取于','Read at')} {time(new Date(snapshot.readAt).toISOString())}</small></>:<p>{t('正在读取参与者与进展…','Loading participants and activity…')}</p>}
   </div></>;
 }
