@@ -33,30 +33,30 @@ void main(){
   float inside=1.-smoothstep(.76,1.14,d);
   float rim=exp(-abs(edge)*11.);
   float approach=1.-smoothstep(1.,2.4,d);
-  // 进入环内放大，穿过倾斜边缘时拉伸，离开后连续恢复。
-  vec2 refracted=p-q*inside*(.42+impulse*.08);
-  refracted+=q*rim*.2+q*(1.-inside)*approach*.07;
-  refracted.y+=sin(local.x*2.8+time*.22)*inside*.012;
+  // 中心适度放大以保留句子，强变形集中在穿过环口的窄带。
+  vec2 refracted=p-q*inside*(.35+impulse*.07);
+  refracted+=vec2(q.x*.36,q.y*.2)*rim+q*(1.-inside)*approach*.07;
+  refracted.y+=sin(local.x*3.2+time*.15)*inside*.016+local.x*rim*.012;
   float mobile=1.-step(760.,resolution.x);
   float rows=mix(11.,7.,mobile);
   float fieldHeight=mix(.36,.28,mobile);
   float fieldY=(refracted.y-.025)/fieldHeight+.5;
   float row=clamp(floor(fieldY*rows),0.,rows-1.);
-  float rowSpeed=(.027+mod(row*3.,7.)*.0018)*1.3;
+  float rowSpeed=(.03+mod(row*3.,7.)*.0009)*1.3*mix(1.,.94,mobile);
   float textScale=rows*64./(4096.*fieldHeight);
   // 纹理宽度加倍后补偿坐标速度，实际移动速度仅提高 30%。
   float period=lineWidths[int(row)]/4096.;
   float flow=refracted.x*textScale+time*rowSpeed*.5+row*.07;
   vec2 textUv=vec2(mod(flow,period),(10.-row+fract(fieldY*rows))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
-  float split=.0015*rim;
+  float split=.0022*rim;
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
     texture2D(lettering,textUv).g,texture2D(lettering,textUv-vec2(split,0.)).b)*textMask;
   vec3 soft=vec3(0.);
   for(int i=-2;i<=2;i++){
     soft+=texture2D(lettering,textUv+vec2(float(i)*(.0003+rim*.0008),0.)).rgb*.2;
   }
-  letters=mix(letters,soft*textMask,.03+rim*.4);
+  letters=mix(letters,soft*textMask,.03+rim*.28);
   vec3 color=letters*vec3(.95,.91,1.);
   // 淡出按屏幕宽度计算，文字到接近画面边缘才消散。
   float screenEdge=abs(p.x)/(.5*aspect);
