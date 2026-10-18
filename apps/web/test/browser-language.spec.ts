@@ -9,6 +9,17 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await page.goto('/');
   await expect(page.locator('#public-title')).toContainText('以履历驱动的');
   await expect(page.locator('.lens-scene canvas')).toHaveCount(2);
+  await expect(page.locator('.public-topbar .public-identity')).toHaveCount(0);
+  await expect(page.locator('.orbit-join')).toHaveText('起名加入');
+  const phase=()=>page.locator('.lens-hero').evaluate(el=>el.style.getPropertyValue('--flow-position'));
+  const initialPhase=await phase();
+  await expect.poll(phase).not.toBe(initialPhase);
+  await page.getByRole('button',{name:'暂停首页动画'}).click();
+  await page.waitForTimeout(200);
+  const pausedPhase=await phase();
+  await page.waitForTimeout(200);
+  expect(await phase()).toBe(pausedPhase);
+  await page.getByRole('button',{name:'播放首页动画'}).click();
   await page.getByRole('button',{name:'切换为英文',exact:true}).click();
   await expect(page.locator('html')).toHaveAttribute('lang','en');
   await expect(page.locator('#public-title')).toContainText('A track-record-driven');
