@@ -3,9 +3,12 @@ test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}}
 test('淡入切页、惯性保护、同位面板往返与手机布局',async({page})=>{
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto('/');
+  const bounds=await page.locator('.experience-shell').boundingBox();
+  expect(bounds).toEqual({x:0,y:0,width:1280,height:720});
+  await expect(page.locator('.lens-scene .signal-scene')).toHaveCSS('mask-image',/radial-gradient/);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','0');
   await page.mouse.move(6,350);
-  await page.mouse.wheel(0,160);
+  await page.mouse.wheel(0,16);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
   for(let i=0;i<5;i++)await page.mouse.wheel(0,120);
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
@@ -19,12 +22,15 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   const reading=page.locator('.stage-tasks .stage-card-scroll');
   await reading.evaluate(el=>{el.scrollTop=Math.max(0,el.scrollHeight-el.clientHeight-60);});
   await reading.hover();
+  await page.getByRole('button',{name:'阅读内容',exact:true}).click();
+  await reading.hover();
   await page.mouse.wheel(0,500);
   await page.mouse.wheel(0,120);
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  await page.getByRole('button',{name:'退出阅读',exact:true}).click();
   await page.waitForTimeout(350);
-  await page.mouse.move(6,350);
-  await page.mouse.wheel(0,180);
+  await reading.hover();
+  await page.mouse.wheel(0,16);
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
   await page.waitForTimeout(1100);
   const second=await page.locator('.stage-discussion').boundingBox();
