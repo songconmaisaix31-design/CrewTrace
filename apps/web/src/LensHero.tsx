@@ -34,7 +34,7 @@ void main(){
   float rim=exp(-abs(edge)*11.);
   float approach=1.-smoothstep(1.,2.4,d);
   // 进入环内放大，穿过倾斜边缘时拉伸，离开后连续恢复。
-  vec2 refracted=p-q*inside*(.48+impulse*.08);
+  vec2 refracted=p-q*inside*(.42+impulse*.08);
   refracted+=q*rim*.2+q*(1.-inside)*approach*.07;
   refracted.y+=sin(local.x*2.8+time*.22)*inside*.012;
   float mobile=1.-step(760.,resolution.x);
@@ -58,12 +58,14 @@ void main(){
   }
   letters=mix(letters,soft*textMask,.03+rim*.4);
   vec3 color=letters*vec3(.95,.91,1.);
-  float vignette=1.-smoothstep(.3,.82,abs(p.x));
+  // 淡出按屏幕宽度计算，文字到接近画面边缘才消散。
+  float screenEdge=abs(p.x)/(.5*aspect);
+  float vignette=1.-smoothstep(.66,1.08,screenEdge);
   float alpha=max(color.r,max(color.g,color.b));
   float focus=1.-smoothstep(.65,1.65,d);
-  float strength=mix(.22+focus*.7,.3+focus*.68,1.-step(.5,abs(row-floor(rows*.5))));
+  float strength=mix(.24+focus*.59,.3+focus*.64,1.-step(.5,abs(row-floor(rows*.5))));
   float passage=(.94+breath*.06)*(1.-rim*.12);
-  float departure=mix(.64,1.,smoothstep(-1.8,.4,local.x));
+  float departure=mix(.82,1.,smoothstep(-2.6,.4,local.x));
   gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*strength*passage*mix(departure,1.,inside));
 }`;
 
