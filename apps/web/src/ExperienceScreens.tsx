@@ -5,7 +5,6 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   const [screen,setScreen]=useState(()=>location.hash==='#collaborate'||new URLSearchParams(location.search).has('task')?1:0);
   const [panel,setPanel]=useState(0);
   const currentScreen=useRef(screen);currentScreen.current=screen;
-  const currentPanel=useRef(panel);currentPanel.current=panel;
   const root=useRef<HTMLDivElement>(null);
   function enter(){setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   function home(){setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
@@ -16,8 +15,10 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       if(element.querySelector('dialog[open]'))return;
       if(currentScreen.current===0&&direction>0){returnArmed=false;enter();}
       else if(currentScreen.current===1){
-        if(direction<0&&currentPanel.current===0){if(returnArmed){returnArmed=false;home();}else returnArmed=true;}
-        else{setPanel(direction>0?1:0);returnArmed=direction<0;}
+        if(direction<0){
+          if(returnArmed){returnArmed=false;home();}
+          else{setPanel(0);returnArmed=true;element.querySelectorAll('.stage-card-scroll').forEach(box=>box.scrollTo({top:0,behavior:'instant'}));}
+        }else{setPanel(1);returnArmed=false;}
       }
     }
     function canRead(target:EventTarget|null,direction:number){
@@ -26,27 +27,27 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
     }
     function wheel(event:WheelEvent){
       if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)||element.querySelector('dialog[open]'))return;
-      clearTimeout(release);release=setTimeout(()=>{blocked=false;amount=0;},220);
-      if(canRead(event.target,event.deltaY)){blocked=true;returnArmed=false;return;}
+      clearTimeout(release);release=setTimeout(()=>{blocked=false;amount=0;},140);
+      if(event.deltaY>0&&canRead(event.target,event.deltaY)){blocked=true;returnArmed=false;return;}
       event.preventDefault();
       if(blocked)return;
       const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
       if(Math.sign(amount)!==Math.sign(delta))amount=0;
       amount+=delta;
-      if(Math.abs(amount)>55){step(Math.sign(amount));blocked=true;amount=0;}
+      if(Math.abs(amount)>30){step(Math.sign(amount));blocked=true;amount=0;}
     }
     function start(event:TouchEvent){touchY=event.touches[0].clientY;touchDistance=0;}
     function move(event:TouchEvent){
       const delta=touchY-event.touches[0].clientY;
-      if(element.querySelector('dialog[open]')||canRead(event.target,delta)){touchY=event.touches[0].clientY;touchDistance=0;return;}
+      if(element.querySelector('dialog[open]')||(delta>0&&canRead(event.target,delta))){touchY=event.touches[0].clientY;touchDistance=0;return;}
       event.preventDefault();touchDistance=delta;
     }
-    function end(){if(Math.abs(touchDistance)>65)step(Math.sign(touchDistance));touchDistance=0;}
+    function end(){if(Math.abs(touchDistance)>35)step(Math.sign(touchDistance));touchDistance=0;}
     function key(event:KeyboardEvent){
       if((event.target as HTMLElement).closest('input,textarea,select,button,a,[contenteditable=true]')||element.querySelector('dialog[open]'))return;
       if(event.key!=='PageDown'&&event.key!=='PageUp')return;
       const direction=event.key==='PageDown'?1:-1;
-      if(canRead(event.target,direction))return;
+      if(direction>0&&canRead(event.target,direction))return;
       event.preventDefault();step(direction);
     }
     element.addEventListener('wheel',wheel,{passive:false});element.addEventListener('touchstart',start,{passive:true});element.addEventListener('touchmove',move,{passive:false});element.addEventListener('touchend',end);element.addEventListener('keydown',key);

@@ -23,7 +23,7 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await page.getByRole('button',{name:'切换为英文',exact:true}).click();
   await expect(page.locator('html')).toHaveAttribute('lang','en');
   await expect(page.locator('#public-title')).toContainText('A track-record-driven');
-  await expect(page.getByRole('link',{name:'Workspace',exact:true})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Workspace',exact:true})).toHaveCount(0);
   await page.getByRole('button',{name:'Join',exact:true}).click();
   await page.getByLabel('Agent name',{exact:true}).fill('Draft kept locally');
   await page.getByRole('dialog').getByRole('button',{name:'Switch to Chinese'}).click();
@@ -32,7 +32,7 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await expect(page.getByLabel('Agent name',{exact:true})).toHaveValue('Draft kept locally');
   await page.getByRole('button',{name:'Close dialog'}).click();
   await page.getByRole('button',{name:'Connect MCP',exact:true}).click();
-  await expect(page.locator('.public-topbar').getByRole('button',{name:'Connect MCP',exact:true})).toHaveCount(0);
+  await expect(page.locator('.public-topbar').getByRole('button',{name:'Connect MCP',exact:true})).toHaveCount(1);
   await page.waitForTimeout(350);
   const modalBox=await page.getByRole('dialog').boundingBox();
   const viewport=page.viewportSize()!;
@@ -44,7 +44,7 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await expect(page.getByRole('link',{name:'Download Skill'})).toHaveAttribute('href','/skills/crewtrace/SKILL.en.md');
   await page.getByRole('button',{name:'Close dialog'}).click();
   // 只读线上真实任务，不创建身份或写入生产数据。
-  await page.getByRole('link',{name:'Workspace',exact:true}).click();
+  await page.getByRole('link',{name:'Explore below',exact:true}).click();
   const firstTask=page.locator('.public-record h3 button').first();
   await expect(firstTask).toBeVisible();
   const title=await firstTask.innerText();

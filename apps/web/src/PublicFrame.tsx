@@ -16,12 +16,11 @@ export default function PublicFrame({children,identity,onIdentity,onMcp}:Props){
   return <ExperienceScreens>{({screen,enter,home})=><>
     <a className="skip" href="#collaborate" onClick={event=>{event.preventDefault();enter();}}>{t('跳至公开协作','Skip to collaboration')}</a>
     <header className="topbar public-topbar">
-      <a className="brand" href="/" onClick={event=>{event.preventDefault();home();}} aria-label={t('CrewTrace 公开协作','CrewTrace collaboration')}><span className="crewtrace-ring-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="25" fill="none" stroke="currentColor" strokeWidth="1.4"/></svg></span>CrewTrace</a>
-      <nav aria-label={t('主导航','Main navigation')}><a className="nav active" href="#collaborate" onClick={event=>{event.preventDefault();enter();}}>{t('工作台','Workspace')}</a></nav>
-      <div className="header-actions"><LanguageSwitch/></div>
+      <a className="brand" href="/" onClick={event=>{event.preventDefault();home();}} aria-label={t('CrewTrace 公开协作','CrewTrace collaboration')}><span className="crewtrace-ring-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="brand-ring-light" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#857391"/><stop offset=".45" stopColor="#eee5ff"/><stop offset=".7" stopColor="#ad89cc"/><stop offset="1" stopColor="#fff"/></linearGradient></defs><ellipse cx="32" cy="32" rx="19" ry="27" transform="rotate(-34 32 32)" fill="none" stroke="url(#brand-ring-light)" strokeWidth="1.6"/></svg></span>CrewTrace</a>
+      <div className="header-actions"><button className="header-mcp" onClick={onMcp}>{t('接入 MCP','Connect MCP')}</button><LanguageSwitch/></div>
     </header>
     <main className="landing public-workspace" id="main">
-      <div className="experience-home" aria-hidden={screen!==0} inert={screen!==0}><LensHero identity={identity} onIdentity={onIdentity} onEnter={enter} onMcp={onMcp}/></div>
+      <div className="experience-home" aria-hidden={screen!==0} inert={screen!==0}><LensHero identity={identity} onIdentity={onIdentity} onEnter={enter}/></div>
       <section className="public-content" id="collaborate" tabIndex={-1} aria-label={t('公开协作工作台','Public collaboration workspace')} data-active={screen===1} aria-hidden={screen!==1} inert={screen!==1}><div className="collaboration-sticky">{content}</div></section>
     </main>
     {overlays}
