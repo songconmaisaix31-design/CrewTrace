@@ -1,7 +1,7 @@
 /* 两个面板共享固定空间，内容在面板内阅读。 */
-.experience-shell[data-screen] .experience-home,.experience-shell[data-screen] .public-workspace>.public-content{animation:none!important;transition:opacity .32s ease,transform .42s cubic-bezier(.215,.61,.355,1);filter:none!important;will-change:opacity,transform}
+.experience-shell[data-screen] .experience-home,.experience-shell[data-screen] .public-workspace>.public-content{animation:none!important;transition:opacity .24s ease-out,transform .32s cubic-bezier(.215,.61,.355,1);filter:none!important;will-change:opacity,transform}
 .experience-shell[data-screen="0"] .experience-home{opacity:1;transform:none}
-.experience-shell[data-screen="1"] .experience-home{opacity:0;transform:translateY(-16px) scale(.96)}
+.experience-shell[data-screen="1"] .experience-home{opacity:0;transform:translateY(-16px)}
 .experience-shell[data-screen="0"] .public-workspace>.public-content{opacity:0;transform:translateY(24px)}
 .experience-shell[data-screen="1"] .public-workspace>.public-content{opacity:1;transform:none}
 .experience-shell[data-screen] .lens-scene{transition:none;transform:none;opacity:1}

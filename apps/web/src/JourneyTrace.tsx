@@ -11,7 +11,7 @@ export default function JourneyTrace(){
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
     if(screen===1&&progress.current===0)shape.current=orbit.current.map(point=>({...point}));
     const start=progress.current,begin=performance.now(),previous=lastPoints.current;
-    const duration=reduced.matches?0:screen===start?290:420;
+    const duration=reduced.matches?0:screen===start?290:320;
     let targetBox:{left:number;width:number;y:number}|null=null;
     function measure(){
       const tab=root.querySelector<HTMLElement>('.stage-switch button[aria-pressed="true"]');

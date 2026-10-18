@@ -1,5 +1,33 @@
 import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
+test('轻滚动、惯性后再次发力与触屏即时响应',async({page})=>{
+  await page.goto('/');
+  const shell=page.locator('.experience-shell');
+  await expect(page.getByRole('link',{name:'向下探索',exact:true})).toBeVisible();
+  await page.mouse.move(6,350);
+  await page.mouse.wheel(0,18);
+  await expect(shell).toHaveAttribute('data-screen','1');
+  for(const delta of [12,8,4]){
+    await page.waitForTimeout(60);
+    await page.mouse.wheel(0,delta);
+  }
+  await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  await page.mouse.wheel(0,30);
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+  await page.mouse.wheel(0,-18);
+  await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  await page.waitForTimeout(120);
+  await page.mouse.wheel(0,-18);
+  await expect(shell).toHaveAttribute('data-screen','0');
+  const input=await page.context().newCDPSession(page);
+  await input.send('Emulation.setTouchEmulationEnabled',{enabled:true});
+  await input.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:6,y:350}]});
+  await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:6,y:300}]});
+  await expect(shell).toHaveAttribute('data-screen','1');
+  await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:6,y:180}]});
+  await input.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+});
 test('连续手势不跳过01，双向切页与内容边界阅读',async({page})=>{
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto('/');

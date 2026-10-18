@@ -13,7 +13,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   function home(){currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
     const element=root.current!;
-    let amount=0,lastWheel=0,lastDirection=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchRead=false;
+    let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,decayCount=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchRead=false,touchConsumed=false;
     const modalOpen=()=>!!element.querySelector('dialog[open]');
     function step(direction:number){
       if(currentScreen.current===0){if(direction>0)enter();return;}
@@ -29,27 +29,35 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
       if(!delta)return;
       const direction=Math.sign(delta);
-      const fresh=event.timeStamp-lastWheel>180;
+      const magnitude=Math.abs(delta);
+      const fresh=event.timeStamp-lastWheel>100;
       const reverse=direction!==lastDirection;
-      if(fresh||reverse){amount=0;consumed=false;}
+      // 惯性连续减弱后重新明显加速，视为下一次主动滑动。
+      const renewed=consumed&&decayCount>=3&&event.timeStamp-lastStep>160&&magnitude>=16&&magnitude>lastMagnitude*2+8;
+      if(fresh||reverse||renewed){amount=0;consumed=false;decayCount=0;}
+      else if(magnitude<lastMagnitude)decayCount++;
+      else if(magnitude>lastMagnitude)decayCount=0;
+      lastMagnitude=magnitude;
       lastWheel=event.timeStamp;lastDirection=direction;
       // 阅读手势到达边缘后先停住；下一次独立手势再换页。
       if(canRead(event.target,direction)){consumed=true;amount=0;return;}
       event.preventDefault();
       if(consumed)return;
       amount+=delta;
-      if(Math.abs(amount)>=24){consumed=true;amount=0;step(direction);}
+      if(Math.abs(amount)>=16){consumed=true;amount=0;lastStep=event.timeStamp;step(direction);}
     }
-    function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchRead=false;}
+    function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchRead=false;touchConsumed=false;}
     function move(event:TouchEvent){
       if(modalOpen())return;
       if(multiTouch||event.touches.length!==1){multiTouch=true;touchDistance=0;return;}
+      if(touchConsumed){event.preventDefault();return;}
       const delta=touchY-event.touches[0].clientY;
       if(Math.abs(event.touches[0].clientX-touchX)>Math.abs(delta)){touchDistance=0;return;}
       if(touchRead||canRead(event.target,delta)){touchRead=true;touchDistance=0;return;}
       touchDistance=delta;event.preventDefault();
+      if(Math.abs(touchDistance)>=24){touchConsumed=true;step(Math.sign(touchDistance));}
     }
-    function end(){if(!modalOpen()&&!multiTouch&&!touchRead&&Math.abs(touchDistance)>28)step(Math.sign(touchDistance));touchDistance=0;}
+    function end(){touchDistance=0;}
     function cancel(){touchDistance=0;multiTouch=true;}
     function key(event:KeyboardEvent){
       if(event.repeat||modalOpen()||(event.key!=='PageDown'&&event.key!=='PageUp'))return;
