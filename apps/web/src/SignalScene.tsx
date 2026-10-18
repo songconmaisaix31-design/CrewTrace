@@ -89,7 +89,7 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         const light=Math.min(1,highlight*.7+proximity*.65);
         ctx.strokeStyle=`rgba(${Math.round(165+depth*65+light*24)},${Math.round(121+depth*100+light*28)},255,${Math.min(1,(bright?.3:.12)+depth*(bright?.52:.28)+breath*.045+light*.35)})`;
         ctx.lineWidth=(bright?.85:.45)+depth*.65+light*.55;
-        ctx.shadowColor='#c4a2ff';ctx.shadowBlur=bright?light*10:0;ctx.stroke();
+        ctx.shadowColor='#c4a2ff';ctx.shadowBlur=bright?Math.round(light*10):0;ctx.stroke();
       }
       ctx.shadowBlur=0;
       ctx.globalCompositeOperation='source-over';

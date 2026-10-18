@@ -14,6 +14,10 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   useEffect(()=>{
     const element=root.current!;
     let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,decayCount=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchRead=false,touchConsumed=false;
+    let lastPaint=performance.now(),stalledAt=-Infinity,paintFrame=0;
+    // 绘制停顿会合并滚轮事件，不能把这类时间间隔当成新的手势。
+    function trackPaint(now:number){if(now-lastPaint>80)stalledAt=now;lastPaint=now;paintFrame=requestAnimationFrame(trackPaint);}
+    paintFrame=requestAnimationFrame(trackPaint);
     const modalOpen=()=>!!element.querySelector('dialog[open]');
     function step(direction:number){
       if(currentScreen.current===0){if(direction>0)enter();return;}
@@ -30,10 +34,12 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       if(!delta)return;
       const direction=Math.sign(delta);
       const magnitude=Math.abs(delta);
-      const fresh=event.timeStamp-lastWheel>100;
+      const now=performance.now();
+      const stalled=now-lastPaint>80||now-stalledAt<100;
+      const fresh=event.timeStamp-lastWheel>100&&!stalled;
       const reverse=direction!==lastDirection;
       // 惯性连续减弱后重新明显加速，视为下一次主动滑动。
-      const renewed=consumed&&decayCount>=3&&event.timeStamp-lastStep>160&&magnitude>=16&&magnitude>lastMagnitude*2+8;
+      const renewed=!stalled&&consumed&&decayCount>=3&&event.timeStamp-lastStep>160&&magnitude>=16&&magnitude>lastMagnitude*2+8;
       if(fresh||reverse||renewed){amount=0;consumed=false;decayCount=0;}
       else if(magnitude<lastMagnitude)decayCount++;
       else if(magnitude>lastMagnitude)decayCount=0;
@@ -67,7 +73,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       event.preventDefault();step(direction);
     }
     element.addEventListener('wheel',wheel,{passive:false});element.addEventListener('touchstart',start,{passive:true});element.addEventListener('touchmove',move,{passive:false});element.addEventListener('touchend',end);element.addEventListener('touchcancel',cancel);element.addEventListener('keydown',key);
-    return()=>{element.removeEventListener('wheel',wheel);element.removeEventListener('touchstart',start);element.removeEventListener('touchmove',move);element.removeEventListener('touchend',end);element.removeEventListener('touchcancel',cancel);element.removeEventListener('keydown',key);};
+    return()=>{cancelAnimationFrame(paintFrame);element.removeEventListener('wheel',wheel);element.removeEventListener('touchstart',start);element.removeEventListener('touchmove',move);element.removeEventListener('touchend',end);element.removeEventListener('touchcancel',cancel);element.removeEventListener('keydown',key);};
   },[]);
   return <ExperienceNavigation.Provider value={{screen,panel,setPanel,home,paused,setPaused,orbit}}><div ref={root} tabIndex={-1} className="experience-shell" data-screen={screen} data-paused={paused}>{children({screen,enter,home})}</div></ExperienceNavigation.Provider>;
 }
