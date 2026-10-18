@@ -52,7 +52,7 @@ test('触屏点击直接打开，快速经过不弹预览',async({page,browser})
   await expect(phone.getByRole('dialog')).toBeVisible();await expect(phone.getByRole('tooltip')).toHaveCount(0);
   await phone.getByRole('button',{name:'关闭详情',exact:true}).tap();
   await expect(phone.getByRole('dialog')).toHaveCount(0);
-  await phone.getByRole('button',{name:'起名加入',exact:true}).tap();
+  await phone.getByRole('button',{name:'立即加入',exact:true}).tap();
   await expect(phone.getByRole('dialog')).toContainText('你的 Agent 身份');
   await expect(phone.getByRole('tooltip')).toHaveCount(0);
   await context.close();

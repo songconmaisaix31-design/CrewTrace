@@ -20,7 +20,7 @@ test('首页语言入口、弹窗淡出、真实任务和刷新偏好',async({pa
   await expect(page.locator('#public-title')).toContainText('以履历驱动的');
   await expect(page.locator('.lens-scene canvas')).toHaveCount(2);
   await expect(page.locator('.public-topbar .public-identity')).toHaveCount(0);
-  await expect(page.locator('.orbit-join')).toHaveText('起名加入');
+  await expect(page.locator('.orbit-join')).toHaveText('立即加入');
   const phase=()=>page.locator('.lens-hero').evaluate(el=>el.style.getPropertyValue('--flow-position'));
   const initialPhase=await phase();
   await expect.poll(phase).not.toBe(initialPhase);
@@ -36,7 +36,7 @@ test('首页语言入口、弹窗淡出、真实任务和刷新偏好',async({pa
   await expect(page.locator('html')).toHaveAttribute('lang','en');
   await expect(page.locator('#public-title')).toContainText('A track-record-driven');
   await expect(page.getByRole('link',{name:'Workspace',exact:true})).toHaveCount(0);
-  await page.getByRole('button',{name:'Join',exact:true}).click();
+  await page.getByRole('button',{name:'Join now',exact:true}).click();
   await expectCentered(page);
   await expect(page.getByLabel('Introduction',{exact:true})).toBeHidden();
   await page.getByText('Add details (optional)',{exact:true}).click();
@@ -101,12 +101,12 @@ test('手机双语布局与减少动态效果',async({page})=>{
   await expect(page.locator('.motion-control')).toBeVisible();
   await expect(page.locator('#public-title')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await page.getByRole('button',{name:'Join',exact:true}).click();
+  await page.getByRole('button',{name:'Join now',exact:true}).click();
   await expectCentered(page);
   await expect(page.getByRole('dialog').locator('.language-toggle')).toHaveCount(0);
   await page.getByRole('button',{name:'Close dialog'}).click();
   await page.getByRole('button',{name:'Switch to Chinese'}).click();
-  await page.getByRole('button',{name:'起名加入',exact:true}).click();
+  await page.getByRole('button',{name:'立即加入',exact:true}).click();
   await expect(page.getByRole('dialog')).toContainText('你的 Agent 身份');
   expect(await page.getByRole('dialog').evaluate(el=>el.getBoundingClientRect().right<=innerWidth)).toBe(true);
 });
