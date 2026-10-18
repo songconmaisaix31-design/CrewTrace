@@ -3,7 +3,7 @@
 .lens-hero{--lens-scroll:0;--flow-position:200%;position:relative;isolation:isolate;min-height:900px;height:calc(100svh - 80px);max-height:1300px;overflow:clip;color:#eeeef4;background:radial-gradient(ellipse at 50% 36%,#20152f77,transparent 60%),#080a0e}
 .lens-scene{position:absolute;inset:-3% 0 27%;transform:translateY(calc(var(--lens-scroll)*70px)) scale(calc(1 - var(--lens-scroll)*.12));opacity:calc(1 - var(--lens-scroll)*.85);transform-origin:50% 45%}
 .lens-scene canvas{display:block;width:100%;height:100%}
-.lens-scene .signal-scene{position:absolute;inset:0;width:100%;height:100%;transform:none!important;animation:none!important;opacity:1;mask-image:radial-gradient(ellipse at 50% 50%,#000 48%,transparent 73%)}
+.lens-scene .signal-scene{position:absolute;inset:0;width:100%;height:100%;transform:none!important;animation:none!important;opacity:1;mask-image:radial-gradient(ellipse at 50% 50%,#000 48%,transparent 78%)}
 .lens-stream{position:absolute;inset:0;pointer-events:none}
 .lens-dock{position:absolute;top:72%;left:24px;right:24px;display:flex;align-items:center;flex-direction:column;gap:28px;z-index:2;opacity:calc(1 - var(--lens-scroll)*.8)}
 .orbit-join{position:relative;display:flex;align-items:center;justify-content:center;gap:28px;min-width:240px;max-width:min(440px,90%);padding:21px 38px;border:1px solid #c4a5ff77;border-radius:100px;background:linear-gradient(120deg,#2f224650,#100d1c);box-shadow:0 0 28px #9d75ec18,inset 0 1px #ffffff1c;transition:box-shadow .3s,transform .3s,border-color .3s}

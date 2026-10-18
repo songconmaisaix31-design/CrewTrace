@@ -7,8 +7,9 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   const currentScreen=useRef(screen);currentScreen.current=screen;
   const currentPanel=useRef(panel);currentPanel.current=panel;
   const root=useRef<HTMLDivElement>(null);
-  function enter(){setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
-  function home(){setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
+  const pageGuard=useRef(0);
+  function enter(){pageGuard.current=performance.now()+620;currentPanel.current=0;currentScreen.current=1;setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
+  function home(){pageGuard.current=performance.now()+620;currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
     const element=root.current!;
     let amount=0,blocked=false,lastWheel=0,lastDelta=0,lastStep=0,touchY=0,touchDistance=0;
@@ -29,6 +30,11 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       event.preventDefault();
       const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
       const now=performance.now();
+      // 跨页完成并且惯性结束后，才把后续滚轮识别为新手势。
+      if(pageGuard.current){
+        if(now<pageGuard.current||now-lastWheel<180){lastWheel=now;lastDelta=delta;blocked=true;amount=0;return;}
+        pageGuard.current=0;blocked=false;amount=0;
+      }
       const fresh=now-lastWheel>65||Math.sign(delta)!==Math.sign(lastDelta)||(now-lastStep>150&&Math.abs(delta)>Math.max(8,Math.abs(lastDelta)*1.5));
       if(fresh){blocked=false;amount=0;}
       lastWheel=now;lastDelta=delta;
@@ -45,6 +51,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
     }
     function end(){if(Math.abs(touchDistance)>20)step(Math.sign(touchDistance));touchDistance=0;}
     function key(event:KeyboardEvent){
+      if(event.repeat)return;
       if((event.target as HTMLElement).closest('input,textarea,select,button,a,[contenteditable=true]')||element.querySelector('dialog[open]'))return;
       if(event.key!=='PageDown'&&event.key!=='PageUp')return;
       const direction=event.key==='PageDown'?1:-1;

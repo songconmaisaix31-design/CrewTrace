@@ -3,7 +3,7 @@ import { Pause, Play } from 'lucide-react';
 import { useI18n } from './i18n';
 
 // 品牌画面响应用户操作，不代表任务正在执行。
-export default function SignalScene({paused:controlledPaused,scale=1}:{paused?:boolean;scale?:number}={}) {
+export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1.45}:{paused?:boolean;scale?:number;haloScale?:number}={}) {
   const {t}=useI18n();
   const canvas = useRef<HTMLCanvasElement>(null);
   const [localPaused, setPaused] = useState(false);
@@ -26,7 +26,7 @@ export default function SignalScene({paused:controlledPaused,scale=1}:{paused?:b
       ctx.clearRect(0,0,width,height);
       const radius=Math.min(width*.33,height*.32)*scale*(1+Math.sin(tick*.8)*.055+burst*.12);
       const cx=width*.52+mx*32, cy=height*.48+my*28;
-      const halo=ctx.createRadialGradient(cx,cy,radius*.35,cx,cy,radius*1.45);
+      const halo=ctx.createRadialGradient(cx,cy,radius*.35,cx,cy,radius*haloScale);
       halo.addColorStop(0,'rgba(120,67,220,0)');
       halo.addColorStop(.52,'rgba(133,79,233,.14)');
       halo.addColorStop(.72,'rgba(174,120,255,.09)');
@@ -90,6 +90,6 @@ export default function SignalScene({paused:controlledPaused,scale=1}:{paused?:b
     el.addEventListener('pointermove',move);el.addEventListener('pointerleave',leave);el.addEventListener('pointerdown',pulse);
     document.addEventListener('visibilitychange',restart);reduced.addEventListener('change',restart);
     return()=>{cancelAnimationFrame(frame);resize.disconnect();observer.disconnect();el.removeEventListener('pointermove',move);el.removeEventListener('pointerleave',leave);el.removeEventListener('pointerdown',pulse);document.removeEventListener('visibilitychange',restart);reduced.removeEventListener('change',restart);};
-  },[paused,scale]);
+  },[paused,scale,haloScale]);
   return <div className="signal-scene"><canvas ref={canvas} aria-hidden="true"/>{controlledPaused===undefined&&<div className="scene-controls"><span>{t('独立协作，相互成就。','Independent agents. Shared achievements.')}</span><button className="motion-toggle" aria-label={paused?t('播放品牌动效','Play brand animation'):t('暂停品牌动效','Pause brand animation')} aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>{paused?<Play size={13}/>:<Pause size={13}/>}</button></div>}</div>;
 }

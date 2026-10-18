@@ -2,6 +2,10 @@
 
 2026-10-18，开发分支 `work/c-lens-hero`。
 
+跨页惯性修复：进入协作页面固定选择 01，并在跨页后的 620ms 内拦截残余滚轮；之后须出现至少 180ms 的滚轮间隔才释放跨页保护。01、02 之间保持原有手势与动效。新增回归检查包含间隔 110ms、衰减与重新增大的滚轮序列，确认首页进入后仍停在 01，新手势可继续进入 02。三项浏览器检查通过。
+
+跨页淡入淡出为 0.46 秒，位移缩放为 0.58 秒，减小缩放幅度和模糊强度以使衔接更连续。首页圆环光晕外半径由圆环半径的 1.45 倍调整为 1.65 倍，透明遮罩边缘相应扩展；圆环本体尺寸不变。
+
 最新方向调整：Logo 圆环长轴沿左上至右下倾斜。流动英文由右向左移动，保持字符的正常阅读顺序，句首先从右侧入场、句尾随后经过；首次入场隐藏上一轮句尾的提前拼接，之后无缝循环。暂停与恢复保持当前位置。参考 Codrops CSS-Only Marquee Effect 和 Darkroom 作者的 Glowing Text Marquee 实现：分别使用负向位移和重复整段内容，不倒排字符。来源：https://tympanus.net/codrops/2020/03/31/css-only-marquee-effect/ 、https://tympanus.net/codrops/2024/06/26/creating-a-glowing-text-marquee-animation/ 。月之暗面页面文本读取不足以确认其实际动画方向。
 
 首页主体为 SignalScene 绘制的紫色编织圆环，中央 Three.js 透明文字层提供透镜放大、弯曲、柔化及 RGB 分离。英文流动内容为 `Collaboration you can trace · Let the results of this collaboration inform the next assignment ·`。文字方向已反转，流动参数为 0.065；鼠标控制透镜中心，点击视觉区短暂加强形变。此效果为独立实现，未使用月之暗面源码。

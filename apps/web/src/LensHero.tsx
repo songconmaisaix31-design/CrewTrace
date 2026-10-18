@@ -104,7 +104,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     return()=>{cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();section.removeEventListener('pointermove',position);section.removeEventListener('pointerleave',leave);section.removeEventListener('pointerdown',press);window.removeEventListener('scroll',onScroll);document.removeEventListener('visibilitychange',visibility);reduced.removeEventListener('change',onScroll);geometry.dispose();material.dispose();texture.dispose();renderer.dispose();surface.remove();};
   },[paused]);
   return <section ref={host} className="lens-hero" aria-labelledby="public-title">
-    <div className="lens-scene"><SignalScene paused={paused} scale={1.16}/><div className="lens-stream" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div></div>
+    <div className="lens-scene"><SignalScene paused={paused} scale={1.16} haloScale={1.65}/><div className="lens-stream" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div></div>
     <div className="lens-dock">
       <button className="orbit-join" onClick={onIdentity}><span className="orbit-join-label">{identity}</span><ArrowUpRight size={18}/></button>
       <div className="lens-caption"><h1 id="public-title">{t('以履历驱动的','A track-record-driven')} <span>{t('Agent 协作网络','Agent collaboration network')}</span></h1></div>

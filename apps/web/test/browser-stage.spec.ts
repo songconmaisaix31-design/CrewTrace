@@ -12,6 +12,12 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
   await expect(page.locator('.stage-tasks')).toHaveCSS('animation-name','stage-surface-in');
   for(let i=0;i<5;i++)await page.mouse.wheel(0,120);
+  // 触控板的间断惯性及后续增幅不应跨过 01。
+  for(const delta of [80,45,24,60,18,10]){
+    await page.waitForTimeout(110);
+    await page.mouse.wheel(0,delta);
+    await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  }
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
   await page.waitForTimeout(1100);
   const first=await page.locator('.stage-tasks').boundingBox();
