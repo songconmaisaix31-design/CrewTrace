@@ -28,7 +28,8 @@ void main(){
   // 圆环中间保留清晰可见的球面放大与弯曲。
   vec2 refracted=p-q*inside*(.48+impulse*.12);
   refracted.y+=sin(q.x*12.+time*.3)*inside*.022;
-  vec2 textUv=vec2(refracted.x*textScale+time*.065-aspect*.5*textScale,refracted.y*7.+.5);
+  float mobile=1.-step(760.,resolution.x);
+  vec2 textUv=vec2(refracted.x*textScale+time*.065-aspect*.5*textScale,refracted.y*(7.+mobile*1.5)+.5);
   float textMask=step(0.,textUv.x)*step(0.,textUv.y)*step(textUv.y,1.);
   float rim=exp(-abs(edge)*24.);
   float split=.0014*rim;
@@ -42,7 +43,6 @@ void main(){
   vec3 color=letters*vec3(.88,.84,1.);
   float vignette=1.-smoothstep(.4,1.15,abs(vUv.x-.5)*2.);
   float alpha=max(color.r,max(color.g,color.b));
-  float mobile=1.-step(760.,resolution.x);
   gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*(.76-mobile*.16)*(1.-rim*.2));
 }`;
 
@@ -51,6 +51,10 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
   const elapsed=useRef(0);
   const {paused,screen}=useExperienceNavigation();
+  const state=useRef({paused,screen,changedAt:0});
+  if(state.current.screen!==screen)state.current.changedAt=performance.now();
+  state.current.paused=paused;state.current.screen=screen;
+  const wakeRef=useRef(()=>{});
   const [available,setAvailable]=useState(true);
   useEffect(()=>{
     const section=host.current!, container=mount.current!;
@@ -83,7 +87,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     function render(now:number){
       frame=0;
       const delta=Math.min((now-last)/1000,.05);last=now;
-      const moving=!paused&&!reduced.matches;
+      const moving=!state.current.paused&&!reduced.matches;
       if(moving){clock+=delta;uniforms.pointer.value.lerp(target,1-Math.exp(-delta*5));uniforms.impulse.value*=Math.exp(-delta*3);}
       uniforms.time.value=clock;
       elapsed.current=clock;
@@ -93,23 +97,24 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       theme.style.setProperty('--flow-position',flowPosition);
       theme.style.setProperty('--flow-accent',`hsl(${265+Math.sin(clock*.26*Math.PI*2)*25} 65% 82%)`);
       uniforms.progress.value=reduced.matches?0:scroll;
-      if(screen===0)renderer.render(scene,camera);
+      if(state.current.screen===0||now-state.current.changedAt<450)renderer.render(scene,camera);
       if(moving&&visible&&!document.hidden)frame=requestAnimationFrame(render);
     }
     function wake(){if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(render);}
-    function size(){const rect=container.getBoundingClientRect();renderer.setSize(rect.width,rect.height);uniforms.resolution.value.set(rect.width,rect.height);wake();}
-    function position(event:PointerEvent){if(mobile.matches||reduced.matches||paused)return;const rect=container.getBoundingClientRect();target.set((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2);wake();}
+    function size(){const rect=container.getBoundingClientRect();renderer.setSize(rect.width,rect.height);uniforms.resolution.value.set(rect.width,rect.height);uniforms.textScale.value=896/textCanvas.width*(rect.width<760?1.18:1);wake();}
+    function position(event:PointerEvent){if(mobile.matches||reduced.matches||state.current.paused)return;const rect=container.getBoundingClientRect();target.set((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2);wake();}
     function leave(){target.set(0,0);wake();}
-    function press(event:PointerEvent){if(!paused&&!reduced.matches&&!(event.target as HTMLElement).closest('a,button')){uniforms.impulse.value=1;wake();}}
+    function press(event:PointerEvent){if(!state.current.paused&&!reduced.matches&&!(event.target as HTMLElement).closest('a,button')){uniforms.impulse.value=1;wake();}}
     function onScroll(){const rect=section.getBoundingClientRect();scroll=Math.min(1,Math.max(0,-rect.top/rect.height));section.style.setProperty('--lens-scroll',String(reduced.matches?0:scroll));wake();}
     function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0;}else wake();}
     const resize=new ResizeObserver(size);resize.observe(container);
     const intersection=new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;if(visible)wake();else{cancelAnimationFrame(frame);frame=0;}});intersection.observe(section);
     section.addEventListener('pointermove',position);section.addEventListener('pointerleave',leave);section.addEventListener('pointerdown',press);
     window.addEventListener('scroll',onScroll,{passive:true});document.addEventListener('visibilitychange',visibility);reduced.addEventListener('change',onScroll);
-    size();onScroll();
+    wakeRef.current=wake;size();onScroll();
     return()=>{cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();section.removeEventListener('pointermove',position);section.removeEventListener('pointerleave',leave);section.removeEventListener('pointerdown',press);window.removeEventListener('scroll',onScroll);document.removeEventListener('visibilitychange',visibility);reduced.removeEventListener('change',onScroll);geometry.dispose();material.dispose();texture.dispose();renderer.dispose();surface.remove();};
-  },[paused,screen]);
+  },[]);
+  useEffect(()=>wakeRef.current(),[paused,screen]);
   return <section ref={host} className="lens-hero" aria-labelledby="public-title">
     <div className="lens-scene"><SignalScene paused={paused||screen!==0} scale={1.16} haloScale={1.65}/><div className="lens-stream" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div></div>
     <div className="lens-dock">

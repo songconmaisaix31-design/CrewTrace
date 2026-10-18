@@ -22,9 +22,18 @@ test('悬停预览、移入保持、离开关闭与点击固定',async({page})=>
   await expect(page.getByRole('tooltip')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
+  let detailRequests=0;
+  page.on('request',request=>{if((new URL(request.url()).searchParams.get('path')??'').startsWith('/api/collaboration/tasks/'))detailRequests++;});
   const task=page.locator('.public-record h3 button').first();
   await task.hover();
   await expect(page.getByRole('tooltip')).toContainText(await task.innerText());
+  await expect(page.getByRole('tooltip')).toContainText('参与者');
+  await expect(page.getByRole('tooltip')).toContainText('读取于');
+  await expect(page.getByRole('tooltip')).toContainText('最近进展');
+  const requested=detailRequests;
+  await page.mouse.move(6,400);await expect(page.getByRole('tooltip')).toHaveCount(0);
+  await task.hover();await expect(page.getByRole('tooltip')).toContainText('读取于');
+  expect(detailRequests).toBe(requested);
   await task.click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByRole('tooltip')).toHaveCount(0);

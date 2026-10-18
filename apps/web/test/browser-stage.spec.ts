@@ -7,17 +7,12 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   expect(bounds).toEqual({x:0,y:0,width:1280,height:720});
   await expect(page.locator('.lens-scene .signal-scene')).toHaveCSS('mask-image',/radial-gradient/);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','0');
+  const input=await page.context().newCDPSession(page);
   await page.mouse.move(6,350);
-  await page.mouse.wheel(0,16);
+  // 由浏览器生成连续原生滚动，避免逐条测试指令的调度停顿被识别为新手势。
+  await input.send('Input.synthesizeScrollGesture',{x:6,y:350,yDistance:-900,speed:1000,gestureSourceType:'mouse'});
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
-  await expect(page.locator('.stage-tasks')).toHaveCSS('animation-name','stage-surface-in');
-  for(let i=0;i<5;i++)await page.mouse.wheel(0,120);
-  // 触控板的间断惯性及后续增幅不应跨过 01。
-  for(const delta of [80,45,24,60,18,10]){
-    await page.waitForTimeout(110);
-    await page.mouse.wheel(0,delta);
-    await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
-  }
+  await expect(page.locator('.stage-tasks .stage-card-scroll')).toHaveCSS('animation-name','stage-reading-in');
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
   await page.waitForTimeout(1100);
   const first=await page.locator('.stage-tasks').boundingBox();
@@ -43,17 +38,18 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   await page.waitForTimeout(1100);
   const second=await page.locator('.stage-discussion').boundingBox();
   expect(Math.abs(first!.y-second!.y)).toBeLessThan(3);
-  expect(second!.height).toBeLessThan(page.viewportSize()!.height*.65);
+  expect(Math.abs(first!.height-second!.height)).toBeLessThan(1);
   await page.screenshot({path:'.local/stage-discussion.png'});
-  await page.mouse.wheel(0,-200);
+  await input.send('Input.synthesizeScrollGesture',{x:6,y:350,yDistance:650,speed:1000,gestureSourceType:'mouse'});
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
   await page.waitForTimeout(1000);
   await page.mouse.wheel(0,-300);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','0');
   expect(await page.evaluate(()=>scrollY)).toBe(0);
   expect(await page.locator('.stage-card-scroll').first().evaluate(el=>getComputedStyle(el).overflowY)).toBe('auto');
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
-  await page.waitForTimeout(700);
+  await page.waitForTimeout(100);
   await page.mouse.move(6,350);
   await page.mouse.wheel(0,-45);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','0');

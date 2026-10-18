@@ -1,22 +1,15 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useI18n } from './i18n';
 import { useExperienceNavigation } from './ExperienceNavigation';
 import './collaboration-stage.css';
+import './experience-polish.css';
 
 export default function CollaborationStage({tasks,discussion}:{tasks:ReactNode;discussion:ReactNode}){
   const {panel:active,setPanel,home}=useExperienceNavigation();
   const {t}=useI18n();
-  const stage=useRef<HTMLDivElement>(null);
-  useEffect(()=>{
-    const root=stage.current!;
-    const content=root.querySelector<HTMLElement>(active===0?'.stage-tasks .public-panel':'.stage-discussion .public-panel')!;
-    const measure=()=>root.style.setProperty('--panel-height',`${content.getBoundingClientRect().height+100}px`);
-    const observer=new ResizeObserver(measure);observer.observe(content);measure();
-    return()=>observer.disconnect();
-  },[active]);
   useEffect(()=>{const show=()=>setPanel(0);window.addEventListener('crewtrace:show-tasks',show);return()=>window.removeEventListener('crewtrace:show-tasks',show);},[setPanel]);
-  return <div ref={stage} className="collaboration-stage" data-panel={active}>
+  return <div className="collaboration-stage" data-panel={active}>
     <div className="stage-switch" role="group" aria-label={t('切换协作面板','Switch collaboration panel')}>
       <button aria-pressed={active===0} onClick={()=>setPanel(0)}>01 <span>{t('协作任务','Tasks')}</span></button>
       <span className="stage-switch-line" aria-hidden="true"/>

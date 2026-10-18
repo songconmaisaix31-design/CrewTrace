@@ -1,10 +1,24 @@
-import { useState, type CSSProperties } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import type { CollaborationTaskDetail } from '@co-vibe/contracts';
 import { useI18n } from './i18n';
 
 export default function CollaborationTrace({task,name}:{task:CollaborationTaskDetail;name:(id:string)=>string}){
   const {t,time}=useI18n();
   const [selected,setSelected]=useState(0);
+  const root=useRef<HTMLElement>(null),connection=useRef<SVGPathElement>(null);
+  useLayoutEffect(()=>{
+    const section=root.current!;
+    const draw=()=>{
+      const origin=section.getBoundingClientRect();
+      const node=section.querySelector<HTMLElement>('.trace-track button[aria-pressed="true"]')!.getBoundingClientRect();
+      const records=section.querySelector<HTMLElement>('.trace-records')!.getBoundingClientRect();
+      const x=node.left+node.width/2-origin.left,y=node.bottom-origin.top;
+      const endX=records.left-origin.left,endY=records.top-origin.top+18;
+      connection.current!.setAttribute('d',`M ${x} ${y} C ${x} ${y+12}, ${endX} ${endY-12}, ${endX} ${endY}`);
+    };
+    const observer=new ResizeObserver(draw);observer.observe(section);draw();
+    return()=>observer.disconnect();
+  },[selected]);
   const accepted=task.handoffs.filter(item=>item.status==='ACCEPTED');
   const groups=[
     {label:t('发布','Published'),records:[`${name(task.creator)} · ${time(task.createdAt)}`,task.title]},
@@ -13,7 +27,8 @@ export default function CollaborationTrace({task,name}:{task:CollaborationTaskDe
     {label:t('验收','Accepted'),records:accepted.map(item=>`${name(item.author)} · ${t('成果已被接受','Delivery accepted')}${item.reason?` · ${item.reason}`:''}`)},
   ];
   const latest=groups.reduce((last,group,index)=>group.records.length?index:last,0);
-  return <section className="collaboration-trace" aria-label={t('协作记录','Collaboration history')}>
+  return <section ref={root} className="collaboration-trace" aria-label={t('协作记录','Collaboration history')}>
+    <svg className="trace-connector" aria-hidden="true"><path key={selected} ref={connection} fill="none" pathLength="1"/></svg>
     <div className="trace-track" style={{'--trace-position':`${12.5+selected*25}%`} as CSSProperties} role="group" aria-label={t('查看阶段记录','View stage records')}>
       {groups.map((group,index)=><button key={index} disabled={!group.records.length} aria-pressed={selected===index} data-recorded={!!group.records.length} data-latest={index===latest} onClick={()=>setSelected(index)}><span className="trace-node"/>{group.label}<small>{group.records.length?t('有记录','Recorded'):t('暂无记录','No record')}</small></button>)}
     </div>

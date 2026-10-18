@@ -21,8 +21,12 @@ export default function HoverPreview({children,preview,onClick,className='text-b
   },[id]);
   useLayoutEffect(()=>{
     if(!open)return;
-    const anchor=trigger.current!.getBoundingClientRect(), box=panel.current!.getBoundingClientRect();
-    setPosition({left:Math.max(16,Math.min(anchor.left,innerWidth-box.width-16)),top:anchor.bottom+box.height+12<innerHeight?anchor.bottom+10:Math.max(16,anchor.top-box.height-10)});
+    const place=()=>{
+      const anchor=trigger.current!.getBoundingClientRect(), box=panel.current!.getBoundingClientRect();
+      setPosition({left:Math.max(16,Math.min(anchor.left,innerWidth-box.width-16)),top:anchor.bottom+box.height+12<innerHeight?anchor.bottom+10:Math.max(16,anchor.top-box.height-10)});
+    };
+    const observer=new ResizeObserver(place);observer.observe(panel.current!);place();
+    return()=>observer.disconnect();
   },[open,preview]);
   return <><button ref={trigger} className={className} aria-describedby={open?id:undefined} onPointerEnter={event=>{if(event.pointerType==='mouse')reveal();}} onPointerLeave={leave} onFocus={event=>{if(event.currentTarget.matches(':focus-visible'))reveal();}} onBlur={leave} onClick={()=>{close();onClick();}}>{children}</button>{open&&createPortal(<div ref={panel} id={id} role="tooltip" className="hover-preview" data-closing={closing} style={position} onPointerEnter={cancel} onPointerLeave={leave}><div className="hover-preview-content">{preview}</div><small>{t('点击入口查看完整内容','Click the entry to open full details')}</small></div>,document.body)}</>;
 }

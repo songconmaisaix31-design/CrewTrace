@@ -1,0 +1,51 @@
+/* 两个面板共享固定空间，内容在面板内阅读。 */
+.experience-shell{--scene-progress:0}
+.experience-shell[data-screen] .experience-home{animation:none!important;transition:none!important;opacity:calc(1 - var(--scene-progress));transform:translateY(calc(var(--scene-progress)*-18px)) scale(calc(1 - var(--scene-progress)*.055));filter:blur(calc(var(--scene-progress)*5px))}
+.experience-shell[data-screen] .public-workspace>.public-content{transition:none!important;opacity:var(--scene-progress);transform:translateY(calc((1 - var(--scene-progress))*24px));filter:blur(calc((1 - var(--scene-progress))*3px))}
+.experience-shell[data-screen] .lens-scene{transition:none;transform:scale(calc(1 - var(--scene-progress)*.12));opacity:calc(1 - var(--scene-progress))}
+.experience-shell[data-screen] .ambient-bridge{transition:none;transform:translateY(calc(var(--scene-progress)*8%));opacity:calc(.85 - var(--scene-progress)*.25)}
+.journey-trace{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;opacity:0;overflow:visible;filter:drop-shadow(0 0 6px #b48bec66)}
+.experience-shell .collaboration-sticky{padding-bottom:max(10px,env(safe-area-inset-bottom));gap:0}
+.experience-shell .collaboration-stage{flex:1;min-height:0}
+.experience-shell .stage-window{flex:1;min-height:0;height:auto;transition:none;perspective:none}
+.experience-shell .stage-card{inset:22px 0;transition:opacity .23s ease,filter .23s ease;will-change:opacity}
+.experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]{animation:none;transform:none;filter:none;opacity:1}
+.experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]::after{animation:none;opacity:0}
+.experience-shell[data-screen] .collaboration-stage .stage-tasks[aria-hidden="true"]{transform:translateY(calc(-100% - 7px));opacity:.24;filter:blur(2px)}
+.experience-shell[data-screen] .collaboration-stage .stage-discussion[aria-hidden="true"]{transform:translateY(calc(100% + 7px));opacity:.24;filter:blur(2px)}
+.experience-shell[data-screen="1"] .stage-card[aria-hidden="false"] .stage-card-scroll{animation:stage-reading-in .29s cubic-bezier(.2,.75,.25,1) both}
+@keyframes stage-reading-in{from{opacity:.35;transform:translateY(12px)}to{opacity:1;transform:none}}
+.experience-shell .stage-directions{height:48px;min-height:48px;padding:0;align-items:center}
+.experience-shell .stage-direction{min-height:44px;padding:8px 14px}
+.experience-shell .stage-card-scroll{padding:20px 28px}
+.experience-shell .public-record{padding-top:16px;padding-bottom:18px}
+.experience-shell .public-record h3{line-height:1.45;font-weight:500}
+.experience-shell .stage-switch button{transition:opacity .16s,filter .1s}
+.experience-shell .stage-switch::after{transition:transform .29s cubic-bezier(.2,.75,.25,1)}
+.experience-shell button:not(:disabled){transition:color .12s,background-color .12s,filter .1s,box-shadow .15s}
+.experience-shell button:not(:disabled):active{filter:brightness(1.32)}
+.experience-shell .centered-dialog,.experience-shell .centered-dialog::backdrop{animation-duration:.2s}
+.experience-shell .centered-dialog[data-closing="true"],.experience-shell .centered-dialog[data-closing="true"]::backdrop{animation-duration:.14s}
+@keyframes modal-fade-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes modal-fade-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(2px)}}
+.hover-preview{animation-duration:.16s;background-color:#15111bf5}
+.hover-preview{max-height:calc(100dvh - 32px);overflow:clip}
+.task-preview-facts{border-top:1px solid #b99ad626;padding-top:12px;margin-top:12px}
+.task-preview-facts p{font-size:13px;margin:6px 0}.task-preview-facts small{margin-top:7px}
+.hover-preview-content:has(.task-preview-facts){max-height:none;mask-image:none}
+.hover-preview-content .preview-summary{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.trace-branch{transition:opacity .16s}.trace-track::after{transition-duration:.22s}
+.collaboration-trace{position:relative}.trace-connector{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.trace-connector path{stroke:#c9ace877;stroke-width:1;stroke-dasharray:1;animation:record-connect .22s ease-out both}@keyframes record-connect{from{stroke-dashoffset:1;opacity:0}to{stroke-dashoffset:0;opacity:1}}
+@media(max-width:760px){.experience-shell .stage-card-scroll{padding:16px 18px}.experience-shell .stage-card{inset:16px 0}.experience-shell .stage-window{height:auto;min-height:0}.experience-shell .collaboration-sticky{padding-top:88px!important}.experience-shell .public-record .record-excerpt{line-height:1.7}.experience-shell .header-mcp{margin-right:0}}
+@media(max-height:560px){
+ .hover-preview{padding:14px 18px;font-size:13px}.hover-preview strong{font-size:14px}.hover-preview .preview-summary{-webkit-line-clamp:2}.task-preview-facts{padding-top:7px;margin-top:7px}.hover-preview small{margin-top:7px}
+ .experience-shell>.public-topbar{height:56px;min-height:0;padding:5px 22px;display:flex;align-items:center}
+ .experience-shell .crewtrace-ring-mark{width:42px;height:42px}.experience-shell .public-topbar .brand{font-size:21px}
+ .experience-shell .collaboration-sticky{padding:58px 22px 4px!important}
+ .experience-shell .public-section-head{margin-bottom:0;min-height:38px}.experience-shell .public-section-head h2{font-size:18px}.experience-shell .public-section-head p{display:none}
+ .experience-shell .stage-switch{padding-bottom:3px}.experience-shell .stage-switch button{min-height:36px;padding:4px 12px}
+ .experience-shell .stage-card{inset:9px 0}.experience-shell .stage-card-scroll{padding:12px 18px}.experience-shell .stage-window{mask-image:linear-gradient(transparent,#000 10px,#000 calc(100% - 10px),transparent)}
+ .experience-shell .stage-directions{height:40px;min-height:40px}.experience-shell .stage-direction{min-height:36px}
+ .experience-shell .lens-scene{inset:8% 22% 14%}.experience-shell .lens-dock{top:auto;bottom:42px;gap:8px}.experience-shell .orbit-join{padding:10px 24px;min-width:190px}.experience-shell .lens-caption h1{font-size:16px;margin:0}
+}
+@media(prefers-reduced-motion:reduce){.experience-shell .stage-card{transition:none!important}}

@@ -10,7 +10,7 @@ export default function Dialog({title,children,onClose}:{title:string;children:R
   function dismiss(){
     if(closeTimer.current!==null)return;
     if(matchMedia('(prefers-reduced-motion: reduce)').matches){onClose();return;}
-    setClosing(true);closeTimer.current=setTimeout(onClose,200);
+    setClosing(true);closeTimer.current=setTimeout(onClose,140);
   }
   useEffect(()=>{
     const before=document.activeElement as HTMLElement;
