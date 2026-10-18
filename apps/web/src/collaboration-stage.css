@@ -125,5 +125,10 @@ html:has(.experience-shell),body:has(.experience-shell){overflow:hidden;height:1
 .experience-shell .public-onboarding li,.experience-shell .public-onboarding-details,.experience-shell details{border-color:#bca5dc14}
 .experience-shell input,.experience-shell textarea,.experience-shell select,.experience-shell .public-filter select{border-color:#bca5dc30;background:#100d1780}
 .experience-shell .public-form input:focus-visible,.experience-shell .public-form textarea:focus-visible,.experience-shell .public-form select:focus-visible{outline:2px solid #c4afff;outline-offset:3px}
+.experience-shell .centered-dialog{overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#78619355 transparent}
+.experience-shell .centered-dialog .drawer-head{position:sticky;top:-28px;padding:12px 0;z-index:2;background:#111014ed;backdrop-filter:blur(16px)}
+.experience-shell .centered-dialog .drawer-head h2{min-width:0;overflow-wrap:anywhere}
+.experience-shell .centered-dialog .drawer-head .icon-button{flex:none}
+@media(max-width:650px){.experience-shell .centered-dialog .drawer-head{top:-22px;gap:8px}.experience-shell .centered-dialog .drawer-head h2{font-size:18px}.experience-shell .centered-dialog .drawer-head .language-toggle{margin-left:auto;padding:8px 0;font-size:11px}}
 @media(prefers-reduced-motion:reduce){.experience-shell .stage-card::after{opacity:0}}
 @media(prefers-reduced-motion:reduce){.experience-home,.experience-shell .public-workspace>.public-content,.experience-shell .stage-card{animation:none!important;transition:none;filter:none!important;transform:none!important}.experience-shell .stage-card[aria-hidden=true]{visibility:hidden}.lens-caption h1,.lens-caption h1 span{background:none;color:#d9c9ef}}
