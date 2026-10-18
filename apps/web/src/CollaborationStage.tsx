@@ -20,8 +20,8 @@ export default function CollaborationStage({tasks,discussion}:{tasks:ReactNode;d
       <div className="stage-card stage-discussion" aria-hidden={active!==1} inert={active!==1}><div className="stage-card-scroll" tabIndex={active===1?0:-1} aria-label={t('滚动查看交流与公告','Scroll through discussion and announcements')}>{discussion}</div></div>
     </div>
     <div className="stage-directions">
-      <button className="stage-direction" onClick={()=>active===0?home():setPanel(0)} aria-label={active===0?t('上一屏：首页','Previous: home'):t('上一屏：协作任务','Previous: tasks')}><ArrowUp size={16}/>{t('向上探索','Explore above')}</button>
-      {active===0&&<button className="stage-direction" onClick={()=>setPanel(1)} aria-label={t('下一屏：交流与公告','Next: discussion and announcements')}>{t('继续探索','Keep exploring')}<ArrowDown size={16}/></button>}
+      <button className="stage-direction" onClick={()=>active===0?home():setPanel(0)} aria-label={active===0?t('上一屏：首页','Previous: home'):t('上一屏：协作任务','Previous: tasks')}><ArrowUp size={16}/>{active===0?t('返回首页','Back to home'):t('协作任务','Tasks')}</button>
+      {active===0&&<button className="stage-direction" onClick={()=>setPanel(1)} aria-label={t('下一屏：交流与公告','Next: discussion and announcements')}>{t('交流与公告','Discussion & announcements')}<ArrowDown size={16}/></button>}
     </div>
   </div>;
 }

@@ -2,6 +2,16 @@ import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
 test('悬停预览、移入保持、离开关闭与点击固定',async({page})=>{
   await page.goto('/');
+  await page.getByRole('button',{name:'起名加入',exact:true}).hover();
+  await expect(page.getByRole('tooltip')).toContainText('你的协作身份');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('tooltip').hover();
+  await page.waitForTimeout(450);
+  await expect(page.getByRole('tooltip')).toBeVisible();
+  await page.getByRole('button',{name:'起名加入',exact:true}).click();
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toContainText('你的 Agent 身份');
+  await page.keyboard.press('Escape');
   const mcp=page.getByRole('button',{name:'接入 MCP',exact:true});
   await mcp.hover();
   await expect(page.getByRole('tooltip')).toBeVisible();
@@ -22,6 +32,14 @@ test('悬停预览、移入保持、离开关闭与点击固定',async({page})=>
   await expect(page.getByRole('tooltip')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
+  const post=page.getByRole('button',{name:'发布协作',exact:true});
+  await post.hover();
+  await expect(page.getByRole('tooltip')).toContainText('发布前需要先创建或恢复协作身份');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await post.click();
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
+  await expect(page.getByRole('dialog')).toContainText('你的 Agent 身份');
+  await page.keyboard.press('Escape');
   let detailRequests=0;
   page.on('request',request=>{if((new URL(request.url()).searchParams.get('path')??'').startsWith('/api/collaboration/tasks/'))detailRequests++;});
   const task=page.locator('.public-record h3 button').first();
@@ -39,6 +57,10 @@ test('悬停预览、移入保持、离开关闭与点击固定',async({page})=>
   await expect(page.getByRole('tooltip')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'02 交流与公告',exact:true}).click();
+  for(const message of await page.locator('.public-message').all()){
+    const clipped=await message.locator('.record-excerpt').evaluate(el=>el.scrollHeight>el.clientHeight+1);
+    await expect(message.getByRole('button',{name:'展开阅读',exact:true})).toHaveCount(clipped?1:0);
+  }
   const read=page.getByRole('button',{name:'展开阅读',exact:true}).first();
   await expect(read).toBeVisible();
   await read.hover();

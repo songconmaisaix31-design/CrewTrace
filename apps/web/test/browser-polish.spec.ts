@@ -32,8 +32,10 @@ test('桌面、竖屏、横屏面板稳定且导航可见，真实预览避让',
     expect(Math.abs(first.y-second.y)).toBeLessThan(1);expect(Math.abs(first.height-second.height)).toBeLessThan(1);
     expect((await page.locator('.stage-directions').boundingBox())!.y+48).toBeLessThanOrEqual(viewport.height+8);
     await page.getByRole('button',{name:'01 协作任务',exact:true}).click();
+    await expect(page.locator('.stage-tasks')).toHaveCSS('transform','none');
     await page.locator('.public-record h3 button').first().hover();
     await expect(page.getByRole('tooltip')).toContainText('读取于');
+    await expect(page.getByRole('tooltip')).toHaveCSS('transform','none');
     const preview=(await page.getByRole('tooltip').boundingBox())!;
     expect(preview.y).toBeGreaterThanOrEqual(15);expect(preview.y+preview.height).toBeLessThanOrEqual(viewport.height-15);
     await page.screenshot({path:`.local/polish-${viewport.width}.png`});
@@ -48,5 +50,10 @@ test('触屏点击直接打开，快速经过不弹预览',async({page,browser})
   const phone=await context.newPage();await phone.goto('http://127.0.0.1:5173/');
   await phone.getByRole('button',{name:'接入 MCP',exact:true}).tap();
   await expect(phone.getByRole('dialog')).toBeVisible();await expect(phone.getByRole('tooltip')).toHaveCount(0);
+  await phone.getByRole('button',{name:'关闭详情',exact:true}).tap();
+  await expect(phone.getByRole('dialog')).toHaveCount(0);
+  await phone.getByRole('button',{name:'起名加入',exact:true}).tap();
+  await expect(phone.getByRole('dialog')).toContainText('你的 Agent 身份');
+  await expect(phone.getByRole('tooltip')).toHaveCount(0);
   await context.close();
 });

@@ -8,13 +8,12 @@
 .experience-shell .collaboration-sticky{padding-bottom:max(10px,env(safe-area-inset-bottom));gap:0}
 .experience-shell .collaboration-stage{flex:1;min-height:0}
 .experience-shell .stage-window{flex:1;min-height:0;height:auto;transition:none;perspective:none}
-.experience-shell .stage-card{inset:22px 0;transition:opacity .23s ease,filter .23s ease;will-change:opacity}
+.experience-shell .stage-card{inset:22px 0;transition:opacity .26s ease,transform .29s cubic-bezier(.2,.75,.25,1);will-change:opacity,transform;background:linear-gradient(165deg,#211b2c99,#12101a44 45%,transparent 85%);box-shadow:none;backdrop-filter:none}
 .experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]{animation:none;transform:none;filter:none;opacity:1}
 .experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]::after{animation:none;opacity:0}
-.experience-shell[data-screen] .collaboration-stage .stage-tasks[aria-hidden="true"]{transform:translateY(calc(-100% - 7px));opacity:.24;filter:blur(2px)}
-.experience-shell[data-screen] .collaboration-stage .stage-discussion[aria-hidden="true"]{transform:translateY(calc(100% + 7px));opacity:.24;filter:blur(2px)}
-.experience-shell[data-screen="1"] .stage-card[aria-hidden="false"] .stage-card-scroll{animation:stage-reading-in .29s cubic-bezier(.2,.75,.25,1) both}
-@keyframes stage-reading-in{from{opacity:.35;transform:translateY(12px)}to{opacity:1;transform:none}}
+.experience-shell[data-screen] .collaboration-stage .stage-tasks[aria-hidden="true"]{transform:translateY(-20px);opacity:0;filter:none;pointer-events:none}
+.experience-shell[data-screen] .collaboration-stage .stage-discussion[aria-hidden="true"]{transform:translateY(20px);opacity:0;filter:none;pointer-events:none}
+.experience-shell[data-screen="1"] .stage-card[aria-hidden="false"] .stage-card-scroll{animation:none}
 .experience-shell .stage-directions{height:48px;min-height:48px;padding:0;align-items:center}
 .experience-shell .stage-direction{min-height:44px;padding:8px 14px}
 .experience-shell .stage-card-scroll{padding:20px 28px}
@@ -24,6 +23,14 @@
 .experience-shell .stage-switch::after{transition:transform .29s cubic-bezier(.2,.75,.25,1)}
 .experience-shell button:not(:disabled){transition:color .12s,background-color .12s,filter .1s,box-shadow .15s}
 .experience-shell button:not(:disabled):active{filter:brightness(1.32)}
+.experience-shell[data-screen] :is(.header-mcp,.lens-enter,.stage-direction,.stage-switch button,.public-section-head h2,.public-section-head>.public-muted,.public-section-head>div>.public-muted,.drawer-head h2,.public-empty,.public-pill){background-image:none;color:#c5bbd2}
+.experience-shell[data-screen] :is(.public-section-head h2,.drawer-head h2,.stage-switch button[aria-pressed="true"]){color:#eee6f6}
+.experience-shell .lens-caption h1,.experience-shell .lens-caption h1 span{background:none;color:#e2d8ee}
+.experience-shell .stage-card .public-pill{border:1px solid #b99ad638;background:#a584c312}
+.experience-shell .stage-card-scroll>.public-panel>.public-muted{font-size:12px;color:#9e95ab}
+.experience-shell .lens-dock{gap:12px}
+.experience-shell .lens-caption>p:last-child{font-size:13px;line-height:1.6;margin:7px auto 0;max-width:42ch;color:#b8afc3}
+.experience-shell .lens-enter{font-size:13px;color:#dbd0e9;min-height:44px}
 .experience-shell .centered-dialog,.experience-shell .centered-dialog::backdrop{animation-duration:.2s}
 .experience-shell .centered-dialog[data-closing="true"],.experience-shell .centered-dialog[data-closing="true"]::backdrop{animation-duration:.14s}
 @keyframes modal-fade-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}

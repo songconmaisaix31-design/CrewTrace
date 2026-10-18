@@ -6,67 +6,39 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   const [panel,setPanel]=useState(0);
   const [paused,setPaused]=useState(false);
   const currentScreen=useRef(screen);currentScreen.current=screen;
-  const currentPanel=useRef(panel);currentPanel.current=panel;
   const root=useRef<HTMLDivElement>(null);
   const orbit=useRef<OrbitPoint[]>([]);
-  const pageGuard=useRef(0);
-  const guardDirection=useRef(1);
-  function enter(){guardDirection.current=1;pageGuard.current=performance.now()+420;currentPanel.current=0;currentScreen.current=1;setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
-  function home(){guardDirection.current=-1;pageGuard.current=performance.now()+420;currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
+  function enter(){currentScreen.current=1;setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
+  function home(){currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
     const element=root.current!;
-    let amount=0,blocked=false,lastWheel=0,lastDelta=0,lastStep=0,touchY=0,touchDistance=0,multiTouch=false;
-    function step(direction:number){
-      if(element.querySelector('dialog[open]'))return;
-      if(currentScreen.current===0&&direction>0)enter();
-      else if(currentScreen.current===1){
-        if(direction<0){if(currentPanel.current===1){guardDirection.current=-1;currentPanel.current=0;setPanel(0);pageGuard.current=performance.now()+280;}else home();}
-        else if(currentPanel.current===0){guardDirection.current=1;currentPanel.current=1;setPanel(1);pageGuard.current=performance.now()+280;}
-      }
-    }
-    function canRead(target:EventTarget|null,direction:number){
-      const box=(target as HTMLElement)?.closest<HTMLElement>('.stage-card-scroll');
-      return box&&(direction>0?box.scrollTop+box.clientHeight<box.scrollHeight-2:box.scrollTop>2);
-    }
+    let amount=0,lastWheel=0,touchY=0,touchDistance=0,multiTouch=false;
+    const canEnter=()=>currentScreen.current===0&&!element.querySelector('dialog[open]');
     function wheel(event:WheelEvent){
-      if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)||element.querySelector('dialog[open]'))return;
-      if(canRead(event.target,event.deltaY)){lastWheel=event.timeStamp;lastDelta=event.deltaY;blocked=true;amount=0;return;}
+      // 工作区保留原生阅读，内容边界不触发换页。
+      if(!canEnter()||event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
       event.preventDefault();
       const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
-      const now=event.timeStamp;
-      // 跨页完成并且惯性结束后，才把后续滚轮识别为新手势。
-      const reversed=Math.abs(delta)>=8&&Math.sign(delta)!==(pageGuard.current?guardDirection.current:Math.sign(lastDelta));
-      if(pageGuard.current&&!reversed){
-        if(now<pageGuard.current||now-lastWheel<320){lastWheel=now;lastDelta=delta;blocked=true;amount=0;return;}
-        pageGuard.current=0;blocked=false;amount=0;
-      }
-      if(reversed){pageGuard.current=0;blocked=false;amount=0;}
-      const fresh=now-lastWheel>65||Math.sign(delta)!==Math.sign(lastDelta)||(now-lastStep>150&&Math.abs(delta)>Math.max(8,Math.abs(lastDelta)*1.5));
-      if(fresh){blocked=false;amount=0;}
-      lastWheel=now;lastDelta=delta;
-      if(blocked)return;
-      if(Math.sign(amount)!==Math.sign(delta))amount=0;
-      amount+=delta;
-      if(Math.abs(amount)>=8){step(Math.sign(amount));lastStep=now;blocked=true;amount=0;}
+      if(event.timeStamp-lastWheel>180||delta<0)amount=0;
+      lastWheel=event.timeStamp;amount+=Math.max(0,delta);
+      if(amount>=24){amount=0;enter();}
     }
     function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchDistance=0;}
     function move(event:TouchEvent){
+      if(!canEnter())return;
       if(multiTouch||event.touches.length!==1){multiTouch=true;touchDistance=0;return;}
-      const delta=touchY-event.touches[0].clientY;
-      if(element.querySelector('dialog[open]')||canRead(event.target,delta)){touchY=event.touches[0].clientY;touchDistance=0;return;}
-      event.preventDefault();touchDistance=delta;
+      touchDistance=touchY-event.touches[0].clientY;
+      if(touchDistance>0)event.preventDefault();
     }
-    function end(){if(!multiTouch&&Math.abs(touchDistance)>20)step(Math.sign(touchDistance));touchDistance=0;}
+    function end(){if(canEnter()&&!multiTouch&&touchDistance>28)enter();touchDistance=0;}
+    function cancel(){touchDistance=0;multiTouch=true;}
     function key(event:KeyboardEvent){
-      if(event.repeat)return;
-      if((event.target as HTMLElement).closest('input,textarea,select,button,a,[contenteditable=true]')||element.querySelector('dialog[open]'))return;
-      if(event.key!=='PageDown'&&event.key!=='PageUp')return;
-      const direction=event.key==='PageDown'?1:-1;
-      if(canRead(event.target,direction))return;
-      event.preventDefault();step(direction);
+      if(event.repeat||!canEnter()||event.key!=='PageDown')return;
+      if((event.target as HTMLElement).closest('input,textarea,select,button,a,[contenteditable=true]'))return;
+      event.preventDefault();enter();
     }
-    element.addEventListener('wheel',wheel,{passive:false});element.addEventListener('touchstart',start,{passive:true});element.addEventListener('touchmove',move,{passive:false});element.addEventListener('touchend',end);element.addEventListener('keydown',key);
-    return()=>{element.removeEventListener('wheel',wheel);element.removeEventListener('touchstart',start);element.removeEventListener('touchmove',move);element.removeEventListener('touchend',end);element.removeEventListener('keydown',key);};
+    element.addEventListener('wheel',wheel,{passive:false});element.addEventListener('touchstart',start,{passive:true});element.addEventListener('touchmove',move,{passive:false});element.addEventListener('touchend',end);element.addEventListener('touchcancel',cancel);element.addEventListener('keydown',key);
+    return()=>{element.removeEventListener('wheel',wheel);element.removeEventListener('touchstart',start);element.removeEventListener('touchmove',move);element.removeEventListener('touchend',end);element.removeEventListener('touchcancel',cancel);element.removeEventListener('keydown',key);};
   },[]);
   return <ExperienceNavigation.Provider value={{screen,panel,setPanel,home,paused,setPaused,orbit}}><div ref={root} tabIndex={-1} className="experience-shell" data-screen={screen} data-paused={paused}>{children({screen,enter,home})}</div></ExperienceNavigation.Provider>;
 }
