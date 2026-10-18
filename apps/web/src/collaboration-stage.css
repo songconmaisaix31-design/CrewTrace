@@ -40,6 +40,22 @@ html:has(.experience-shell),body:has(.experience-shell){overflow:hidden;height:1
 .experience-shell .collaboration-stage[data-panel="1"] .stage-tasks{transform:translateY(-100%) scale(.945);opacity:.35;filter:blur(4px)}
 .experience-shell .collaboration-stage[data-panel="1"] .stage-discussion{transform:translateY(0) scale(1);opacity:1;filter:blur(0)}
 .stage-card-scroll{overscroll-behavior:contain}
+.lens-mcp{position:absolute;right:6vw;top:24px;z-index:4;padding:10px 16px;border:1px solid #bfa3e13d;border-radius:24px;background:#18131f70;backdrop-filter:blur(12px);color:#d8cce7;font-size:13px}
+.lens-mcp:hover{border-color:#d6baff99;background:#34244280}
+.crewtrace-ring-mark svg{width:100%;height:100%;color:#d7c6ef;filter:drop-shadow(0 0 4px #af83e84d)}
+.drawer.centered-dialog{position:fixed;inset:0;margin:auto;width:min(720px,calc(100vw - 32px));height:fit-content;max-height:calc(100dvh - 48px);border:1px solid #bca5dc50;border-radius:20px;box-shadow:0 30px 100px #0009;animation:dialog-center-in .28s ease-out;overflow:auto}
+@keyframes dialog-center-in{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:none}}
+.experience-shell .stage-card-scroll{padding:22px 28px;font-size:14px;line-height:1.65}
+.experience-shell .stage-card .public-record{padding:14px 0}
+.experience-shell .stage-card .public-record h3{font-size:16px;line-height:1.5;margin:8px 0}
+.experience-shell .stage-card .public-record h3 button{font:inherit;text-align:left}
+.experience-shell .stage-card .public-record p{font-size:13px;line-height:1.65}
+.experience-shell .stage-card .public-record-meta{font-size:11px;margin:8px 0}
+.experience-shell .stage-card .public-message{padding:12px 14px}
+.experience-shell .stage-card .public-message p{font-size:13px;line-height:1.65}
+.experience-shell .stage-card .public-messages{gap:10px}
+@media(max-width:760px){.experience-shell .stage-card-scroll{padding:18px}.lens-mcp{right:18px;top:16px;font-size:12px}}
+@media(prefers-reduced-motion:reduce){.drawer.centered-dialog{animation:none}}
 .stage-switch .stage-home{margin-left:auto}
 .crewtrace-ring-mark{display:block;width:66px;height:66px;position:relative;flex:none}
 .crewtrace-ring-mark .signal-scene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;animation:none!important;opacity:1!important}

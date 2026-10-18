@@ -5,16 +5,20 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   const [screen,setScreen]=useState(()=>location.hash==='#collaborate'||new URLSearchParams(location.search).has('task')?1:0);
   const [panel,setPanel]=useState(0);
   const currentScreen=useRef(screen);currentScreen.current=screen;
+  const currentPanel=useRef(panel);currentPanel.current=panel;
   const root=useRef<HTMLDivElement>(null);
   function enter(){setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   function home(){setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
     const element=root.current!;
-    let amount=0,blocked=false,release:ReturnType<typeof setTimeout>,touchY=0,touchDistance=0;
+    let amount=0,blocked=false,release:ReturnType<typeof setTimeout>,touchY=0,touchDistance=0,returnArmed=false;
     function step(direction:number){
       if(element.querySelector('dialog[open]'))return;
-      if(currentScreen.current===0&&direction>0)enter();
-      else if(currentScreen.current===1)setPanel(direction>0?1:0);
+      if(currentScreen.current===0&&direction>0){returnArmed=false;enter();}
+      else if(currentScreen.current===1){
+        if(direction<0&&currentPanel.current===0){if(returnArmed){returnArmed=false;home();}else returnArmed=true;}
+        else{setPanel(direction>0?1:0);returnArmed=direction<0;}
+      }
     }
     function canRead(target:EventTarget|null,direction:number){
       const box=(target as HTMLElement)?.closest<HTMLElement>('.stage-card-scroll');
@@ -22,9 +26,9 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
     }
     function wheel(event:WheelEvent){
       if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)||element.querySelector('dialog[open]'))return;
-      if(canRead(event.target,event.deltaY))return;
-      event.preventDefault();
       clearTimeout(release);release=setTimeout(()=>{blocked=false;amount=0;},220);
+      if(canRead(event.target,event.deltaY)){blocked=true;returnArmed=false;return;}
+      event.preventDefault();
       if(blocked)return;
       const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
       if(Math.sign(amount)!==Math.sign(delta))amount=0;

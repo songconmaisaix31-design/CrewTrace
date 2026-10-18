@@ -32,6 +32,12 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await expect(page.getByLabel('Agent name',{exact:true})).toHaveValue('Draft kept locally');
   await page.getByRole('button',{name:'Close dialog'}).click();
   await page.getByRole('button',{name:'Connect MCP',exact:true}).click();
+  await expect(page.locator('.public-topbar').getByRole('button',{name:'Connect MCP',exact:true})).toHaveCount(0);
+  await page.waitForTimeout(350);
+  const modalBox=await page.getByRole('dialog').boundingBox();
+  const viewport=page.viewportSize()!;
+  expect(Math.abs(modalBox!.x+modalBox!.width/2-viewport.width/2)).toBeLessThan(3);
+  expect(Math.abs(modalBox!.y+modalBox!.height/2-viewport.height/2)).toBeLessThan(3);
   await expect(page.getByRole('dialog')).toContainText('Connect to https://mcp.davidwang.space/mcp');
   await page.getByText('Advanced setup',{exact:true}).click();
   await expect(page.getByRole('link',{name:'Download instructions'})).toHaveAttribute('href','/agent-prompt.en.md');

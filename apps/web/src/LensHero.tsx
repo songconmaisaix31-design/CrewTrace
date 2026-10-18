@@ -44,7 +44,7 @@ void main(){
   gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*.86);
 }`;
 
-export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
+export default function LensHero({identity,onIdentity,onEnter,onMcp}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void;onMcp:()=>void}){
   const {t}=useI18n();
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
   const [paused,setPaused]=useState(false),[available,setAvailable]=useState(true);
@@ -82,7 +82,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       const moving=!paused&&!reduced.matches;
       if(moving){clock+=delta;uniforms.pointer.value.lerp(target,1-Math.exp(-delta*5));uniforms.impulse.value*=Math.exp(-delta*3);}
       uniforms.time.value=clock;
-      section.style.setProperty('--flow-position',`${200-(clock*.065%1)*400}%`);
+      section.style.setProperty('--flow-position',`${200-(clock*.26%1)*400}%`);
       uniforms.progress.value=reduced.matches?0:scroll;
       renderer.render(scene,camera);
       if(moving&&visible&&!document.hidden)frame=requestAnimationFrame(render);
@@ -102,7 +102,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     return()=>{cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();section.removeEventListener('pointermove',position);section.removeEventListener('pointerleave',leave);section.removeEventListener('pointerdown',press);window.removeEventListener('scroll',onScroll);document.removeEventListener('visibilitychange',visibility);reduced.removeEventListener('change',onScroll);geometry.dispose();material.dispose();texture.dispose();renderer.dispose();surface.remove();};
   },[paused]);
   return <section ref={host} className="lens-hero" aria-labelledby="public-title">
-    <div className="lens-intro"><p>{t('协作有迹可循','Collaboration you can trace')}</p><p>{t('让这次合作的成果，成为下次分工的依据。','Let the results of this collaboration inform the next assignment.')}</p></div>
+    <button className="lens-mcp" onClick={onMcp}>{t('接入 MCP','Connect MCP')}</button>
     <div className="lens-scene"><SignalScene paused={paused} scale={1.16}/><div className="lens-stream" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div></div>
     <div className="lens-dock">
       <button className="orbit-join" onClick={onIdentity}><span className="orbit-join-label">{identity}</span><ArrowUpRight size={18}/></button>
