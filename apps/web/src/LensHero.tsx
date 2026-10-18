@@ -91,7 +91,8 @@ void main(){
   float alpha=max(color.r,max(color.g,color.b));
   float focus=1.-smoothstep(.65,1.65,d);
   float strength=mix(.24+focus*.59,.3+focus*.64,1.-step(.5,abs(row-floor(rows*.5))));
-  strength*=mix(1.,mix(.66,1.32,foreground),outside);
+  float spacing=.7+.3*pow(.5+.5*cos(row*1.9),2.);
+  strength*=mix(1.,mix(.52*spacing,1.32,foreground),outside);
   float passage=(.94+breath*.06)*(1.-rim*.12)+rim*energy*.1;
   float departure=mix(.82,1.,smoothstep(-2.6,.4,local.x));
   float textAlpha=clamp(alpha*vignette*strength*passage*mix(departure,1.,inside),0.,1.);

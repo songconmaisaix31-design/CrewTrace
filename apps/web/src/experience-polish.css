@@ -43,6 +43,12 @@
 .hover-preview-content:has(.task-preview-facts){max-height:none;mask-image:none}
 .hover-preview-content .preview-summary{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 .trace-branch{transition:opacity .16s}.trace-track::after{transition-duration:.22s}
+.trace-track button[data-recorded="true"] .trace-node{background:radial-gradient(circle at 32% 25%,#e8dcff 0 8%,#9271bd 28%,#30223f 72%);box-shadow:inset 0 0 0 3px #120e1b}
+.trace-track button[aria-pressed="true"] .trace-node{border-color:#eee2ff;box-shadow:0 0 14px #bd93ff66,inset 0 0 0 3px #39284e}
+.trace-records{border-image:linear-gradient(#ddc8ff99,#a67bc922,transparent) 1}
+.trace-branch [data-accepted="true"]{border-left:2px solid #cbb2ec;padding-left:10px;background:linear-gradient(90deg,#b890ea0c,transparent)}
+.trace-branch a:focus-visible{outline:2px solid #dfcaff;outline-offset:4px}
+@media(max-width:760px) and (min-height:561px){.experience-shell .lens-dock{top:68%;gap:14px}}
 .collaboration-trace{position:relative}.trace-connector{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.trace-connector path{stroke:#c9ace877;stroke-width:1;stroke-dasharray:1;animation:record-connect .22s ease-out both}@keyframes record-connect{from{stroke-dashoffset:1;opacity:0}to{stroke-dashoffset:0;opacity:1}}
 @media(max-width:760px){.experience-shell .lens-scene{inset:9% -4% 27%}.experience-shell .stage-card-scroll{padding:16px 18px}.experience-shell .stage-card{inset:16px 0}.experience-shell .stage-window{height:auto;min-height:0}.experience-shell .collaboration-sticky{padding-top:88px!important}.experience-shell .public-record .record-excerpt{line-height:1.7}.experience-shell .header-mcp{margin-right:0}}
 @media(max-height:560px){

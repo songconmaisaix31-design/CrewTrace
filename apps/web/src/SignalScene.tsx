@@ -97,9 +97,11 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         ctx.beginPath();points.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));
         // 前景主线压住交叉的背面线，让倾斜具有可辨认的前后关系。
         if(bright&&depth>.56){ctx.strokeStyle=`rgba(12,9,20,${depth*.72})`;ctx.lineWidth=3;ctx.shadowBlur=0;ctx.stroke();}
-        const light=Math.min(1,highlight*1.08*(.84+breath*.28)+proximity*.85+sweep*.48);
-        ctx.strokeStyle=`rgba(${Math.min(255,Math.round(165+depth*65+light*38))},${Math.min(255,Math.round(121+depth*100+light*48))},255,${Math.min(1,(bright?.3:.12)+depth*(bright?.54:.28)+breath*.06+light*.48)})`;
-        ctx.lineWidth=(bright?.9:.45)+depth*.65+light*.85;
+        const headAngle=((tick*(24+band*.32)+band*4+Math.sin(tick*.9+band)*5)/180)*Math.PI*2;
+        const signal=band%12===0?Math.pow(Math.max(0,Math.cos((segment+.5)/12*Math.PI*2-headAngle+.12)),60):0;
+        const light=Math.min(1,highlight*.86*(.84+breath*.28)+proximity*.85+sweep*.4+signal*.55);
+        ctx.strokeStyle=`rgba(${Math.min(255,Math.round(165+depth*65+light*38))},${Math.min(255,Math.round(121+depth*100+light*48))},255,${Math.min(1,(bright?.32:.08)+depth*(bright?.54:.23)+breath*.04+light*(bright?.48:.26))})`;
+        ctx.lineWidth=(bright?1.02:.34)+depth*(bright?.65:.4)+light*(bright?.85:.35);
         ctx.shadowColor='#d8c4ff';ctx.shadowBlur=bright?Math.round(light*13):0;ctx.stroke();
         // 光点和渐隐尾迹直接沿已投影的环线运动，并参与前后遮挡。
         if(band%12===0){
