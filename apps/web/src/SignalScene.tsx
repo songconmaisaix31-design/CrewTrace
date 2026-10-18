@@ -46,7 +46,7 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       halo.addColorStop(1,'rgba(120,67,220,0)');
       ctx.fillStyle=halo;ctx.fillRect(0,0,width,height);
       ctx.globalCompositeOperation='source-over';
-      const paths:{points:{x:number;y:number}[];depth:number;bright:boolean;highlight:number;proximity:number}[]=[];
+      const paths:{points:{x:number;y:number}[];depth:number;bright:boolean;highlight:number;proximity:number;band:number;segment:number;sweep:number}[]=[];
       const orbitShape:{x:number;y:number}[]=[];
       const tilt=.86+my*.07+Math.sin(tick*.24)*.035;
       const yaw=-.38+mx*.08;
@@ -76,7 +76,9 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         const bright=band%6===0;
         const middle=points[8],reach=Math.min(radius*.65,160);
         const proximity=lensStrength*Math.exp(-((middle.x-px)**2+(middle.y-py)**2)/(reach*reach));
-        paths.push({points,depth,bright,highlight,proximity});
+        const sweepPhase=tick*.9;
+        const sweep=Math.pow(Math.max(0,Math.cos(a-sweepPhase)),14)*Math.pow(.5+.5*Math.sin(tick*.9),4);
+        paths.push({points,depth,bright,highlight,proximity,band,segment,sweep});
         }
       }
       const rect=el.getBoundingClientRect();
@@ -90,14 +92,36 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         breath,
       };
       paths.sort((a,b)=>a.depth-b.depth);
-      for(const {points,depth,bright,highlight,proximity} of paths){
+      for(const {points,depth,bright,highlight,proximity,band,segment,sweep} of paths){
         ctx.beginPath();points.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));
         // 前景主线压住交叉的背面线，让倾斜具有可辨认的前后关系。
         if(bright&&depth>.56){ctx.strokeStyle=`rgba(12,9,20,${depth*.72})`;ctx.lineWidth=3;ctx.shadowBlur=0;ctx.stroke();}
-        const light=Math.min(1,highlight*1.08*(.84+breath*.28)+proximity*.65);
+        const light=Math.min(1,highlight*1.08*(.84+breath*.28)+proximity*.85+sweep*.48);
         ctx.strokeStyle=`rgba(${Math.min(255,Math.round(165+depth*65+light*38))},${Math.min(255,Math.round(121+depth*100+light*48))},255,${Math.min(1,(bright?.3:.12)+depth*(bright?.54:.28)+breath*.06+light*.48)})`;
         ctx.lineWidth=(bright?.9:.45)+depth*.65+light*.85;
         ctx.shadowColor='#d8c4ff';ctx.shadowBlur=bright?Math.round(light*18):0;ctx.stroke();
+        // 光点和渐隐尾迹直接沿已投影的环线运动，并参与前后遮挡。
+        if(band%12===0){
+          const head=((tick*(24+band*.32)+band*4+Math.sin(tick*.9+band)*5)%180+180)%180;
+          ctx.shadowColor='#cbb8ff';ctx.shadowBlur=8;
+          for(let index=1;index<points.length;index++){
+            const sample=segment*15+index;
+            const behind=(head-sample+180)%180;
+            if(behind>13)continue;
+            const fade=(1-behind/13)**2;
+            ctx.beginPath();ctx.moveTo(points[index-1].x,points[index-1].y);ctx.lineTo(points[index].x,points[index].y);
+            ctx.strokeStyle=`rgba(207,186,255,${fade*(.25+depth*.65)})`;ctx.lineWidth=1+fade*1.4;ctx.stroke();
+          }
+          const localHead=head-segment*15;
+          if(localHead>=0&&localHead<15){
+            const index=Math.floor(localHead),fraction=localHead-index;
+            const x=points[index].x+(points[index+1].x-points[index].x)*fraction;
+            const y=points[index].y+(points[index+1].y-points[index].y)*fraction;
+            ctx.beginPath();ctx.arc(x,y,1.2+depth*1.1,0,Math.PI*2);
+            ctx.fillStyle=`rgba(248,244,255,${.35+depth*.65})`;ctx.shadowBlur=14;ctx.fill();
+          }
+          ctx.shadowBlur=0;
+        }
       }
       ctx.shadowBlur=0;
       ctx.globalCompositeOperation='source-over';
