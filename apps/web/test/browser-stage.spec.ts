@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
-test('首页滚动进入，工作区滚动只阅读，按钮同位切换与返回',async({page})=>{
+test('连续手势不跳过01，双向切页与内容边界阅读',async({page})=>{
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto('/');
   await expect(page.getByRole('link',{name:'向下探索',exact:true})).toBeVisible();
@@ -13,6 +13,7 @@ test('首页滚动进入，工作区滚动只阅读，按钮同位切换与返�
   await page.waitForTimeout(500);
   const first=(await page.locator('.stage-tasks').boundingBox())!;
   await page.mouse.wheel(0,400);
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
   await page.mouse.wheel(0,-400);
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
@@ -23,22 +24,25 @@ test('首页滚动进入，工作区滚动只阅读，按钮同位切换与返�
   expect(Math.abs(first.height-second.height)).toBeLessThan(1);
   await expect(page.locator('.stage-discussion')).toHaveCSS('transition-property','opacity, transform');
   const reading=page.locator('.stage-discussion .stage-card-scroll');
-  await reading.hover();
-  await page.mouse.wheel(0,1200);
-  await page.waitForTimeout(350);
-  if(await reading.evaluate(el=>el.scrollHeight>el.clientHeight))expect(await reading.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
-  await page.mouse.wheel(0,-1800);
-  await page.waitForTimeout(350);
-  await page.mouse.wheel(0,-500);
-  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
-  await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
-  await page.getByRole('button',{name:'上一屏：协作任务',exact:true}).click();
+  if(await reading.evaluate(el=>el.scrollHeight>el.clientHeight)){
+    const box=(await reading.boundingBox())!;
+    await input.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),yDistance:-1200,speed:1000,gestureSourceType:'mouse'});
+    expect(await reading.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+    await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+  }
+  await page.mouse.move(6,350);
+  await input.send('Input.synthesizeScrollGesture',{x:6,y:350,yDistance:650,speed:1000,gestureSourceType:'mouse'});
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
-  await page.getByRole('button',{name:'上一屏：首页',exact:true}).click();
+  await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
+  await page.waitForTimeout(250);
+  await page.mouse.wheel(0,-100);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','0');
   await page.waitForTimeout(500);await page.screenshot({path:'.local/lens-desktop.png'});
   await page.setViewportSize({width:390,height:844});
   await page.waitForTimeout(350);await page.screenshot({path:'.local/lens-mobile.png'});
+  const caption=(await page.locator('.lens-caption').boundingBox())!;
+  const entry=(await page.locator('.lens-enter').boundingBox())!;
+  expect(caption.y+caption.height).toBeLessThan(entry.y);
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
   await page.getByRole('button',{name:'02 交流与公告',exact:true}).click();

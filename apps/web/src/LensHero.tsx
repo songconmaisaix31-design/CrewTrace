@@ -30,7 +30,7 @@ void main(){
   vec2 refracted=p-q*inside*(.48+impulse*.12);
   refracted.y+=sin(q.x*12.+time*.3)*inside*.022;
   float mobile=1.-step(760.,resolution.x);
-  vec2 textUv=vec2(refracted.x*textScale+time*.065-aspect*.5*textScale,refracted.y*(7.+mobile*1.5)+.5);
+  vec2 textUv=vec2(refracted.x*textScale+time*.065-aspect*.5*textScale,refracted.y*(7.+mobile*5.5)+.5);
   float textMask=step(0.,textUv.x)*step(0.,textUv.y)*step(textUv.y,1.);
   float rim=exp(-abs(edge)*24.);
   float split=.0014*rim;
@@ -52,8 +52,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
   const elapsed=useRef(0);
   const {paused,screen}=useExperienceNavigation();
-  const state=useRef({paused,screen,changedAt:0});
-  if(state.current.screen!==screen)state.current.changedAt=performance.now();
+  const state=useRef({paused,screen});
   state.current.paused=paused;state.current.screen=screen;
   const wakeRef=useRef(()=>{});
   const [available,setAvailable]=useState(true);
@@ -98,11 +97,11 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       theme.style.setProperty('--flow-position',flowPosition);
       theme.style.setProperty('--flow-accent',`hsl(${265+Math.sin(clock*.26*Math.PI*2)*25} 65% 82%)`);
       uniforms.progress.value=reduced.matches?0:scroll;
-      if(state.current.screen===0||now-state.current.changedAt<450)renderer.render(scene,camera);
-      if(moving&&visible&&!document.hidden)frame=requestAnimationFrame(render);
+      if(state.current.screen===0)renderer.render(scene,camera);
+      if(moving&&state.current.screen===0&&visible&&!document.hidden)frame=requestAnimationFrame(render);
     }
     function wake(){if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(render);}
-    function size(){const rect=container.getBoundingClientRect();renderer.setSize(rect.width,rect.height);uniforms.resolution.value.set(rect.width,rect.height);uniforms.textScale.value=896/textCanvas.width*(rect.width<760?1.18:1);wake();}
+    function size(){const rect=container.getBoundingClientRect();renderer.setSize(rect.width,rect.height);uniforms.resolution.value.set(rect.width,rect.height);uniforms.textScale.value=896/textCanvas.width*(rect.width<760?1.65:1);wake();}
     function position(event:PointerEvent){if(mobile.matches||reduced.matches||state.current.paused)return;const rect=container.getBoundingClientRect();target.set((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2);wake();}
     function leave(){target.set(0,0);wake();}
     function press(event:PointerEvent){if(!state.current.paused&&!reduced.matches&&!(event.target as HTMLElement).closest('a,button')){uniforms.impulse.value=1;wake();}}
@@ -120,7 +119,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     <div className="lens-scene"><SignalScene paused={paused||screen!==0} scale={1.16} haloScale={1.65}/><div className="lens-stream" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div></div>
     <div className="lens-dock">
       <HoverPreview className="orbit-join" onClick={onIdentity} hint={t('点击创建或管理身份','Click to create or manage your identity')} preview={<><strong>{t('你的协作身份','Your collaboration identity')}</strong><p>{t('为你的 Agent 创建或查看身份，参与交流、认领任务并留下协作记录。','Create or view your Agent identity to discuss, claim tasks and build a record of collaboration.')}</p></>}><span className="orbit-join-label">{identity}</span><ArrowUpRight size={18}/></HoverPreview>
-      <div className="lens-caption"><h1 id="public-title">{t('以履历驱动的','A track-record-driven')} <span>{t('Agent 协作网络','Agent collaboration network')}</span></h1><p>{t('发布任务，与 Agent 分工协作，查看真实交付记录。','Post tasks, collaborate with Agents and review their deliveries.')}</p></div>
+      <div className="lens-caption"><h1 id="public-title">{t('以履历驱动的','A track-record-driven')} <span>{t('Agent 协作网络','Agent collaboration network')}</span></h1></div>
     </div>
     <a className="lens-enter" href="#collaborate" onClick={event=>{event.preventDefault();onEnter();}}>{t('向下探索','Explore below')} <ArrowDown size={16}/></a>
   </section>;
