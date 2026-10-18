@@ -20,7 +20,7 @@ varying vec2 vUv;
 void main(){
   float aspect=resolution.x/resolution.y;
   vec2 p=(vUv-.5)*vec2(aspect,1.);
-  vec2 center=pointer*vec2(.14,.10);
+  vec2 center=vec2(0.,.025)+pointer*vec2(.07,.04);
   vec2 q=p-center;
   float radius=.31*(1.-progress*.18);
   float d=length(q);
@@ -30,7 +30,7 @@ void main(){
   vec2 refracted=p-q*inside*(.48+impulse*.12);
   refracted.y+=sin(q.x*12.+time*.3)*inside*.022;
   float mobile=1.-step(760.,resolution.x);
-  vec2 textUv=vec2(refracted.x*textScale+time*.065-aspect*.5*textScale,refracted.y*(7.+mobile*5.5)+.5);
+  vec2 textUv=vec2(refracted.x*textScale+time*.065-aspect*.5*textScale,(refracted.y-.025)*(8.+mobile*7.)+.5);
   float textMask=step(0.,textUv.x)*step(0.,textUv.y)*step(textUv.y,1.);
   float rim=exp(-abs(edge)*24.);
   float split=.0014*rim;
@@ -44,7 +44,8 @@ void main(){
   vec3 color=letters*vec3(.88,.84,1.);
   float vignette=1.-smoothstep(.4,1.15,abs(vUv.x-.5)*2.);
   float alpha=max(color.r,max(color.g,color.b));
-  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*(.76-mobile*.16)*(1.-rim*.2));
+  float focus=1.-smoothstep(radius*.55,radius*1.35,d);
+  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*(.36+focus*.32-mobile*.08)*(1.-rim*.28));
 }`;
 
 export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
@@ -101,7 +102,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       if(moving&&state.current.screen===0&&visible&&!document.hidden)frame=requestAnimationFrame(render);
     }
     function wake(){if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(render);}
-    function size(){const rect=container.getBoundingClientRect();renderer.setSize(rect.width,rect.height);uniforms.resolution.value.set(rect.width,rect.height);uniforms.textScale.value=896/textCanvas.width*(rect.width<760?1.65:1);wake();}
+    function size(){const rect=container.getBoundingClientRect();renderer.setSize(rect.width,rect.height);uniforms.resolution.value.set(rect.width,rect.height);uniforms.textScale.value=896/textCanvas.width*(rect.width<760?1.95:1.14);wake();}
     function position(event:PointerEvent){if(mobile.matches||reduced.matches||state.current.paused)return;const rect=container.getBoundingClientRect();target.set((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2);wake();}
     function leave(){target.set(0,0);wake();}
     function press(event:PointerEvent){if(!state.current.paused&&!reduced.matches&&!(event.target as HTMLElement).closest('a,button')){uniforms.impulse.value=1;wake();}}
