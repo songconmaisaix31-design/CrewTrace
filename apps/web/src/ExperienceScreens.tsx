@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ExperienceNavigation, type OrbitPoint } from './ExperienceNavigation';
+import { ExperienceNavigation, type OrbitPoint, type OrbitAperture } from './ExperienceNavigation';
 
 export default function ExperienceScreens({children}:{children:(navigation:{screen:number;enter:()=>void;home:()=>void})=>ReactNode}){
   const [screen,setScreen]=useState(()=>location.hash==='#collaborate'||new URLSearchParams(location.search).has('task')?1:0);
@@ -9,6 +9,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   const currentPanel=useRef(panel);currentPanel.current=panel;
   const root=useRef<HTMLDivElement>(null);
   const orbit=useRef<OrbitPoint[]>([]);
+  const aperture=useRef<OrbitAperture|null>(null);
   function enter(){currentScreen.current=1;setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   function home(){currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
@@ -75,5 +76,5 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
     element.addEventListener('wheel',wheel,{passive:false});element.addEventListener('touchstart',start,{passive:true});element.addEventListener('touchmove',move,{passive:false});element.addEventListener('touchend',end);element.addEventListener('touchcancel',cancel);element.addEventListener('keydown',key);
     return()=>{cancelAnimationFrame(paintFrame);element.removeEventListener('wheel',wheel);element.removeEventListener('touchstart',start);element.removeEventListener('touchmove',move);element.removeEventListener('touchend',end);element.removeEventListener('touchcancel',cancel);element.removeEventListener('keydown',key);};
   },[]);
-  return <ExperienceNavigation.Provider value={{screen,panel,setPanel,home,paused,setPaused,orbit}}><div ref={root} tabIndex={-1} className="experience-shell" data-screen={screen} data-paused={paused}>{children({screen,enter,home})}</div></ExperienceNavigation.Provider>;
+  return <ExperienceNavigation.Provider value={{screen,panel,setPanel,home,paused,setPaused,orbit,aperture}}><div ref={root} tabIndex={-1} className="experience-shell" data-screen={screen} data-paused={paused}>{children({screen,enter,home})}</div></ExperienceNavigation.Provider>;
 }

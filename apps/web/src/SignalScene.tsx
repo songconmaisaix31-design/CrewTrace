@@ -11,7 +11,7 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
   const paused=controlledPaused??localPaused;
   const pauseRef=useRef(paused);pauseRef.current=paused;
   const wake=useRef(()=>{});
-  const {orbit}=useExperienceNavigation();
+  const {orbit,aperture}=useExperienceNavigation();
   useEffect(() => {
     const el = canvas.current!;
     const ctx = el.getContext('2d');
@@ -81,12 +81,20 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       }
       const rect=el.getBoundingClientRect();
       orbit.current=orbitShape.map(point=>({x:rect.left+point.x*rect.width/width,y:rect.top+point.y*rect.height/height}));
+      // 将同一帧的倾斜投影传给文字透镜，折射边缘跟随真实圆环。
+      const apertureRadius=radius*.82;
+      aperture.current={
+        center:{x:rect.left+cx*rect.width/width,y:rect.top+cy*rect.height/height},
+        axisX:{x:co*cr*apertureRadius*rect.width/width,y:co*sr*apertureRadius*rect.height/height},
+        axisY:{x:(st*so*cr-ct*sr)*apertureRadius*rect.width/width,y:(st*so*sr+ct*cr)*apertureRadius*rect.height/height},
+        breath,
+      };
       paths.sort((a,b)=>a.depth-b.depth);
       for(const {points,depth,bright,highlight,proximity} of paths){
         ctx.beginPath();points.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));
         // 前景主线压住交叉的背面线，让倾斜具有可辨认的前后关系。
         if(bright&&depth>.56){ctx.strokeStyle=`rgba(12,9,20,${depth*.72})`;ctx.lineWidth=3;ctx.shadowBlur=0;ctx.stroke();}
-        const light=Math.min(1,highlight*.82+proximity*.65);
+        const light=Math.min(1,highlight*.82*(.94+breath*.12)+proximity*.65);
         ctx.strokeStyle=`rgba(${Math.round(165+depth*65+light*24)},${Math.round(121+depth*100+light*28)},255,${Math.min(1,(bright?.28:.12)+depth*(bright?.52:.28)+breath*.06+light*.38)})`;
         ctx.lineWidth=(bright?.85:.45)+depth*.65+light*.55;
         ctx.shadowColor='#c4a2ff';ctx.shadowBlur=bright?Math.round(light*12):0;ctx.stroke();

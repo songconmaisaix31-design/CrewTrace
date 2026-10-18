@@ -14,23 +14,29 @@ uniform vec2 pointer;
 uniform float time;
 uniform float progress;
 uniform float impulse;
+uniform vec2 portalCenter;
+uniform vec4 portalAxes;
+uniform float breath;
 uniform float lineWidths[11];
 uniform sampler2D lettering;
 varying vec2 vUv;
 void main(){
   float aspect=resolution.x/resolution.y;
   vec2 p=(vUv-.5)*vec2(aspect,1.);
-  vec2 center=vec2(0.,.025)+pointer*vec2(.07,.04);
+  vec2 center=portalCenter+pointer*vec2(.012,.008);
   vec2 q=p-center;
-  float radius=.31*(1.-progress*.18);
-  float d=length(q);
-  float edge=d-radius;
-  float inside=1.-smoothstep(radius*.85,radius*1.12,d);
-  float rim=exp(-abs(edge)*24.);
-  // 中心放大保持可读，边缘用连续位移表现有厚度的折射面。
-  vec2 refracted=p-q*inside*(.5+impulse*.08);
-  refracted.x+=q.x*rim*.16;
-  refracted.y+=sin(q.x*9.+time*.22)*inside*.018+q.y*rim*.12;
+  vec2 axisX=portalAxes.xy*(1.-progress*.18),axisY=portalAxes.zw*(1.-progress*.18);
+  float determinant=axisX.x*axisY.y-axisX.y*axisY.x;
+  vec2 local=vec2(q.x*axisY.y-q.y*axisY.x,axisX.x*q.y-axisX.y*q.x)/determinant;
+  float d=length(local);
+  float edge=d-1.;
+  float inside=1.-smoothstep(.76,1.14,d);
+  float rim=exp(-abs(edge)*11.);
+  float approach=1.-smoothstep(1.,2.4,d);
+  // 进入环内放大，穿过倾斜边缘时拉伸，离开后连续恢复。
+  vec2 refracted=p-q*inside*(.48+impulse*.08);
+  refracted+=q*rim*.2+q*(1.-inside)*approach*.07;
+  refracted.y+=sin(local.x*2.8+time*.22)*inside*.012;
   float mobile=1.-step(760.,resolution.x);
   float rows=mix(11.,7.,mobile);
   float fieldHeight=mix(.36,.28,mobile);
@@ -43,7 +49,7 @@ void main(){
   float flow=refracted.x*textScale+time*rowSpeed*.5+row*.07;
   vec2 textUv=vec2(mod(flow,period),(10.-row+fract(fieldY*rows))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
-  float split=.0012*rim;
+  float split=.0015*rim;
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
     texture2D(lettering,textUv).g,texture2D(lettering,textUv-vec2(split,0.)).b)*textMask;
   vec3 soft=vec3(0.);
@@ -54,16 +60,18 @@ void main(){
   vec3 color=letters*vec3(.95,.91,1.);
   float vignette=1.-smoothstep(.3,.82,abs(p.x));
   float alpha=max(color.r,max(color.g,color.b));
-  float focus=1.-smoothstep(radius*.55,radius*1.35,d);
+  float focus=1.-smoothstep(.65,1.65,d);
   float strength=mix(.22+focus*.7,.3+focus*.68,1.-step(.5,abs(row-floor(rows*.5))));
-  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*strength*(1.-rim*.16));
+  float passage=(.94+breath*.06)*(1.-rim*.12);
+  float departure=mix(.64,1.,smoothstep(-1.8,.4,local.x));
+  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*strength*passage*mix(departure,1.,inside));
 }`;
 
 export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
   const {t}=useI18n();
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
   const elapsed=useRef(0);
-  const {paused,screen}=useExperienceNavigation();
+  const {paused,screen,aperture}=useExperienceNavigation();
   const state=useRef({paused,screen});
   state.current.paused=paused;state.current.screen=screen;
   const wakeRef=useRef(()=>{});
@@ -109,12 +117,14 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     });
     const texture=new THREE.CanvasTexture(textCanvas);texture.wrapS=THREE.RepeatWrapping;
     const uniforms={resolution:{value:new THREE.Vector2()},pointer:{value:new THREE.Vector2()},
+      portalCenter:{value:new THREE.Vector2(0,.02)},portalAxes:{value:new THREE.Vector4(.16,-.22,-.18,-.12)},breath:{value:0},
       time:{value:0},progress:{value:0},impulse:{value:0},lineWidths:{value:lineWidths},lettering:{value:texture}};
     const material=new THREE.ShaderMaterial({uniforms,fragmentShader,transparent:true,
       vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}'});
     const geometry=new THREE.PlaneGeometry(2,2),scene=new THREE.Scene(),camera=new THREE.Camera();
     scene.add(new THREE.Mesh(geometry,material));
     let frame=0,last=0,visible=true,clock=elapsed.current,scroll=0;
+    let bounds=container.getBoundingClientRect();
     const target=new THREE.Vector2();
     function render(now:number){
       frame=0;
@@ -122,6 +132,12 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       const moving=!state.current.paused&&!reduced.matches;
       if(moving){clock+=delta;uniforms.pointer.value.lerp(target,1-Math.exp(-delta*5));uniforms.impulse.value*=Math.exp(-delta*3);}
       uniforms.time.value=clock;
+      const portal=aperture.current;
+      if(portal&&bounds.height>0){
+        uniforms.portalCenter.value.set((portal.center.x-bounds.left-bounds.width/2)/bounds.height,.5-(portal.center.y-bounds.top)/bounds.height);
+        uniforms.portalAxes.value.set(portal.axisX.x/bounds.height,-portal.axisX.y/bounds.height,portal.axisY.x/bounds.height,-portal.axisY.y/bounds.height);
+        uniforms.breath.value=portal.breath;
+      }
       elapsed.current=clock;
       const theme=section.closest<HTMLElement>('.experience-shell')??section;
       const flowPosition=`${200-(clock*.26%1)*400}%`;
@@ -133,7 +149,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       if(moving&&state.current.screen===0&&visible&&!document.hidden)frame=requestAnimationFrame(render);
     }
     function wake(){if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(render);}
-    function size(){const rect=container.getBoundingClientRect();renderer.setSize(rect.width,rect.height);uniforms.resolution.value.set(rect.width,rect.height);wake();}
+    function size(){bounds=container.getBoundingClientRect();renderer.setSize(bounds.width,bounds.height);uniforms.resolution.value.set(bounds.width,bounds.height);wake();}
     function position(event:PointerEvent){if(mobile.matches||reduced.matches||state.current.paused)return;const rect=container.getBoundingClientRect();target.set((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2);wake();}
     function leave(){target.set(0,0);wake();}
     function press(event:PointerEvent){if(!state.current.paused&&!reduced.matches&&!(event.target as HTMLElement).closest('a,button')){uniforms.impulse.value=1;wake();}}
