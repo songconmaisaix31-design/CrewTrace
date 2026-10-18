@@ -97,4 +97,12 @@ html:has(.experience-shell),body:has(.experience-shell){overflow:hidden;height:1
 .crewtrace-ring-mark svg{transform:rotate(38deg) rotateX(54deg);filter:drop-shadow(0 2px 0 #6f537d) drop-shadow(0 0 4px #bb9de344)}
 .crewtrace-ring-mark{perspective:160px}
 @media(max-width:760px){.experience-shell .stage-switch{gap:10px}.experience-shell .stage-switch button,.experience-shell .stage-switch button span{font-size:11px}.stage-read{margin-left:0}.experience-shell .lens-caption h1{font-size:18px}.experience-shell .public-task-detail h2{font-size:20px}}
-@media(prefers-reduced-motion:reduce){.experience-home,.experience-shell .public-workspace>.public-content,.experience-shell .stage-card{transition:none;filter:none!important;transform:none!important}.experience-shell .stage-card[aria-hidden=true]{visibility:hidden}.lens-caption h1,.lens-caption h1 span{background:none;color:#d9c9ef}}
+.stage-directions{display:flex;justify-content:center;gap:36px;flex:none}
+.stage-directions .stage-direction{font-size:12px;padding:12px 16px}
+.experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]{animation:stage-surface-in .58s cubic-bezier(.16,1,.3,1) both}
+.experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;border:1px solid #d5b7ff;box-shadow:inset 0 0 36px #b68af533,0 0 36px #b68af533;animation:stage-light-in .65s ease-out both}
+.experience-shell[data-screen="0"] .experience-home{animation:home-surface-in .48s cubic-bezier(.16,1,.3,1) both}
+@keyframes stage-surface-in{0%{opacity:0;transform:translateY(64px) scale(.91) rotateX(9deg);filter:blur(12px)}70%{opacity:1;transform:translateY(-5px) scale(1.008) rotateX(0deg);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes stage-light-in{0%{opacity:0}35%{opacity:.65}100%{opacity:0}}
+@keyframes home-surface-in{from{opacity:0;transform:scale(1.045);filter:blur(14px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
+@media(prefers-reduced-motion:reduce){.experience-home,.experience-shell .public-workspace>.public-content,.experience-shell .stage-card{animation:none!important;transition:none;filter:none!important;transform:none!important}.experience-shell .stage-card[aria-hidden=true]{visibility:hidden}.lens-caption h1,.lens-caption h1 span{background:none;color:#d9c9ef}}

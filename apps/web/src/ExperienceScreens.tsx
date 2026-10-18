@@ -5,20 +5,19 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   const [screen,setScreen]=useState(()=>location.hash==='#collaborate'||new URLSearchParams(location.search).has('task')?1:0);
   const [panel,setPanel]=useState(0);
   const currentScreen=useRef(screen);currentScreen.current=screen;
+  const currentPanel=useRef(panel);currentPanel.current=panel;
   const root=useRef<HTMLDivElement>(null);
-  function enter(){setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
+  function enter(){setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   function home(){setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
     const element=root.current!;
-    let amount=0,blocked=false,lastWheel=0,lastDelta=0,lastStep=0,touchY=0,touchDistance=0,returnArmed=false;
+    let amount=0,blocked=false,lastWheel=0,lastDelta=0,lastStep=0,touchY=0,touchDistance=0;
     function step(direction:number){
       if(element.querySelector('dialog[open]'))return;
-      if(currentScreen.current===0&&direction>0){returnArmed=false;delete element.dataset.returnReady;enter();}
+      if(currentScreen.current===0&&direction>0)enter();
       else if(currentScreen.current===1){
-        if(direction<0){
-          if(returnArmed){returnArmed=false;delete element.dataset.returnReady;home();}
-          else{setPanel(0);returnArmed=true;element.dataset.returnReady='true';element.querySelectorAll('.stage-card-scroll').forEach(box=>box.scrollTo({top:0,behavior:'instant'}));}
-        }else{setPanel(1);returnArmed=false;delete element.dataset.returnReady;}
+        if(direction<0){if(currentPanel.current===1)setPanel(0);else home();}
+        else setPanel(1);
       }
     }
     function canRead(target:EventTarget|null,direction:number){
@@ -30,13 +29,13 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       event.preventDefault();
       const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
       const now=performance.now();
-      const fresh=now-lastWheel>100||Math.sign(delta)!==Math.sign(lastDelta)||(now-lastStep>180&&Math.abs(delta)>Math.max(12,Math.abs(lastDelta)*1.8));
+      const fresh=now-lastWheel>65||Math.sign(delta)!==Math.sign(lastDelta)||(now-lastStep>150&&Math.abs(delta)>Math.max(8,Math.abs(lastDelta)*1.5));
       if(fresh){blocked=false;amount=0;}
       lastWheel=now;lastDelta=delta;
       if(blocked)return;
       if(Math.sign(amount)!==Math.sign(delta))amount=0;
       amount+=delta;
-      if(Math.abs(amount)>=12){step(Math.sign(amount));lastStep=now;blocked=true;amount=0;}
+      if(Math.abs(amount)>=8){step(Math.sign(amount));lastStep=now;blocked=true;amount=0;}
     }
     function start(event:TouchEvent){touchY=event.touches[0].clientY;touchDistance=0;}
     function move(event:TouchEvent){

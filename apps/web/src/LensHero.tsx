@@ -27,8 +27,8 @@ void main(){
   // 圆环中间保留清晰可见的球面放大与弯曲。
   vec2 refracted=p-q*inside*(.48+impulse*.12);
   refracted.y+=sin(q.x*12.+time*.3)*inside*.022;
-  vec2 textUv=vec2(refracted.x*textScale+time*.065,refracted.y*7.+.5);
-  float textMask=step(0.,textUv.y)*step(textUv.y,1.);
+  vec2 textUv=vec2(refracted.x*textScale+time*.065-aspect*.5*textScale,refracted.y*7.+.5);
+  float textMask=step(0.,textUv.x)*step(0.,textUv.y)*step(textUv.y,1.);
   float rim=exp(-abs(edge)*24.);
   float split=.0014*rim;
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
@@ -47,6 +47,7 @@ void main(){
 export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
   const {t}=useI18n();
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
+  const elapsed=useRef(0);
   const [paused,setPaused]=useState(false),[available,setAvailable]=useState(true);
   useEffect(()=>{
     const section=host.current!, container=mount.current!;
@@ -74,7 +75,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}'});
     const geometry=new THREE.PlaneGeometry(2,2),scene=new THREE.Scene(),camera=new THREE.Camera();
     scene.add(new THREE.Mesh(geometry,material));
-    let frame=0,last=0,visible=true,clock=0,scroll=0;
+    let frame=0,last=0,visible=true,clock=elapsed.current,scroll=0;
     const target=new THREE.Vector2();
     function render(now:number){
       frame=0;
@@ -82,6 +83,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       const moving=!paused&&!reduced.matches;
       if(moving){clock+=delta;uniforms.pointer.value.lerp(target,1-Math.exp(-delta*5));uniforms.impulse.value*=Math.exp(-delta*3);}
       uniforms.time.value=clock;
+      elapsed.current=clock;
       section.style.setProperty('--flow-position',`${200-(clock*.26%1)*400}%`);
       uniforms.progress.value=reduced.matches?0:scroll;
       renderer.render(scene,camera);

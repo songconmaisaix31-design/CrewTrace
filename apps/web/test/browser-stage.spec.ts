@@ -10,6 +10,7 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   await page.mouse.move(6,350);
   await page.mouse.wheel(0,16);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
+  await expect(page.locator('.stage-tasks')).toHaveCSS('animation-name','stage-surface-in');
   for(let i=0;i<5;i++)await page.mouse.wheel(0,120);
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
   await page.waitForTimeout(1100);
@@ -49,13 +50,14 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   await reading.evaluate(el=>{el.scrollTop=el.scrollHeight;});
   await reading.hover();
   await page.mouse.wheel(0,-45);
-  await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
-  await expect.poll(()=>reading.evaluate(el=>el.scrollTop)).toBe(0);
-  await page.waitForTimeout(200);
-  await page.mouse.wheel(0,-45);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','0');
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
-  await page.getByRole('button',{name:'返回首页',exact:true}).click();
+  await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  await page.getByRole('button',{name:'下一屏：交流与公告',exact:true}).click();
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+  await page.getByRole('button',{name:'上一屏：协作任务',exact:true}).click();
+  await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  await page.getByRole('button',{name:'上一屏：首页',exact:true}).click();
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','0');
   await page.waitForTimeout(1100);
   await page.screenshot({path:'.local/lens-desktop.png'});
