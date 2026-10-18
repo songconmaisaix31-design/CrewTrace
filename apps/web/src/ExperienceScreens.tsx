@@ -4,6 +4,7 @@ import { ExperienceNavigation } from './ExperienceNavigation';
 export default function ExperienceScreens({children}:{children:(navigation:{screen:number;enter:()=>void;home:()=>void})=>ReactNode}){
   const [screen,setScreen]=useState(()=>location.hash==='#collaborate'||new URLSearchParams(location.search).has('task')?1:0);
   const [panel,setPanel]=useState(0);
+  const [paused,setPaused]=useState(false);
   const currentScreen=useRef(screen);currentScreen.current=screen;
   const currentPanel=useRef(panel);currentPanel.current=panel;
   const root=useRef<HTMLDivElement>(null);
@@ -22,11 +23,12 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       }
     }
     function canRead(target:EventTarget|null,direction:number){
-      return (target as HTMLElement)?.closest<HTMLElement>('.stage-card[data-reading="true"]')&&direction!==0;
+      const box=(target as HTMLElement)?.closest<HTMLElement>('.stage-card-scroll');
+      return box&&(direction>0?box.scrollTop+box.clientHeight<box.scrollHeight-2:box.scrollTop>2);
     }
     function wheel(event:WheelEvent){
       if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)||element.querySelector('dialog[open]'))return;
-      if(canRead(event.target,event.deltaY))return;
+      if(canRead(event.target,event.deltaY)){lastWheel=performance.now();lastDelta=event.deltaY;blocked=true;amount=0;return;}
       event.preventDefault();
       const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
       const now=performance.now();
@@ -61,5 +63,5 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
     element.addEventListener('wheel',wheel,{passive:false});element.addEventListener('touchstart',start,{passive:true});element.addEventListener('touchmove',move,{passive:false});element.addEventListener('touchend',end);element.addEventListener('keydown',key);
     return()=>{element.removeEventListener('wheel',wheel);element.removeEventListener('touchstart',start);element.removeEventListener('touchmove',move);element.removeEventListener('touchend',end);element.removeEventListener('keydown',key);};
   },[]);
-  return <ExperienceNavigation.Provider value={{screen,panel,setPanel,home}}><div ref={root} tabIndex={-1} className="experience-shell" data-screen={screen}>{children({screen,enter,home})}</div></ExperienceNavigation.Provider>;
+  return <ExperienceNavigation.Provider value={{screen,panel,setPanel,home,paused,setPaused}}><div ref={root} tabIndex={-1} className="experience-shell" data-screen={screen} data-paused={paused}>{children({screen,enter,home})}</div></ExperienceNavigation.Provider>;
 }

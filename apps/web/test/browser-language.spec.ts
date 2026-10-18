@@ -26,24 +26,30 @@ test('首页语言入口、弹窗淡出、真实任务和刷新偏好',async({pa
   await expect.poll(phase).not.toBe(initialPhase);
   const colors=await page.evaluate(()=>[getComputedStyle(document.querySelector('.brand')!).backgroundPosition,getComputedStyle(document.querySelector('.orbit-join-label')!).backgroundPosition]);
   expect(colors[0]).toBe(colors[1]);
-  await page.getByRole('button',{name:'暂停首页动画'}).click();
+  await page.getByRole('button',{name:'暂停动态效果'}).click();
   await page.waitForTimeout(200);
   const pausedPhase=await phase();
   await page.waitForTimeout(200);
   expect(await phase()).toBe(pausedPhase);
-  await page.getByRole('button',{name:'播放首页动画'}).click();
+  await page.getByRole('button',{name:'播放动态效果'}).click();
   await page.getByRole('button',{name:'切换为英文',exact:true}).click();
   await expect(page.locator('html')).toHaveAttribute('lang','en');
   await expect(page.locator('#public-title')).toContainText('A track-record-driven');
   await expect(page.getByRole('link',{name:'Workspace',exact:true})).toHaveCount(0);
   await page.getByRole('button',{name:'Join',exact:true}).click();
   await expectCentered(page);
+  await expect(page.getByLabel('Introduction',{exact:true})).toBeHidden();
+  await page.getByText('Add details (optional)',{exact:true}).click();
+  await expect(page.getByLabel('Introduction',{exact:true})).toBeVisible();
+  await page.getByText('Add details (optional)',{exact:true}).click();
   await page.getByLabel('Agent name',{exact:true}).fill('Draft kept locally');
   await expect(page.getByRole('dialog').locator('.language-toggle')).toHaveCount(0);
   await expect(page.getByLabel('Agent name',{exact:true})).toHaveValue('Draft kept locally');
   await page.getByRole('button',{name:'Close dialog'}).click();
   await expect(page.getByRole('dialog')).toHaveAttribute('data-closing','true');
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  expect(await page.locator('.experience-shell').evaluate(el=>[el.scrollLeft,el.scrollTop])).toEqual([0,0]);
+  expect((await page.locator('.public-topbar').boundingBox())!.x).toBe(0);
   await page.getByRole('button',{name:'Connect MCP',exact:true}).click();
   await expect(page.locator('.public-topbar').getByRole('button',{name:'Connect MCP',exact:true})).toHaveCount(1);
   await page.waitForTimeout(350);
@@ -59,6 +65,9 @@ test('首页语言入口、弹窗淡出、真实任务和刷新偏好',async({pa
   // 只读线上真实任务，不创建身份或写入生产数据。
   await page.getByRole('link',{name:'Explore below',exact:true}).click();
   await expect(page.locator('.language-toggle')).toHaveCount(0);
+  await page.getByRole('button',{name:'Pause animations',exact:true}).click();
+  await expect(page.locator('.experience-shell')).toHaveAttribute('data-paused','true');
+  await page.getByRole('button',{name:'Play animations',exact:true}).click();
   const firstTask=page.locator('.public-record h3 button').first();
   await expect(firstTask).toBeVisible();
   const title=await firstTask.innerText();
@@ -66,6 +75,12 @@ test('首页语言入口、弹窗淡出、真实任务和刷新偏好',async({pa
   await expect(page.locator('.public-task-detail h2')).toHaveText(title);
   await expectCentered(page);
   const selected=new URL(page.url()).searchParams.get('task');
+  await expect(page.locator('.trace-track button')).toHaveCount(4);
+  await expect(page.locator('.trace-records')).toContainText(title);
+  for(const node of await page.locator('.trace-track button').all()){
+    if(await node.isEnabled()){await node.click();await expect(page.locator('.trace-records p').first()).not.toBeEmpty();}
+    else await expect(node).toHaveAttribute('data-recorded','false');
+  }
   await expect(page.getByRole('heading',{name:'Claims and assignments'})).toBeVisible();
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang','en');
@@ -83,7 +98,7 @@ test('手机双语布局与减少动态效果',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.goto('/');
   await page.getByRole('button',{name:'切换为英文'}).click();
-  await expect(page.locator('.lens-pause')).toBeHidden();
+  await expect(page.locator('.motion-control')).toBeVisible();
   await expect(page.locator('#public-title')).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.getByRole('button',{name:'Join',exact:true}).click();

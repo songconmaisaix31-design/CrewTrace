@@ -27,16 +27,17 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   await expect(page.locator('.stage-discussion')).toHaveAttribute('inert','');
   await page.screenshot({path:'.local/stage-tasks.png'});
   const reading=page.locator('.stage-tasks .stage-card-scroll');
-  await reading.evaluate(el=>{el.scrollTop=Math.max(0,el.scrollHeight-el.clientHeight-60);});
-  await reading.hover();
-  await page.getByRole('button',{name:'阅读内容',exact:true}).click();
-  await reading.hover();
-  await page.mouse.wheel(0,500);
-  await page.mouse.wheel(0,120);
-  await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
-  await page.getByRole('button',{name:'退出阅读',exact:true}).click();
+  await expect(page.getByRole('button',{name:'阅读内容',exact:true})).toHaveCount(0);
+  const scrollable=await reading.evaluate(el=>el.scrollHeight>el.clientHeight);
+  if(scrollable){
+    await reading.evaluate(el=>{el.scrollTop=0;});
+    await reading.hover();
+    await page.mouse.wheel(0,40);
+    await expect.poll(()=>reading.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+    await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  }
   await page.waitForTimeout(350);
-  await reading.hover();
+  await page.mouse.move(6,350);
   await page.mouse.wheel(0,16);
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
   await page.waitForTimeout(1100);
@@ -53,8 +54,7 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   expect(await page.locator('.stage-card-scroll').first().evaluate(el=>getComputedStyle(el).overflowY)).toBe('auto');
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
   await page.waitForTimeout(700);
-  await reading.evaluate(el=>{el.scrollTop=el.scrollHeight;});
-  await reading.hover();
+  await page.mouse.move(6,350);
   await page.mouse.wheel(0,-45);
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','0');
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
