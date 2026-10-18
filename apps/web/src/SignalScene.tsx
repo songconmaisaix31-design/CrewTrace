@@ -42,7 +42,7 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       const halo=ctx.createRadialGradient(cx,cy,radius*.4,cx,cy,radius*haloScale*(.9+breath*.1));
       halo.addColorStop(0,'rgba(120,67,220,0)');
       halo.addColorStop(.52,`rgba(145,91,245,${.075+breath*.07})`);
-      halo.addColorStop(.72,`rgba(186,142,255,${.035+breath*.04})`);
+      halo.addColorStop(.72,`rgba(186,142,255,${.025+breath*.025})`);
       halo.addColorStop(1,'rgba(120,67,220,0)');
       ctx.fillStyle=halo;ctx.fillRect(0,0,width,height);
       ctx.globalCompositeOperation='source-over';
@@ -90,6 +90,7 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         axisX:{x:co*cr*apertureRadius*rect.width/width,y:co*sr*apertureRadius*rect.height/height},
         axisY:{x:(st*so*cr-ct*sr)*apertureRadius*rect.width/width,y:(st*so*sr+ct*cr)*apertureRadius*rect.height/height},
         breath,
+        sweepPhase:tick*.9,
       };
       paths.sort((a,b)=>a.depth-b.depth);
       for(const {points,depth,bright,highlight,proximity,band,segment,sweep} of paths){
@@ -99,7 +100,7 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         const light=Math.min(1,highlight*1.08*(.84+breath*.28)+proximity*.85+sweep*.48);
         ctx.strokeStyle=`rgba(${Math.min(255,Math.round(165+depth*65+light*38))},${Math.min(255,Math.round(121+depth*100+light*48))},255,${Math.min(1,(bright?.3:.12)+depth*(bright?.54:.28)+breath*.06+light*.48)})`;
         ctx.lineWidth=(bright?.9:.45)+depth*.65+light*.85;
-        ctx.shadowColor='#d8c4ff';ctx.shadowBlur=bright?Math.round(light*18):0;ctx.stroke();
+        ctx.shadowColor='#d8c4ff';ctx.shadowBlur=bright?Math.round(light*13):0;ctx.stroke();
         // 光点和渐隐尾迹直接沿已投影的环线运动，并参与前后遮挡。
         if(band%12===0){
           const head=((tick*(24+band*.32)+band*4+Math.sin(tick*.9+band)*5)%180+180)%180;

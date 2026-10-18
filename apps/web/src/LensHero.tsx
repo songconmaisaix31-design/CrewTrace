@@ -13,6 +13,7 @@ uniform vec2 resolution;
 uniform vec2 pointer;
 uniform vec2 velocity;
 uniform float time;
+uniform float sweepPhase;
 uniform float progress;
 uniform float impulse;
 uniform vec2 portalCenter;
@@ -35,9 +36,9 @@ void main(){
   float rim=exp(-abs(edge)*11.);
   float approach=1.-smoothstep(1.,2.4,d);
   // 球面厚度控制采样位移，形成中心放大和环边挤压的连续变化。
-  float thickness=sqrt(max(0.,1.-min(d*d,1.)));
+  float thickness=sqrt(max(.04,1.-min(d*d,1.)))-.2;
   vec2 refracted=p-q*inside*(.16+thickness*.22+impulse*.07);
-  float surge=.5+.5*sin(time*1.23);
+  float surge=breath;
   refracted+=vec2(q.x*(.46+surge*.06),q.y*.28)*rim+q*(1.-inside)*approach*.07;
   refracted.y+=sin(local.x*3.6+time*.48)*inside*.021+local.x*rim*.018;
   vec2 cursor=pointer*vec2(aspect*.5,.5);
@@ -68,7 +69,9 @@ void main(){
   vec2 textUv=vec2(mod(flow,period),(10.-row+clamp(glyphY,0.,1.))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
   textMask*=step(0.,glyphY)*step(glyphY,1.);
-  float energy=pow(.5+.5*sin(time*1.7-local.x*2.8+row*.65),6.);
+  float angle=atan(local.y,local.x);
+  float sweepEnvelope=pow(.5+.5*sin(sweepPhase),4.);
+  float energy=pow(max(0.,cos(angle-sweepPhase)),14.)*sweepEnvelope;
   float split=(.0028+energy*.0012)*rim+cursorLens*motion*.0012;
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
     texture2D(lettering,textUv).g,texture2D(lettering,textUv-vec2(split,0.)).b)*textMask;
@@ -93,13 +96,12 @@ void main(){
   float departure=mix(.82,1.,smoothstep(-2.6,.4,local.x));
   float textAlpha=clamp(alpha*vignette*strength*passage*mix(departure,1.,inside),0.,1.);
   // 银白亮弧沿倾斜环口移动，散射只围绕亮弧局部展开。
-  float angle=atan(local.y,local.x);
-  float crescent=pow(max(0.,cos(angle-time*.42-1.9-pointer.x*.3)),8.);
+  float crescent=pow(max(0.,cos(angle-sweepPhase-pointer.x*.15)),8.);
   float arcWidth=max(fwidth(d)*1.4,.007)+motion*.003;
   float arcCore=exp(-pow((d-1.03)/arcWidth,2.));
-  float arcGlow=exp(-abs(d-1.03)*21.);
+  float arcGlow=exp(-abs(d-1.03)*28.);
   // 亮弧带出一段逐渐消散的弯曲光尾，强调环口的厚度。
-  float wake=pow(max(0.,cos(angle-time*.42-1.3)),16.);
+  float wake=pow(max(0.,cos(angle-sweepPhase+.6)),16.);
   float wakeBand=exp(-pow((d-1.09)/.045,2.));
   float arcAlpha=clamp(crescent*(arcCore*.96+arcGlow*.3)*(.78+breath*.22+motion*.12)+wake*wakeBand*.16,0.,.98);
   vec3 arcColor=mix(vec3(.74,.59,1.),vec3(.98,.96,1.),arcCore);
@@ -158,7 +160,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     });
     const texture=new THREE.CanvasTexture(textCanvas);texture.wrapS=THREE.RepeatWrapping;
     const uniforms={resolution:{value:new THREE.Vector2()},pointer:{value:new THREE.Vector2()},velocity:{value:new THREE.Vector2()},
-      portalCenter:{value:new THREE.Vector2(0,.02)},portalAxes:{value:new THREE.Vector4(.16,-.22,-.18,-.12)},breath:{value:0},
+      portalCenter:{value:new THREE.Vector2(0,.02)},portalAxes:{value:new THREE.Vector4(.16,-.22,-.18,-.12)},breath:{value:0},sweepPhase:{value:0},
       time:{value:0},progress:{value:0},impulse:{value:0},lineWidths:{value:lineWidths},lettering:{value:texture}};
     const material=new THREE.ShaderMaterial({uniforms,fragmentShader,transparent:true,
       vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}'});
@@ -180,6 +182,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
         uniforms.portalCenter.value.set((portal.center.x-bounds.left-bounds.width/2)/bounds.height,.5-(portal.center.y-bounds.top)/bounds.height);
         uniforms.portalAxes.value.set(portal.axisX.x/bounds.height,-portal.axisX.y/bounds.height,portal.axisY.x/bounds.height,-portal.axisY.y/bounds.height);
         uniforms.breath.value=portal.breath;
+        uniforms.sweepPhase.value=portal.sweepPhase;
       }
       elapsed.current=clock;
       const theme=section.closest<HTMLElement>('.experience-shell')??section;
