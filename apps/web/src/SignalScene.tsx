@@ -32,18 +32,21 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       const moving=!pauseRef.current && !reduced.matches && visible && !document.hidden;
       const follow=1-Math.exp(-delta*7);
       if(moving){tick+=delta*.75;mx+=(tx-mx)*follow;my+=(ty-my)*follow;burst*=Math.exp(-delta*2.2);}
+      if(moving)lensStrength+=((pointerInside?1:0)-lensStrength)*(1-Math.exp(-delta*10));
       el.dataset.phase=String(tick);
       ctx.clearRect(0,0,width,height);
-      const radius=Math.min(width*(width<600?.315:.33),height*.32)*scale*(1+Math.sin(tick*.6)*.018+burst*.045);
+      // 呼吸主要通过光表现，轮廓只做轻微起伏，避免整体反复鼓胀。
+      const breath=(1-Math.cos(tick*1.23))*.5;
+      const radius=Math.min(width*(width<600?.315:.33),height*.32)*scale*(1+breath*.012+burst*.025);
       const cx=width*.5+mx*6, cy=height*.48+my*5;
-      const halo=ctx.createRadialGradient(cx,cy,radius*.35,cx,cy,radius*haloScale);
+      const halo=ctx.createRadialGradient(cx,cy,radius*.4,cx,cy,radius*haloScale*(.9+breath*.1));
       halo.addColorStop(0,'rgba(120,67,220,0)');
-      halo.addColorStop(.52,'rgba(145,91,245,.15)');
-      halo.addColorStop(.72,'rgba(186,142,255,.085)');
+      halo.addColorStop(.52,`rgba(145,91,245,${.075+breath*.07})`);
+      halo.addColorStop(.72,`rgba(186,142,255,${.035+breath*.04})`);
       halo.addColorStop(1,'rgba(120,67,220,0)');
       ctx.fillStyle=halo;ctx.fillRect(0,0,width,height);
       ctx.globalCompositeOperation='source-over';
-      const paths:{points:{x:number;y:number}[];depth:number;bright:boolean;highlight:number}[]=[];
+      const paths:{points:{x:number;y:number}[];depth:number;bright:boolean;highlight:number;proximity:number}[]=[];
       const orbitShape:{x:number;y:number}[]=[];
       const tilt=.86+my*.07+Math.sin(tick*.24)*.035;
       const yaw=-.38+mx*.08;
@@ -69,26 +72,28 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
         }
         const a=(segment+.5)/12*Math.PI*2;
         const depth=Math.max(0,Math.min(1,(meanDepth/16+1.2)/2.4));
-        const highlight=Math.pow(Math.max(0,Math.cos(a-tick*.85)),18)*(band%6===0?1:.22);
+        const highlight=Math.pow(Math.max(0,Math.cos(a-tick*.72-phase*.12)),8)*(band%6===0?1:.18);
         const bright=band%6===0;
-        paths.push({points,depth,bright,highlight});
+        const middle=points[8],reach=Math.min(radius*.65,160);
+        const proximity=lensStrength*Math.exp(-((middle.x-px)**2+(middle.y-py)**2)/(reach*reach));
+        paths.push({points,depth,bright,highlight,proximity});
         }
       }
       const rect=el.getBoundingClientRect();
       orbit.current=orbitShape.map(point=>({x:rect.left+point.x*rect.width/width,y:rect.top+point.y*rect.height/height}));
       paths.sort((a,b)=>a.depth-b.depth);
-      for(const {points,depth,bright,highlight} of paths){
+      for(const {points,depth,bright,highlight,proximity} of paths){
         ctx.beginPath();points.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));
         // 前景主线压住交叉的背面线，让倾斜具有可辨认的前后关系。
         if(bright&&depth>.56){ctx.strokeStyle=`rgba(12,9,20,${depth*.72})`;ctx.lineWidth=3;ctx.shadowBlur=0;ctx.stroke();}
-        ctx.strokeStyle=`rgba(${Math.round(165+depth*80)},${Math.round(121+depth*119)},255,${Math.min(1,(bright?.3:.12)+depth*(bright?.6:.3)+highlight*.4)})`;
-        ctx.lineWidth=(bright?.85:.45)+depth*.65+highlight*.65;
-        ctx.shadowColor='#c4a2ff';ctx.shadowBlur=bright&&highlight>.35?9:0;ctx.stroke();
+        const light=Math.min(1,highlight*.7+proximity*.65);
+        ctx.strokeStyle=`rgba(${Math.round(165+depth*65+light*24)},${Math.round(121+depth*100+light*28)},255,${Math.min(1,(bright?.3:.12)+depth*(bright?.52:.28)+breath*.045+light*.35)})`;
+        ctx.lineWidth=(bright?.85:.45)+depth*.65+light*.55;
+        ctx.shadowColor='#c4a2ff';ctx.shadowBlur=bright?light*10:0;ctx.stroke();
       }
       ctx.shadowBlur=0;
       ctx.globalCompositeOperation='source-over';
       // 对已绘制的真实光环局部采样放大，边缘渐隐，离开后平滑恢复。
-      if(moving)lensStrength+=((pointerInside?1:0)-lensStrength)*(1-Math.exp(-delta*10));
       if(lensContext&&lensStrength>.005){
         const size=240, zoom=1+.14*lensStrength, dpr=el.width/width;
         if(lens.width!==size){lens.width=lens.height=size;}
