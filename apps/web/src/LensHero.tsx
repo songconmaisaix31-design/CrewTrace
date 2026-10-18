@@ -48,15 +48,26 @@ void main(){
   float mobile=1.-step(760.,resolution.x);
   float rows=mix(11.,7.,mobile);
   float fieldHeight=mix(.36,.28,mobile);
-  float fieldY=(refracted.y-.025)/fieldHeight+.5;
+  // 环外流束向入口收拢，离开后舒展；形变在环内平滑收回。
+  float outside=1.-inside;
+  float distanceX=abs(q.x);
+  float spread=smoothstep(.12,.72,distanceX);
+  float outgoing=1.-smoothstep(-.08,.08,q.x);
+  float fan=1.+outside*spread*(.5+outgoing*.23);
+  float bend=outside*spread*(sin(q.x*3.2-time*.34)*.025+outgoing*.018);
+  float fieldY=((refracted.y-.025-bend)/fan)/fieldHeight+.5;
   float row=clamp(floor(fieldY*rows),0.,rows-1.);
-  float rowSpeed=(.03+mod(row*3.,7.)*.0021)*2.6;
+  float foreground=1.-step(.5,mod(row+1.,4.));
+  float depthScale=mix(.82,1.2,foreground);
+  float rowSpeed=(.03+mod(row*3.,7.)*.0021)*2.6*mix(.86,1.16,foreground);
   float textScale=rows*64./(4096.*fieldHeight);
   // 纹理宽度加倍后补偿坐标速度，各行保持连续向左流动。
   float period=lineWidths[int(row)]/4096.;
-  float flow=refracted.x*textScale+time*rowSpeed*.5+row*.07;
-  vec2 textUv=vec2(mod(flow,period),(10.-row+fract(fieldY*rows))/11.);
+  float flow=refracted.x*textScale/mix(1.,depthScale,outside)+time*rowSpeed*.5+row*.07;
+  float glyphY=(fract(fieldY*rows)-.5)/mix(1.,depthScale,outside)+.5;
+  vec2 textUv=vec2(mod(flow,period),(10.-row+clamp(glyphY,0.,1.))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
+  textMask*=step(0.,glyphY)*step(glyphY,1.);
   float energy=pow(.5+.5*sin(time*1.7-local.x*2.8+row*.65),6.);
   float split=(.0028+energy*.0012)*rim+cursorLens*motion*.0012;
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
@@ -68,7 +79,8 @@ void main(){
   letters=mix(letters,soft*textMask,.03+rim*.28);
   vec3 tint=mix(vec3(.95,.91,1.),vec3(.76,.94,1.),rim*energy*.55);
   vec3 color=letters*tint;
-  float streak=texture2D(lettering,textUv+vec2(.005,0.)).r*textMask*rim*energy*.25;
+  float release=outgoing*outside*exp(-distanceX*3.)*foreground;
+  float streak=texture2D(lettering,textUv+vec2(.005,0.)).r*textMask*(rim*energy*.25+release*.12);
   color+=vec3(.65,.8,1.)*streak;
   // 淡出按屏幕宽度计算，文字到接近画面边缘才消散。
   float screenEdge=abs(p.x)/(.5*aspect);
@@ -76,6 +88,7 @@ void main(){
   float alpha=max(color.r,max(color.g,color.b));
   float focus=1.-smoothstep(.65,1.65,d);
   float strength=mix(.24+focus*.59,.3+focus*.64,1.-step(.5,abs(row-floor(rows*.5))));
+  strength*=mix(1.,mix(.66,1.32,foreground),outside);
   float passage=(.94+breath*.06)*(1.-rim*.12)+rim*energy*.1;
   float departure=mix(.82,1.,smoothstep(-2.6,.4,local.x));
   float textAlpha=clamp(alpha*vignette*strength*passage*mix(departure,1.,inside),0.,1.);
