@@ -38,6 +38,7 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await expect(page.getByRole('link',{name:'Download Skill'})).toHaveAttribute('href','/skills/crewtrace/SKILL.en.md');
   await page.getByRole('button',{name:'Close dialog'}).click();
   // 只读线上真实任务，不创建身份或写入生产数据。
+  await page.getByRole('link',{name:'Workspace',exact:true}).click();
   const firstTask=page.locator('.public-record h3 button').first();
   await expect(firstTask).toBeVisible();
   const title=await firstTask.innerText();

@@ -23,3 +23,29 @@ html:has(.collaboration-stage){scroll-padding-top:0}
 .stage-switch button:focus-visible,.stage-direction:focus-visible{outline:2px solid #c8b1f5;outline-offset:3px}
 @media(max-width:760px){.collaboration-sticky{padding:18px 16px 8px}.collaboration-sticky>.public-section-head{flex-direction:row;align-items:center}.collaboration-sticky>.public-section-head h2{font-size:19px}.collaboration-sticky>.public-section-head p{display:none}.collaboration-sticky>.public-section-head .primary{font-size:12px;padding:10px}.stage-switch{gap:12px}.stage-switch button{gap:6px}.stage-switch button span{font-size:11px}.stage-switch-line{width:24px}.stage-card{border-radius:16px}.stage-card-scroll{padding:20px}.stage-card .public-record h3{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.stage-card{filter:none;transform:none;transition:none}.stage-card[aria-hidden=true]{visibility:hidden}.stage-card[aria-hidden=false]{opacity:1}}
+html:has(.experience-shell),body:has(.experience-shell){overflow:hidden;height:100%}
+.experience-shell{height:100dvh;display:flex;flex-direction:column;overflow:hidden;outline:none}
+.experience-shell>.topbar{flex:none}
+.experience-shell .public-workspace{flex:1;width:100%;min-height:0;position:relative;margin:0}
+.experience-home,.experience-shell .public-workspace>.public-content{position:absolute;inset:0;width:100%;height:100%;padding:0;margin:0;transition:opacity .85s ease,transform 1s cubic-bezier(.22,.8,.2,1),filter .85s ease;transform-origin:50% 48%}
+.experience-home{opacity:1;transform:scale(1);filter:blur(0)}
+.experience-shell[data-screen="1"] .experience-home{opacity:0;transform:scale(.94) translateY(-24px);filter:blur(12px);pointer-events:none}
+.experience-shell .public-workspace>.public-content{opacity:0;transform:scale(1.035) translateY(24px);filter:blur(12px);pointer-events:none;background:radial-gradient(ellipse at 50% 40%,#23183366,transparent 65%),#080a0e}
+.experience-shell[data-screen="1"] .public-workspace>.public-content{opacity:1;transform:scale(1);filter:blur(0);pointer-events:auto}
+.experience-shell .collaboration-sticky{position:relative;height:100%;padding-top:20px}
+.experience-shell .lens-hero{height:100%;min-height:0;max-height:none}
+.experience-shell .stage-card{transition:transform .85s cubic-bezier(.22,.8,.2,1),opacity .7s ease,filter .7s ease;backface-visibility:hidden}
+.experience-shell .stage-tasks{transform:translateY(0) scale(1);opacity:1;filter:blur(0)}
+.experience-shell .stage-discussion{transform:translateY(100%) scale(.945);opacity:.35;filter:blur(4px)}
+.experience-shell .collaboration-stage[data-panel="1"] .stage-tasks{transform:translateY(-100%) scale(.945);opacity:.35;filter:blur(4px)}
+.experience-shell .collaboration-stage[data-panel="1"] .stage-discussion{transform:translateY(0) scale(1);opacity:1;filter:blur(0)}
+.stage-card-scroll{overscroll-behavior:contain}
+.stage-switch .stage-home{margin-left:auto}
+.crewtrace-ring-mark{display:block;width:66px;height:66px;position:relative;flex:none}
+.crewtrace-ring-mark .signal-scene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;animation:none!important;opacity:1!important}
+.crewtrace-ring-mark canvas{display:block;width:100%;height:100%}
+.lens-caption h1,.lens-caption h1 span{background:linear-gradient(100deg,#b49bdb 12%,#e8d4ff 35%,#fff 45%,#c5efff 50%,#b49bdb 65%);background-size:250% 100%;background-position:var(--flow-position) 50%;background-clip:text;-webkit-background-clip:text;color:transparent}
+.lens-caption h1 span{background:none;color:inherit}
+@media(max-width:760px){.crewtrace-ring-mark{width:54px;height:54px}.stage-switch{gap:8px;flex-wrap:wrap}.stage-switch .stage-home span{font-size:10px}.stage-switch-line{width:14px}.experience-shell .lens-dock{gap:18px;top:68%}.experience-shell .lens-scene{inset:0 -18% 31%}.experience-shell .lens-caption h1{font-size:18px;line-height:1.5}.experience-shell .orbit-join{padding:16px 28px}.experience-shell .lens-intro{max-width:210px}}
+@media(max-height:680px){.experience-shell .lens-dock{top:67%;gap:12px}.experience-shell .lens-caption h1{font-size:18px}.experience-shell .orbit-join{padding:12px 24px}.experience-shell .lens-intro{top:12px}.experience-shell .lens-enter{bottom:2px}.experience-shell .lens-scene{inset:-3% 0 34%}}
+@media(prefers-reduced-motion:reduce){.experience-home,.experience-shell .public-workspace>.public-content,.experience-shell .stage-card{transition:none;filter:none!important;transform:none!important}.experience-shell .stage-card[aria-hidden=true]{visibility:hidden}.lens-caption h1,.lens-caption h1 span{background:none;color:#d9c9ef}}

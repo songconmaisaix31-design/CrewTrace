@@ -24,13 +24,10 @@ void main(){
   float d=length(q);
   float edge=d-radius;
   float inside=1.-smoothstep(radius*.85,radius*1.12,d);
-  // 中央收束、两侧拉伸，边缘多次采样产生透镜的朦胧感。
-  float core=exp(-q.x*q.x*65.)*inside;
-  vec2 refracted=p;
-  refracted.x+=q.x*inside*(.85+impulse*.2);
-  refracted.y=center.y+q.y*(1.+core*2.8);
-  refracted.y+=sin(q.x*11.+time*.35)*inside*.008;
-  vec2 textUv=vec2(refracted.x*textScale+time*.065+.10,refracted.y*10.+.5);
+  // 圆环中间保留清晰可见的球面放大与弯曲。
+  vec2 refracted=p-q*inside*(.48+impulse*.12);
+  refracted.y+=sin(q.x*12.+time*.3)*inside*.022;
+  vec2 textUv=vec2(refracted.x*textScale-time*.065+.16,refracted.y*7.+.5);
   float textMask=step(0.,textUv.y)*step(textUv.y,1.);
   float rim=exp(-abs(edge)*24.);
   float split=.0014*rim;
@@ -47,7 +44,7 @@ void main(){
   gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*.86);
 }`;
 
-export default function LensHero({identity,onIdentity}:{identity:ReactNode;onIdentity:()=>void}){
+export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
   const {t}=useI18n();
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
   const [paused,setPaused]=useState(false),[available,setAvailable]=useState(true);
@@ -64,7 +61,7 @@ export default function LensHero({identity,onIdentity}:{identity:ReactNode;onIde
     container.appendChild(surface);
     const textCanvas=document.createElement('canvas');textCanvas.height=128;
     const ctx=textCanvas.getContext('2d')!;
-    const streamText='CrewTrace  ·  A track-record-driven Agent collaboration network  ·';
+    const streamText='Collaboration you can trace  ·  Let the results of this collaboration inform the next assignment  ·';
     ctx.font='500 90px Arial, sans-serif';
     textCanvas.width=Math.ceil(ctx.measureText(streamText).width+120);
     ctx.fillStyle='#000';ctx.fillRect(0,0,textCanvas.width,128);
@@ -72,7 +69,7 @@ export default function LensHero({identity,onIdentity}:{identity:ReactNode;onIde
     ctx.fillText(streamText,40,66);
     const texture=new THREE.CanvasTexture(textCanvas);texture.wrapS=THREE.RepeatWrapping;
     const uniforms={resolution:{value:new THREE.Vector2()},pointer:{value:new THREE.Vector2()},
-      time:{value:0},progress:{value:0},impulse:{value:0},textScale:{value:1280/textCanvas.width},lettering:{value:texture}};
+      time:{value:0},progress:{value:0},impulse:{value:0},textScale:{value:896/textCanvas.width},lettering:{value:texture}};
     const material=new THREE.ShaderMaterial({uniforms,fragmentShader,transparent:true,
       vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}'});
     const geometry=new THREE.PlaneGeometry(2,2),scene=new THREE.Scene(),camera=new THREE.Camera();
@@ -85,7 +82,7 @@ export default function LensHero({identity,onIdentity}:{identity:ReactNode;onIde
       const moving=!paused&&!reduced.matches;
       if(moving){clock+=delta;uniforms.pointer.value.lerp(target,1-Math.exp(-delta*5));uniforms.impulse.value*=Math.exp(-delta*3);}
       uniforms.time.value=clock;
-      section.style.setProperty('--flow-position',`${200-(clock*.065*4%1)*400}%`);
+      section.style.setProperty('--flow-position',`${200-(clock*.065%1)*400}%`);
       uniforms.progress.value=reduced.matches?0:scroll;
       renderer.render(scene,camera);
       if(moving&&visible&&!document.hidden)frame=requestAnimationFrame(render);
@@ -111,7 +108,7 @@ export default function LensHero({identity,onIdentity}:{identity:ReactNode;onIde
       <button className="orbit-join" onClick={onIdentity}><span className="orbit-join-label">{identity}</span><ArrowUpRight size={18}/></button>
       <div className="lens-caption"><h1 id="public-title">{t('以履历驱动的','A track-record-driven')} <span>{t('Agent 协作网络','Agent collaboration network')}</span></h1></div>
     </div>
-    <a className="lens-enter" href="#collaborate">{t('向下探索','Explore below')} <ArrowDown size={16}/></a>
+    <a className="lens-enter" href="#collaborate" onClick={event=>{event.preventDefault();onEnter();}}>{t('向下探索','Explore below')} <ArrowDown size={16}/></a>
     <button className="lens-pause" onClick={()=>setPaused(value=>!value)} aria-label={paused?t('播放首页动画','Play homepage animation'):t('暂停首页动画','Pause homepage animation')}>{paused?<Play size={14}/>:<Pause size={14}/>}<span>{paused?t('播放动画','Play animation'):t('暂停动画','Pause animation')}</span></button>
   </section>;
 }
