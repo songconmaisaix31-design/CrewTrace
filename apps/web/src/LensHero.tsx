@@ -11,6 +11,7 @@ const fragmentShader = `
 precision highp float;
 uniform vec2 resolution;
 uniform vec2 pointer;
+uniform vec2 velocity;
 uniform float time;
 uniform float progress;
 uniform float impulse;
@@ -23,7 +24,7 @@ varying vec2 vUv;
 void main(){
   float aspect=resolution.x/resolution.y;
   vec2 p=(vUv-.5)*vec2(aspect,1.);
-  vec2 center=portalCenter+pointer*vec2(.012,.008);
+  vec2 center=portalCenter+pointer*vec2(.018,.012)+velocity*.003;
   vec2 q=p-center;
   vec2 axisX=portalAxes.xy*(1.-progress*.18),axisY=portalAxes.zw*(1.-progress*.18);
   float determinant=axisX.x*axisY.y-axisX.y*axisY.x;
@@ -33,10 +34,16 @@ void main(){
   float inside=1.-smoothstep(.76,1.14,d);
   float rim=exp(-abs(edge)*11.);
   float approach=1.-smoothstep(1.,2.4,d);
-  // 中心保留尺度层次，强变形集中在穿过环口的窄带。
-  vec2 refracted=p-q*inside*(.35+impulse*.07);
-  refracted+=vec2(q.x*.46,q.y*.23)*rim+q*(1.-inside)*approach*.07;
+  // 球面厚度控制采样位移，形成中心放大和环边挤压的连续变化。
+  float thickness=sqrt(max(0.,1.-min(d*d,1.)));
+  vec2 refracted=p-q*inside*(.16+thickness*.22+impulse*.07);
+  refracted+=vec2(q.x*.38,q.y*.23)*rim+q*(1.-inside)*approach*.07;
   refracted.y+=sin(local.x*3.6+time*.48)*inside*.021+local.x*rim*.018;
+  vec2 cursor=pointer*vec2(aspect*.5,.5);
+  vec2 cursorOffset=p-cursor;
+  float cursorLens=exp(-dot(cursorOffset,cursorOffset)*24.);
+  float motion=min(1.,length(velocity)*.5);
+  refracted-=velocity*cursorLens*.012+cursorOffset*cursorLens*motion*.15;
   float mobile=1.-step(760.,resolution.x);
   float rows=mix(11.,7.,mobile);
   float fieldHeight=mix(.36,.28,mobile);
@@ -50,7 +57,7 @@ void main(){
   vec2 textUv=vec2(mod(flow,period),(10.-row+fract(fieldY*rows))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
   float energy=pow(.5+.5*sin(time*1.7-local.x*2.8+row*.65),6.);
-  float split=(.0028+energy*.0012)*rim;
+  float split=(.0028+energy*.0012)*rim+cursorLens*motion*.0012;
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
     texture2D(lettering,textUv).g,texture2D(lettering,textUv-vec2(split,0.)).b)*textMask;
   vec3 soft=vec3(0.);
@@ -70,7 +77,18 @@ void main(){
   float strength=mix(.24+focus*.59,.3+focus*.64,1.-step(.5,abs(row-floor(rows*.5))));
   float passage=(.94+breath*.06)*(1.-rim*.12)+rim*energy*.1;
   float departure=mix(.82,1.,smoothstep(-2.6,.4,local.x));
-  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*strength*passage*mix(departure,1.,inside));
+  float textAlpha=clamp(alpha*vignette*strength*passage*mix(departure,1.,inside),0.,1.);
+  // 银白亮弧沿倾斜环口移动，散射只围绕亮弧局部展开。
+  float angle=atan(local.y,local.x);
+  float crescent=pow(max(0.,cos(angle-time*.28-1.9-pointer.x*.3)),10.);
+  float arcWidth=max(fwidth(d)*1.4,.007)+motion*.003;
+  float arcCore=exp(-pow((d-1.03)/arcWidth,2.));
+  float arcGlow=exp(-abs(d-1.03)*29.);
+  float arcAlpha=clamp(crescent*(arcCore*.82+arcGlow*.19)*(.82+breath*.18+motion*.12),0.,.92);
+  vec3 arcColor=mix(vec3(.74,.59,1.),vec3(.98,.96,1.),arcCore);
+  float combined=textAlpha+arcAlpha*(1.-textAlpha);
+  vec3 composed=(color/max(alpha,.001)*textAlpha+arcColor*arcAlpha*(1.-textAlpha))/max(combined,.001);
+  gl_FragColor=vec4(composed,combined);
 }`;
 
 export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
@@ -122,7 +140,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       ctx.fillText(text,0,row*64+32);
     });
     const texture=new THREE.CanvasTexture(textCanvas);texture.wrapS=THREE.RepeatWrapping;
-    const uniforms={resolution:{value:new THREE.Vector2()},pointer:{value:new THREE.Vector2()},
+    const uniforms={resolution:{value:new THREE.Vector2()},pointer:{value:new THREE.Vector2()},velocity:{value:new THREE.Vector2()},
       portalCenter:{value:new THREE.Vector2(0,.02)},portalAxes:{value:new THREE.Vector4(.16,-.22,-.18,-.12)},breath:{value:0},
       time:{value:0},progress:{value:0},impulse:{value:0},lineWidths:{value:lineWidths},lettering:{value:texture}};
     const material=new THREE.ShaderMaterial({uniforms,fragmentShader,transparent:true,
@@ -132,11 +150,13 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     let frame=0,last=0,visible=true,clock=elapsed.current,scroll=0;
     let bounds=container.getBoundingClientRect();
     const target=new THREE.Vector2();
+    const previousPointer=new THREE.Vector2(),pointerSpeed=new THREE.Vector2();
+    let previousPointerAt=0;
     function render(now:number){
       frame=0;
       const delta=Math.min((now-last)/1000,.05);last=now;
       const moving=!state.current.paused&&!reduced.matches;
-      if(moving){clock+=delta;uniforms.pointer.value.lerp(target,1-Math.exp(-delta*5));uniforms.impulse.value*=Math.exp(-delta*3);}
+      if(moving){clock+=delta;uniforms.pointer.value.lerp(target,1-Math.exp(-delta*5));uniforms.impulse.value*=Math.exp(-delta*3);uniforms.velocity.value.multiplyScalar(Math.exp(-delta*5));}
       uniforms.time.value=clock;
       const portal=aperture.current;
       if(portal&&bounds.height>0){
@@ -156,8 +176,18 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     }
     function wake(){if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(render);}
     function size(){bounds=container.getBoundingClientRect();renderer.setSize(bounds.width,bounds.height);uniforms.resolution.value.set(bounds.width,bounds.height);wake();}
-    function position(event:PointerEvent){if(mobile.matches||reduced.matches||state.current.paused)return;const rect=container.getBoundingClientRect();target.set((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2);wake();}
-    function leave(){target.set(0,0);wake();}
+    function position(event:PointerEvent){
+      if(mobile.matches||reduced.matches||state.current.paused)return;
+      const rect=container.getBoundingClientRect();
+      target.set((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2);
+      const interval=(event.timeStamp-previousPointerAt)/1000;
+      if(previousPointerAt&&interval>0&&interval<.25){
+        pointerSpeed.copy(target).sub(previousPointer).divideScalar(Math.max(interval,.008)).clampLength(0,3);
+        uniforms.velocity.value.lerp(pointerSpeed,.65);
+      }
+      previousPointer.copy(target);previousPointerAt=event.timeStamp;wake();
+    }
+    function leave(){target.set(0,0);previousPointerAt=0;wake();}
     function press(event:PointerEvent){if(!state.current.paused&&!reduced.matches&&!(event.target as HTMLElement).closest('a,button')){uniforms.impulse.value=1;wake();}}
     function onScroll(){const rect=section.getBoundingClientRect();scroll=Math.min(1,Math.max(0,-rect.top/rect.height));section.style.setProperty('--lens-scroll',String(reduced.matches?0:scroll));wake();}
     function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0;}else wake();}
