@@ -45,9 +45,9 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       ctx.globalCompositeOperation='source-over';
       const paths:{points:{x:number;y:number}[];depth:number;bright:boolean;highlight:number}[]=[];
       const orbitShape:{x:number;y:number}[]=[];
-      const tilt=.76+my*.07+Math.sin(tick*.24)*.035;
-      const yaw=-.14+mx*.08;
-      const roll=1.57+Math.sin(tick*.2)*.035;
+      const tilt=.86+my*.07+Math.sin(tick*.24)*.035;
+      const yaw=-.38+mx*.08;
+      const roll=1.22+Math.sin(tick*.2)*.035;
       const ct=Math.cos(tilt),st=Math.sin(tilt),cr=Math.cos(roll),sr=Math.sin(roll),
         co=Math.cos(yaw),so=Math.sin(yaw);
       for(let band=0;band<38;band++){
