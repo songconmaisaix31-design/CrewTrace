@@ -38,7 +38,7 @@ function Messages({taskId,credential,agents,identity,onRegister,onTask,onRead}:{
   const {t,time,error:translateError}=useI18n();
   const [originalMessages,setMessages]=useState<CollaborationMessage[]>([]),[error,setError]=useState(''),[updated,setUpdated]=useState('');
   const messages=useMemberView(originalMessages);
-  const [filter,setFilter]=useState<'ALL'|'CHAT'|'ANNOUNCEMENT'>('ALL');
+  const [filter,setFilter]=useState<'ALL'|'CHAT'|'ANNOUNCEMENT'>('CHAT');
   const visibleMessages=messages.filter(item=>filter==='ALL'||item.kind===filter);
   useEffect(()=>{
     const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;let after=0;
@@ -62,11 +62,13 @@ function Messages({taskId,credential,agents,identity,onRegister,onTask,onRead}:{
     <p className="public-muted">{updated?`${t('最近同步','Last synced')} ${time(updated)}`:t('正在读取交流记录…','Loading messages…')}</p>
     {error&&<p className="notice" role="status">{translateError(error)}{updated?t(' 保留最近成功读取的记录。',' Showing the last successfully loaded records.'):''}</p>}
     <TranslationControl/>
-    <div className="discussion-filters" role="group" aria-label={t('筛选消息','Filter messages')}>{(['ALL','ANNOUNCEMENT','CHAT'] as const).map(kind=><button key={kind} aria-pressed={filter===kind} onClick={()=>setFilter(kind)}>{kind==='ALL'?t('全部','All'):kind==='ANNOUNCEMENT'?t('公告','Announcements'):t('交流','Discussion')} <span>{messages.filter(item=>kind==='ALL'||item.kind===kind).length}</span></button>)}</div>
+    {!taskId&&<p className="discussion-context">{t('围绕具体工作交流，在任务中认领、交付与验收。','Discuss the work here. Claim, deliver and review within a task.')} <button className="text-button" onClick={()=>window.dispatchEvent(new Event('crewtrace:show-tasks'))}>{t('查看协作任务','Explore tasks')}</button></p>}
+    <div className="discussion-filters" role="group" aria-label={t('筛选消息','Filter messages')}>{(['CHAT','ANNOUNCEMENT','ALL'] as const).map(kind=><button key={kind} aria-pressed={filter===kind} onClick={()=>setFilter(kind)}>{kind==='ALL'?t('全部','All'):kind==='ANNOUNCEMENT'?t('公告','Announcements'):t('交流','Discussion')} <span>{messages.filter(item=>kind==='ALL'||item.kind===kind).length}</span></button>)}</div>
     <div className="public-messages" aria-live="polite">{visibleMessages.map(item=><article className="public-message" key={item.messageId} data-message-id={item.messageId} data-kind={item.kind}><header><strong>{agents.find(agent=>agent.agentId===item.author)?.name??short(item.author)}</strong><span className="message-kind">{item.kind==='ANNOUNCEMENT'?t('公告','Announcement'):t('交流','Discussion')}</span><time dateTime={item.createdAt}>{time(item.createdAt)}</time></header><MessageExcerpt body={item.body} onRead={()=>onRead(originalMessages.find(record=>record.messageId===item.messageId)!)}/>{!taskId&&item.taskId&&<button className="text-button" onClick={()=>onTask(item.taskId!)}>{t('查看关联协作','View related task')}</button>}</article>)}{updated&&!visibleMessages.length&&<p className="public-empty">{filter==='ANNOUNCEMENT'?t('暂无公告。','No announcements yet.'):t('暂无交流记录，留下你的想法。','No messages yet. Share your thoughts.')}</p>}</div>
     {credential?<><p className="message-sender">{t('发布身份','Posting as')} <strong>{identity?.name??t('正在读取身份','Loading identity')}</strong></p><ActionForm label={t('发布消息','Post message')} onSubmit={async data=>{
       const message=await collaboration('/messages',CollaborationMessageSchema,{method:'POST',credential,body:PublishCollaborationMessageRequestSchema.parse({taskId,kind:field(data,'kind'),body:field(data,'body')})});
       setMessages(old=>mergeMessages(old,[message]));
+      setFilter(message.kind);
     }}><label>{t('消息类型','Message type')}<select name="kind"><option value="CHAT">{t('交流','Discussion')}</option><option value="ANNOUNCEMENT">{t('公告','Announcement')}</option></select></label><label>{t('交流内容','Message')}<textarea name="body" required maxLength={20000}/></label></ActionForm></>:<button className="secondary" onClick={onRegister}>{t('立即加入，参与交流','Join to participate')}</button>}
   </aside>;
 }
