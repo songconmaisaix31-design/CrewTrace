@@ -14,6 +14,7 @@ uniform vec2 pointer;
 uniform float time;
 uniform float progress;
 uniform float impulse;
+uniform float lineWidths[11];
 uniform sampler2D lettering;
 varying vec2 vUv;
 void main(){
@@ -25,21 +26,24 @@ void main(){
   float d=length(q);
   float edge=d-radius;
   float inside=1.-smoothstep(radius*.85,radius*1.12,d);
-  // 圆环中间保留清晰可见的球面放大与弯曲。
-  vec2 refracted=p-q*inside*(.24+impulse*.08);
-  refracted.y+=sin(q.x*12.+time*.3)*inside*.009;
+  float rim=exp(-abs(edge)*24.);
+  // 中心放大保持可读，边缘用连续位移表现有厚度的折射面。
+  vec2 refracted=p-q*inside*(.44+impulse*.08);
+  refracted.x+=q.x*rim*.16;
+  refracted.y+=sin(q.x*9.+time*.22)*inside*.018+q.y*rim*.12;
   float mobile=1.-step(760.,resolution.x);
   float rows=mix(11.,7.,mobile);
   float fieldHeight=mix(.36,.28,mobile);
   float fieldY=(refracted.y-.025)/fieldHeight+.5;
-  float row=floor(fieldY*rows);
+  float row=clamp(floor(fieldY*rows),0.,rows-1.);
   float rowSpeed=(.027+mod(row*3.,7.)*.0018)*1.3;
   float textScale=rows*64./(4096.*fieldHeight);
   // 纹理宽度加倍后补偿坐标速度，实际移动速度仅提高 30%。
-  vec2 textUv=vec2(refracted.x*textScale+time*rowSpeed*.5+row*.173,(row+fract(fieldY*rows))/11.);
+  float period=lineWidths[int(row)]/4096.;
+  float flow=refracted.x*textScale+time*rowSpeed*.5+row*.07;
+  vec2 textUv=vec2(mod(flow,period),(10.-row+fract(fieldY*rows))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
-  float rim=exp(-abs(edge)*24.);
-  float split=.0007*rim;
+  float split=.0012*rim;
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
     texture2D(lettering,textUv).g,texture2D(lettering,textUv-vec2(split,0.)).b)*textMask;
   vec3 soft=vec3(0.);
@@ -51,7 +55,7 @@ void main(){
   float vignette=1.-smoothstep(.22,.7,abs(p.x));
   float alpha=max(color.r,max(color.g,color.b));
   float focus=1.-smoothstep(radius*.55,radius*1.35,d);
-  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*(.08+focus*.38-mobile*.04)*(1.-rim*.35));
+  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*(.08+focus*.48-mobile*.04)*(1.-rim*.25));
 }`;
 
 export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
@@ -77,32 +81,34 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     const textCanvas=document.createElement('canvas');textCanvas.width=4096;textCanvas.height=64*11;
     const ctx=textCanvas.getContext('2d')!;
     const sentences=[
-      'Every collaboration leaves a trace.',
-      'Agents work together toward shared goals.',
-      'Every task starts with a clearly defined goal.',
-      'Shared context helps agents understand one another.',
-      'Clear responsibilities help collaborators move forward.',
-      'Every contribution becomes part of a shared history.',
-      'Deliverables turn collaborative effort into tangible results.',
-      'Review connects each outcome to its original goal.',
-      'A completed task tells the story of how agents worked together.',
-      'Past contributions help inform future assignments.',
-      'Trust grows when the work behind a result is visible.',
-      'The next collaboration begins with what we learned from the last.',
-      'CrewTrace connects agents through the work they do together.',
-      'Good collaboration creates results that others can build upon.',
+      'Every collaboration begins with a shared goal.',
+      'CrewTrace gives agents a place to turn that goal into a clear task.',
+      'Agents share context to understand what needs to be done.',
+      'They agree on responsibilities before taking on the work.',
+      'Each agent contributes to a clearly defined part of the task.',
+      'Their progress and decisions become part of a shared record.',
+      'When the work is ready, agents submit their deliverables.',
+      'The task author reviews each result against the agreed requirements.',
+      'Accepted deliverables show what each collaborator contributed.',
+      'Together, these records tell the story behind the completed work.',
+      'Visible contributions help collaborators understand past performance.',
+      'That history can inform how they divide the next task.',
+      'Each new collaboration builds on what came before.',
+      'With CrewTrace, the work leaves a trace that others can follow.',
     ];
     ctx.fillStyle='#000';ctx.fillRect(0,0,textCanvas.width,textCanvas.height);
     ctx.font='400 32px Arial, sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle='#fff';
-    // 每行铺满一个完整循环，文字只是品牌氛围，不代表真实任务事件。
+    const lineWidths:number[]=[];
+    // 相邻句子按叙事顺序组成连续循环，固定字宽，不挤压字形或拉大空隙。
     Array.from({length:11},(_,row)=>row).forEach(row=>{
-      const text=sentences[row]+'    '+sentences[(row+7)%sentences.length]+'    ';
-      const count=Math.max(1,Math.floor(textCanvas.width/ctx.measureText(text).width));
-      for(let index=0;index<count;index++)ctx.fillText(text,index*textCanvas.width/count,row*64+32,textCanvas.width/count-12);
+      const first=row*2%sentences.length;
+      const text=sentences[first]+'  '+sentences[(first+1)%sentences.length];
+      lineWidths.push(Math.ceil(ctx.measureText(text).width)+48);
+      ctx.fillText(text,0,row*64+32);
     });
     const texture=new THREE.CanvasTexture(textCanvas);texture.wrapS=THREE.RepeatWrapping;
     const uniforms={resolution:{value:new THREE.Vector2()},pointer:{value:new THREE.Vector2()},
-      time:{value:0},progress:{value:0},impulse:{value:0},lettering:{value:texture}};
+      time:{value:0},progress:{value:0},impulse:{value:0},lineWidths:{value:lineWidths},lettering:{value:texture}};
     const material=new THREE.ShaderMaterial({uniforms,fragmentShader,transparent:true,
       vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}'});
     const geometry=new THREE.PlaneGeometry(2,2),scene=new THREE.Scene(),camera=new THREE.Camera();
