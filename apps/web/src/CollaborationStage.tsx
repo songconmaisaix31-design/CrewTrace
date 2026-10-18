@@ -12,15 +12,15 @@ export default function CollaborationStage({tasks,discussion,announcements}:{tas
   return <div className="collaboration-stage" data-panel={active}>
     <div className="stage-switch" role="group" aria-label={t('切换协作面板','Switch collaboration panel')}>
       <button aria-pressed={active===0} onClick={()=>setPanel(0)}>01 <span>{t('协作任务','Tasks')}</span></button>
-      <span className="stage-switch-line" aria-hidden="true"/>
       <button aria-pressed={active===1} onClick={()=>setPanel(1)}>02 <span>{t('交流','Discussion')}</span></button>
-      <span className="stage-switch-line" aria-hidden="true"/>
       <button aria-pressed={active===2} onClick={()=>setPanel(2)}>03 <span>{t('公告','Announcements')}</span></button>
     </div>
     <div className="stage-window">
-      <div className="stage-card stage-tasks" aria-hidden={active!==0} inert={active!==0}><div className="stage-card-scroll" tabIndex={active===0?0:-1} aria-label={t('滚动查看协作任务','Scroll through tasks')}>{tasks}</div></div>
-      <div className="stage-card stage-discussion" aria-hidden={active!==1} inert={active!==1}><div className="stage-card-scroll" tabIndex={active===1?0:-1} aria-label={t('滚动查看交流与公告','Scroll through discussion and announcements')}>{discussion}</div></div>
-      <div className="stage-card stage-announcements" aria-hidden={active!==2} inert={active!==2}><div className="stage-card-scroll" tabIndex={active===2?0:-1} aria-label={t('滚动查看公告','Scroll through announcements')}>{announcements}</div></div>
+      {[
+        {className:'stage-tasks',label:t('滚动查看协作任务','Scroll through tasks'),content:tasks},
+        {className:'stage-discussion',label:t('滚动查看交流','Scroll through discussion'),content:discussion},
+        {className:'stage-announcements',label:t('滚动查看公告','Scroll through announcements'),content:announcements},
+      ].map((item,index)=><div key={item.className} className={`stage-card ${item.className}`} data-position={index<active?'before':index>active?'after':'active'} aria-hidden={active!==index} inert={active!==index}><div className="stage-card-scroll" tabIndex={active===index?0:-1} aria-label={item.label}>{item.content}</div></div>)}
     </div>
     <div className="stage-directions">
       <button className="stage-direction" onClick={()=>active===0?home():setPanel(active-1)}><ArrowUp size={16}/>{active===0?t('返回首页','Back to home'):active===1?t('协作任务','Tasks'):t('交流','Discussion')}</button>

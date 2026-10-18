@@ -16,7 +16,7 @@ test('轻滚动、惯性后再次发力与触屏即时响应',async({page})=>{
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
   await page.mouse.wheel(0,-18);
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
-  await page.waitForTimeout(120);
+  await page.waitForTimeout(250);
   await page.mouse.wheel(0,-18);
   await expect(shell).toHaveAttribute('data-screen','0');
   const input=await page.context().newCDPSession(page);
@@ -54,6 +54,11 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
   await page.mouse.move(6,350);
   await page.mouse.wheel(0,100);
   await expect(page.locator('.stage-announcements')).toHaveAttribute('aria-hidden','false');
+  await page.waitForTimeout(350);
+  const third=(await page.locator('.stage-announcements').boundingBox())!;
+  expect(Math.abs(first.y-third.y)).toBeLessThan(1);
+  expect(Math.abs(first.height-third.height)).toBeLessThan(1);
+  await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
   await page.mouse.wheel(0,-100);
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
   const reading=page.locator('.stage-discussion .stage-card-scroll');

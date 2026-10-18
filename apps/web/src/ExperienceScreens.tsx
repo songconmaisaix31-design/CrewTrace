@@ -37,7 +37,9 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       const magnitude=Math.abs(delta);
       const now=performance.now();
       const stalled=now-lastPaint>80||now-stalledAt<100;
-      const fresh=event.timeStamp-lastWheel>100&&!stalled;
+      // 短暂的事件间隔仍属于同一次滑动，避免连续手势跨过两个面板。
+      const gap=event.timeStamp-lastWheel;
+      const fresh=gap>200&&(!stalled||gap>400);
       const reverse=direction!==lastDirection;
       // 惯性连续减弱后重新明显加速，视为下一次主动滑动。
       const renewed=!stalled&&consumed&&decayCount>=3&&event.timeStamp-lastStep>160&&magnitude>=16&&magnitude>lastMagnitude*2+8;
