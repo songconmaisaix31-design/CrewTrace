@@ -1,0 +1,25 @@
+html:has(.collaboration-stage){scroll-padding-top:0}
+.public-workspace:has(.collaboration-stage)>.public-content{width:100%;height:210svh;padding:0;margin:0;scroll-margin-top:0;position:relative;background:radial-gradient(ellipse at 50% 40%,#23183366,transparent 65%),#080a0e}
+.collaboration-sticky{position:sticky;top:0;height:100svh;box-sizing:border-box;padding:clamp(20px,4vh,48px) max(24px,calc((100vw - 1180px)/2)) 14px;display:flex;flex-direction:column;overflow:hidden}
+.collaboration-sticky>.public-section-head{margin-bottom:8px;flex:none;gap:12px}
+.collaboration-sticky>.public-section-head h2{font-size:23px;font-weight:450}
+.collaboration-sticky>.public-section-head p{font-size:12px;max-width:600px}
+.collaboration-sticky>.notice{flex:none;margin:6px 0;max-height:72px;overflow:auto}
+.collaboration-stage{--stage-progress:0;position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+.stage-switch{display:flex;align-items:center;gap:20px;padding:13px 0 8px;flex:none}
+.stage-switch button{display:flex;gap:12px;align-items:center;font-size:11px;color:#756b88;padding:8px 0}
+.stage-switch button span{font-size:13px}.stage-switch button[aria-pressed=true]{color:#e2d6f7}.stage-switch-line{height:1px;width:44px;background:#a58cc34d}
+.stage-window{flex:1;min-height:0;position:relative;overflow:hidden;perspective:1200px;mask-image:linear-gradient(transparent,#000 28px,#000 calc(100% - 28px),transparent)}
+.stage-card{position:absolute;inset:35px 0;border:1px solid #ba9ae94d;border-radius:22px;background:linear-gradient(135deg,#b395db13,transparent 38%),linear-gradient(155deg,#17151eeb,#0d0f16ed);box-shadow:0 16px 70px #0009,0 0 48px #a47ad214,inset 0 1px #e2d1ff22;backdrop-filter:blur(22px);overflow:hidden;will-change:transform,filter;transform-origin:50% 50%}
+.stage-card::before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(90deg,transparent,#c7acff66,transparent) top center/60% 1px no-repeat,radial-gradient(ellipse at 12% 0%,#b999fa15,transparent 45%)}
+.stage-tasks{transform:translateY(calc(var(--stage-progress)*-100%)) scale(calc(1 - var(--stage-progress)*.055));opacity:calc(1 - var(--stage-progress)*.65);filter:blur(calc(var(--stage-progress)*4px))}
+.stage-discussion{transform:translateY(calc((1 - var(--stage-progress))*100%)) scale(calc(.945 + var(--stage-progress)*.055));opacity:calc(.35 + var(--stage-progress)*.65);filter:blur(calc((1 - var(--stage-progress))*4px))}
+.stage-card-scroll{height:100%;overflow:auto;padding:clamp(20px,3vw,38px);scrollbar-width:thin;scrollbar-color:#78619355 transparent;position:relative}
+.stage-card-scroll:focus-visible{outline:1px solid #cbb4fa;outline-offset:-5px}
+.stage-card-scroll>.public-panel{background:transparent;border:0;border-radius:0;padding:0;box-shadow:none}
+.stage-card .public-record{padding:22px 0;border-color:#b8a1d123}.stage-card .public-record h3{font-size:20px;line-height:1.5}.stage-card .public-record p{line-height:1.85}
+.stage-card .public-messages{max-height:none;overflow:visible}.stage-card .public-message{background:#b69ad309;border:1px solid #b8a1d11c;border-radius:10px}
+.stage-direction{align-self:center;display:flex;align-items:center;gap:10px;flex:none;padding:12px;font-size:11px;color:#a399b6}
+.stage-switch button:focus-visible,.stage-direction:focus-visible{outline:2px solid #c8b1f5;outline-offset:3px}
+@media(max-width:760px){.collaboration-sticky{padding:18px 16px 8px}.collaboration-sticky>.public-section-head{flex-direction:row;align-items:center}.collaboration-sticky>.public-section-head h2{font-size:19px}.collaboration-sticky>.public-section-head p{display:none}.collaboration-sticky>.public-section-head .primary{font-size:12px;padding:10px}.stage-switch{gap:12px}.stage-switch button{gap:6px}.stage-switch button span{font-size:11px}.stage-switch-line{width:24px}.stage-card{border-radius:16px}.stage-card-scroll{padding:20px}.stage-card .public-record h3{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.stage-card{filter:none;transform:none;transition:none}.stage-card[aria-hidden=true]{visibility:hidden}.stage-card[aria-hidden=false]{opacity:1}}

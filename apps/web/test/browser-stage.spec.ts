@@ -1,0 +1,37 @@
+import { test, expect } from '@playwright/test';
+test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
+test('同位协作舞台支持滚动往返、阴影预览和独立内容滚动',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.goto('/');
+  await page.getByRole('link',{name:'向下探索',exact:true}).click();
+  await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  await page.waitForTimeout(900);
+  const first=await page.locator('.stage-tasks').boundingBox();
+  const windowBox=await page.locator('.stage-window').boundingBox();
+  const preview=await page.locator('.stage-discussion').boundingBox();
+  expect(preview!.y).toBeLessThan(windowBox!.y+windowBox!.height);
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('inert','');
+  await page.screenshot({path:'.local/stage-tasks.png'});
+  // 通过真实页面滚动切换，而非修改组件状态。
+  await page.evaluate(()=>{const section=document.querySelector('#collaborate')!;window.scrollTo(0,scrollY+section.getBoundingClientRect().top+section.clientHeight-innerHeight);});
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+  await page.waitForTimeout(900);
+  const second=await page.locator('.stage-discussion').boundingBox();
+  expect(Math.abs(first!.y-second!.y)).toBeLessThan(3);
+  expect(Math.abs(first!.height-second!.height)).toBeLessThan(3);
+  await page.screenshot({path:'.local/stage-discussion.png'});
+  await page.getByRole('button',{name:'01 协作任务',exact:true}).click();
+  await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
+  await page.waitForTimeout(900);
+  expect(await page.locator('.stage-card-scroll').first().evaluate(el=>getComputedStyle(el).overflowY)).toBe('auto');
+  await page.setViewportSize({width:390,height:844});
+  await page.getByRole('button',{name:'02 交流与公告',exact:true}).click();
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+  await page.waitForTimeout(900);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'.local/stage-mobile.png'});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.getByRole('button',{name:'01 协作任务',exact:true}).click();
+  await expect(page.locator('.stage-discussion')).toBeHidden();
+  expect(errors).toEqual([]);
+});

@@ -6,7 +6,7 @@
 .lens-scene .signal-scene{position:absolute;inset:0;width:100%;height:100%;transform:none!important;animation:none!important;opacity:1}
 .lens-stream{position:absolute;inset:0;pointer-events:none}
 .lens-dock{position:absolute;top:72%;left:24px;right:24px;display:flex;align-items:center;flex-direction:column;gap:28px;z-index:2;opacity:calc(1 - var(--lens-scroll)*.8)}
-.orbit-join{position:relative;display:flex;align-items:center;justify-content:center;gap:22px;min-width:190px;max-width:min(400px,90%);padding:17px 30px;border:1px solid #c4a5ff77;border-radius:100px;background:linear-gradient(120deg,#2f224650,#100d1c);box-shadow:0 0 28px #9d75ec18,inset 0 1px #ffffff1c;transition:box-shadow .3s,transform .3s,border-color .3s}
+.orbit-join{position:relative;display:flex;align-items:center;justify-content:center;gap:28px;min-width:240px;max-width:min(440px,90%);padding:21px 38px;border:1px solid #c4a5ff77;border-radius:100px;background:linear-gradient(120deg,#2f224650,#100d1c);box-shadow:0 0 28px #9d75ec18,inset 0 1px #ffffff1c;transition:box-shadow .3s,transform .3s,border-color .3s}
 .orbit-join::before{content:'';position:absolute;inset:-6px;border:1px solid #b497e818;border-radius:inherit;pointer-events:none}
 .orbit-join:hover{transform:translateY(-3px);border-color:#d5c4ff;box-shadow:0 0 40px #b28aef44,inset 0 1px #ffffff38}
 .orbit-join-label{font-size:16px;letter-spacing:.13em;line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:linear-gradient(100deg,#b49bdb 12%,#e8d4ff 35%,#fff 45%,#c5efff 50%,#b49bdb 65%);background-size:250% 100%;background-position:var(--flow-position) 50%;background-clip:text;-webkit-background-clip:text;color:transparent}
@@ -22,7 +22,7 @@
 .lens-pause:hover{color:#fff}.lens-pause:focus-visible,.lens-enter:focus-visible,.orbit-join:focus-visible{outline:2px solid #c7b5ed;outline-offset:5px}
 .lens-static{position:absolute;inset:0;display:grid;place-items:center;font-size:clamp(32px,7vw,100px);letter-spacing:-.03em}
 .public-topbar .brand{gap:12px;letter-spacing:-.4px;color:#eae4f5;font-size:25px}
-.crewtrace-mark{display:block;flex:none;width:43px;height:43px;filter:drop-shadow(0 0 8px #af7afa30)}
+.crewtrace-mark{display:block;flex:none;width:60px;height:60px;filter:drop-shadow(0 0 8px #af7afa30)}
 .header-actions{display:flex;align-items:center;margin-left:auto}
 .language-toggle{display:flex;align-items:center;gap:9px;font-size:12px;color:#827a91;padding:12px;margin-left:16px;white-space:nowrap}
 .header-actions .language-toggle{margin:0}.language-toggle .selected{color:#f0e9fb}.language-toggle:focus-visible{outline:2px solid #c7b5ed;outline-offset:3px}
@@ -30,3 +30,8 @@ html[lang=en] .lens-caption h1{letter-spacing:.01em;font-size:clamp(20px,2vw,25p
 @media(max-width:760px){.lens-hero{min-height:800px;height:calc(100svh - 110px)}.lens-scene{inset:0 -18% 35%}.lens-dock{top:64%;left:20px;right:20px;gap:26px}.lens-caption{max-width:340px}.lens-caption h1{font-size:21px;line-height:1.7;margin-bottom:16px}.lens-caption>p:last-child{font-size:12px;max-width:280px;margin:auto}.orbit-join{padding:15px 26px;min-width:180px}.lens-pause{right:12px}.lens-pause span{display:none}.public-workspace:has(.lens-hero)>.public-content,.public-workspace:has(.lens-hero)>.public-mcp-strip,.public-workspace:has(.lens-hero)>footer{width:calc(100% - 32px)}}
 @media(max-width:650px){.public-topbar{display:grid;grid-template-columns:auto 1fr;gap:12px 8px;padding-inline:18px}.public-topbar .brand{font-size:23px;gap:9px}.crewtrace-mark{width:37px;height:37px}.header-actions{grid-column:2;grid-row:1}.public-topbar nav{grid-column:1/-1;grid-row:2;width:100%}.header-actions .language-toggle{font-size:12px;padding:8px 4px;gap:6px}}
 @media(prefers-reduced-motion:reduce){.lens-scene,.lens-dock{transform:none;opacity:1}.lens-enter svg,.orbit-join{transition:none}.lens-pause{display:none}.orbit-join-label{background:none;color:#e8d4ff}.orbit-join:hover{transform:none}}
+.lens-intro{position:absolute;left:6vw;top:32px;z-index:1;max-width:300px;pointer-events:none}
+.lens-intro p:first-child{font-size:12px;letter-spacing:.2em;color:#c4b6d8;margin:0 0 16px}
+.lens-intro p:last-child{font-size:12px;line-height:1.9;color:#8c8599;margin:0;text-wrap:balance}
+.orbit-join-label{font-size:19px}
+@media(max-width:760px){.lens-intro{left:24px;top:20px;max-width:240px}.lens-intro p:first-child{font-size:11px;margin-bottom:8px}.lens-intro p:last-child{font-size:10px}.orbit-join{min-width:220px;padding:19px 32px}.orbit-join-label{font-size:18px}.crewtrace-mark{width:50px;height:50px}}

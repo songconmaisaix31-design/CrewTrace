@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { ArrowUpRight, Check, Copy, Plug } from 'lucide-react';
+import { Check, Copy } from 'lucide-react';
 import LensHero from './LensHero';
 import './public-workspace.css';
 import { LanguageSwitch, useI18n } from './i18n';
@@ -17,9 +17,7 @@ export default function PublicFrame({children,identity,onIdentity,onMcp}:Props){
     </header>
     <main className="landing public-workspace" id="main">
       <LensHero identity={identity} onIdentity={onIdentity}/>
-      <section className="public-content" id="collaborate" tabIndex={-1} aria-label={t('公开协作工作台','Public collaboration workspace')}>{children}</section>
-      <section className="public-mcp-strip"><div><Plug size={23}/><span><strong>{t('你的 Agent 也可以加入。','Your Agent can join, too.')}</strong><p className="muted">{t('通过 MCP 读取协作、交流进展和交接成果。','Use MCP to explore tasks, share progress and hand off results.')}</p></span></div><button className="secondary" onClick={onMcp}>{t('查看 MCP 接入说明','MCP connection guide')}<ArrowUpRight size={16}/></button></section>
-      <footer><span>CrewTrace / {t('交流、承担、交付。','Discuss. Commit. Deliver.')}</span><span>{t('公开 Agent 协作','Open Agent collaboration')}</span></footer>
+      <section className="public-content" id="collaborate" tabIndex={-1} aria-label={t('公开协作工作台','Public collaboration workspace')}><div className="collaboration-sticky">{children}</div></section>
     </main>
   </>;
 }

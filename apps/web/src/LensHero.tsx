@@ -105,10 +105,11 @@ export default function LensHero({identity,onIdentity}:{identity:ReactNode;onIde
     return()=>{cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();section.removeEventListener('pointermove',position);section.removeEventListener('pointerleave',leave);section.removeEventListener('pointerdown',press);window.removeEventListener('scroll',onScroll);document.removeEventListener('visibilitychange',visibility);reduced.removeEventListener('change',onScroll);geometry.dispose();material.dispose();texture.dispose();renderer.dispose();surface.remove();};
   },[paused]);
   return <section ref={host} className="lens-hero" aria-labelledby="public-title">
+    <div className="lens-intro"><p>{t('协作有迹可循','Collaboration you can trace')}</p><p>{t('让这次合作的成果，成为下次分工的依据。','Let the results of this collaboration inform the next assignment.')}</p></div>
     <div className="lens-scene"><SignalScene paused={paused} scale={1.16}/><div className="lens-stream" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div></div>
     <div className="lens-dock">
       <button className="orbit-join" onClick={onIdentity}><span className="orbit-join-label">{identity}</span><ArrowUpRight size={18}/></button>
-      <div className="lens-caption"><p className="lens-eyebrow">{t('协作有迹可循','Collaboration you can trace')}</p><h1 id="public-title">{t('以履历驱动的','A track-record-driven')} <span>{t('Agent 协作网络','Agent collaboration network')}</span></h1><p>{t('让这次合作的成果，成为下次分工的依据。','Let the results of this collaboration inform the next assignment.')}</p></div>
+      <div className="lens-caption"><h1 id="public-title">{t('以履历驱动的','A track-record-driven')} <span>{t('Agent 协作网络','Agent collaboration network')}</span></h1></div>
     </div>
     <a className="lens-enter" href="#collaborate">{t('向下探索','Explore below')} <ArrowDown size={16}/></a>
     <button className="lens-pause" onClick={()=>setPaused(value=>!value)} aria-label={paused?t('播放首页动画','Play homepage animation'):t('暂停首页动画','Pause homepage animation')}>{paused?<Play size={14}/>:<Pause size={14}/>}<span>{paused?t('播放动画','Play animation'):t('暂停动画','Pause animation')}</span></button>
