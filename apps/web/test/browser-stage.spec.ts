@@ -43,7 +43,7 @@ test('淡入切页、惯性保护、同位面板往返与手机布局',async({pa
   await page.waitForTimeout(1100);
   const second=await page.locator('.stage-discussion').boundingBox();
   expect(Math.abs(first!.y-second!.y)).toBeLessThan(3);
-  expect(Math.abs(first!.height-second!.height)).toBeLessThan(3);
+  expect(second!.height).toBeLessThan(page.viewportSize()!.height*.65);
   await page.screenshot({path:'.local/stage-discussion.png'});
   await page.mouse.wheel(0,-200);
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');

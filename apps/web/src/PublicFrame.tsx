@@ -4,12 +4,13 @@ import { useExperienceNavigation } from './ExperienceNavigation';
 import LensHero from './LensHero';
 import ExperienceScreens from './ExperienceScreens';
 import Dialog from './Dialog';
+import HoverPreview from './HoverPreview';
 import './public-workspace.css';
 import { LanguageSwitch, useI18n } from './i18n';
 
-type Props={children:ReactNode;identity:ReactNode;onIdentity:()=>void;onMcp:()=>void};
+type Props={children:ReactNode;identity:ReactNode;onIdentity:()=>void;onMcp:()=>void;mcpURL?:string|null};
 
-export default function PublicFrame({children,identity,onIdentity,onMcp}:Props){
+export default function PublicFrame({children,identity,onIdentity,onMcp,mcpURL}:Props){
   const {t}=useI18n();
   const nodes=Children.toArray(children);
   const overlays=nodes.filter(node=>isValidElement(node)&&node.type===Dialog);
@@ -18,10 +19,11 @@ export default function PublicFrame({children,identity,onIdentity,onMcp}:Props){
     <a className="skip" href="#collaborate" onClick={event=>{event.preventDefault();enter();}}>{t('跳至公开协作','Skip to collaboration')}</a>
     <header className="topbar public-topbar">
       <a className="brand" href="/" onClick={event=>{event.preventDefault();home();}} aria-label={t('CrewTrace 公开协作','CrewTrace collaboration')}><span className="crewtrace-ring-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="brand-ring-light" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#857391"/><stop offset=".45" stopColor="#eee5ff"/><stop offset=".7" stopColor="#ad89cc"/><stop offset="1" stopColor="#fff"/></linearGradient></defs><circle cx="32" cy="32" r="26" fill="none" stroke="url(#brand-ring-light)" strokeWidth="1.6"/></svg></span>CrewTrace</a>
-      <div className="header-actions"><MotionControl/><button className="header-mcp" onClick={onMcp}>{t('接入 MCP','Connect MCP')}</button>{screen===0&&<LanguageSwitch/>}</div>
+      <div className="header-actions"><MotionControl/><HoverPreview className="header-mcp" onClick={onMcp} preview={<><strong>{t('让你的 Agent 加入协作','Connect your Agent')}</strong><p>{t('在支持 MCP 的客户端添加服务，读取任务并参与协作。','Add this service in an MCP client to read tasks and collaborate.')}</p><code>{mcpURL||t('正在读取服务地址…','Loading endpoint…')}</code></>}>{t('接入 MCP','Connect MCP')}</HoverPreview>{screen===0&&<LanguageSwitch/>}</div>
     </header>
     <main className="landing public-workspace" id="main">
       <div className="ambient-bridge" aria-hidden="true"/>
+      <div className="orbit-thread" aria-hidden="true"/>
       <div className="experience-home" aria-hidden={screen!==0} inert={screen!==0}><LensHero identity={identity} onIdentity={onIdentity} onEnter={enter}/></div>
       <section className="public-content" id="collaborate" tabIndex={-1} aria-label={t('公开协作工作台','Public collaboration workspace')} data-active={screen===1} aria-hidden={screen!==1} inert={screen!==1}><div className="collaboration-sticky">{content}</div></section>
     </main>

@@ -38,11 +38,12 @@ void main(){
   for(int i=-2;i<=2;i++){
     soft+=texture2D(lettering,textUv+vec2(float(i)*(.001+rim*.002),0.)).rgb*.2;
   }
-  letters=mix(letters,soft*textMask,.26+rim*.4);
+  letters=mix(letters,soft*textMask,.08+rim*.5);
   vec3 color=letters*vec3(.88,.84,1.);
   float vignette=1.-smoothstep(.4,1.15,abs(vUv.x-.5)*2.);
   float alpha=max(color.r,max(color.g,color.b));
-  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*.86);
+  float mobile=1.-step(760.,resolution.x);
+  gl_FragColor=vec4(color/max(alpha,.001),alpha*vignette*(.76-mobile*.16)*(1.-rim*.2));
 }`;
 
 export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){

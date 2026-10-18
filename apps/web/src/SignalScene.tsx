@@ -28,15 +28,16 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
       const cx=width*.52+mx*32, cy=height*.48+my*28;
       const halo=ctx.createRadialGradient(cx,cy,radius*.35,cx,cy,radius*haloScale);
       halo.addColorStop(0,'rgba(120,67,220,0)');
-      halo.addColorStop(.52,'rgba(133,79,233,.14)');
-      halo.addColorStop(.72,'rgba(174,120,255,.09)');
+      halo.addColorStop(.52,'rgba(133,79,233,.085)');
+      halo.addColorStop(.72,'rgba(174,120,255,.045)');
       halo.addColorStop(1,'rgba(120,67,220,0)');
       ctx.fillStyle=halo;ctx.fillRect(0,0,width,height);
       ctx.globalCompositeOperation='lighter';
       for(let band=0;band<38;band++){
         const phase=band/38*Math.PI*2;
+        for(let segment=0;segment<6;segment++){
         ctx.beginPath();
-        for(let p=0;p<=180;p++){
+        for(let p=segment*30;p<=segment*30+30;p++){
           const a=p/180*Math.PI*2;
           const braid=phase+a*3+tick;
           const r=radius+(Math.cos(braid)*(.18+burst*.13))*radius;
@@ -47,12 +48,16 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
           const angle=.36+mx*.28+Math.sin(tick*.55)*.28;
           const px=cx+x*Math.cos(angle)-y*Math.sin(angle)*tilt;
           const py=cy+x*Math.sin(angle)+y*Math.cos(angle)*tilt+z;
-          if(p===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+          if(p===segment*30)ctx.moveTo(px,py);else ctx.lineTo(px,py);
         }
+        const a=(segment+.5)/6*Math.PI*2;
+        const depth=(Math.sin(phase+a*3+tick)+1)/2;
+        const highlight=Math.pow(Math.max(0,Math.cos(a-tick*.45)),12);
         const bright=band%6===0;
-        ctx.strokeStyle=bright?'rgba(234,218,255,.78)':'rgba(161,123,238,.32)';
-        ctx.shadowColor='rgba(171,117,255,.8)';ctx.shadowBlur=bright?12:0;
-        ctx.lineWidth=bright?1.5:.8;ctx.stroke();
+        ctx.strokeStyle=`rgba(${Math.round(145+depth*85)},${Math.round(113+depth*106)},255,${.07+depth*(bright?.52:.24)+highlight*.16})`;
+        ctx.shadowBlur=0;
+        ctx.lineWidth=(bright?.7:.4)+depth*.55;ctx.stroke();
+        }
       }
       ctx.shadowBlur=0;
       // 移动高光让光环的方向变化可见，不通过闪烁吸引注意。
