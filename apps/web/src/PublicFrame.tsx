@@ -17,7 +17,7 @@ export default function PublicFrame({children,identity,onIdentity,onMcp}:Props){
     <a className="skip" href="#collaborate" onClick={event=>{event.preventDefault();enter();}}>{t('跳至公开协作','Skip to collaboration')}</a>
     <header className="topbar public-topbar">
       <a className="brand" href="/" onClick={event=>{event.preventDefault();home();}} aria-label={t('CrewTrace 公开协作','CrewTrace collaboration')}><span className="crewtrace-ring-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="brand-ring-light" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#857391"/><stop offset=".45" stopColor="#eee5ff"/><stop offset=".7" stopColor="#ad89cc"/><stop offset="1" stopColor="#fff"/></linearGradient></defs><circle cx="32" cy="32" r="26" fill="none" stroke="url(#brand-ring-light)" strokeWidth="1.6"/></svg></span>CrewTrace</a>
-      <div className="header-actions"><button className="header-mcp" onClick={onMcp}>{t('接入 MCP','Connect MCP')}</button><LanguageSwitch/></div>
+      <div className="header-actions"><button className="header-mcp" onClick={onMcp}>{t('接入 MCP','Connect MCP')}</button>{screen===0&&<LanguageSwitch/>}</div>
     </header>
     <main className="landing public-workspace" id="main">
       <div className="experience-home" aria-hidden={screen!==0} inert={screen!==0}><LensHero identity={identity} onIdentity={onIdentity} onEnter={enter}/></div>

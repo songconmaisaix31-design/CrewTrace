@@ -84,7 +84,11 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       if(moving){clock+=delta;uniforms.pointer.value.lerp(target,1-Math.exp(-delta*5));uniforms.impulse.value*=Math.exp(-delta*3);}
       uniforms.time.value=clock;
       elapsed.current=clock;
-      section.style.setProperty('--flow-position',`${200-(clock*.26%1)*400}%`);
+      const theme=section.closest<HTMLElement>('.experience-shell')??section;
+      const flowPosition=`${200-(clock*.26%1)*400}%`;
+      section.style.setProperty('--flow-position',flowPosition);
+      theme.style.setProperty('--flow-position',flowPosition);
+      theme.style.setProperty('--flow-accent',`hsl(${265+Math.sin(clock*.26*Math.PI*2)*25} 65% 82%)`);
       uniforms.progress.value=reduced.matches?0:scroll;
       renderer.render(scene,camera);
       if(moving&&visible&&!document.hidden)frame=requestAnimationFrame(render);

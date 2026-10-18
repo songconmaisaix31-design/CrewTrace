@@ -12,7 +12,7 @@ async function expectCentered(page:import('@playwright/test').Page){
   expect(box.height).toBeLessThanOrEqual(viewport.height-32);
 }
 
-test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
+test('首页语言入口、弹窗淡出、真实任务和刷新偏好',async({page})=>{
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
   page.on('console',message=>{if(message.type()==='error'&&/shader|WebGL/i.test(message.text()))errors.push(message.text());});
@@ -24,6 +24,8 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   const phase=()=>page.locator('.lens-hero').evaluate(el=>el.style.getPropertyValue('--flow-position'));
   const initialPhase=await phase();
   await expect.poll(phase).not.toBe(initialPhase);
+  const colors=await page.evaluate(()=>[getComputedStyle(document.querySelector('.brand')!).backgroundPosition,getComputedStyle(document.querySelector('.orbit-join-label')!).backgroundPosition]);
+  expect(colors[0]).toBe(colors[1]);
   await page.getByRole('button',{name:'暂停首页动画'}).click();
   await page.waitForTimeout(200);
   const pausedPhase=await phase();
@@ -37,11 +39,11 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await page.getByRole('button',{name:'Join',exact:true}).click();
   await expectCentered(page);
   await page.getByLabel('Agent name',{exact:true}).fill('Draft kept locally');
-  await page.getByRole('dialog').getByRole('button',{name:'Switch to Chinese'}).click();
-  await expect(page.getByLabel('Agent 名称',{exact:true})).toHaveValue('Draft kept locally');
-  await page.getByRole('dialog').getByRole('button',{name:'切换为英文'}).click();
+  await expect(page.getByRole('dialog').locator('.language-toggle')).toHaveCount(0);
   await expect(page.getByLabel('Agent name',{exact:true})).toHaveValue('Draft kept locally');
   await page.getByRole('button',{name:'Close dialog'}).click();
+  await expect(page.getByRole('dialog')).toHaveAttribute('data-closing','true');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.getByRole('button',{name:'Connect MCP',exact:true}).click();
   await expect(page.locator('.public-topbar').getByRole('button',{name:'Connect MCP',exact:true})).toHaveCount(1);
   await page.waitForTimeout(350);
@@ -56,6 +58,7 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await page.getByRole('button',{name:'Close dialog'}).click();
   // 只读线上真实任务，不创建身份或写入生产数据。
   await page.getByRole('link',{name:'Explore below',exact:true}).click();
+  await expect(page.locator('.language-toggle')).toHaveCount(0);
   const firstTask=page.locator('.public-record h3 button').first();
   await expect(firstTask).toBeVisible();
   const title=await firstTask.innerText();
@@ -63,10 +66,6 @@ test('语言切换保留表单、真实任务和刷新偏好',async({page})=>{
   await expect(page.locator('.public-task-detail h2')).toHaveText(title);
   await expectCentered(page);
   const selected=new URL(page.url()).searchParams.get('task');
-  await page.getByRole('dialog').getByRole('button',{name:'Switch to Chinese'}).click();
-  await expect(page.locator('.public-task-detail h2')).toHaveText(title);
-  await expect(page.getByRole('heading',{name:'承担与分工'})).toBeVisible();
-  await page.getByRole('dialog').getByRole('button',{name:'切换为英文'}).click();
   await expect(page.getByRole('heading',{name:'Claims and assignments'})).toBeVisible();
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('lang','en');
@@ -89,7 +88,10 @@ test('手机双语布局与减少动态效果',async({page})=>{
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.getByRole('button',{name:'Join',exact:true}).click();
   await expectCentered(page);
-  await page.getByRole('dialog').getByRole('button',{name:'Switch to Chinese'}).click();
+  await expect(page.getByRole('dialog').locator('.language-toggle')).toHaveCount(0);
+  await page.getByRole('button',{name:'Close dialog'}).click();
+  await page.getByRole('button',{name:'Switch to Chinese'}).click();
+  await page.getByRole('button',{name:'起名加入',exact:true}).click();
   await expect(page.getByRole('dialog')).toContainText('你的 Agent 身份');
   expect(await page.getByRole('dialog').evaluate(el=>el.getBoundingClientRect().right<=innerWidth)).toBe(true);
 });

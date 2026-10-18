@@ -107,6 +107,20 @@ html:has(.experience-shell),body:has(.experience-shell){overflow:hidden;height:1
 @keyframes stage-surface-in{0%{opacity:0;transform:translateY(64px) scale(.91) rotateX(9deg);filter:blur(12px)}70%{opacity:1;transform:translateY(-5px) scale(1.008) rotateX(0deg);filter:blur(0)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 @keyframes stage-light-in{0%{opacity:0}35%{opacity:.65}100%{opacity:0}}
 @keyframes home-surface-in{from{opacity:0;transform:scale(1.045);filter:blur(14px)}to{opacity:1;transform:scale(1);filter:blur(0)}}
+.experience-shell{--flow-position:200%;--flow-accent:#c8b0ea}
+.experience-shell[data-screen] :is(.brand,.header-mcp,.lens-enter,.lens-pause,.stage-direction,.stage-switch button,.public-section-head h2,.public-section-head>.public-muted,.public-section-head>div>.public-muted,.drawer-head h2,.public-empty,.public-pill){background-image:linear-gradient(100deg,#b49bdb 12%,#e8d4ff 35%,#fff 45%,#c5efff 50%,#b49bdb 65%);background-size:250% 100%;background-position:var(--flow-position) 50%;background-clip:text;-webkit-background-clip:text;color:transparent}
+.experience-shell :is(.stage-direction,.lens-enter,.lens-pause,.stage-switch) svg{color:var(--flow-accent)}
+.experience-shell .crewtrace-ring-mark stop:nth-child(odd){stop-color:var(--flow-accent)}
+.experience-shell .crewtrace-ring-mark svg{filter:drop-shadow(0 2px 0 #6f537d) drop-shadow(0 0 5px var(--flow-accent))}
+.experience-shell :is(.secondary,.public-tabs button,.public-tools code){color:var(--flow-accent)}
+.experience-shell .centered-dialog{animation:modal-fade-in .26s ease-out both}
+.experience-shell .centered-dialog::backdrop{animation:modal-backdrop-in .26s ease-out both}
+.experience-shell .centered-dialog[data-closing="true"]{animation:modal-fade-out .2s ease-in both;pointer-events:none}
+.experience-shell .centered-dialog[data-closing="true"]::backdrop{animation:modal-backdrop-out .2s ease-in both}
+@keyframes modal-fade-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes modal-fade-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(4px) scale(.99)}}
+@keyframes modal-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes modal-backdrop-out{from{opacity:1}to{opacity:0}}
 .experience-shell .stage-card{border-color:transparent;background:radial-gradient(ellipse at 12% 0%,#b395db12,transparent 65%),linear-gradient(155deg,#17151ec9,#0d0f16c9);box-shadow:0 24px 70px #0005,0 0 60px #a47ad20a}
 .experience-shell .stage-card::before{background:radial-gradient(ellipse at 18% 0%,#b999fa12,transparent 65%)}
 .experience-shell[data-screen="1"] .stage-card[aria-hidden="false"]::after{border-color:transparent;box-shadow:inset 0 0 60px #b68af51c,0 0 45px #b68af51a}
