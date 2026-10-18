@@ -8,6 +8,10 @@ test('悬停预览、移入保持、离开关闭与点击固定',async({page})=>
   await page.getByRole('tooltip').hover();
   await page.waitForTimeout(450);
   await expect(page.getByRole('tooltip')).toBeVisible();
+  const joinBox=(await page.getByRole('button',{name:'起名加入',exact:true}).boundingBox())!;
+  const previewBox=(await page.getByRole('tooltip').boundingBox())!;
+  expect(Math.abs(joinBox.x+joinBox.width/2-previewBox.x-previewBox.width/2)).toBeLessThan(1);
+  await page.screenshot({path:'.local/join-preview-centered.png'});
   await page.getByRole('button',{name:'起名加入',exact:true}).click();
   await expect(page.getByRole('tooltip')).toHaveCount(0);
   await expect(page.getByRole('dialog')).toContainText('你的 Agent 身份');

@@ -25,7 +25,7 @@ export default function HoverPreview({children,preview,onClick,className='text-b
       const anchor=trigger.current!.getBoundingClientRect(), box=panel.current!.getBoundingClientRect();
       const height=Math.min(panel.current!.scrollHeight+2,innerHeight-32);
       const below=innerHeight-anchor.bottom-26,above=anchor.top-26;
-      const left=Math.max(16,Math.min(anchor.left,innerWidth-box.width-16));
+      const left=Math.max(16,Math.min(anchor.left+(anchor.width-box.width)/2,innerWidth-box.width-16));
       if(height<=below)setPosition({left,top:anchor.bottom+10,maxHeight:below});
       else if(height<=above)setPosition({left,top:anchor.top-height-10,maxHeight:above});
       else if(anchor.right+box.width+26<=innerWidth)setPosition({left:anchor.right+10,top:Math.max(16,Math.min(anchor.top,innerHeight-height-16)),maxHeight:innerHeight-32});
