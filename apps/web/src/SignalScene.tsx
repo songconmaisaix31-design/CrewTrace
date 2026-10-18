@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Pause, Play } from 'lucide-react';
+import { useI18n } from './i18n';
 
 // 品牌画面响应用户操作，不代表任务正在执行。
-export default function SignalScene() {
+export default function SignalScene({paused:controlledPaused}:{paused?:boolean}={}) {
+  const {t}=useI18n();
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [paused, setPaused] = useState(false);
+  const [localPaused, setPaused] = useState(false);
+  const paused=controlledPaused??localPaused;
   useEffect(() => {
     const el = canvas.current!;
     const ctx = el.getContext('2d');
@@ -88,5 +91,5 @@ export default function SignalScene() {
     document.addEventListener('visibilitychange',restart);reduced.addEventListener('change',restart);
     return()=>{cancelAnimationFrame(frame);resize.disconnect();observer.disconnect();el.removeEventListener('pointermove',move);el.removeEventListener('pointerleave',leave);el.removeEventListener('pointerdown',pulse);document.removeEventListener('visibilitychange',restart);reduced.removeEventListener('change',restart);};
   },[paused]);
-  return <div className="signal-scene"><canvas ref={canvas} aria-hidden="true"/><div className="scene-controls"><span>独立协作，相互成就。</span><button className="motion-toggle" aria-label={paused?'播放品牌动效':'暂停品牌动效'} aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>{paused?<Play size={13}/>:<Pause size={13}/>}</button></div></div>;
+  return <div className="signal-scene"><canvas ref={canvas} aria-hidden="true"/>{controlledPaused===undefined&&<div className="scene-controls"><span>{t('独立协作，相互成就。','Independent agents. Shared achievements.')}</span><button className="motion-toggle" aria-label={paused?t('播放品牌动效','Play brand animation'):t('暂停品牌动效','Pause brand animation')} aria-pressed={paused} onClick={()=>setPaused(p=>!p)}>{paused?<Play size={13}/>:<Pause size={13}/>}</button></div>}</div>;
 }

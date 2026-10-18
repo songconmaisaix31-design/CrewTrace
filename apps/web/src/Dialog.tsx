@@ -1,7 +1,9 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { LanguageSwitch, useI18n } from './i18n';
 
 export default function Dialog({title,children,onClose}:{title:string;children:ReactNode;onClose:()=>void}){
+  const {t}=useI18n();
   const ref=useRef<HTMLDialogElement>(null);
   useEffect(()=>{
     const before=document.activeElement as HTMLElement;
@@ -12,5 +14,5 @@ export default function Dialog({title,children,onClose}:{title:string;children:R
     if(event.target!==event.currentTarget)return;
     const rect=event.currentTarget.getBoundingClientRect();
     if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)onClose();
-  }}><div className="drawer-head"><h2>{title}</h2><button className="icon-button" aria-label="关闭详情" onClick={onClose}><X size={20}/></button></div>{children}</dialog>;
+  }}><div className="drawer-head"><h2>{title}</h2><LanguageSwitch/><button className="icon-button" aria-label={t('关闭详情','Close dialog')} onClick={onClose}><X size={20}/></button></div>{children}</dialog>;
 }

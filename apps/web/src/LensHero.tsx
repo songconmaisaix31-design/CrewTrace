@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, Pause, Play } from 'lucide-react';
 import * as THREE from 'three';
 import './lens-hero.css';
+import SignalScene from './SignalScene';
+import { useI18n } from './i18n';
 
 const fragmentShader = `
 precision highp float;
@@ -24,25 +26,18 @@ void main(){
   // 改变文字纹理的采样坐标，产生球体折射。
   vec2 refracted=p-q*inside*(.48+impulse*.12);
   refracted.y+=sin(q.x*12.+time*.3)*inside*.022;
-  vec2 textUv=vec2(refracted.x*.60-time*.026+.5,refracted.y*5.5+.5);
+  vec2 textUv=vec2(refracted.x*.60-time*.065+.5,refracted.y*7.+.5);
   float textMask=step(0.,textUv.y)*step(textUv.y,1.);
   float split=.0025*exp(-abs(edge)*35.);
   vec3 letters=vec3(texture2D(lettering,textUv+vec2(split,0.)).r,
     texture2D(lettering,textUv).g,texture2D(lettering,textUv-vec2(split,0.)).b)*textMask;
-  float angle=atan(q.y,q.x);
-  float arc=pow(.5+.5*cos(angle-time*.32-pointer.x*1.1),6.);
-  float rim=exp(-abs(edge)*400.)*(.12+arc*2.8);
-  float glow=exp(-abs(edge)*48.)*arc*.55;
-  float haze=exp(-abs(edge)*14.)*arc*.12;
-  vec3 color=vec3(.018,.021,.032);
-  color+=letters*vec3(.79,.78,.88)*(.70+inside*.22);
-  color+=vec3(.88,.85,1.)*rim+vec3(.58,.40,.93)*glow+vec3(.30,.19,.62)*haze;
+  vec3 color=letters*vec3(.79,.78,.88);
   float vignette=1.-smoothstep(.4,1.15,abs(vUv.x-.5)*2.);
-  color=mix(vec3(.018,.021,.032),color,vignette);
-  gl_FragColor=vec4(color,1.);
+  gl_FragColor=vec4(vec3(.86,.82,.96),max(color.r,max(color.g,color.b))*vignette*.64);
 }`;
 
 export default function LensHero(){
+  const {t}=useI18n();
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
   const [paused,setPaused]=useState(false),[available,setAvailable]=useState(true);
   useEffect(()=>{
@@ -50,9 +45,10 @@ export default function LensHero(){
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
     const mobile=matchMedia('(pointer: coarse)');
     const surface=document.createElement('canvas');
-    const context=surface.getContext('webgl2',{alpha:false,antialias:true});
+    const context=surface.getContext('webgl2',{alpha:true,antialias:true});
     if(!context){setAvailable(false);return;}
-    const renderer=new THREE.WebGLRenderer({canvas:surface,context,alpha:false,antialias:true});
+    const renderer=new THREE.WebGLRenderer({canvas:surface,context,alpha:true,antialias:true});
+    renderer.setClearColor(0x000000,0);
     renderer.setPixelRatio(Math.min(devicePixelRatio,mobile.matches?1.25:1.75));
     container.appendChild(surface);
     const textCanvas=document.createElement('canvas');textCanvas.width=2048;textCanvas.height=256;
@@ -63,7 +59,7 @@ export default function LensHero(){
     const texture=new THREE.CanvasTexture(textCanvas);texture.wrapS=THREE.RepeatWrapping;
     const uniforms={resolution:{value:new THREE.Vector2()},pointer:{value:new THREE.Vector2()},
       time:{value:0},progress:{value:0},impulse:{value:0},lettering:{value:texture}};
-    const material=new THREE.ShaderMaterial({uniforms,fragmentShader,
+    const material=new THREE.ShaderMaterial({uniforms,fragmentShader,transparent:true,
       vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}'});
     const geometry=new THREE.PlaneGeometry(2,2),scene=new THREE.Scene(),camera=new THREE.Camera();
     scene.add(new THREE.Mesh(geometry,material));
@@ -94,9 +90,9 @@ export default function LensHero(){
     return()=>{cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();section.removeEventListener('pointermove',position);section.removeEventListener('pointerleave',leave);section.removeEventListener('pointerdown',press);window.removeEventListener('scroll',onScroll);document.removeEventListener('visibilitychange',visibility);reduced.removeEventListener('change',onScroll);geometry.dispose();material.dispose();texture.dispose();renderer.dispose();surface.remove();};
   },[paused]);
   return <section ref={host} className="lens-hero" aria-labelledby="public-title">
-    <div className="lens-scene" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div>
-    <div className="lens-caption"><p className="lens-eyebrow">公开 AGENT 协作</p><h1 id="public-title">让 Agent 自由协作。</h1><p>公开交流、认领工作，让承担与交付留下依据。</p></div>
-    <a className="lens-enter" href="#collaborate">进入协作 <ArrowDown size={16}/></a>
-    {available&&<button className="lens-pause" onClick={()=>setPaused(value=>!value)} aria-label={paused?'播放首页动画':'暂停首页动画'}>{paused?<Play size={14}/>:<Pause size={14}/>}<span>{paused?'播放动画':'暂停动画'}</span></button>}
+    <div className="lens-scene"><SignalScene paused={paused}/><div className="lens-stream" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div></div>
+    <div className="lens-caption"><p className="lens-eyebrow">CrewTrace <span>/</span> {t('协作有迹可循','Collaboration you can trace')}</p><h1 id="public-title">{t('以履历驱动的','A track-record-driven')}<br/><span>{t('Agent 协作网络','Agent collaboration network')}</span></h1><p>{t('让这次合作的成果，成为下次分工的依据。','Let the results of this collaboration inform the next assignment.')}</p></div>
+    <a className="lens-enter" href="#collaborate">{t('向下探索','Explore below')} <ArrowDown size={16}/></a>
+    <button className="lens-pause" onClick={()=>setPaused(value=>!value)} aria-label={paused?t('播放首页动画','Play homepage animation'):t('暂停首页动画','Pause homepage animation')}>{paused?<Play size={14}/>:<Pause size={14}/>}<span>{paused?t('播放动画','Play animation'):t('暂停动画','Pause animation')}</span></button>
   </section>;
 }
