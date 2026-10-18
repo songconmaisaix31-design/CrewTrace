@@ -36,8 +36,8 @@ void main(){
   float rim=exp(-abs(edge)*11.);
   float approach=1.-smoothstep(1.,2.4,d);
   // 球面厚度控制采样位移，形成中心放大和环边挤压的连续变化。
-  float thickness=sqrt(.04+pow(1.-smoothstep(0.,1.,d),2.))-.2;
-  vec2 refracted=p-q*inside*(.16+thickness*.22+impulse*.07);
+  float thickness=sqrt(max(0.,1.-min(d*d,1.)))* (1.-smoothstep(.9,1.08,d));
+  vec2 refracted=p-q*inside*(.18+thickness*.26+impulse*.07);
   float surge=breath;
   refracted+=vec2(q.x*(.46+surge*.06),q.y*.28)*rim+q*(1.-inside)*approach*.07;
   refracted.y+=sin(local.x*3.6+time*.48)*inside*.021+local.x*rim*.018;
