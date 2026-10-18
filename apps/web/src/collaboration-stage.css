@@ -94,7 +94,7 @@ html:has(.experience-shell),body:has(.experience-shell){overflow:hidden;height:1
 .experience-shell .stage-card .public-record-meta,.experience-shell .stage-card .public-message header{font-size:12px}
 .experience-shell .stage-card .public-amount{font-size:20px}
 .experience-shell .lens-caption h1{font-size:clamp(19px,1.7vw,24px);line-height:1.5}
-.crewtrace-ring-mark svg{transform:rotate(-22deg) rotateX(56deg);filter:drop-shadow(0 2px 0 #6f537d) drop-shadow(0 0 4px #bb9de344)}
+.crewtrace-ring-mark svg{transform:rotate(38deg) rotateX(54deg);filter:drop-shadow(0 2px 0 #6f537d) drop-shadow(0 0 4px #bb9de344)}
 .crewtrace-ring-mark{perspective:160px}
 @media(max-width:760px){.experience-shell .stage-switch{gap:10px}.experience-shell .stage-switch button,.experience-shell .stage-switch button span{font-size:11px}.stage-read{margin-left:0}.experience-shell .lens-caption h1{font-size:18px}.experience-shell .public-task-detail h2{font-size:20px}}
 @media(prefers-reduced-motion:reduce){.experience-home,.experience-shell .public-workspace>.public-content,.experience-shell .stage-card{transition:none;filter:none!important;transform:none!important}.experience-shell .stage-card[aria-hidden=true]{visibility:hidden}.lens-caption h1,.lens-caption h1 span{background:none;color:#d9c9ef}}

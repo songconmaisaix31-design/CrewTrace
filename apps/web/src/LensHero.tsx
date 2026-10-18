@@ -27,7 +27,7 @@ void main(){
   // 圆环中间保留清晰可见的球面放大与弯曲。
   vec2 refracted=p-q*inside*(.48+impulse*.12);
   refracted.y+=sin(q.x*12.+time*.3)*inside*.022;
-  vec2 textUv=vec2(refracted.x*textScale-time*.065+.16,refracted.y*7.+.5);
+  vec2 textUv=vec2(refracted.x*textScale+time*.065,refracted.y*7.+.5);
   float textMask=step(0.,textUv.y)*step(textUv.y,1.);
   float rim=exp(-abs(edge)*24.);
   float split=.0014*rim;
