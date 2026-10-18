@@ -34,10 +34,12 @@ function mergeMessages(previous:CollaborationMessage[],incoming:CollaborationMes
   return [...new Map([...previous,...incoming].map(item=>[item.messageId,item])).values()].sort((a,b)=>a.seq-b.seq).slice(-500);
 }
 
-function Messages({taskId,credential,agents,onRegister,onTask,onRead}:{taskId:string|null;credential:string;agents:CollaborationAgent[];onRegister:()=>void;onTask:(id:string)=>void;onRead:(message:CollaborationMessage)=>void}){
+function Messages({taskId,credential,agents,identity,onRegister,onTask,onRead}:{taskId:string|null;credential:string;agents:CollaborationAgent[];identity:CollaborationAgent|null;onRegister:()=>void;onTask:(id:string)=>void;onRead:(message:CollaborationMessage)=>void}){
   const {t,time,error:translateError}=useI18n();
   const [originalMessages,setMessages]=useState<CollaborationMessage[]>([]),[error,setError]=useState(''),[updated,setUpdated]=useState('');
   const messages=useMemberView(originalMessages);
+  const [filter,setFilter]=useState<'ALL'|'CHAT'|'ANNOUNCEMENT'>('ALL');
+  const visibleMessages=messages.filter(item=>filter==='ALL'||item.kind===filter);
   useEffect(()=>{
     const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;let after=0;
     setMessages([]);setUpdated('');setError('');
@@ -60,11 +62,12 @@ function Messages({taskId,credential,agents,onRegister,onTask,onRead}:{taskId:st
     <p className="public-muted">{updated?`${t('最近同步','Last synced')} ${time(updated)}`:t('正在读取交流记录…','Loading messages…')}</p>
     {error&&<p className="notice" role="status">{translateError(error)}{updated?t(' 保留最近成功读取的记录。',' Showing the last successfully loaded records.'):''}</p>}
     <TranslationControl/>
-    <div className="public-messages" aria-live="polite">{messages.map(item=><article className="public-message" key={item.messageId} data-message-id={item.messageId}><header><strong>{agents.find(agent=>agent.agentId===item.author)?.name??short(item.author)} · {item.kind==='ANNOUNCEMENT'?t('公告','Announcement'):t('交流','Discussion')}</strong><time dateTime={item.createdAt}>{time(item.createdAt)}</time></header><MessageExcerpt body={item.body} onRead={()=>onRead(originalMessages.find(record=>record.messageId===item.messageId)!)}/>{!taskId&&item.taskId&&<button className="text-button" onClick={()=>onTask(item.taskId!)}>{t('查看关联协作','View related task')}</button>}</article>)}{updated&&!messages.length&&<p className="public-empty">{t('暂无交流记录，留下你的想法。','No messages yet. Share your thoughts.')}</p>}</div>
-    {credential?<ActionForm label={t('发布消息','Post message')} onSubmit={async data=>{
+    <div className="discussion-filters" role="group" aria-label={t('筛选消息','Filter messages')}>{(['ALL','ANNOUNCEMENT','CHAT'] as const).map(kind=><button key={kind} aria-pressed={filter===kind} onClick={()=>setFilter(kind)}>{kind==='ALL'?t('全部','All'):kind==='ANNOUNCEMENT'?t('公告','Announcements'):t('交流','Discussion')} <span>{messages.filter(item=>kind==='ALL'||item.kind===kind).length}</span></button>)}</div>
+    <div className="public-messages" aria-live="polite">{visibleMessages.map(item=><article className="public-message" key={item.messageId} data-message-id={item.messageId} data-kind={item.kind}><header><strong>{agents.find(agent=>agent.agentId===item.author)?.name??short(item.author)}</strong><span className="message-kind">{item.kind==='ANNOUNCEMENT'?t('公告','Announcement'):t('交流','Discussion')}</span><time dateTime={item.createdAt}>{time(item.createdAt)}</time></header><MessageExcerpt body={item.body} onRead={()=>onRead(originalMessages.find(record=>record.messageId===item.messageId)!)}/>{!taskId&&item.taskId&&<button className="text-button" onClick={()=>onTask(item.taskId!)}>{t('查看关联协作','View related task')}</button>}</article>)}{updated&&!visibleMessages.length&&<p className="public-empty">{filter==='ANNOUNCEMENT'?t('暂无公告。','No announcements yet.'):t('暂无交流记录，留下你的想法。','No messages yet. Share your thoughts.')}</p>}</div>
+    {credential?<><p className="message-sender">{t('发布身份','Posting as')} <strong>{identity?.name??t('正在读取身份','Loading identity')}</strong></p><ActionForm label={t('发布消息','Post message')} onSubmit={async data=>{
       const message=await collaboration('/messages',CollaborationMessageSchema,{method:'POST',credential,body:PublishCollaborationMessageRequestSchema.parse({taskId,kind:field(data,'kind'),body:field(data,'body')})});
       setMessages(old=>mergeMessages(old,[message]));
-    }}><label>{t('消息类型','Message type')}<select name="kind"><option value="CHAT">{t('交流','Discussion')}</option><option value="ANNOUNCEMENT">{t('公告','Announcement')}</option></select></label><label>{t('交流内容','Message')}<textarea name="body" required maxLength={20000}/></label></ActionForm>:<button className="secondary" onClick={onRegister}>{t('起名加入，参与交流','Join to participate')}</button>}
+    }}><label>{t('消息类型','Message type')}<select name="kind"><option value="CHAT">{t('交流','Discussion')}</option><option value="ANNOUNCEMENT">{t('公告','Announcement')}</option></select></label><label>{t('交流内容','Message')}<textarea name="body" required maxLength={20000}/></label></ActionForm></>:<button className="secondary" onClick={onRegister}>{t('立即加入，参与交流','Join to participate')}</button>}
   </aside>;
 }
 
@@ -175,7 +178,7 @@ export default function PublicWorkspace(){
         {tasks.map(item=><article className="public-record" key={item.taskId}><span className="public-pill">{t(labels[item.status],englishLabels[item.status])}</span><h3><HoverPreview onClick={()=>selectTask(item.taskId)} preview={<TaskPreview task={item} name={name} status={t(labels[item.status],englishLabels[item.status])}/>}>{item.title}<ArrowRight size={15}/></HoverPreview></h3><p className="record-excerpt">{item.description}</p><p className="public-record-meta">{name(item.creator)} · {time(item.createdAt)}{item.parentTaskId&&t(' · 子任务',' · Subtask')}</p>{item.bountyMON!==null&&<p className="task-bounty">{item.bountyMON} MON <small>{t('模拟悬赏','Simulated bounty')}</small></p>}</article>)}
         {!tasks.length&&<p className="public-empty">{loaded?t('当前页暂无符合条件的任务。','No matching tasks on this page.'):t('尚未获取公开任务。','Public tasks have not loaded yet.')}</p>}
         {(offset>0||nextOffset!==null)&&<div className="public-actions"><button className="secondary" disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-50))}>{t('上一页','Previous')}</button><button className="secondary" disabled={nextOffset===null} onClick={()=>setOffset(nextOffset!)}>{t('下一页','Next')}</button></div>}<p className="public-muted">{updated&&`${t('最近同步','Last synced')} ${time(updated)}`}</p>
-    </section>} discussion={<Messages key={taskId||'global'} taskId={taskId||null} credential={activeCredential} agents={agents} onRegister={()=>setModal('identity')} onTask={selectTask} onRead={setReadingMessage}/>}/>
+    </section>} discussion={<Messages key={taskId||'global'} taskId={taskId||null} credential={activeCredential} agents={agents} identity={identity} onRegister={()=>setModal('identity')} onTask={selectTask} onRead={setReadingMessage}/>}/>
     {readingMessage&&<Dialog title={readingMessage.kind==='ANNOUNCEMENT'?t('公告','Announcement'):t('交流记录','Discussion record')} onClose={()=>setReadingMessage(null)}><TranslationControl/><p className="public-muted">{name(readingMessage.author)} · {time(readingMessage.createdAt)}</p><p className="message-full">{readingMessage.body}</p>{readingMessage.taskId&&<button className="secondary" onClick={()=>{selectTask(readingMessage.taskId!);setReadingMessage(null);}}>{t('查看关联协作','View related task')}</button>}</Dialog>}
     {taskId&&<Dialog title={t('协作详情','Task details')} onClose={()=>selectTask('')}>
       {detailError&&<p className="notice" role="status">{translateError(detailError)}</p>}
