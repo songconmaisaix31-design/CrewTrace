@@ -14,7 +14,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   function home(){currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
     const element=root.current!;
-    let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,decayCount=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchRead=false,touchConsumed=false;
+    let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,decayCount=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchConsumed=false;
     let lastPaint=performance.now(),stalledAt=-Infinity,paintFrame=0;
     // 绘制停顿会合并滚轮事件，不能把这类时间间隔当成新的手势。
     function trackPaint(now:number){if(now-lastPaint>80)stalledAt=now;lastPaint=now;paintFrame=requestAnimationFrame(trackPaint);}
@@ -48,21 +48,21 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       else if(magnitude>lastMagnitude)decayCount=0;
       lastMagnitude=magnitude;
       lastWheel=event.timeStamp;lastDirection=direction;
-      // 阅读手势到达边缘后先停住；下一次独立手势再换页。
-      if(canRead(event.target,direction)){consumed=true;amount=0;return;}
+      // 阅读不消耗切页机会，滚到边缘后继续滑动即可进入相邻面板。
+      if(canRead(event.target,direction)){amount=0;return;}
       event.preventDefault();
       if(consumed)return;
       amount+=delta;
       if(Math.abs(amount)>=16){consumed=true;amount=0;lastStep=event.timeStamp;step(direction);}
     }
-    function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchRead=false;touchConsumed=false;}
+    function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchConsumed=false;}
     function move(event:TouchEvent){
       if(modalOpen())return;
       if(multiTouch||event.touches.length!==1){multiTouch=true;touchDistance=0;return;}
       if(touchConsumed){event.preventDefault();return;}
       const delta=touchY-event.touches[0].clientY;
       if(Math.abs(event.touches[0].clientX-touchX)>Math.abs(delta)){touchDistance=0;return;}
-      if(touchRead||canRead(event.target,delta)){touchRead=true;touchDistance=0;return;}
+      if(canRead(event.target,delta)){touchY=event.touches[0].clientY;touchDistance=0;return;}
       touchDistance=delta;event.preventDefault();
       if(Math.abs(touchDistance)>=24){touchConsumed=true;step(Math.sign(touchDistance));}
     }

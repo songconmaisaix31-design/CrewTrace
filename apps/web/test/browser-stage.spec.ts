@@ -66,9 +66,13 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
     const box=(await reading.boundingBox())!;
     await input.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),yDistance:-1200,speed:1000,gestureSourceType:'mouse'});
     expect(await reading.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+    await expect(page.locator('.stage-announcements')).toHaveAttribute('aria-hidden','false');
+    await page.mouse.move(6,350);
+    await page.mouse.wheel(0,-100);
     await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
   }
   await page.mouse.move(6,350);
+  await page.waitForTimeout(250);
   await input.send('Input.synthesizeScrollGesture',{x:6,y:350,yDistance:650,speed:1000,gestureSourceType:'mouse'});
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
@@ -88,4 +92,23 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:'.local/stage-mobile.png'});
   expect(errors).toEqual([]);
+});
+
+test('矮屏交流内容读到底后连续下滑进入公告',async({page})=>{
+  await page.setViewportSize({width:1440,height:700});
+  await page.goto('/');
+  await page.getByRole('link',{name:'向下探索',exact:true}).click();
+  await page.getByRole('button',{name:'02 交流',exact:true}).click();
+  await expect(page.locator('.stage-discussion .public-message').first()).toBeVisible();
+  await page.waitForTimeout(350);
+  const reading=page.locator('.stage-discussion .stage-card-scroll');
+  expect(await reading.evaluate(el=>el.scrollHeight>el.clientHeight)).toBe(true);
+  const box=(await reading.boundingBox())!;
+  const input=await page.context().newCDPSession(page);
+  await input.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),yDistance:-1000,speed:1000,gestureSourceType:'mouse'});
+  await expect(page.locator('.stage-announcements')).toHaveAttribute('aria-hidden','false');
+  await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
+  await page.mouse.move(6,350);
+  await page.mouse.wheel(0,-100);
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
 });
