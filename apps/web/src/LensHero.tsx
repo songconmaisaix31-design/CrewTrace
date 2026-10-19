@@ -49,28 +49,29 @@ void main(){
   float mobile=1.-step(760.,resolution.x);
   float rows=mix(11.,7.,mobile);
   float fieldHeight=mix(.36,.28,mobile);
-  // 闭合文字轨道的近侧穿过环口，远侧绕回背景；共用角度保持连续循环。
+  // 巨型轨道的上侧弧段穿过当前节点，圆心和回程都位于画面下方之外。
   float outside=1.-inside;
   float distanceX=abs(q.x);
-  float outgoing=1.-smoothstep(-.08,.08,q.x);
-  float orbitRadius=max(.52,aspect*.43);
-  vec2 orbitPoint=refracted-portalCenter-vec2(0.,.205);
-  orbitPoint.y+=orbitPoint.x*.12;
-  vec2 orbitLocal=orbitPoint/vec2(orbitRadius,.205);
+  float outgoing=smoothstep(-.08,.08,q.x);
+  float orbitRadius=max(2.8,aspect*2.);
+  float orbitRise=1.45;
+  vec2 orbitPoint=refracted-portalCenter+vec2(0.,orbitRise);
+  orbitPoint.y-=orbitPoint.x*.14;
+  vec2 orbitLocal=orbitPoint/vec2(orbitRadius,orbitRise);
   float orbitDistance=length(orbitLocal);
   float orbitAngle=atan(orbitLocal.y,orbitLocal.x);
-  float nearSide=1.-smoothstep(-.34,.34,orbitLocal.y);
-  float bandWidth=mix(.28,1.35,nearSide);
+  float nearSide=smoothstep(-.34,.34,orbitLocal.y);
+  float bandWidth=mix(.06,fieldHeight/orbitRise,nearSide);
   float fieldY=(orbitDistance-1.)/bandWidth+.5;
   float row=clamp(floor(fieldY*rows),0.,rows-1.);
   float foreground=1.-step(.5,mod(row+1.,4.));
   float rowSpeed=(.03+mod(row*3.,7.)*.0021)*2.6*mix(.86,1.16,foreground);
   float textScale=rows*64./(4096.*fieldHeight);
   float period=lineWidths[int(row)]/4096.;
-  // 整数次重复使首尾接缝闭合，近侧向左穿环、远侧向右回流。
+  // 翻转轨道面与推进方向，同时保持英文从左到右的正常字形。
   float repeats=max(2.,floor(6.2831853*orbitRadius*textScale/period));
-  float flow=orbitAngle/6.2831853*period*repeats+time*rowSpeed*.5+row*.07;
-  float glyphY=mix(fract(fieldY*rows),1.-fract(fieldY*rows),nearSide);
+  float flow=-orbitAngle/6.2831853*period*repeats-time*rowSpeed*.5+row*.07;
+  float glyphY=mix(1.-fract(fieldY*rows),fract(fieldY*rows),nearSide);
   vec2 textUv=vec2(mod(flow,period),(10.-row+clamp(glyphY,0.,1.))/11.);
   float textMask=smoothstep(0.,.12,fieldY)*(1.-smoothstep(.88,1.,fieldY));
   textMask*=smoothstep(0.,.035,glyphY)*(1.-smoothstep(.965,1.,glyphY));
@@ -102,7 +103,7 @@ void main(){
   float rearOcclusion=mix(1.,.35,1.-smoothstep(.72,1.35,d));
   strength*=mix(.46*rearOcclusion,1.,nearSide);
   float passage=(.94+breath*.06)*(1.-rim*.12)+rim*energy*.1;
-  float departure=mix(.82,1.,smoothstep(-2.6,.4,local.x));
+  float departure=mix(.82,1.,smoothstep(-2.6,.4,-local.x));
   float textAlpha=clamp(alpha*vignette*strength*passage*mix(departure,1.,inside),0.,1.);
   // 银白亮弧沿倾斜环口移动，散射只围绕亮弧局部展开。
   float crescent=pow(max(0.,cos(angle-sweepPhase-pointer.x*.15)),8.);
