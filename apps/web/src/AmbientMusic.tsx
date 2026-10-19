@@ -1,6 +1,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {AudioLines,Music2} from 'lucide-react';
+import {Volume2,VolumeX} from 'lucide-react';
 import Dialog from './Dialog';
+import HoverPreview from './HoverPreview';
 import {useExperienceNavigation} from './ExperienceNavigation';
 import {useSoundFeedback} from './SoundFeedback';
 import {useI18n} from './i18n';
@@ -67,17 +68,17 @@ export default function AmbientMusic(){
     intent.current=true;setLoading(true);void track.play().catch(()=>{if(intent.current)fail();});setEnabled(true);setStarted(true);localStorage.setItem(preferenceKey,'on');
   }
   const active=enabled&&started;
+  const musicStatus=error?t('播放失败','Playback failed'):!enabled?t('关闭','Off'):!started?t('待恢复','Resume needed'):screen!==0?t('协作区暂停','Paused in workspace'):playing?t('播放中','Playing'):t('准备播放','Ready to play');
   return <>
-    <button className="ambient-music-entry" data-sound-toggle hidden={screen!==0} onClick={()=>setSettings(true)} aria-label={t('音乐与音效设置','Music and sound settings')} aria-haspopup="dialog">{playing?<AudioLines size={16}/>:<Music2 size={16}/>}<span className="ambient-label-wide">{t('氛围音乐','Ambient music')}</span><span className="ambient-label-compact">{t('音乐','Music')}</span><span className="ambient-status">{active?t('已开启','On'):t('关闭','Off')}</span></button>
+    <HoverPreview className="sound-toggle" silent active={active||sound.enabled} label={t('音乐与音效设置','Music and sound settings')} dialogOpen={settings} onClick={()=>setSettings(true)} hint={t('点击调整音乐与音效','Click to adjust music and sound effects')} preview={<><strong>{t('声音','Sound')}</strong><div className="sound-preview-status"><span>{t('首页音乐','Homepage music')}</span><span>{musicStatus}</span><span>{t('交互音效','Interaction sounds')}</span><span>{sound.enabled?t('已开启','On'):t('关闭','Off')}</span></div>{sound.error&&<p>{t(sound.error,'Sound effects could not start. Try again.')}</p>}</>}>{active||sound.enabled?<Volume2 size={16}/>:<VolumeX size={16}/>}</HoverPreview>
     {settings&&<Dialog title={t('声音','Sound')} onClose={()=>setSettings(false)}>
       <div className="ambient-settings">
-        <p>{t('为正在运转的协作网络，留一点声音。','A quiet pulse for a network in motion.')}</p>
         <section><div><strong>{t('首页氛围音乐','Homepage music')}</strong><span>Futuristic Pulse · Universfield</span></div><button className="secondary" data-music-toggle data-sound-toggle aria-pressed={active} aria-busy={loading} onClick={toggle}>{active?t('关闭音乐','Turn music off'):enabled?t('恢复音乐','Resume music'):t('开启音乐','Turn music on')}</button></section>
         {loading&&<p role="status">{t('正在加载音乐…','Loading music…')}</p>}
         <label className="ambient-volume">{t('音乐音量','Music volume')}<input aria-label={t('音乐音量','Music volume')} type="range" min="2" max="30" value={Math.round(volume*100)} onChange={event=>{const next=Number(event.target.value)/100;setVolume(next);localStorage.setItem(volumeKey,String(next));}}/><output>{Math.round(volume*100)}%</output></label>
         <p className="ambient-help">{t('进入协作区渐停，打开弹窗时降低音量。切换后台暂停；刷新后需主动恢复。','Fades out in the workspace, softens in dialogs and pauses in background tabs. Resume manually after reloading.')}</p>
         {error&&<p role="alert" className="error">{t(error,'Music could not play. Please try again.')}</p>}
-        <section><div><strong>{t('交互音效','Interaction sounds')}</strong><span>{t('点击、切页及提交反馈','Clicks, page changes and submission feedback')}</span></div><button className="secondary" data-sound-toggle aria-pressed={sound.enabled} disabled={!sound.available} onClick={sound.toggle}>{sound.enabled?t('关闭音效','Turn effects off'):t('开启音效','Turn effects on')}</button></section>
+        <section><div><strong>{t('交互音效','Interaction sounds')}</strong><span>{sound.available?t('点击、切页及提交反馈','Clicks, page changes and submission feedback'):t('当前浏览器不支持音效','Sound effects are unavailable in this browser')}</span></div><button className="secondary" data-effects-toggle data-sound-toggle aria-pressed={sound.enabled} disabled={!sound.available} onClick={sound.toggle}>{sound.enabled?t('关闭音效','Turn effects off'):t('开启音效','Turn effects on')}</button></section>
         {sound.error&&<p role="status" className="error">{t(sound.error,'Sound effects could not start. Try again.')}</p>}
         <a className="ambient-credit" href="https://pixabay.com/music/pulses-futuristic-pulse-212484/" target="_blank" rel="noreferrer">{t('音乐来源与许可','Music source and license')} ↗</a>
       </div>

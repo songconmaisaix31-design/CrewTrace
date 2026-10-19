@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useId, useRef, useState, type ReactNode } f
 import { createPortal } from 'react-dom';
 import { useI18n } from './i18n';
 
-export default function HoverPreview({children,preview,onClick,className='text-button',hint}:{children:ReactNode;preview:ReactNode;onClick:()=>void;className?:string;hint?:string}){
+export default function HoverPreview({children,preview,onClick,className='text-button',hint,label,dialogOpen,silent=false,active=false}:{children:ReactNode;preview:ReactNode;onClick:()=>void;className?:string;hint?:string;label?:string;dialogOpen?:boolean;silent?:boolean;active?:boolean}){
   const {t}=useI18n();
   const id=useId(), trigger=useRef<HTMLButtonElement>(null), panel=useRef<HTMLDivElement>(null);
   const timer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
@@ -36,5 +36,5 @@ export default function HoverPreview({children,preview,onClick,className='text-b
     const observer=new ResizeObserver(place);observer.observe(panel.current!);place();
     return()=>observer.disconnect();
   },[open,preview]);
-  return <><button ref={trigger} className={className} aria-describedby={open?id:undefined} onPointerEnter={event=>{if(event.pointerType==='mouse')reveal();}} onPointerLeave={leave} onFocus={event=>{if(event.currentTarget.matches(':focus-visible'))reveal();}} onBlur={leave} onClick={()=>{close();onClick();}}>{children}</button>{open&&createPortal(<div ref={panel} id={id} role="tooltip" className="hover-preview" data-closing={closing} style={position} onPointerEnter={cancel} onPointerLeave={leave}><div className="hover-preview-content">{preview}</div><small>{hint??t('点击入口查看完整内容','Click the entry to open full details')}</small></div>,document.body)}</>;
+  return <><button type="button" ref={trigger} className={className} aria-label={label} aria-haspopup={dialogOpen===undefined?undefined:'dialog'} aria-expanded={dialogOpen} data-sound-toggle={silent||undefined} data-active={active||undefined} aria-describedby={open?id:undefined} onPointerEnter={event=>{if(event.pointerType==='mouse')reveal();}} onPointerLeave={leave} onFocus={event=>{if(event.currentTarget.matches(':focus-visible'))reveal();}} onBlur={leave} onClick={()=>{close();onClick();}}>{children}</button>{open&&createPortal(<div ref={panel} id={id} role="tooltip" className="hover-preview" data-closing={closing} style={position} onPointerEnter={cancel} onPointerLeave={leave}><div className="hover-preview-content">{preview}</div><small>{hint??t('点击入口查看完整内容','Click the entry to open full details')}</small></div>,document.body)}</>;
 }

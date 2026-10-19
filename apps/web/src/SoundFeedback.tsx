@@ -1,7 +1,5 @@
 import {createContext,useCallback,useContext,useEffect,useRef,useState,type ReactNode} from 'react';
-import {Volume2,VolumeX} from 'lucide-react';
 import {renderSoundCue,type SoundCue} from './sound-cues';
-import {useI18n} from './i18n';
 
 const preferenceKey='crewtrace:sound:v1';
 const SoundContext=createContext({enabled:false,available:false,error:'',toggle:()=>{},play:(_cue:SoundCue)=>{}});
@@ -56,11 +54,4 @@ export function SoundFeedbackProvider({children}:{children:ReactNode}){
   },[enabled,available,unlock,failed,play]);
   useEffect(()=>()=>{const audio=engine.current;engine.current=null;if(audio)void audio.context.close();},[]);
   return <SoundContext.Provider value={{enabled,available,error,toggle,play}}>{children}</SoundContext.Provider>;
-}
-
-export function SoundToggle(){
-  const {t}=useI18n();
-  const {enabled,available,error,toggle}=useSoundFeedback();
-  const label=!available?t('当前浏览器不支持音效','Sound is unavailable in this browser'):enabled?t('关闭交互音效','Turn sound effects off'):t('开启交互音效','Turn sound effects on');
-  return <><button className="sound-toggle" data-sound-toggle aria-label={label} aria-pressed={enabled} disabled={!available} onClick={toggle} title={label}>{enabled?<Volume2 size={16}/>:<VolumeX size={16}/>}</button>{error&&<span className="sound-error" role="status">{t(error,'Sound could not start. Try enabling it again.')}</span>}</>;
 }

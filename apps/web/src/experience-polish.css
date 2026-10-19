@@ -101,7 +101,7 @@
 .message-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .message-panel-head h3{margin:0}
 .experience-shell .sound-toggle{display:grid;place-items:center;width:44px;height:44px;flex:none;color:#bca9d5;border:0;border-radius:50%;background:transparent}
-.experience-shell .sound-toggle[aria-pressed=true]{color:#eee3ff;background:#b69ad314}
+.experience-shell .sound-toggle:is([data-active=true],[aria-expanded=true]){color:#eee3ff;background:#b69ad314}
 .experience-shell .sound-toggle:hover{background:#b69ad31a}.sound-toggle:focus-visible{outline:2px solid #c4afff;outline-offset:2px}
 .sound-error{position:absolute;right:18px;top:74px;max-width:280px;padding:10px 14px;border-radius:10px;background:#21172e;color:#e4d6f3;font-size:12px}
 @media(max-width:420px){.experience-shell .public-topbar .brand{font-size:19px}.experience-shell .crewtrace-ring-mark{width:42px;height:42px}.experience-shell .header-actions{gap:0}.experience-shell :is(.sound-toggle,.motion-control){width:36px}.experience-shell .language-toggle{padding:6px;font-size:11px}.experience-shell .header-mcp{padding:6px;font-size:11px}.workspace-identity{max-width:64px}}
