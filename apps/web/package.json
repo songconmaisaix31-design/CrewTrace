@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/prepare-hero-audio.mjs",
     "dev": "vite --host 127.0.0.1",
+    "prebuild": "node scripts/prepare-hero-audio.mjs",
     "build": "tsc --noEmit && vite build",
     "check": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",

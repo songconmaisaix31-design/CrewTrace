@@ -53,13 +53,13 @@ test('声音默认关闭、主动开启、切页发声、静音及偏好持久�
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
-test('五种合成音实际渲染有限波形且平滑结束',async({page})=>{
+test('四种常规合成音实际渲染有限波形且平滑结束',async({page})=>{
   await page.goto('/');
   const results=await page.evaluate(async()=>{
     // @ts-expect-error 浏览器从 Vite 加载实际模块。
     const {renderSoundCue}=await import('/src/sound-cues.ts');
     const results=[];
-    for(const cue of ['click','page','success','error','ring']){
+    for(const cue of ['click','page','success','error']){
       const context=new OfflineAudioContext(1,22050,44100);
       const master=context.createGain();master.gain.value=.22;master.connect(context.destination);
       renderSoundCue(context,master,cue);

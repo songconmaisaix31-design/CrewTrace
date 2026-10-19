@@ -8,3 +8,4 @@ dist/
 coverage/
 *.tsbuildinfo
 .DS_Store
+apps/web/public/audio/hero/*.wav
