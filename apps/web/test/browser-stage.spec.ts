@@ -66,9 +66,6 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
     const box=(await reading.boundingBox())!;
     await input.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),yDistance:-1200,speed:1000,gestureSourceType:'mouse'});
     expect(await reading.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
-    await expect(page.locator('.stage-announcements')).toHaveAttribute('aria-hidden','false');
-    await page.mouse.move(6,350);
-    await page.mouse.wheel(0,-100);
     await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
   }
   await page.mouse.move(6,350);
@@ -94,7 +91,7 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
   expect(errors).toEqual([]);
 });
 
-test('矮屏交流内容读到底后连续下滑进入公告',async({page})=>{
+test('阅读惯性不切页，下一次下滑进入公告，展开阅读隔离滚动',async({page})=>{
   await page.setViewportSize({width:1440,height:700});
   await page.goto('/');
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
@@ -106,9 +103,24 @@ test('矮屏交流内容读到底后连续下滑进入公告',async({page})=>{
   const box=(await reading.boundingBox())!;
   const input=await page.context().newCDPSession(page);
   await input.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),yDistance:-1000,speed:1000,gestureSourceType:'mouse'});
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+  expect(await reading.evaluate(el=>el.scrollHeight-el.clientHeight-el.scrollTop)).toBeLessThan(3);
+  await page.waitForTimeout(250);
+  await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
+  await page.mouse.wheel(0,100);
   await expect(page.locator('.stage-announcements')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
   await page.mouse.move(6,350);
   await page.mouse.wheel(0,-100);
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+  await page.locator('.stage-discussion').getByRole('button',{name:'展开阅读',exact:true}).first().click();
+  const dialog=page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  const bounds=(await dialog.boundingBox())!;
+  await input.send('Input.synthesizeScrollGesture',{x:Math.round(bounds.x+bounds.width/2),y:Math.round(bounds.y+bounds.height/2),yDistance:-1200,speed:1000,gestureSourceType:'mouse'});
+  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
 });
