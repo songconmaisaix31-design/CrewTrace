@@ -43,8 +43,8 @@
 @media(prefers-reduced-motion:reduce){.sound-switch::before,.sound-switch>span{transition:none}}
 @media(pointer:coarse){.ambient-volume input{height:44px}}
 .sound-entry-group{position:relative;display:inline-flex;align-items:center;flex:none}
-.sound-entry-prompt{position:absolute;right:0;top:calc(100% + 9px);display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 32px);min-height:38px;padding:9px 14px;border:1px solid #c6a6ef40;border-radius:24px;background:#1b1428ee;box-shadow:0 8px 30px #0005;color:#e6d9f8;font-size:12px;line-height:1.5;z-index:12;cursor:pointer;animation:sound-invitation .4s ease-out}
+.sound-entry-prompt{position:absolute;left:50%;top:calc(100% + 10px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 32px);min-height:38px;padding:9px 14px;border:1px solid #c6a6ef40;border-radius:24px;background:#1b1428ee;box-shadow:0 8px 30px #0005;color:#e6d9f8;font-size:12px;line-height:1.5;z-index:12;cursor:pointer;animation:sound-invitation .4s ease-out}
 .sound-entry-prompt:hover{background:#30203f;border-color:#d5b9f277}.sound-entry-prompt:focus-visible{outline:2px solid #c4afff;outline-offset:3px}
-@keyframes sound-invitation{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-@media(max-width:600px){.sound-entry-prompt{position:fixed;right:16px;top:82px;font-size:11px}}
+@keyframes sound-invitation{from{opacity:0;transform:translate(-50%,-4px)}to{opacity:1;transform:translateX(-50%)}}
+@media(max-width:600px){.sound-entry-prompt{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.sound-entry-prompt{animation:none}}
