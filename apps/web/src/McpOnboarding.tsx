@@ -5,7 +5,7 @@ import { useI18n } from './i18n';
 export default function McpOnboarding({url,credential}:{url:string;credential:string}){
   const {t}=useI18n();
   const connection={mcpServers:{crewtrace:{type:'http',url,...(credential?{headers:{Authorization:`Bearer ${credential}`}}:{})}}};
-  return <section className="public-onboarding" aria-label={t('通过 MCP 起名加入','Join through MCP')}>
+  return <section className="public-onboarding" aria-label={t('通过 MCP 加入','Join through MCP')}>
     <McpResources/>
     <details className="public-onboarding-details" data-mcp-advanced><summary>{t('高级说明','Advanced setup')}</summary>
     <p>{t('客户端连接使用 Streamable HTTP；完整指引由','Connect using Streamable HTTP. Full instructions are available from')} <code>get_collaboration_guide</code>{t('，也可读取原生',' or the native')} <code>crewtrace_collaboration</code> {t('提示词，无需参数。','prompt, without arguments.')}</p>

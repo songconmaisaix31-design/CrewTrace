@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { collaborationError } from './collaboration-api';
 import { useI18n } from './i18n';
 import {useSoundFeedback} from './SoundFeedback';
@@ -10,14 +10,19 @@ export default function ActionForm({children,label,onSubmit}:{children:ReactNode
   const {t,error:translateError}=useI18n();
   const {play}=useSoundFeedback();
   const [busy,setBusy]=useState(false),[error,setError]=useState('');
+  const ref=useRef<HTMLFormElement>(null),submitting=useRef(false),baseline=useRef('');
+  const [dirty,setDirty]=useState(false);
+  useEffect(()=>{if(ref.current)baseline.current=JSON.stringify([...new FormData(ref.current)]);},[]);
+  function trackChanges(){if(ref.current)setDirty(JSON.stringify([...new FormData(ref.current)])!==baseline.current);}
   async function submit(event:FormEvent<HTMLFormElement>){
-    event.preventDefault();if(busy)return;
+    event.preventDefault();if(submitting.current)return;
+    submitting.current=true;
     const form=event.currentTarget,data=new FormData(form);setBusy(true);setError('');
-    try{await onSubmit(data);play('success');form.reset();}
+    try{await onSubmit(data);play('success');form.reset();setDirty(false);}
     catch(problem){setError(collaborationError(problem));play('error');}
-    finally{setBusy(false);}
+    finally{submitting.current=false;setBusy(false);}
   }
-  return <form className="public-form" onSubmit={submit}>{children}{error&&<p className="error" role="alert">{translateError(error)}</p>}<button className="primary" disabled={busy}>{busy?t('正在提交…','Submitting…'):label}</button></form>;
+  return <form ref={ref} className="public-form" data-dirty={dirty} data-busy={busy} aria-busy={busy} onInput={trackChanges} onChange={trackChanges} onSubmit={submit}><fieldset className="action-fields" disabled={busy}>{children}</fieldset>{error&&<p className="error" role="alert">{translateError(error)}</p>}<button className="primary" disabled={busy}>{busy?t('正在提交…','Submitting…'):label}</button></form>;
 }
 
 export function CapabilityFields({name,label}:{name:string;label:string}){

@@ -37,9 +37,9 @@ for(const width of [1440,390])test(`交流和公告入口可达 ${width}`,async(
     await expect(dialog).toHaveCount(0);
     }else{await expect(panel.getByRole('button',{name:browse,exact:true})).toHaveCount(0);}
     await entry.click();
-    const compose=page.getByRole('dialog',{name:publish,exact:true});
+    const compose=page.getByRole('dialog',{name:'你的 Agent 身份',exact:true});
     await expect(compose).toBeVisible();
-    await expect(compose.getByRole('button',{name:'立即加入，参与协作',exact:true})).toBeVisible();
+    await expect(compose.getByRole('textbox',{name:'Agent 名称',exact:true})).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(compose).toHaveCount(0);
     await expect(panel).toHaveAttribute('aria-hidden','false');

@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {useI18n} from './i18n';
 import './member-translation.css';
 
-const fields=new Set(['title','description','body','name','scope','reason','content','requiredCapabilities','capabilities']);
+const fields=new Set(['title','description','body','scope','reason','content','requiredCapabilities','capabilities']);
 const needsTranslation=(text:string)=>/\p{L}/u.test(text.replace(/\p{Script=Latin}/gu,''));
 // 长成果按字符边界分段，避免截断代理对；原文始终完整保留。
 function parts(text:string){const chars=Array.from(text),result:string[]=[];for(let i=0;i<chars.length;i+=5000)result.push(chars.slice(i,i+5000).join(''));return result;}
@@ -55,8 +55,7 @@ export function useMemberText(records:unknown){
   return (text:string)=>{
     if(language!=='en'||original||!needsTranslation(text))return text;
     const chunks=parts(text);
-    if(chunks.some(chunk=>failures.has(chunk)))return 'Translation unavailable';
-    if(chunks.some(chunk=>needsTranslation(chunk)&&!translations.has(chunk)))return 'Translating…';
+    if(chunks.some(chunk=>failures.has(chunk)||needsTranslation(chunk)&&!translations.has(chunk)))return text;
     return chunks.map(chunk=>translations.get(chunk)??chunk).join('');
   };
 }
@@ -75,5 +74,5 @@ export function TranslationControl(){
   const [,update]=useState(0);
   useEffect(()=>{const listener=()=>update(n=>n+1);listeners.add(listener);return()=>{listeners.delete(listener);};},[]);
   if(language!=='en')return null;
-  return <div className="translation-control"><span>{original?'Showing original member content':'Member content · Machine translation'}</span><button type="button" onClick={()=>setOriginal(!original)}>{original?'Show English':'View original'}</button>{!original&&failures.size>0&&<button type="button" onClick={()=>{failures.forEach(text=>queue.add(text));failures.clear();notify();void drain();}}>Retry translation</button>}</div>;
+  return <div className="translation-control"><span role="status">{original?'Showing original member content':failures.size>0?'Translation unavailable for some content · Original text retained':pending.size>0||queue.size>0?'Translating · Original text shown while loading':'Member content · Machine translation'}</span><button type="button" onClick={()=>setOriginal(!original)}>{original?'Show English':'View original'}</button>{!original&&failures.size>0&&<button type="button" onClick={()=>{failures.forEach(text=>queue.add(text));failures.clear();notify();void drain();}}>Retry translation</button>}</div>;
 }

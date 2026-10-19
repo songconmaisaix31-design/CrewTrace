@@ -1,4 +1,4 @@
-/* 两个面板共享固定空间，内容在面板内阅读。 */
+/* 三个面板共享固定预览空间，完整内容在阅读弹窗中展示。 */
 .experience-shell[data-screen] .experience-home,.experience-shell[data-screen] .public-workspace>.public-content{animation:none!important;transition:opacity .24s ease-out,transform .32s cubic-bezier(.215,.61,.355,1);filter:none!important;will-change:opacity,transform}
 .experience-shell[data-screen="0"] .experience-home{opacity:1;transform:none}
 .experience-shell[data-screen="1"] .experience-home{opacity:0;transform:translateY(-16px)}
@@ -132,4 +132,42 @@
  .experience-shell .message-panel-head{gap:8px}.experience-shell .message-panel-head h3{font-size:15px}
  .experience-shell .message-panel-head+.public-muted{margin:6px 0;font-size:11px}
  .experience-shell .message-preview-list{margin-top:8px}
+}
+.public-form .action-fields{border:0;padding:0;margin:0;min-width:0;display:grid;gap:16px}
+.dialog-discard{padding:14px 0;margin-bottom:18px;border-bottom:1px solid #cbb2ec35}
+.dialog-discard p{margin:0 0 10px}
+.mutation-control,.mutation-confirm{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mutation-confirm{flex-basis:100%;padding:12px 0;color:#ddd0e9;font-size:13px;line-height:1.7}
+.mutation-confirm>span{flex-basis:100%}
+.task-participation{border-block:1px solid #c5a3e526;padding:14px 0}
+.task-participation p{margin:0 0 10px}
+.claim-entry summary{cursor:pointer;color:#eadcf8;min-height:44px;align-content:center}
+.claim-entry .public-form{margin-top:10px}
+.task-discussion>.public-panel{border:0;background:none;padding:0;border-radius:0}
+.experience-shell .stage-card .message-panel-head>h3{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.experience-shell .stage-card .message-panel-head{margin-bottom:12px}
+.experience-shell .stage-card .message-panel-actions{margin-left:auto}
+.message-full a,.public-task-detail a{overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:360px){
+ .experience-shell>.public-topbar{flex-wrap:wrap;align-content:center;height:106px;gap:0}
+ .experience-shell .header-actions{width:100%;justify-content:flex-end;flex-wrap:nowrap;min-width:0}
+ .experience-shell .header-mcp{white-space:nowrap}
+ .experience-shell .collaboration-sticky{padding-top:108px!important}
+}
+@media(max-height:480px) and (min-width:600px){
+ .experience-shell .stage-card-scroll{padding:8px 16px}
+ .experience-shell .stage-card .message-panel-head{margin-bottom:4px}
+ .experience-shell .stage-card .message-panel-actions button{min-height:36px;padding-block:6px}
+ .experience-shell .stage-card .task-list-toolbar{margin-bottom:2px}
+ .experience-shell .stage-card .public-filter{display:flex;align-items:center;gap:8px}
+ .experience-shell .stage-card .public-filter select{margin:0;padding:6px 10px;min-height:32px}
+ .experience-shell .stage-card .public-record{padding:6px 0}
+ .experience-shell .stage-card .public-record h3{margin:4px 0 0;font-size:16px;line-height:1.4}
+ .experience-shell .stage-card .public-record .record-excerpt,.experience-shell .stage-card .public-record .public-record-meta,.experience-shell .stage-card .task-bounty,.experience-shell .stage-card .public-panel>.public-muted{display:none}
+ .experience-shell .stage-card .public-pill{font-size:11px;padding:3px 7px}
+ .experience-shell .stage-card .translation-control{margin:2px 0;font-size:11px;gap:4px 10px}
+ .experience-shell .stage-card .translation-control>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .experience-shell .message-preview-list .message-preview-body{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin:4px 0}
+ .experience-shell .message-preview-list .public-message{padding:4px 10px}
+ .experience-shell .message-preview-list header{display:flex;gap:10px}
 }

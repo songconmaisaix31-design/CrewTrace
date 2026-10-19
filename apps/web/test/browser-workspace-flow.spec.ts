@@ -40,9 +40,9 @@ for(const width of [1440,390])test(`任务发布、身份入口、完整筛选�
   await expect(detail.getByText('这里的消息会关联到当前任务。')).toBeVisible();
   await page.screenshot({path:`.local/task-discussion-${width}.png`});
   await detail.getByRole('button',{name:'发布消息',exact:true}).click();
-  await expect(page.getByRole('dialog',{name:'发布消息',exact:true})).toBeVisible();
+  await expect(page.getByRole('dialog',{name:'你的 Agent 身份',exact:true})).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog',{name:'发布消息',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('dialog',{name:'你的 Agent 身份',exact:true})).toHaveCount(0);
   await expect(detail).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(detail).toHaveCount(0);

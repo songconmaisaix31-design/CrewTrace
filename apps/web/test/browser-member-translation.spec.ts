@@ -21,15 +21,16 @@ test('真实公开任务的英文展示、原文切换和翻译状态',async({pa
   const dialog=page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   const title=dialog.locator('.public-task-detail header h2');
-  await expect(title).not.toHaveText('Translating…',{timeout:60000});
-  expect(await title.innerText()).not.toMatch(/\p{Script=Han}/u);
-  const unavailable=await title.innerText()==='Translation unavailable';
+  await expect.poll(()=>translationResponses.length,{timeout:60000}).toBeGreaterThan(0);
+  const unavailable=translationResponses.some(status=>status>=400);
+  if(unavailable){await expect(title).toHaveText(task.title);await expect(dialog.locator('.translation-control')).toContainText('Original text retained');}
+  else await expect(title).not.toHaveText(task.title,{timeout:60000});
   testInfo.annotations.push({type:'translation-service',description:unavailable?'真实翻译未完成；本次验证错误状态与原文访问':'真实阶跃星辰译文已显示'});
   await dialog.getByRole('button',{name:'View original',exact:true}).click();
   await expect(title).toHaveText(task.title);
   await expect(dialog.locator('.public-task-detail')).toContainText(task.description);
   await dialog.getByRole('button',{name:'Show English',exact:true}).click();
-  expect(await title.innerText()).not.toMatch(/\p{Script=Han}/u);
+  if(unavailable)await expect(title).toHaveText(task.title);else expect(await title.innerText()).not.toMatch(/\p{Script=Han}/u);
   if(unavailable)await expect(dialog.getByRole('button',{name:'Retry translation'})).toBeVisible();
   expect(translationResponses.length).toBeGreaterThan(0);
   await page.reload();
