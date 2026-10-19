@@ -177,3 +177,5 @@
  .experience-shell .message-preview-list .public-message{padding:4px 10px}
  .experience-shell .message-preview-list header{display:flex;gap:10px}
 }
+.experience-shell .public-topbar{pointer-events:none}
+.experience-shell .public-topbar>.brand,.experience-shell .public-topbar>.header-actions{pointer-events:auto}

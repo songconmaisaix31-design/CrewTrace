@@ -3,7 +3,7 @@ import {renderSoundCue,type SoundCue} from './sound-cues';
 import {loadHeroSounds} from './hero-sound';
 
 const preferenceKey='crewtrace:sound:v1';
-const SoundContext=createContext({enabled:false,available:false,error:'',toggle:()=>{},play:(_cue:SoundCue)=>{},strikeHero:()=>{},moveHero:(_speed:number,_ring:number)=>{},stopHero:()=>{}});
+const SoundContext=createContext({enabled:false,available:false,error:'',toggle:()=>{},play:(_cue:SoundCue)=>{},strikeHero:()=>{},moveHero:(_speed:number,_ring:number)=>{},stopHero:(_all=false)=>{}});
 export const useSoundFeedback=()=>useContext(SoundContext);
 
 export function SoundFeedbackProvider({children}:{children:ReactNode}){
@@ -27,7 +27,11 @@ export function SoundFeedbackProvider({children}:{children:ReactNode}){
       await audio.loading;
     }
   },[available]);
-  const failed=useCallback(()=>{active.current=false;heroIntent.current++;if(engine.current){engine.current.hero?.stop();engine.current.loading=undefined;}setEnabled(false);setError('音效暂时无法播放，请重新开启。');localStorage.setItem(preferenceKey,'off');},[]);
+  const failed=useCallback(()=>{
+    const audio=engine.current;if(!audio||audio.context.state==='closed')return;
+    active.current=false;heroIntent.current++;audio.hero?.stop(true);audio.loading=undefined;
+    setEnabled(false);setError('音效暂时无法播放，请重新开启。');
+  },[]);
   const play=useCallback((cue:SoundCue)=>{
     const audio=engine.current;
     if(!active.current||!audio||audio.context.state!=='running'||document.hidden)return;
@@ -43,12 +47,12 @@ export function SoundFeedbackProvider({children}:{children:ReactNode}){
     if(!active.current||!audio||audio.context.state!=='running'||document.hidden)return;
     try{audio.hero?.move(speed,ring);}catch{failed();}
   },[failed]);
-  const stopHero=useCallback(()=>{heroIntent.current++;engine.current?.hero?.stop();},[]);
+  const stopHero=useCallback((all=false)=>{if(all)heroIntent.current++;engine.current?.hero?.stop(all);},[]);
   function toggle(){
     const next=!active.current;active.current=next;setEnabled(next);setError('');
     localStorage.setItem(preferenceKey,next?'on':'off');
     if(next){void unlock().then(()=>{if(active.current)play('click');}).catch(failed);}
-    else if(engine.current){stopHero();const {context,master}=engine.current;master.gain.cancelScheduledValues(context.currentTime);master.gain.setTargetAtTime(0,context.currentTime,.008);}
+    else if(engine.current){stopHero(true);const {context,master}=engine.current;master.gain.cancelScheduledValues(context.currentTime);master.gain.setTargetAtTime(0,context.currentTime,.008);}
   }
   useEffect(()=>{
     if(!enabled||!available)return;
@@ -64,7 +68,7 @@ export function SoundFeedbackProvider({children}:{children:ReactNode}){
     document.addEventListener('click',click,true);
     return()=>{document.removeEventListener('pointerdown',activate);document.removeEventListener('keydown',activate);document.removeEventListener('click',click,true);};
   },[enabled,available,unlock,failed,play]);
-  useEffect(()=>{const hidden=()=>{if(document.hidden)stopHero();};document.addEventListener('visibilitychange',hidden);return()=>document.removeEventListener('visibilitychange',hidden);},[stopHero]);
+  useEffect(()=>{const hidden=()=>{if(document.hidden)stopHero(true);};document.addEventListener('visibilitychange',hidden);return()=>document.removeEventListener('visibilitychange',hidden);},[stopHero]);
   useEffect(()=>()=>{const audio=engine.current;engine.current=null;if(audio){audio.hero?.dispose();void audio.context.close();}},[]);
   return <SoundContext.Provider value={{enabled,available,error,toggle,play,strikeHero,moveHero,stopHero}}>{children}</SoundContext.Provider>;
 }
