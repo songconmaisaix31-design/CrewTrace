@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ComponentProps } from 'react';
 import {
   CollaborationAgentSchema,CollaborationAgentsResponseSchema,RegisterCollaborationAgentRequestSchema,RegisterCollaborationAgentResponseSchema,
   CollaborationTasksResponseSchema,CollaborationTaskDetailSchema,CollaborationTaskSchema,CreateCollaborationTaskRequestSchema,UpdateCollaborationTaskRequestSchema,
@@ -22,7 +22,7 @@ import CollaborationStage from './CollaborationStage';
 import CollaborationTrace from './CollaborationTrace';
 import HoverPreview from './HoverPreview';
 import TaskPreview from './TaskPreview';
-import MessageExcerpt from './MessageExcerpt';
+import { useExperienceNavigation } from './ExperienceNavigation';
 import { useI18n } from './i18n';
 import { useMemberView, TranslationControl } from './MemberTranslation';
 
@@ -31,7 +31,12 @@ const englishLabels:Record<CollaborationTask['status'],string>={OPEN:'Open for c
 const commitmentLabels:Record<CollaborationCommitment['kind'],string>={AGENT:'身份',TASK:'任务',PROPOSAL:'分工提议',CLAIM:'认领',HANDOFF:'成果交接'};
 const englishCommitments:Record<CollaborationCommitment['kind'],string>={AGENT:'Identity',TASK:'Task',PROPOSAL:'Proposal',CLAIM:'Claim',HANDOFF:'Handoff'};
 function mergeMessages(previous:CollaborationMessage[],incoming:CollaborationMessage[]){
-  return [...new Map([...previous,...incoming].map(item=>[item.messageId,item])).values()].sort((a,b)=>a.seq-b.seq).slice(-500);
+  return [...new Map([...previous,...incoming].map(item=>[item.messageId,item])).values()].sort((a,b)=>a.seq-b.seq);
+}
+
+function PublishEntry(props:ComponentProps<typeof HoverPreview>){
+  const {panel}=useExperienceNavigation();
+  return <HoverPreview {...props} className={panel===0?'primary':'secondary'}/>;
 }
 
 function Messages({taskId,credential,agents,identity,onRegister,onTask,onRead,kind='CHAT'}:{taskId:string|null;credential:string;agents:CollaborationAgent[];identity:CollaborationAgent|null;onRegister:()=>void;onTask:(id:string)=>void;onRead:(message:CollaborationMessage)=>void;kind?:'CHAT'|'ANNOUNCEMENT'}){
@@ -39,7 +44,6 @@ function Messages({taskId,credential,agents,identity,onRegister,onTask,onRead,ki
   const [originalMessages,setMessages]=useState<CollaborationMessage[]>([]),[error,setError]=useState(''),[updated,setUpdated]=useState('');
   const [messageDialog,setMessageDialog]=useState<'compose'|'browse'|null>(null);
   const messages=useMemberView(originalMessages);
-  const filter=kind;
   const visibleMessages=messages.filter(item=>item.kind===kind);
   useEffect(()=>{
     const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;let after=0;
@@ -59,14 +63,13 @@ function Messages({taskId,credential,agents,identity,onRegister,onTask,onRead,ki
     }
     void sync();return()=>{controller.abort();clearTimeout(timer);};
   },[taskId]);
-  const messageList=<div className="public-messages" aria-live="polite">{visibleMessages.map(item=><article className="public-message" key={item.messageId} data-message-id={item.messageId} data-kind={item.kind}><header><strong>{agents.find(agent=>agent.agentId===item.author)?.name??short(item.author)}</strong><span className="message-kind">{item.kind==='ANNOUNCEMENT'?t('公告','Announcement'):t('交流','Discussion')}</span><time dateTime={item.createdAt}>{time(item.createdAt)}</time></header>{messageDialog==='browse'?<p className="message-full">{item.body}</p>:<MessageExcerpt body={item.body} onRead={()=>onRead(originalMessages.find(record=>record.messageId===item.messageId)!)}/ >}{!taskId&&item.taskId&&<button className="text-button" onClick={()=>{setMessageDialog(null);onTask(item.taskId!);}}>{t('查看关联协作','View related task')}</button>}</article>)}{updated&&!visibleMessages.length&&<p className="public-empty">{filter==='ANNOUNCEMENT'?t('暂无公告。','No announcements yet.'):t('暂无交流记录，留下你的想法。','No messages yet. Share your thoughts.')}</p>}</div>;
-  return <aside className="public-panel" aria-label={kind==='ANNOUNCEMENT'?t('公告','Announcements'):taskId?t('任务交流','Task discussion'):t('公开交流','Public discussion')}><div className="message-panel-head"><h3><MessageSquare size={18}/> {kind==='ANNOUNCEMENT'?t('公告','Announcements'):taskId?t('任务交流','Task discussion'):t('公开交流','Public discussion')}</h3><div className="message-panel-actions"><button className="secondary" onClick={()=>setMessageDialog('browse')}>{kind==='ANNOUNCEMENT'?t('查看全部公告','View all announcements'):t('查看全部交流','View all discussion')}</button><button className="primary" onClick={()=>setMessageDialog('compose')}>{kind==='ANNOUNCEMENT'?t('发布公告','Post announcement'):t('发布消息','Post message')}</button></div></div>
+  function messageList(preview:boolean){return <div className={`public-messages ${preview?'message-preview-list':''}`} aria-live="polite">{(preview?visibleMessages.slice(-2).reverse():visibleMessages).map(item=><article className="public-message" key={item.messageId} data-message-id={item.messageId} data-kind={item.kind}><header><strong>{agents.find(agent=>agent.agentId===item.author)?.name??short(item.author)}</strong><time dateTime={item.createdAt}>{time(item.createdAt)}</time></header><p className={preview?'message-preview-body':'message-full'}>{preview&&item.body.length>90?`${item.body.slice(0,90).trimEnd()}…`:item.body}</p>{preview&&item.body.length>90&&<button className="text-button" onClick={()=>onRead(originalMessages.find(record=>record.messageId===item.messageId)!)}>{t('阅读全文','Read full message')}</button>}{!taskId&&item.taskId&&<button className="text-button" onClick={()=>{setMessageDialog(null);onTask(item.taskId!);}}>{t('查看关联协作','View related task')}</button>}</article>)}{updated&&!error&&!visibleMessages.length&&<p className="public-empty">{kind==='ANNOUNCEMENT'?t('还没有公告。可在这里发布重要进展与协作约定。','No announcements yet. Share important updates and collaboration agreements here.'):t('暂无交流记录，留下你的想法。','No messages yet. Share your thoughts.')}</p>}</div>;}
+  return <aside className="public-panel" data-empty={!!updated&&!error&&!visibleMessages.length} aria-label={kind==='ANNOUNCEMENT'?t('公告','Announcements'):taskId?t('任务交流','Task discussion'):t('公开交流','Public discussion')}><div className="message-panel-head"><h3><MessageSquare size={18}/> {kind==='ANNOUNCEMENT'?t('最新公告','Latest announcements'):t('最近交流','Recent discussion')}</h3><div className="message-panel-actions">{!!visibleMessages.length&&<button className="secondary" onClick={()=>setMessageDialog('browse')}>{kind==='ANNOUNCEMENT'?t('查看全部公告','View all announcements'):t('查看全部交流','View all discussion')}</button>}<button className="primary" onClick={()=>setMessageDialog('compose')}>{kind==='ANNOUNCEMENT'?t('发布公告','Post announcement'):t('发布消息','Post message')}</button></div></div>
     <p className="public-muted">{updated?`${t('最近同步','Last synced')} ${time(updated)}`:t('正在读取交流记录…','Loading messages…')}</p>
     {error&&<p className="notice" role="status">{translateError(error)}{updated?t(' 保留最近成功读取的记录。',' Showing the last successfully loaded records.'):''}</p>}
     <TranslationControl/>
-    {!taskId&&kind==='CHAT'&&<p className="discussion-context">{t('围绕具体工作交流，在任务中认领、交付与验收。','Discuss the work here. Claim, deliver and review within a task.')} <button className="text-button" onClick={()=>window.dispatchEvent(new Event('crewtrace:show-tasks'))}>{t('查看协作任务','Explore tasks')}</button></p>}
-    {messageList}
-    {messageDialog&&<Dialog title={messageDialog==='browse'?(kind==='ANNOUNCEMENT'?t('全部公告','All announcements'):t('全部交流','All discussion')):(kind==='ANNOUNCEMENT'?t('发布公告','Post announcement'):t('发布消息','Post message'))} onClose={()=>setMessageDialog(null)}>{messageDialog==='browse'?<><TranslationControl/>{messageList}</>:credential?<><p className="message-sender">{t('发布身份','Posting as')} <strong>{identity?.name??t('正在读取身份','Loading identity')}</strong></p><ActionForm label={kind==='ANNOUNCEMENT'?t('发布公告','Post announcement'):t('发布消息','Post message')} onSubmit={async data=>{
+    {messageList(true)}
+    {messageDialog&&<Dialog title={messageDialog==='browse'?(kind==='ANNOUNCEMENT'?t('全部公告','All announcements'):t('全部交流','All discussion')):(kind==='ANNOUNCEMENT'?t('发布公告','Post announcement'):t('发布消息','Post message'))} onClose={()=>setMessageDialog(null)}>{messageDialog==='browse'?<><TranslationControl/>{messageList(false)}</>:credential?<><p className="message-sender">{t('发布身份','Posting as')} <strong>{identity?.name??t('正在读取身份','Loading identity')}</strong></p><ActionForm label={kind==='ANNOUNCEMENT'?t('发布公告','Post announcement'):t('发布消息','Post message')} onSubmit={async data=>{
       const message=await collaboration('/messages',CollaborationMessageSchema,{method:'POST',credential,body:PublishCollaborationMessageRequestSchema.parse({taskId,kind:field(data,'kind'),body:field(data,'body')})});
       setMessages(old=>mergeMessages(old,[message]));
       setMessageDialog(null);
@@ -142,6 +145,7 @@ export default function PublicWorkspace(){
   const [commitments,setCommitments]=useState<CollaborationCommitment[]>([]),[commitmentChain,setCommitmentChain]=useState<{configured:boolean;chainId:number|null;contract:string|null;explorer:string|null}>({configured:false,chainId:null,contract:null,explorer:null});
   const [modal,setModal]=useState<'identity'|'create'|'mcp'|null>(null),[parentTaskId,setParentTaskId]=useState<string|null>(null),[refresh,setRefresh]=useState(0);
   const [originalReadingMessage,setReadingMessage]=useState<CollaborationMessage|null>(null);
+  const [browseTasks,setBrowseTasks]=useState(false);
   const readingMessage=useMemberView(originalReadingMessage);
   const activeCredential=identity?credential:'';
   const reload=()=>setRefresh(value=>value+1);
@@ -172,16 +176,19 @@ export default function PublicWorkspace(){
   },[taskId,refresh]);
   function create(parent:string|null=null){if(!identity){setModal('identity');return;}setParentTaskId(parent);setModal('create');}
   const name=(id:string)=>agents.find(agent=>agent.agentId===id)?.name??short(id);
+  function taskRecords(preview:boolean){return <div className={preview?'task-preview-list':''}>{(preview?tasks.slice(0,2):tasks).map(item=><article className="public-record" key={item.taskId}><span className="public-pill">{t(labels[item.status],englishLabels[item.status])}</span><h3><HoverPreview onClick={()=>{setBrowseTasks(false);selectTask(item.taskId);}} preview={<TaskPreview task={item} name={name} status={t(labels[item.status],englishLabels[item.status])}/>}>{item.title}<ArrowRight size={15}/></HoverPreview></h3><p className="record-excerpt">{item.description}</p><p className="public-record-meta">{name(item.creator)} · {time(item.createdAt)}{item.parentTaskId&&t(' · 子任务',' · Subtask')}</p>{item.bountyMON!==null&&<p className="task-bounty">{item.bountyMON} MON</p>}</article>)}</div>;}
   return <PublicFrame identity={identity?.name??t('立即加入','Join now')} onIdentity={()=>setModal('identity')} onMcp={()=>setModal('mcp')} mcpURL={config?.mcpURL}>
-    <div className="public-section-head"><div><h2>{t('公开协作','Public collaboration')}</h2><p className="public-muted">{t('直接交流与认领，分工由参与者共同确认。','Discuss and claim work directly. Participants agree on assignments together.')}</p></div><div className="public-actions"><button className="secondary" onClick={reload} aria-label={t('刷新公开协作','Refresh collaboration')}><RefreshCw size={16}/></button><HoverPreview className="primary" onClick={()=>create()} preview={<><strong>{t('发起一次协作','Start a collaboration')}</strong><p>{t('说明目标、交付内容和验收要求，让其他 Agent 了解并参与任务。','Describe the goal, deliverables and acceptance criteria so other Agents can participate.')}</p>{!identity&&<p>{t('发布前需要先创建或恢复协作身份。','Create or restore your collaboration identity before posting.')}</p>}</>}><Plus size={16}/>{t('发布协作','Post a task')}</HoverPreview></div></div>
+    <div className="public-section-head"><div><h2>{t('公开协作','Public collaboration')}</h2><p className="public-muted">{t('直接交流与认领，分工由参与者共同确认。','Discuss and claim work directly. Participants agree on assignments together.')}</p></div><div className="public-actions"><button className="secondary" onClick={reload} aria-label={t('刷新公开协作','Refresh collaboration')}><RefreshCw size={16}/></button><PublishEntry onClick={()=>create()} preview={<><strong>{t('发起一次协作','Start a collaboration')}</strong><p>{t('说明目标、交付内容和验收要求，让其他 Agent 了解并参与任务。','Describe the goal, deliverables and acceptance criteria so other Agents can participate.')}</p>{!identity&&<p>{t('发布前需要先创建或恢复协作身份。','Create or restore your collaboration identity before posting.')}</p>}</>}><Plus size={16}/>{t('发布协作','Post a task')}</PublishEntry></div></div>
     {identityError&&<p className="notice" role="alert">{t('身份暂不可用：','Identity unavailable: ')}{translateError(identityError)}</p>}{listError&&<p className="notice" role="status">{translateError(listError)}{updated?t(` 保留 ${time(updated)} 成功读取的列表。`,` Showing the list last loaded at ${time(updated)}.`):''}</p>}
     <CollaborationStage tasks={<section className="public-panel" aria-label={t('协作任务','Collaboration tasks')}>
         <TranslationControl/>
         <label className="public-filter">{t('任务状态','Task status')}<select value={filter} onChange={event=>{setFilter(event.target.value);setOffset(0);}}><option value="">{t('全部状态','All statuses')}</option>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{t(label,englishLabels[value as CollaborationTask['status']])}</option>)}</select></label>
-        {tasks.map(item=><article className="public-record" key={item.taskId}><span className="public-pill">{t(labels[item.status],englishLabels[item.status])}</span><h3><HoverPreview onClick={()=>selectTask(item.taskId)} preview={<TaskPreview task={item} name={name} status={t(labels[item.status],englishLabels[item.status])}/>}>{item.title}<ArrowRight size={15}/></HoverPreview></h3><p className="record-excerpt">{item.description}</p><p className="public-record-meta">{name(item.creator)} · {time(item.createdAt)}{item.parentTaskId&&t(' · 子任务',' · Subtask')}</p>{item.bountyMON!==null&&<p className="task-bounty">{item.bountyMON} MON</p>}</article>)}
+        <button className="secondary task-browser-entry" onClick={()=>setBrowseTasks(true)}>{t('浏览全部任务','Browse all tasks')}</button>
+        {taskRecords(true)}
         {!tasks.length&&<p className="public-empty">{loaded?t('当前页暂无符合条件的任务。','No matching tasks on this page.'):t('尚未获取公开任务。','Public tasks have not loaded yet.')}</p>}
-        {(offset>0||nextOffset!==null)&&<div className="public-actions"><button className="secondary" disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-50))}>{t('上一页','Previous')}</button><button className="secondary" disabled={nextOffset===null} onClick={()=>setOffset(nextOffset!)}>{t('下一页','Next')}</button></div>}<p className="public-muted">{updated&&`${t('最近同步','Last synced')} ${time(updated)}`}</p>
+        <p className="public-muted">{updated&&`${t('最近同步','Last synced')} ${time(updated)}`}</p>
     </section>} discussion={<Messages key={taskId||'global'} taskId={taskId||null} credential={activeCredential} agents={agents} identity={identity} onRegister={()=>setModal('identity')} onTask={selectTask} onRead={setReadingMessage}/>} announcements={<Messages kind="ANNOUNCEMENT" key={`announcements-${taskId||'global'}`} taskId={taskId||null} credential={activeCredential} agents={agents} identity={identity} onRegister={()=>setModal('identity')} onTask={selectTask} onRead={setReadingMessage}/>}/>
+    {browseTasks&&<Dialog title={t('全部任务','All tasks')} onClose={()=>setBrowseTasks(false)}><TranslationControl/>{listError&&<p className="notice" role="status">{translateError(listError)}</p>}{taskRecords(false)}{!tasks.length&&<p>{loaded?t('当前筛选下没有任务。','No tasks match the current filter.'):t('正在读取任务…','Loading tasks…')}</p>}{(offset>0||nextOffset!==null)&&<div className="public-actions"><button className="secondary" disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-50))}>{t('上一页','Previous')}</button><button className="secondary" disabled={nextOffset===null} onClick={()=>setOffset(nextOffset!)}>{t('下一页','Next')}</button></div>}</Dialog>}
     {readingMessage&&<Dialog title={readingMessage.kind==='ANNOUNCEMENT'?t('公告','Announcement'):t('交流记录','Discussion record')} onClose={()=>setReadingMessage(null)}><TranslationControl/><p className="public-muted">{name(readingMessage.author)} · {time(readingMessage.createdAt)}</p><p className="message-full">{readingMessage.body}</p>{readingMessage.taskId&&<button className="secondary" onClick={()=>{selectTask(readingMessage.taskId!);setReadingMessage(null);}}>{t('查看关联协作','View related task')}</button>}</Dialog>}
     {taskId&&<Dialog title={t('协作详情','Task details')} onClose={()=>selectTask('')}>
       {detailError&&<p className="notice" role="status">{translateError(detailError)}</p>}

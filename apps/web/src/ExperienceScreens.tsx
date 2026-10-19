@@ -34,10 +34,10 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       // 绘制停顿合并的输入不能冒充新手势，但停止后重新滑动始终可用。
       const gap=event.timeStamp-lastWheel;
       const stalled=performance.now()-lastPaint>80||performance.now()-stalledAt<100;
-      const fresh=gap>320||(!stalled&&(gap>200||(gap>160&&magnitude>=lastMagnitude*.85&&event.timeStamp-lastStep>180)));
+      const fresh=gap>180||(!stalled&&gap>90&&magnitude>=lastMagnitude*.8&&event.timeStamp-lastStep>120);
       const reverse=direction!==lastDirection;
       // 保留衰减谷值，识别逐渐发力的新滑动，不要求瞬间加倍或连续三次衰减。
-      const renewed=!stalled&&consumed&&decays>=2&&event.timeStamp-lastStep>160&&trough<=4&&trough<peak*.6&&magnitude>=Math.max(10,trough*1.6+4);
+      const renewed=consumed&&decays>=2&&event.timeStamp-lastStep>120&&trough<=4&&trough<peak*.6&&magnitude>=Math.max(5,trough*1.4+2);
       if(fresh||reverse||renewed){amount=0;consumed=false;peak=0;trough=Infinity;decays=0;}
       if(magnitude>peak){peak=magnitude;trough=Infinity;decays=0;}
       if(magnitude<lastMagnitude){trough=Math.min(trough,magnitude);decays++;}
@@ -47,7 +47,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       event.preventDefault();
       if(consumed)return;
       amount+=delta;
-      if(Math.abs(amount)>=10){consumed=true;amount=0;lastStep=event.timeStamp;step(direction);}
+      if(Math.abs(amount)>=5){consumed=true;amount=0;lastStep=event.timeStamp;step(direction);}
     }
     function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchConsumed=false;}
     function move(event:TouchEvent){
@@ -57,7 +57,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       const delta=touchY-event.touches[0].clientY;
       if(Math.abs(event.touches[0].clientX-touchX)>Math.abs(delta)){touchDistance=0;return;}
       touchDistance=delta;event.preventDefault();
-      if(Math.abs(touchDistance)>=18){touchConsumed=true;step(Math.sign(touchDistance));}
+      if(Math.abs(touchDistance)>=12){touchConsumed=true;step(Math.sign(touchDistance));}
     }
     function end(){touchDistance=0;}
     function cancel(){touchDistance=0;multiTouch=true;}

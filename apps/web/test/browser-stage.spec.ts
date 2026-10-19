@@ -1,5 +1,18 @@
 import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
+test('五像素轻滑及短间隔重复滑动及时响应',async({page})=>{
+  await page.goto('/');
+  await expect(page.getByRole('link',{name:'向下探索',exact:true})).toBeVisible();
+  await page.mouse.move(6,350);
+  for(const panel of [0,1,2]){
+    await page.mouse.wheel(0,5);
+    await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
+    await expect(page.locator('.collaboration-stage')).toHaveAttribute('data-panel',String(panel));
+    await page.waitForTimeout(140);
+  }
+  await page.mouse.wheel(0,-5);
+  await expect(page.locator('.collaboration-stage')).toHaveAttribute('data-panel','1');
+});
 test('轻滑与惯性尾部渐进发力能连续切页',async({page})=>{
   await page.goto('/');
   await expect(page.getByRole('link',{name:'向下探索',exact:true})).toBeVisible();
@@ -109,7 +122,7 @@ test('未展开的交流直接切到公告，展开阅读隔离滚动',async({pa
   await expect(page.locator('.stage-discussion .public-message').first()).toBeVisible();
   await page.waitForTimeout(350);
   const reading=page.locator('.stage-discussion .stage-card-scroll');
-  expect(await reading.evaluate(el=>el.scrollHeight>el.clientHeight)).toBe(true);
+  expect(await reading.evaluate(el=>el.scrollHeight<=el.clientHeight+1)).toBe(true);
   const box=(await reading.boundingBox())!;
   const input=await page.context().newCDPSession(page);
   await input.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),yDistance:-1000,speed:1000,gestureSourceType:'mouse'});
@@ -119,7 +132,7 @@ test('未展开的交流直接切到公告，展开阅读隔离滚动',async({pa
   await page.mouse.move(6,350);
   await page.mouse.wheel(0,-100);
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
-  await page.locator('.stage-discussion').getByRole('button',{name:'展开阅读',exact:true}).first().click();
+  await page.locator('.stage-discussion').getByRole('button',{name:'阅读全文',exact:true}).first().click();
   const dialog=page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   const bounds=(await dialog.boundingBox())!;
