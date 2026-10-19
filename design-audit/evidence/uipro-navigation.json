@@ -1,0 +1,41 @@
+{
+  "domain": "ux",
+  "query": "back behavior navigation",
+  "file": "ux-guidelines.csv",
+  "count": 3,
+  "results": [
+    {
+      "Category": "Navigation",
+      "Issue": "Back Button",
+      "Platform": "Mobile",
+      "Description": "Users expect back to work predictably",
+      "Do": "Preserve navigation history properly",
+      "Don't": "Break browser/app back button behavior",
+      "Code Example Good": "history.pushState()",
+      "Code Example Bad": "location.replace()",
+      "Severity": "High"
+    },
+    {
+      "Category": "Navigation",
+      "Issue": "Sticky Navigation",
+      "Platform": "Web",
+      "Description": "Fixed nav should not obscure content",
+      "Do": "Add padding-top to body equal to nav height",
+      "Don't": "Let nav overlap first section content",
+      "Code Example Good": "pt-20 (if nav is h-20)",
+      "Code Example Bad": "No padding compensation",
+      "Severity": "Medium"
+    },
+    {
+      "Category": "Accessibility",
+      "Issue": "Keyboard Navigation",
+      "Platform": "Web",
+      "Description": "Web users need complete keyboard navigation with visible focus on every operable control",
+      "Do": "Keep tab order aligned with visual order and test every action without a pointer",
+      "Don't": "Keyboard traps or illogical tab order",
+      "Code Example Good": "tabIndex for custom order",
+      "Code Example Bad": "Unreachable elements",
+      "Severity": "High"
+    }
+  ]
+}

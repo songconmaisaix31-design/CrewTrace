@@ -1,0 +1,184 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.10.0_1/bin/node",
+      "/Users/francis/Desktop/Monad 黑客松/CrewTrace/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "apps/web/playwright.config.ts",
+      "browser-stage.spec.ts"
+    ],
+    "configFile": "/Users/francis/Desktop/Monad 黑客松/CrewTrace/apps/web/playwright.config.ts",
+    "rootDir": "/Users/francis/Desktop/Monad 黑客松/CrewTrace/apps/web/test",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/francis/Desktop/Monad 黑客松/CrewTrace/.local/web-integration/playwright",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/francis/Desktop/Monad 黑客松/CrewTrace/apps/web/test",
+        "testIgnore": [],
+        "testMatch": [
+          "browser-*.spec.ts"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/francis/Desktop/Monad 黑客松/CrewTrace/.local/web-integration/playwright",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/francis/Desktop/Monad 黑客松/CrewTrace/apps/web/test",
+        "snapshotDir": "/Users/francis/Desktop/Monad 黑客松/CrewTrace/apps/web/test",
+        "testIgnore": [],
+        "testMatch": "browser-*.spec.ts",
+        "timeout": 90000,
+        "use": {
+          "baseURL": "http://127.0.0.1:5173",
+          "headless": true,
+          "screenshot": "off",
+          "trace": "off",
+          "video": "off"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/francis/Desktop/Monad 黑客松/CrewTrace/design-audit/evidence/stage-test.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "browser-stage.spec.ts",
+      "file": "browser-stage.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "轻滚动、惯性后再次发力与触屏即时响应",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1912,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T20:37:19.576Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f3d7cae5b56a851415fa-107e47eabc1f3dee0362",
+          "file": "browser-stage.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "连续手势不跳过01，双向切页与内容边界阅读",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6267,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T20:37:22.651Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f3d7cae5b56a851415fa-fc178f74d32281a6a044",
+          "file": "browser-stage.spec.ts",
+          "line": 31,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-18T20:37:19.354Z",
+    "duration": 9669.213,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

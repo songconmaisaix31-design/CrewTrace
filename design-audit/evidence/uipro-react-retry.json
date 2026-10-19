@@ -1,0 +1,51 @@
+{
+  "domain": "stack",
+  "stack": "react",
+  "query": "form validation accessibility",
+  "file": "stacks/react.csv",
+  "count": 3,
+  "results": [
+    {
+      "Category": "Accessibility",
+      "Guideline": "Label form controls",
+      "Description": "Associate labels with inputs",
+      "Do": "htmlFor matching input id",
+      "Don't": "Placeholder as only label",
+      "Code Good": "<label htmlFor=\"email\">Email</label>",
+      "Code Bad": "<input placeholder=\"Email\"/>",
+      "Severity": "High",
+      "Docs URL": "https://react.dev/reference/react-dom/components/input",
+      "Applies To": "react 19.2.x",
+      "Status": "active",
+      "Verified At": "2026-08-13"
+    },
+    {
+      "Category": "Props",
+      "Guideline": "Validate props with TypeScript",
+      "Description": "Use TypeScript interfaces for prop types",
+      "Do": "interface Props { name: string }",
+      "Don't": "PropTypes or no validation",
+      "Code Good": "interface ButtonProps { onClick: () => void }",
+      "Code Bad": "Button.propTypes = {}",
+      "Severity": "Medium",
+      "Docs URL": "",
+      "Applies To": "react 19.2.x",
+      "Status": "active",
+      "Verified At": "2026-08-13"
+    },
+    {
+      "Category": "Forms",
+      "Guideline": "Call useFormStatus from a form child",
+      "Description": "Reads submission status from the nearest parent form.",
+      "Do": "Call it in a child rendered inside the form",
+      "Don't": "Call it in the component that renders the form",
+      "Code Good": "function Submit(){ const { pending } = useFormStatus(); return <button disabled={pending}>Save</button> }",
+      "Code Bad": "function Form(){ const { pending } = useFormStatus(); return <form>...</form> }",
+      "Severity": "High",
+      "Docs URL": "https://react.dev/reference/react-dom/hooks/useFormStatus",
+      "Applies To": "react 19.2.x",
+      "Status": "active",
+      "Verified At": "2026-09-21"
+    }
+  ]
+}

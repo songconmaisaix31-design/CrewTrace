@@ -1,0 +1,51 @@
+{
+  "domain": "stack",
+  "stack": "react",
+  "query": "form state preserve",
+  "file": "stacks/react.csv",
+  "count": 3,
+  "results": [
+    {
+      "Category": "State",
+      "Guideline": "Initialize state lazily",
+      "Description": "Use function form for expensive initial state",
+      "Do": "useState(() => computeExpensive())",
+      "Don't": "useState(computeExpensive())",
+      "Code Good": "useState(() => JSON.parse(data))",
+      "Code Bad": "useState(JSON.parse(data))",
+      "Severity": "Medium",
+      "Docs URL": "https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state",
+      "Applies To": "react 19.2.x",
+      "Status": "active",
+      "Verified At": "2026-08-13"
+    },
+    {
+      "Category": "State",
+      "Guideline": "Use useState for local state",
+      "Description": "Simple component state should use useState hook in current React apps.",
+      "Do": "useState for form inputs toggles counters",
+      "Don't": "Class components this.state",
+      "Code Good": "const [count, setCount] = useState(0)",
+      "Code Bad": "this.state = { count: 0 }",
+      "Severity": "Medium",
+      "Docs URL": "https://react.dev/reference/react/useState",
+      "Applies To": "react 19.2.x",
+      "Status": "active",
+      "Verified At": "2026-08-13"
+    },
+    {
+      "Category": "Forms",
+      "Guideline": "Use useActionState for Action state",
+      "Description": "Track the result and pending status of a side-effecting Action.",
+      "Do": "Pass its dispatch to a form action or call it inside startTransition",
+      "Don't": "Call the returned dispatch directly outside an Action",
+      "Code Good": "<form action={formAction}>...</form>",
+      "Code Bad": "formAction(formData) // outside an Action",
+      "Severity": "High",
+      "Docs URL": "https://react.dev/reference/react/useActionState",
+      "Applies To": "react 19.2.x",
+      "Status": "active",
+      "Verified At": "2026-09-21"
+    }
+  ]
+}
