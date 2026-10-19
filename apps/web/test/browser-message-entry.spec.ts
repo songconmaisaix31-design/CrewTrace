@@ -15,7 +15,7 @@ for(const width of [1440,390])test(`交流和公告入口可达 ${width}`,async(
   ]){
     await page.getByRole('button',{name:tab,exact:true}).click();
     const panel=page.locator(card);
-    await expect(page.getByRole('button',{name:'发布协作',exact:true})).toHaveClass(/secondary/);
+    await expect(page.getByRole('button',{name:'发布任务',exact:true})).not.toBeVisible();
     const entry=panel.getByRole('button',{name:publish,exact:true});
     await expect(entry).toBeInViewport();
     await expect(panel.locator('.public-panel > .public-muted')).toContainText('最近同步');

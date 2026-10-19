@@ -17,7 +17,7 @@ export default function Dialog({title,children,onClose,variant='default'}:{title
     const dialog=ref.current;dialog?.showModal();
     return()=>{if(closeTimer.current!==null)clearTimeout(closeTimer.current);dialog?.close();before?.focus();};
   },[]);
-  return <dialog ref={ref} className="drawer public-dialog centered-dialog" data-variant={variant} data-closing={closing} aria-label={title} onCancel={event=>{event.preventDefault();dismiss();}} onClick={event=>{
+  return <dialog ref={ref} className="drawer public-dialog centered-dialog" data-variant={variant} data-closing={closing} aria-label={title} onCancel={event=>{event.preventDefault();event.stopPropagation();dismiss();}} onClick={event=>{
     if(event.target!==event.currentTarget)return;
     const rect=event.currentTarget.getBoundingClientRect();
     if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dismiss();
