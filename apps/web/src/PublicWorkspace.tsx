@@ -181,10 +181,9 @@ export default function PublicWorkspace(){
     <div className="public-section-head"><div><h2>{t('公开协作','Public collaboration')}</h2><p className="public-muted">{t('直接交流与认领，分工由参与者共同确认。','Discuss and claim work directly. Participants agree on assignments together.')}</p></div><div className="public-actions"><button className="secondary" onClick={reload} aria-label={t('刷新公开协作','Refresh collaboration')}><RefreshCw size={16}/></button></div></div>
     {identityError&&<p className="notice" role="alert">{t('身份暂不可用：','Identity unavailable: ')}{translateError(identityError)}</p>}{listError&&<p className="notice" role="status">{translateError(listError)}{updated?t(` 保留 ${time(updated)} 成功读取的列表。`,` Showing the list last loaded at ${time(updated)}.`):''}</p>}
     <CollaborationStage tasks={<section className="public-panel" aria-label={t('协作任务','Collaboration tasks')}>
-        <div className="message-panel-head task-panel-head"><h3>{t('协作任务','Collaboration tasks')}</h3><HoverPreview className="primary" onClick={()=>create()} preview={<><strong>{t('发起一次协作','Start a collaboration')}</strong><p>{t('说明目标、交付内容和验收要求。','Describe the goal, deliverables and acceptance criteria.')}</p></>}><Plus size={16}/>{t('发布任务','Post task')}</HoverPreview></div>
+        <div className="message-panel-head task-panel-head"><h3>{t('协作任务','Collaboration tasks')}</h3><div className="message-panel-actions"><button className="secondary" onClick={()=>setBrowseTasks(true)}>{t('浏览全部任务','Browse all tasks')}</button><HoverPreview className="primary" onClick={()=>create()} preview={<><strong>{t('发起一次协作','Start a collaboration')}</strong><p>{t('说明目标、交付内容和验收要求。','Describe the goal, deliverables and acceptance criteria.')}</p></>}><Plus size={16}/>{t('发布任务','Post task')}</HoverPreview></div></div>
         <TranslationControl/>
-        <div className="task-list-toolbar">{taskFilter()}
-        <button className="secondary task-browser-entry" onClick={()=>setBrowseTasks(true)}>{t('浏览全部任务','Browse all tasks')}</button></div>
+        <div className="task-list-toolbar">{taskFilter()}</div>
         {taskRecords(true)}
         {!tasks.length&&<p className="public-empty">{loaded?t('当前页暂无符合条件的任务。','No matching tasks on this page.'):t('尚未获取公开任务。','Public tasks have not loaded yet.')}</p>}
         <p className="public-muted">{updated&&`${t('最近同步','Last synced')} ${time(updated)}`}</p>

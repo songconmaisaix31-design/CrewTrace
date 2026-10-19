@@ -101,12 +101,11 @@
 .message-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .message-panel-head h3{margin:0}
 .task-panel-head{margin-bottom:16px}
-.task-panel-head .primary{min-height:44px;padding:8px 14px;border-radius:12px;font-size:13px}
 .workspace-identity{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:8px;font-size:13px;min-height:44px}
 .task-discussion{margin-top:24px;padding-top:20px;border-top:1px solid #c4a5ff22}
 .task-discussion>.public-panel{margin-top:12px}
 .task-detail-tabs{margin-bottom:20px}.task-detail-tabs [aria-pressed=true]{color:#f0e6ff;border-color:#c5a4e966;background:#baa0e51a}
-@media(max-width:480px){.workspace-identity{max-width:80px;font-size:12px;padding:6px}.experience-shell[data-screen="1"] .header-actions{gap:0}.experience-shell[data-screen="1"] .brand{gap:5px}.task-panel-head{flex-wrap:nowrap}}
+@media(max-width:480px){.workspace-identity{max-width:80px;font-size:12px;padding:6px}.experience-shell[data-screen="1"] .header-actions{gap:0}.experience-shell[data-screen="1"] .brand{gap:5px}}
 .message-panel-actions{display:flex;gap:8px;flex-wrap:wrap}
 .message-panel-actions button{min-height:40px;padding:8px 14px;font-size:13px}
 @media(max-width:760px){.message-panel-head{align-items:flex-start}.message-panel-actions{width:100%}.message-panel-actions button{flex:1;min-height:44px}}
@@ -116,12 +115,11 @@
 .experience-shell .message-preview-list header{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 14px}
 .experience-shell .message-preview-list time{color:var(--muted);font-size:12px}
 .experience-shell .stage-card:has(.public-panel[data-empty=true]){background:linear-gradient(145deg,#bda2e914,transparent 65%);box-shadow:none}
-.experience-shell .message-panel-actions :is(.primary,.secondary),.experience-shell .task-browser-entry{border-radius:12px}
+.experience-shell .message-panel-actions :is(.primary,.secondary){border-radius:12px}
 .experience-shell .task-list-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
 .experience-shell .task-list-toolbar .public-filter{margin:0;min-width:0;flex:1;gap:8px}
 .experience-shell .task-list-toolbar select{min-width:0;max-width:180px;width:auto}
-.experience-shell .task-browser-entry{margin:0;min-height:44px;flex-shrink:0;white-space:nowrap}
-@media(max-width:480px){.experience-shell .task-list-toolbar{gap:8px}.experience-shell .task-list-toolbar .public-filter{display:flex;flex-direction:column;align-items:flex-start;gap:4px}.experience-shell .task-list-toolbar select{width:100%;max-width:150px}.experience-shell .task-browser-entry{padding:10px 12px;font-size:13px}}
+@media(max-width:480px){.experience-shell .task-list-toolbar{gap:8px}.experience-shell .task-list-toolbar .public-filter{display:flex;align-items:center;gap:8px}.experience-shell .task-list-toolbar select{width:auto;max-width:150px}}
 .centered-dialog .public-messages{max-height:none;overflow:visible}
 @media(max-width:760px),(max-height:740px){
  .experience-shell .message-preview-list .public-message:nth-child(n+2),.experience-shell .task-preview-list .public-record:nth-child(n+2){display:none}

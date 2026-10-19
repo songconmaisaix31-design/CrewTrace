@@ -19,6 +19,8 @@ for(const width of [1440,390])test(`交流和公告入口可达 ${width}`,async(
     const entry=panel.getByRole('button',{name:publish,exact:true});
     await expect(entry).toBeInViewport();
     await expect(panel.locator('.public-panel > .public-muted')).toContainText('最近同步');
+    await page.waitForTimeout(350);
+    await page.screenshot({path:`.local/panel-${tab.slice(0,2)}-${width}.png`});
     if(await panel.locator('.public-message').count()){
     if(tab==='02 交流')await expect(panel.locator('.message-preview-list header strong')).toHaveText(['niko','Hana']);
     await panel.getByRole('button',{name:browse,exact:true}).click();

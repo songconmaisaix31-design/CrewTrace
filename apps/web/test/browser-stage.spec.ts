@@ -38,7 +38,7 @@ test('轻滚动、惯性后再次发力与触屏即时响应',async({page})=>{
   await page.mouse.wheel(0,18);
   await expect(shell).toHaveAttribute('data-screen','1');
   for(const delta of [12,8,4]){
-    await page.waitForTimeout(60);
+    await page.waitForTimeout(210);
     await page.mouse.wheel(0,delta);
   }
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');

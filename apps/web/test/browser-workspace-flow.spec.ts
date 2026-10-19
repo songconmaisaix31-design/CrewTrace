@@ -8,6 +8,11 @@ for(const width of [1440,390])test(`任务发布、身份入口、完整筛选�
   const tasks=page.locator('.stage-tasks');
   await expect(tasks.getByRole('button',{name:'发布任务',exact:true})).toBeVisible();
   await page.waitForTimeout(350);
+  const browseBox=(await tasks.getByRole('button',{name:'浏览全部任务',exact:true}).boundingBox())!;
+  const postBox=(await tasks.getByRole('button',{name:'发布任务',exact:true}).boundingBox())!;
+  expect(Math.abs(browseBox.y-postBox.y)).toBeLessThan(2);
+  expect(browseBox.x+browseBox.width).toBeLessThanOrEqual(postBox.x);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.screenshot({path:`.local/task-entry-${width}.png`});
   await tasks.getByRole('button',{name:'发布任务',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'你的 Agent 身份',exact:true})).toBeVisible();

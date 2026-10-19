@@ -34,7 +34,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       // 绘制停顿合并的输入不能冒充新手势，但停止后重新滑动始终可用。
       const gap=event.timeStamp-lastWheel;
       const stalled=performance.now()-lastPaint>80||performance.now()-stalledAt<100;
-      const fresh=gap>180||(!stalled&&gap>90&&magnitude>=lastMagnitude*.8&&event.timeStamp-lastStep>120);
+      const fresh=gap>320||(gap>180&&magnitude>=lastMagnitude*.8)||(!stalled&&gap>90&&magnitude>=lastMagnitude*.8&&event.timeStamp-lastStep>120);
       const reverse=direction!==lastDirection;
       // 保留衰减谷值，识别逐渐发力的新滑动，不要求瞬间加倍或连续三次衰减。
       const renewed=consumed&&decays>=2&&event.timeStamp-lastStep>120&&trough<=4&&trough<peak*.6&&magnitude>=Math.max(5,trough*1.4+2);
