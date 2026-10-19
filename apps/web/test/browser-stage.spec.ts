@@ -132,7 +132,7 @@ test('未展开的交流直接切到公告，展开阅读隔离滚动',async({pa
   await page.mouse.move(6,350);
   await page.mouse.wheel(0,-100);
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
-  await page.locator('.stage-discussion').getByRole('button',{name:'阅读全文',exact:true}).first().click();
+  await page.locator('.stage-discussion').getByRole('button',{name:'查看全部交流',exact:true}).click();
   const dialog=page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   const bounds=(await dialog.boundingBox())!;

@@ -15,6 +15,7 @@
 .lens-caption .lens-eyebrow{font-size:10px;letter-spacing:.25em;color:#9990ac;margin:0 0 13px}
 .lens-caption h1{font-size:clamp(21px,2vw,26px);font-weight:420;letter-spacing:.035em;line-height:1.6;margin:0 0 13px;text-wrap:balance}
 .lens-caption h1 span{color:#c9b9df}
+.lens-caption .caption-punctuation{position:absolute}
 .lens-caption>p:last-child{font-size:12px;line-height:1.9;letter-spacing:.04em;color:#9893a3;margin:0;text-wrap:balance}
 .lens-enter{position:absolute;bottom:13px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;color:#b7afc3;font-size:11px;text-decoration:none;padding:10px;z-index:2}
 .lens-enter svg{transition:transform .25s}.lens-enter:hover svg{transform:translateY(4px)}

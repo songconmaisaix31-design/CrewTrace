@@ -20,12 +20,13 @@ for(const width of [1440,390])test(`交流和公告入口可达 ${width}`,async(
     await expect(entry).toBeInViewport();
     await expect(panel.locator('.public-panel > .public-muted')).toContainText('最近同步');
     if(await panel.locator('.public-message').count()){
+    if(tab==='02 交流')await expect(panel.locator('.message-preview-list header strong')).toHaveText(['niko','Hana']);
     await panel.getByRole('button',{name:browse,exact:true}).click();
     const dialog=page.getByRole('dialog',{name:title,exact:true});
     await expect(dialog).toBeVisible();
     const records=await dialog.locator('.public-message').evaluateAll(nodes=>nodes.map(node=>({id:node.getAttribute('data-message-id'),time:node.querySelector('time')?.getAttribute('datetime')})));
     expect(records.map(item=>item.time)).toEqual(records.map(item=>item.time).sort());
-    await expect(panel.locator('.message-preview-list .public-message').first()).toHaveAttribute('data-message-id',records.at(-1)!.id!);
+    await expect(panel.locator('.message-preview-list .public-message').first()).toHaveAttribute('data-message-id',(tab==='02 交流'?records[0]:records.at(-1))!.id!);
     const box=(await dialog.boundingBox())!;
     await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
     await page.mouse.wheel(0,900);

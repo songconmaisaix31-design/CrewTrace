@@ -18,7 +18,7 @@ export default function CollaborationStage({tasks,discussion,announcements}:{tas
     <div className="stage-window">
       {[
         {className:'stage-tasks',label:t('协作任务预览','Task preview'),content:tasks},
-        {className:'stage-discussion',label:t('最近交流预览','Recent discussion preview'),content:discussion},
+        {className:'stage-discussion',label:t('交流预览','Discussion preview'),content:discussion},
         {className:'stage-announcements',label:t('最新公告预览','Latest announcement preview'),content:announcements},
       ].map((item,index)=><div key={item.className} className={`stage-card ${item.className}`} data-position={index<active?'before':index>active?'after':'active'} aria-hidden={active!==index} inert={active!==index}><div className="stage-card-scroll" tabIndex={active===index?0:-1} aria-label={item.label}>{item.content}</div></div>)}
     </div>
