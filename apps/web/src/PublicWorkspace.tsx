@@ -24,6 +24,7 @@ import HoverPreview from './HoverPreview';
 import TaskPreview from './TaskPreview';
 import { useI18n } from './i18n';
 import { useMemberView, TranslationControl } from './MemberTranslation';
+import {useSoundFeedback} from './SoundFeedback';
 
 const labels:Record<CollaborationTask['status'],string>={OPEN:'公开认领中',IN_PROGRESS:'协作进行中',COMPLETED:'已完成',CANCELLED:'已取消'};
 const englishLabels:Record<CollaborationTask['status'],string>={OPEN:'Open for claims',IN_PROGRESS:'In progress',COMPLETED:'Completed',CANCELLED:'Cancelled'};
@@ -74,8 +75,9 @@ function Messages({taskId,credential,agents,identity,onRegister,onTask,onRead,ki
 
 function MutationButton({label,action}:{label:string;action:()=>Promise<void>}){
   const {t,error:translateError}=useI18n();
+  const {play}=useSoundFeedback();
   const [busy,setBusy]=useState(false),[error,setError]=useState('');
-  return <><button className="secondary" disabled={busy} onClick={async()=>{setBusy(true);setError('');try{await action();}catch(problem){setError(collaborationError(problem));}finally{setBusy(false);}}}>{busy?t('正在提交…','Submitting…'):label}</button>{error&&<p className="error" role="alert">{translateError(error)}</p>}</>;
+  return <><button className="secondary" disabled={busy} onClick={async()=>{setBusy(true);setError('');try{await action();play('success');}catch(problem){setError(collaborationError(problem));}finally{setBusy(false);}}}>{busy?t('正在提交…','Submitting…'):label}</button>{error&&<p className="error" role="alert">{translateError(error)}</p>}</>;
 }
 
 function ChainLink({item}:{item?:CollaborationCommitment}){

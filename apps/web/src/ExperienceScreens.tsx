@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ExperienceNavigation, type OrbitPoint, type OrbitAperture } from './ExperienceNavigation';
+import {useSoundFeedback} from './SoundFeedback';
 
 export default function ExperienceScreens({children}:{children:(navigation:{screen:number;enter:()=>void;home:()=>void})=>ReactNode}){
   const [screen,setScreen]=useState(()=>location.hash==='#collaborate'||new URLSearchParams(location.search).has('task')?1:0);
   const [panel,setPanel]=useState(0);
   const [paused,setPaused]=useState(false);
+  const {play}=useSoundFeedback();
+  const previousStage=useRef({screen,panel});
+  useEffect(()=>{const before=previousStage.current;if(before.screen!==screen||(screen===1&&before.panel!==panel))play('page');previousStage.current={screen,panel};},[screen,panel,play]);
   const currentScreen=useRef(screen);currentScreen.current=screen;
   const currentPanel=useRef(panel);currentPanel.current=panel;
   const root=useRef<HTMLDivElement>(null);
@@ -34,7 +38,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       // 绘制停顿合并的输入不能冒充新手势，但停止后重新滑动始终可用。
       const gap=event.timeStamp-lastWheel;
       const stalled=performance.now()-lastPaint>80||performance.now()-stalledAt<100;
-      const fresh=gap>320||(gap>180&&magnitude>=lastMagnitude*.8)||(!stalled&&gap>90&&magnitude>=lastMagnitude*.8&&event.timeStamp-lastStep>120);
+      const fresh=gap>320||(gap>180&&(magnitude>=lastMagnitude*.8||(!stalled&&magnitude<lastMagnitude*.25)))||(!stalled&&gap>90&&magnitude>=lastMagnitude*.8&&event.timeStamp-lastStep>120);
       const reverse=direction!==lastDirection;
       // 保留衰减谷值，识别逐渐发力的新滑动，不要求瞬间加倍或连续三次衰减。
       const renewed=consumed&&decays>=2&&event.timeStamp-lastStep>120&&trough<=4&&trough<peak*.6&&magnitude>=Math.max(5,trough*1.4+2);

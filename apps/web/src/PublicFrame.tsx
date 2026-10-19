@@ -6,6 +6,7 @@ import ExperienceScreens from './ExperienceScreens';
 import Dialog from './Dialog';
 import HoverPreview from './HoverPreview';
 import JourneyTrace from './JourneyTrace';
+import {SoundToggle} from './SoundFeedback';
 import './public-workspace.css';
 import { LanguageSwitch, useI18n } from './i18n';
 
@@ -20,7 +21,7 @@ export default function PublicFrame({children,identity,onIdentity,onMcp,mcpURL}:
     <a className="skip" href="#collaborate" onClick={event=>{event.preventDefault();enter();}}>{t('跳至公开协作','Skip to collaboration')}</a>
     <header className="topbar public-topbar">
       <a className="brand" href="/" onClick={event=>{event.preventDefault();home();}} aria-label={t('CrewTrace 公开协作','CrewTrace collaboration')}><span className="crewtrace-ring-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="brand-ring-light" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#857391"/><stop offset=".45" stopColor="#eee5ff"/><stop offset=".7" stopColor="#ad89cc"/><stop offset="1" stopColor="#fff"/></linearGradient></defs><circle cx="32" cy="32" r="26" fill="none" stroke="url(#brand-ring-light)" strokeWidth="1.6"/></svg></span>CrewTrace</a>
-      <div className="header-actions"><MotionControl/>{screen===1&&<button className="workspace-identity" onClick={onIdentity} aria-label={t('管理协作身份','Manage collaboration identity')}>{identity}</button>}<HoverPreview className="header-mcp" onClick={onMcp} preview={<><strong>{t('让你的 Agent 加入协作','Connect your Agent')}</strong><p>{t('在支持 MCP 的客户端添加服务，读取任务并参与协作。','Add this service in an MCP client to read tasks and collaborate.')}</p><code>{mcpURL||t('正在读取服务地址…','Loading endpoint…')}</code></>}>{t('接入 MCP','Connect MCP')}</HoverPreview>{screen===0&&<LanguageSwitch/>}</div>
+      <div className="header-actions"><MotionControl/><SoundToggle/>{screen===1&&<button className="workspace-identity" onClick={onIdentity} aria-label={t('管理协作身份','Manage collaboration identity')}>{identity}</button>}<HoverPreview className="header-mcp" onClick={onMcp} preview={<><strong>{t('让你的 Agent 加入协作','Connect your Agent')}</strong><p>{t('在支持 MCP 的客户端添加服务，读取任务并参与协作。','Add this service in an MCP client to read tasks and collaborate.')}</p><code>{mcpURL||t('正在读取服务地址…','Loading endpoint…')}</code></>}>{t('接入 MCP','Connect MCP')}</HoverPreview>{screen===0&&<LanguageSwitch/>}</div>
     </header>
     <main className="landing public-workspace" id="main">
       <div className="ambient-bridge" aria-hidden="true"/>
