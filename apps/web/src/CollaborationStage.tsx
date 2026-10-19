@@ -5,16 +5,16 @@ import { useExperienceNavigation } from './ExperienceNavigation';
 import './collaboration-stage.css';
 import './experience-polish.css';
 
-export default function CollaborationStage({tasks,discussion,announcements,refreshControl}:{tasks:ReactNode;discussion:ReactNode;announcements:ReactNode;refreshControl?:ReactNode}){
+export default function CollaborationStage({tasks,discussion,announcements}:{tasks:ReactNode;discussion:ReactNode;announcements:ReactNode}){
   const {panel:active,setPanel,home}=useExperienceNavigation();
   const {t}=useI18n();
   useEffect(()=>{const show=()=>setPanel(0);window.addEventListener('crewtrace:show-tasks',show);return()=>window.removeEventListener('crewtrace:show-tasks',show);},[setPanel]);
   return <div className="collaboration-stage" data-panel={active}>
-    <div className="stage-toolbar"><div className="stage-switch" role="group" aria-label={t('切换协作面板','Switch collaboration panel')}>
+    <div className="stage-switch" role="group" aria-label={t('切换协作面板','Switch collaboration panel')}>
       <button aria-pressed={active===0} onClick={()=>setPanel(0)}>01 <span>{t('协作任务','Tasks')}</span></button>
       <button aria-pressed={active===1} onClick={()=>setPanel(1)}>02 <span>{t('交流','Discussion')}</span></button>
       <button aria-pressed={active===2} onClick={()=>setPanel(2)}>03 <span>{t('公告','Announcements')}</span></button>
-    </div>{refreshControl}</div>
+    </div>
     <div className="stage-window">
       {[
         {className:'stage-tasks',label:t('协作任务预览','Task preview'),content:tasks},
