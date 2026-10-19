@@ -18,9 +18,12 @@ export default function Dialog({title,children,onClose,variant='default'}:{title
   useEffect(()=>{
     const before=document.activeElement as HTMLElement;
     const dialog=ref.current;dialog?.showModal();
+    const refreshBusy=()=>{if(!dialog?.querySelector('[data-busy="true"]'))setBlocked(false);};
+    const observer=new MutationObserver(refreshBusy);
+    if(dialog)observer.observe(dialog,{subtree:true,childList:true,attributes:true,attributeFilter:['data-busy']});
     const protect=(event:BeforeUnloadEvent)=>{if(dialog?.querySelector('[data-busy="true"],form[data-dirty="true"]')){event.preventDefault();event.returnValue='';}};
     window.addEventListener('beforeunload',protect);
-    return()=>{window.removeEventListener('beforeunload',protect);if(closeTimer.current!==null)clearTimeout(closeTimer.current);dialog?.close();before?.focus();};
+    return()=>{observer.disconnect();window.removeEventListener('beforeunload',protect);if(closeTimer.current!==null)clearTimeout(closeTimer.current);dialog?.close();before?.focus();};
   },[]);
   return <dialog ref={ref} className="drawer public-dialog centered-dialog" data-variant={variant} data-closing={closing} aria-label={title} onKeyDown={event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();dismiss();}}} onCancel={event=>{event.preventDefault();event.stopPropagation();dismiss();}} onClick={event=>{
     if(event.target!==event.currentTarget)return;
