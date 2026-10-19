@@ -17,6 +17,11 @@
 .experience-shell[data-screen] .collaboration-stage .stage-card[data-position="before"]{transform:translateY(-20px)}
 .experience-shell[data-screen] .collaboration-stage .stage-card[data-position="after"]{transform:translateY(20px)}
 .experience-shell .stage-switch{grid-template-columns:repeat(3,minmax(0,1fr));max-width:660px}
+.stage-toolbar{display:flex;align-items:center;gap:12px;flex:none;min-width:0}
+.experience-shell .stage-toolbar .stage-switch{flex:1;min-width:0}
+.stage-refresh{display:grid;place-items:center;flex:none;width:44px;height:44px;margin-bottom:8px;padding:0;border:0;border-radius:50%;background:#b69ad30b;color:#c5afd9;cursor:pointer}
+.stage-refresh:hover{background:#b69ad31a;color:#eee3ff}.stage-refresh:disabled{opacity:.45;cursor:wait}.stage-refresh:focus-visible{outline:2px solid #c4afff;outline-offset:2px}
+@media(max-width:420px){.stage-toolbar{gap:4px}.experience-shell .stage-toolbar .stage-switch button{padding-inline:2px;gap:4px}.experience-shell .stage-toolbar .stage-switch button span{font-size:11px}}
 .experience-shell .stage-switch::after{width:calc(100% / 3)}
 .experience-shell [data-panel="2"] .stage-switch::after{transform:translateX(200%)}
 @media(max-width:760px){.experience-shell .stage-switch{gap:6px;flex-wrap:nowrap}.experience-shell .stage-switch-line{width:10px}.experience-shell .stage-switch button{flex:1;justify-content:center;min-width:0}}
