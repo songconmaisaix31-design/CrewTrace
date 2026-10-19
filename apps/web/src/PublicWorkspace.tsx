@@ -183,8 +183,8 @@ export default function PublicWorkspace(){
     {identityError&&<p className="notice" role="alert">{t('身份暂不可用：','Identity unavailable: ')}{translateError(identityError)}</p>}{listError&&<p className="notice" role="status">{translateError(listError)}{updated?t(` 保留 ${time(updated)} 成功读取的列表。`,` Showing the list last loaded at ${time(updated)}.`):''}</p>}
     <CollaborationStage tasks={<section className="public-panel" aria-label={t('协作任务','Collaboration tasks')}>
         <TranslationControl/>
-        <label className="public-filter">{t('任务状态','Task status')}<select value={filter} onChange={event=>{setFilter(event.target.value);setOffset(0);}}><option value="">{t('全部状态','All statuses')}</option>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{t(label,englishLabels[value as CollaborationTask['status']])}</option>)}</select></label>
-        <button className="secondary task-browser-entry" onClick={()=>setBrowseTasks(true)}>{t('浏览全部任务','Browse all tasks')}</button>
+        <div className="task-list-toolbar"><label className="public-filter">{t('任务状态','Task status')}<select value={filter} onChange={event=>{setFilter(event.target.value);setOffset(0);}}><option value="">{t('全部状态','All statuses')}</option>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{t(label,englishLabels[value as CollaborationTask['status']])}</option>)}</select></label>
+        <button className="secondary task-browser-entry" onClick={()=>setBrowseTasks(true)}>{t('浏览全部任务','Browse all tasks')}</button></div>
         {taskRecords(true)}
         {!tasks.length&&<p className="public-empty">{loaded?t('当前页暂无符合条件的任务。','No matching tasks on this page.'):t('尚未获取公开任务。','Public tasks have not loaded yet.')}</p>}
         <p className="public-muted">{updated&&`${t('最近同步','Last synced')} ${time(updated)}`}</p>

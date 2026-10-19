@@ -110,7 +110,11 @@
 .experience-shell .message-preview-list time{color:var(--muted);font-size:12px}
 .experience-shell .stage-card:has(.public-panel[data-empty=true]){background:linear-gradient(145deg,#bda2e914,transparent 65%);box-shadow:none}
 .experience-shell .message-panel-actions :is(.primary,.secondary),.experience-shell .task-browser-entry{border-radius:12px}
-.experience-shell .task-browser-entry{margin:0 0 12px;min-height:40px}
+.experience-shell .task-list-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.experience-shell .task-list-toolbar .public-filter{margin:0;min-width:0;flex:1;gap:8px}
+.experience-shell .task-list-toolbar select{min-width:0;max-width:180px;width:auto}
+.experience-shell .task-browser-entry{margin:0;min-height:44px;flex-shrink:0;white-space:nowrap}
+@media(max-width:480px){.experience-shell .task-list-toolbar{gap:8px}.experience-shell .task-list-toolbar .public-filter{display:flex;flex-direction:column;align-items:flex-start;gap:4px}.experience-shell .task-list-toolbar select{width:100%;max-width:150px}.experience-shell .task-browser-entry{padding:10px 12px;font-size:13px}}
 .centered-dialog .public-messages{max-height:none;overflow:visible}
 @media(max-width:760px),(max-height:740px){
  .experience-shell .message-preview-list .public-message:nth-child(n+2),.experience-shell .task-preview-list .public-record:nth-child(n+2){display:none}
