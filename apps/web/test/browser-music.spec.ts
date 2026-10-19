@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
 
-test('真实音乐主动加载、弹窗压低、切页暂停和返回恢复',async({page})=>{
+test('真实音乐主动加载、协作区连续轻声播放、弹窗压低和返回恢复',async({page})=>{
   let requests=0;
   page.on('request',request=>{if(request.url().includes('/audio/futuristic-pulse.mp3'))requests++;});
   await page.goto('/');
@@ -21,27 +21,79 @@ test('真实音乐主动加载、弹窗压低、切页暂停和返回恢复',asy
   const media=async()=>{
     const {result}=await session.send('Runtime.evaluate',{expression:'HTMLAudioElement.prototype',objectGroup:'music'});
     const {objects}=await session.send('Runtime.queryObjects',{prototypeObjectId:result.objectId!});
-    const values=await session.send('Runtime.callFunctionOn',{objectId:objects.objectId!,functionDeclaration:'function(){return Array.from(this).filter(a=>a.src.includes("futuristic-pulse")).map(a=>({paused:a.paused,volume:a.volume,time:a.currentTime,duration:a.duration,error:a.error?.code}));}',returnByValue:true});
+    const values=await session.send('Runtime.callFunctionOn',{objectId:objects.objectId!,functionDeclaration:'function(){return Array.from(this).filter(a=>a.src.includes("futuristic-pulse")).map(a=>({paused:a.paused,volume:a.volume,time:a.currentTime,duration:a.duration,error:a.error?.code,readyState:a.readyState,networkState:a.networkState,buffered:Array.from({length:a.buffered.length},(_,i)=>[a.buffered.start(i),a.buffered.end(i)])}));}',returnByValue:true});
     await session.send('Runtime.releaseObjectGroup',{objectGroup:'music'});
     return values.result.value as {paused:boolean;volume:number;time:number;duration:number;error?:number}[];
   };
   await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.12,2);
   const initial=(await media())[0];expect(initial.duration).toBeGreaterThan(90);expect(initial.duration).toBeLessThan(110);expect(initial.error).toBeUndefined();
-  await expect.poll(async()=>(await media())[0]?.time).toBeGreaterThan(initial.time);
+  try{await expect.poll(async()=>(await media())[0]?.time).toBeGreaterThan(initial.time);}
+  catch(problem){await test.info().attach('real-media-state',{body:JSON.stringify(await media()),contentType:'application/json'});throw problem;}
   await page.getByRole('button',{name:'接入 MCP',exact:true}).click();
   await expect.poll(async()=>(await media())[0]?.volume).toBeLessThan(.04);
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.12,3);
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
-  await expect.poll(async()=>(await media())[0]?.paused).toBe(true);
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.03,3);
+  const workspace=(await media())[0];expect(workspace.paused).toBe(false);
+  expect(await media()).toHaveLength(1);
+  await expect.poll(async()=>(await media())[0]?.time).toBeGreaterThan(workspace.time);
+  await page.getByRole('button',{name:'02 交流',exact:true}).click();
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.03,3);
+  await page.getByRole('button',{name:'03 公告',exact:true}).click();
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.03,3);
+  await page.getByRole('button',{name:'接入 MCP',exact:true}).click();
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.0084,4);
+  expect((await media())[0].paused).toBe(false);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.03,3);
   await page.locator('.brand').click();
-  await expect.poll(async()=>(await media())[0]?.paused).toBe(false);
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.12,3);
+  expect((await media())[0].time).toBeGreaterThan(workspace.time);
   await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
   await page.locator('[data-music-toggle]').click();
   await expect.poll(async()=>(await media())[0]?.paused).toBe(true);
   await page.reload();
   await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
   await expect(page.getByRole('button',{name:'开启音乐',exact:true})).toBeVisible();
+});
+
+test('真实媒体音量随页面和弹窗变化，独立于播放时钟检查',async({page})=>{
+  await page.goto('/');
+  await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
+  await page.locator('[data-music-toggle]').click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const session=await page.context().newCDPSession(page);
+  const {result}=await session.send('Runtime.evaluate',{expression:'HTMLAudioElement.prototype',objectGroup:'gain-check'});
+  const {objects}=await session.send('Runtime.queryObjects',{prototypeObjectId:result.objectId!});
+  const media=async()=>{
+    const snapshot=await session.send('Runtime.callFunctionOn',{objectId:objects.objectId!,functionDeclaration:'function(){return Array.from(this).filter(a=>a.src.includes("futuristic-pulse")).map(a=>({paused:a.paused,volume:a.volume}));}',returnByValue:true});
+    return snapshot.result.value as {paused:boolean;volume:number}[];
+  };
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.12,3);
+  await page.getByRole('link',{name:'向下探索',exact:true}).click();
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.03,3);
+  expect((await media())[0].paused).toBe(false);
+  await page.getByRole('button',{name:'02 交流',exact:true}).click();
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.03,3);
+  await page.getByRole('button',{name:'03 公告',exact:true}).click();
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.03,3);
+  await page.getByRole('button',{name:'接入 MCP',exact:true}).click();
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.0084,4);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.03,3);
+  await page.locator('.brand').click();
+  await expect.poll(async()=>(await media())[0]?.volume).toBeCloseTo(.12,3);
+  expect(await media()).toHaveLength(1);
+  expect((await media())[0].paused).toBe(false);
+  await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
+  await page.locator('[data-music-toggle]').click();
+  await expect.poll(async()=>(await media())[0]?.paused).toBe(true);
+  await session.send('Runtime.releaseObjectGroup',{objectGroup:'gain-check'});
 });
 
 for(const width of [320,390])test(`中英文统一声音入口位于顶部且无重复入口 ${width}`,async({page})=>{
