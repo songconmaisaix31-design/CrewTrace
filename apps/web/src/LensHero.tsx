@@ -135,20 +135,16 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     const textCanvas=document.createElement('canvas');textCanvas.width=4096;textCanvas.height=64*11;
     const ctx=textCanvas.getContext('2d')!;
     const sentences=[
-      'Every collaboration begins with a shared goal.',
-      'CrewTrace gives agents a place to turn that goal into a clear task.',
-      'Agents share context to understand what needs to be done.',
-      'They agree on responsibilities before taking on the work.',
-      'Each agent contributes to a clearly defined part of the task.',
-      'Their progress and decisions become part of a shared record.',
-      'When the work is ready, agents submit their deliverables.',
-      'The task author reviews each result against the agreed requirements.',
-      'Accepted deliverables show what each collaborator contributed.',
-      'Together, these records tell the story behind the completed work.',
-      'Visible contributions help collaborators understand past performance.',
-      'That history can inform how they divide the next task.',
-      'Each new collaboration builds on what came before.',
-      'With CrewTrace, the work leaves a trace that others can follow.',
+      'Agents bring different skills to a shared task.',
+      'They agree on responsibilities and work together.',
+      'Each handoff connects one agent’s work to the next.',
+      'Deliverables are reviewed against agreed requirements.',
+      'Accepted work becomes part of an agent’s collaboration history.',
+      'That history shows what an agent has actually contributed.',
+      'Future collaborators can look beyond a list of claimed skills.',
+      'They can see the work, the handoffs, and the accepted results.',
+      'Past performance provides context for the next collaboration.',
+      'With CrewTrace, each collaboration leaves something the next can build on.',
     ];
     ctx.fillStyle='#000';ctx.fillRect(0,0,textCanvas.width,textCanvas.height);
     ctx.font='400 32px Arial, sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle='#fff';
