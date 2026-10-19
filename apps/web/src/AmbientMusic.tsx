@@ -15,6 +15,8 @@ export default function AmbientMusic(){
   const [settings,setSettings]=useState(false);
   const [enabled,setEnabled]=useState(()=>localStorage.getItem(preferenceKey)!=='off');
   const [needsStart,setNeedsStart]=useState(false);
+  const [invitation,setInvitation]=useState<'hidden'|'visible'|'leaving'>('hidden');
+  const invited=useRef(false);
   const [started,setStarted]=useState(false),[playing,setPlaying]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState('');
   const [volume,setVolume]=useState(()=>{const saved=Number(localStorage.getItem(volumeKey)??.12);return Number.isFinite(saved)?Math.min(.3,Math.max(0,saved)):.12;});
   const [visible,setVisible]=useState(!document.hidden),[dialogOpen,setDialogOpen]=useState(false);
@@ -24,7 +26,7 @@ export default function AmbientMusic(){
   const stopFade=useCallback(()=>{cancelAnimationFrame(frame.current);generation.current++;},[]);
   const fail=useCallback(()=>{stopFade();audio.current?.pause();setStarted(false);setPlaying(false);setLoading(false);setNeedsStart(true);setError('音乐暂时无法播放，请重试。');},[stopFade]);
   useEffect(()=>{
-    const track=new Audio();track.preload='none';track.loop=true;track.volume=0;
+    const track=new Audio();track.preload='auto';track.loop=true;track.volume=0;
     audio.current=track;
     const onPlay=()=>{setPlaying(true);setLoading(false);},onPause=()=>setPlaying(false);
     track.addEventListener('playing',onPlay);track.addEventListener('pause',onPause);track.addEventListener('error',fail);
@@ -44,9 +46,15 @@ export default function AmbientMusic(){
     intent.current=audible&&visible;
     if(!visible){track.pause();track.volume=0;return;}
     const target=audible?volume*(screen===0?1:.25)*(dialogOpen?.28:1):0;
+    // 等实际 playing 事件后再渐入，加载时间不会消耗渐入时长。
+    if(audible&&!playing){
+      if(track.paused)void track.play().catch(()=>{if(token===generation.current)fail();});
+      return stopFade;
+    }
     if(!audible&&track.volume===0){track.pause();return;}
     const fade=()=>{
-      const from=track.volume,start=performance.now(),duration=entryFade.current&&audible?2500:target>from?900:audible&&screen!==0&&!dialogOpen?800:350;
+      if(entryFade.current&&audible)track.volume=Math.max(track.volume,target*.18);
+      const from=track.volume,start=performance.now(),duration=entryFade.current&&audible?2000:target>from?900:audible&&screen!==0&&!dialogOpen?800:350;
       const step=(now:number)=>{
         if(token!==generation.current)return;
         const progress=Math.min(1,(now-start)/duration),ease=progress*progress*(3-2*progress);
@@ -58,7 +66,15 @@ export default function AmbientMusic(){
     if(audible&&track.paused){void track.play().then(()=>{if(token===generation.current)fade();else if(!intent.current)track.pause();}).catch(()=>{if(token===generation.current)fail();});}
     else fade();
     return stopFade;
-  },[enabled,started,screen,visible,dialogOpen,volume,fail,stopFade]);
+  },[enabled,started,playing,screen,visible,dialogOpen,volume,fail,stopFade]);
+
+  useEffect(()=>{
+    if(!needsStart||screen!==0||settings){setInvitation('hidden');return;}
+    if(invited.current)return;
+    invited.current=true;setInvitation('visible');
+    const leave=setTimeout(()=>setInvitation('leaving'),3000),hide=setTimeout(()=>setInvitation('hidden'),3280);
+    return()=>{clearTimeout(leave);clearTimeout(hide);};
+  },[needsStart,screen,settings]);
 
   useEffect(()=>{
     const track=audio.current;
@@ -100,7 +116,7 @@ export default function AmbientMusic(){
       <div className="sound-setting-row sound-quick-effects"><div className="sound-setting-label"><Volume2 size={16} aria-hidden="true"/><strong>{t('交互音效','Interaction sounds')}</strong></div>{effectsButton(true)}</div>
       {audioErrors()}
     </div>}>{active||sound.enabled?<Volume2 size={16}/>:<VolumeX size={16}/>}</HoverPreview>
-    {needsStart&&!settings&&<button type="button" className="sound-entry-prompt" data-sound-toggle onClick={toggle}><Music2 size={13} aria-hidden="true"/>{error?t('重试氛围声音','Retry ambient audio'):t('轻点开启氛围声音','Tap to enable ambient audio')}</button>}
+    {invitation!=='hidden'&&screen===0&&!settings&&<button type="button" className="sound-entry-prompt" data-leaving={invitation==='leaving'} data-sound-toggle onClick={toggle}><Music2 size={13} aria-hidden="true"/>{error?t('重试氛围声音','Retry ambient audio'):t('轻点开启氛围声音','Tap to enable ambient audio')}</button>}
     </span>{settings&&<Dialog title={t('声音','Sound')} variant="sound" onClose={()=>setSettings(false)}>
       <div className="ambient-settings">
         <div className="sound-setting-row"><div className="sound-setting-label"><Music2 size={18} aria-hidden="true"/><div><strong>{t('氛围音乐','Ambient music')}</strong><small role="status">{musicStatus}</small></div></div>{musicButton()}</div>

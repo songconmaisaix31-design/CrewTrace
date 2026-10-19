@@ -43,13 +43,13 @@
 .experience-shell .lens-dock{gap:12px}
 .experience-shell .lens-enter{font-size:13px;color:#dbd0e9;min-height:44px}
 .experience-shell .centered-dialog,.experience-shell .centered-dialog::backdrop{animation-duration:.2s}
-.experience-shell .drawer.centered-dialog{background:radial-gradient(ellipse at 15% 0%,#35254188,transparent 48%),#111016;border:1px solid #d6b9fa24;box-shadow:0 32px 100px #0009,inset 0 1px #eadbff24;border-radius:22px}
+.experience-shell .drawer.centered-dialog{background:radial-gradient(ellipse at 8% 0%,#b9a0cf14,transparent 58%),linear-gradient(145deg,#211a2ad9,#101017ed 70%);border:1px solid #d6b9fa18;box-shadow:0 28px 85px #0007,inset 0 1px #eadbff14;border-radius:22px;backdrop-filter:blur(18px) saturate(110%)}
 .experience-shell .centered-dialog::backdrop{background:#050509a6;backdrop-filter:blur(10px)}
 .experience-shell .centered-dialog[data-variant="identity"]{width:min(520px,calc(100vw - 32px))}
 .experience-shell .centered-dialog[data-variant="identity"]>.public-form{margin-top:24px}
 .experience-shell .centered-dialog[data-variant="identity"]>.public-form>.primary{width:100%;justify-content:center;border-radius:12px;min-height:48px}
 .experience-shell .centered-dialog[data-variant="identity"]>details{border-top:1px solid #d6b9fa1c;margin-top:24px;padding-top:16px}
-.experience-shell .centered-dialog .drawer-head{background:linear-gradient(90deg,#22192bf2,#111016f2);border-bottom:1px solid #d6b9fa14;margin-bottom:18px;border-radius:10px 10px 0 0}
+.experience-shell .centered-dialog .drawer-head{background:linear-gradient(100deg,#292133d9,#15121be8);border-bottom:1px solid #d6b9fa10;margin-bottom:18px;border-radius:10px 10px 0 0}
 .experience-shell .centered-dialog[data-variant="identity"] .optional-profile{margin-block:0;padding-block:0}
 .experience-shell .centered-dialog[data-variant="identity"] .optional-profile summary{font-size:13px;min-height:40px;padding-block:10px}
 .experience-shell .centered-dialog .icon-button{min-width:40px;min-height:40px;background:#cbb4e50b;border:1px solid #cbb4e522;transition:background .15s}
@@ -59,7 +59,7 @@
 .experience-shell .centered-dialog[data-closing="true"],.experience-shell .centered-dialog[data-closing="true"]::backdrop{animation-duration:.14s}
 @keyframes modal-fade-in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
 @keyframes modal-fade-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(2px)}}
-.hover-preview{animation-duration:.16s;background-color:#15111bf5}
+.hover-preview{animation-duration:.16s;background:radial-gradient(ellipse at 5% 0%,#ccb3e51a,transparent 65%),linear-gradient(145deg,#30243baf,#121019d1 80%);border-color:#d8c4ee1a;box-shadow:0 16px 50px #0005,inset 0 1px #f0e6ff10;backdrop-filter:blur(16px) saturate(115%)}
 .hover-preview{max-height:calc(100dvh - 32px);overflow:clip}
 .task-preview-facts{border-top:1px solid #b99ad626;padding-top:12px;margin-top:12px}
 .task-preview-facts p{font-size:13px;margin:6px 0}.task-preview-facts small{margin-top:7px}
@@ -145,6 +145,7 @@
 .mutation-confirm{flex-basis:100%;padding:12px 0;color:#ddd0e9;font-size:13px;line-height:1.7}
 .mutation-confirm>span{flex-basis:100%}
 .task-participation{border-block:1px solid #c5a3e526;padding:14px 0}
+.experience-shell .centered-dialog :is(.primary,.secondary){border-radius:12px}
 .task-participation p{margin:0 0 10px}
 .claim-entry summary{cursor:pointer;color:#eadcf8;min-height:44px;align-content:center}
 .claim-entry .public-form{margin-top:10px}

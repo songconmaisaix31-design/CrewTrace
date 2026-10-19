@@ -10,6 +10,22 @@ async function media(page:Page){
 }
 
 test.describe('浏览器允许自动播放',()=>{
+  test('实际开始播放后由轻音量逐渐升到设定音量',async()=>{
+    const browser=await chromium.launch({channel:'chrome',args:['--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']});
+    const page=await browser.newPage();
+    try{
+      await page.goto(process.env.WEB_BASE_URL??'http://127.0.0.1:5173/',{waitUntil:'domcontentloaded'});
+      await expect.poll(async()=>(await media(page))[0]?.paused,{intervals:[30]}).toBe(false);
+      const first=(await media(page))[0];
+      expect(first.volume).toBeGreaterThan(0);
+      expect(first.volume).toBeLessThan(.08);
+      await page.waitForTimeout(500);
+      const middle=(await media(page))[0];
+      expect(middle.volume).toBeGreaterThan(first.volume);
+      expect(middle.volume).toBeLessThan(.12);
+      await expect.poll(async()=>(await media(page))[0]?.volume).toBeCloseTo(.12,3);
+    }finally{await browser.close();}
+  });
   test('首次入场自动渐入，记住开启与音量，主动关闭后保持关闭',async()=>{
     const browser=await chromium.launch({channel:'chrome',args:['--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required']});
     const page=await browser.newPage();

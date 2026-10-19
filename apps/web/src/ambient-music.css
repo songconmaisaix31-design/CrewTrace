@@ -1,4 +1,4 @@
-.experience-shell .centered-dialog[data-variant=sound]{width:min(440px,calc(100vw - 32px));padding:22px 24px;background:radial-gradient(ellipse at 0 0,#30213c55,transparent 65%),#121017;border:1px solid #d6bdf124;box-shadow:0 24px 100px #0009,inset 0 1px #ffffff0a}
+.experience-shell .centered-dialog[data-variant=sound]{width:min(440px,calc(100vw - 32px));padding:22px 24px;background:radial-gradient(ellipse at 0 0,#b9a0cf14,transparent 65%),linear-gradient(145deg,#211a2ad9,#101017ed);border:1px solid #d6bdf118;box-shadow:0 24px 90px #0007,inset 0 1px #ffffff0a}
 .experience-shell .centered-dialog[data-variant=sound] .drawer-head{position:static;padding:0 0 14px;margin:0 0 18px;background:none;backdrop-filter:none;border-radius:0}
 .experience-shell .centered-dialog[data-variant=sound] .drawer-head h2{font-size:19px;line-height:28px;margin:0;letter-spacing:.02em}
 .ambient-settings{display:grid;gap:14px}
@@ -43,8 +43,9 @@
 @media(prefers-reduced-motion:reduce){.sound-switch::before,.sound-switch>span{transition:none}}
 @media(pointer:coarse){.ambient-volume input{height:44px}}
 .sound-entry-group{position:relative;display:inline-flex;align-items:center;flex:none}
-.sound-entry-prompt{position:absolute;left:50%;top:calc(100% + 10px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 32px);min-height:38px;padding:9px 14px;border:1px solid #c6a6ef40;border-radius:24px;background:#1b1428ee;box-shadow:0 8px 30px #0005;color:#e6d9f8;font-size:12px;line-height:1.5;z-index:12;cursor:pointer;animation:sound-invitation .4s ease-out}
+.sound-entry-prompt{position:absolute;left:50%;top:calc(100% + 10px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100vw - 32px);min-height:38px;padding:9px 14px;border:1px solid #c6a6ef26;border-radius:24px;background:linear-gradient(125deg,#30233ac7,#14101bd9);backdrop-filter:blur(12px);box-shadow:0 8px 30px #0004;color:#e6d9f8;font-size:12px;line-height:1.5;z-index:12;cursor:pointer;animation:sound-invitation .45s cubic-bezier(.2,.7,.25,1) both;transition:opacity .28s ease,transform .28s ease,filter .28s ease}
+.sound-entry-prompt[data-leaving=true]{animation:none;opacity:0;transform:translate(-50%,-5px);filter:blur(2px);pointer-events:none}
 .sound-entry-prompt:hover{background:#30203f;border-color:#d5b9f277}.sound-entry-prompt:focus-visible{outline:2px solid #c4afff;outline-offset:3px}
-@keyframes sound-invitation{from{opacity:0;transform:translate(-50%,-4px)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes sound-invitation{from{opacity:0;transform:translate(-50%,7px) scale(.96);filter:blur(3px)}to{opacity:1;transform:translateX(-50%);filter:blur(0)}}
 @media(max-width:600px){.sound-entry-prompt{font-size:11px}}
-@media(prefers-reduced-motion:reduce){.sound-entry-prompt{animation:none}}
+@media(prefers-reduced-motion:reduce){.sound-entry-prompt{animation:none;transition:none}}

@@ -6,6 +6,7 @@ import './lens-hero.css';
 import SignalScene from './SignalScene';
 import HoverPreview from './HoverPreview';
 import { useI18n } from './i18n';
+import {useSoundFeedback} from './SoundFeedback';
 
 const fragmentShader = `
 precision highp float;
@@ -114,6 +115,7 @@ void main(){
 
 export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
   const {t}=useI18n();
+  const sound=useSoundFeedback(),soundRef=useRef(sound);soundRef.current=sound;
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
   const elapsed=useRef(0);
   const {paused,screen,aperture}=useExperienceNavigation();
@@ -121,6 +123,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
   state.current.paused=paused;state.current.screen=screen;
   const wakeRef=useRef(()=>{});
   const [available,setAvailable]=useState(true);
+  useEffect(()=>{if(paused||screen!==0)soundRef.current.stopHero();},[paused,screen]);
   useEffect(()=>{
     const section=host.current!, container=mount.current!;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -194,6 +197,13 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     }
     function wake(){if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(render);}
     function size(){bounds=container.getBoundingClientRect();renderer.setSize(bounds.width,bounds.height);uniforms.resolution.value.set(bounds.width,bounds.height);wake();}
+    function ringDistance(event:PointerEvent){
+      const portal=aperture.current;if(!portal)return Infinity;
+      const x=event.clientX-portal.center.x,y=event.clientY-portal.center.y;
+      const determinant=portal.axisX.x*portal.axisY.y-portal.axisX.y*portal.axisY.x;
+      if(Math.abs(determinant)<1)return Infinity;
+      return Math.hypot((x*portal.axisY.y-y*portal.axisY.x)/determinant,(y*portal.axisX.x-x*portal.axisX.y)/determinant);
+    }
     function position(event:PointerEvent){
       if(mobile.matches||reduced.matches||state.current.paused)return;
       const rect=container.getBoundingClientRect();
@@ -202,11 +212,15 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
       if(previousPointerAt&&interval>0&&interval<.25){
         pointerSpeed.copy(target).sub(previousPointer).divideScalar(Math.max(interval,.008)).clampLength(0,3);
         uniforms.velocity.value.lerp(pointerSpeed,.65);
+        const distance=ringDistance(event),portal=aperture.current;
+        const inText=portal&&Math.abs(event.clientY-portal.center.y)<rect.height*.16;
+        if(!(event.target as HTMLElement).closest('a,button')&&(distance<1.45||inText))soundRef.current.moveHero(Math.min(1,pointerSpeed.length()/3),Math.exp(-Math.pow((distance-1)/.4,2)));
+        else soundRef.current.stopHero();
       }
       previousPointer.copy(target);previousPointerAt=event.timeStamp;wake();
     }
-    function leave(){target.set(0,0);previousPointerAt=0;wake();}
-    function press(event:PointerEvent){if(!state.current.paused&&!reduced.matches&&!(event.target as HTMLElement).closest('a,button')){uniforms.impulse.value=1;wake();}}
+    function leave(){target.set(0,0);previousPointerAt=0;soundRef.current.stopHero();wake();}
+    function press(event:PointerEvent){if(!state.current.paused&&!reduced.matches&&!(event.target as HTMLElement).closest('a,button')){uniforms.impulse.value=1;if(ringDistance(event)<1.45)soundRef.current.strikeHero();wake();}}
     function onScroll(){const rect=section.getBoundingClientRect();scroll=Math.min(1,Math.max(0,-rect.top/rect.height));section.style.setProperty('--lens-scroll',String(reduced.matches?0:scroll));wake();}
     function visibility(){if(document.hidden){cancelAnimationFrame(frame);frame=0;}else wake();}
     const resize=new ResizeObserver(size);resize.observe(container);
@@ -214,7 +228,7 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
     section.addEventListener('pointermove',position);section.addEventListener('pointerleave',leave);section.addEventListener('pointerdown',press);
     window.addEventListener('scroll',onScroll,{passive:true});document.addEventListener('visibilitychange',visibility);reduced.addEventListener('change',onScroll);
     wakeRef.current=wake;size();onScroll();
-    return()=>{cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();section.removeEventListener('pointermove',position);section.removeEventListener('pointerleave',leave);section.removeEventListener('pointerdown',press);window.removeEventListener('scroll',onScroll);document.removeEventListener('visibilitychange',visibility);reduced.removeEventListener('change',onScroll);geometry.dispose();material.dispose();texture.dispose();renderer.dispose();surface.remove();};
+    return()=>{soundRef.current.stopHero();cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();section.removeEventListener('pointermove',position);section.removeEventListener('pointerleave',leave);section.removeEventListener('pointerdown',press);window.removeEventListener('scroll',onScroll);document.removeEventListener('visibilitychange',visibility);reduced.removeEventListener('change',onScroll);geometry.dispose();material.dispose();texture.dispose();renderer.dispose();surface.remove();};
   },[]);
   useEffect(()=>wakeRef.current(),[paused,screen]);
   return <section ref={host} className="lens-hero" aria-labelledby="public-title">
