@@ -98,3 +98,8 @@
  .experience-shell .lens-scene{inset:8% 22% 14%}.experience-shell .lens-dock{top:auto;bottom:42px;gap:8px}.experience-shell .orbit-join{padding:10px 24px;min-width:190px}.experience-shell .lens-caption h1{font-size:16px;margin:0}
 }
 @media(prefers-reduced-motion:reduce){.experience-shell .stage-card,.experience-shell[data-screen] .experience-home,.experience-shell[data-screen] .public-workspace>.public-content{transition:none!important}}
+.message-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.message-panel-head h3{margin:0}
+.message-panel-actions{display:flex;gap:8px;flex-wrap:wrap}
+.message-panel-actions button{min-height:40px;padding:8px 14px;font-size:13px}
+@media(max-width:760px){.message-panel-head{align-items:flex-start}.message-panel-actions{width:100%}.message-panel-actions button{flex:1;min-height:44px}}
