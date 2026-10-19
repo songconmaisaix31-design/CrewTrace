@@ -14,7 +14,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   function home(){currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
     const element=root.current!;
-    let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,decayCount=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchConsumed=false,touchReading=false;
+    let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,decayCount=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchConsumed=false;
     let lastPaint=performance.now(),stalledAt=-Infinity,paintFrame=0;
     // 绘制停顿会合并滚轮事件，不能把这类时间间隔当成新的手势。
     function trackPaint(now:number){if(now-lastPaint>80)stalledAt=now;lastPaint=now;paintFrame=requestAnimationFrame(trackPaint);}
@@ -24,10 +24,6 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       if(currentScreen.current===0){if(direction>0)enter();return;}
       if(direction<0){if(currentPanel.current>0){currentPanel.current-=1;setPanel(currentPanel.current);}else home();}
       else if(currentPanel.current<2){currentPanel.current+=1;setPanel(currentPanel.current);}
-    }
-    function canRead(target:EventTarget|null,direction:number){
-      const box=(target as HTMLElement)?.closest<HTMLElement>('.stage-card-scroll');
-      return !!box&&(direction>0?box.scrollTop+box.clientHeight<box.scrollHeight-2:box.scrollTop>2);
     }
     function wheel(event:WheelEvent){
       if(modalOpen()){consumed=true;amount=0;lastWheel=event.timeStamp;lastDirection=Math.sign(event.deltaY);return;}
@@ -49,21 +45,19 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       else if(magnitude>lastMagnitude)decayCount=0;
       lastMagnitude=magnitude;
       lastWheel=event.timeStamp;lastDirection=direction;
-      // 一次手势只承担阅读或切页，阅读尾部的惯性不能带走当前面板。
-      if(canRead(event.target,direction)){if(!consumed)lastStep=event.timeStamp;consumed=true;amount=0;return;}
+      // 未打开弹窗时，整个面板的滑动统一用于顺序切页。
       event.preventDefault();
       if(consumed)return;
       amount+=delta;
       if(Math.abs(amount)>=16){consumed=true;amount=0;lastStep=event.timeStamp;step(direction);}
     }
-    function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchConsumed=false;touchReading=false;}
+    function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchConsumed=false;}
     function move(event:TouchEvent){
       if(modalOpen()){touchConsumed=true;return;}
       if(multiTouch||event.touches.length!==1){multiTouch=true;touchDistance=0;return;}
       if(touchConsumed){event.preventDefault();return;}
       const delta=touchY-event.touches[0].clientY;
       if(Math.abs(event.touches[0].clientX-touchX)>Math.abs(delta)){touchDistance=0;return;}
-      if(touchReading||canRead(event.target,delta)){touchReading=true;touchDistance=0;return;}
       touchDistance=delta;event.preventDefault();
       if(Math.abs(touchDistance)>=24){touchConsumed=true;step(Math.sign(touchDistance));}
     }
@@ -73,7 +67,6 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       if(event.repeat||modalOpen()||(event.key!=='PageDown'&&event.key!=='PageUp'))return;
       if((event.target as HTMLElement).closest('input,textarea,select,button,a,[contenteditable=true]'))return;
       const direction=event.key==='PageDown'?1:-1;
-      if(canRead(event.target,direction))return;
       event.preventDefault();step(direction);
     }
     element.addEventListener('wheel',wheel,{passive:false});element.addEventListener('touchstart',start,{passive:true});element.addEventListener('touchmove',move,{passive:false});element.addEventListener('touchend',end);element.addEventListener('touchcancel',cancel);element.addEventListener('keydown',key);

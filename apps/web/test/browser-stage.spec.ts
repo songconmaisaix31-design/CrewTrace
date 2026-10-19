@@ -28,7 +28,7 @@ test('轻滚动、惯性后再次发力与触屏即时响应',async({page})=>{
   await input.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   await expect(page.locator('.stage-tasks')).toHaveAttribute('aria-hidden','false');
 });
-test('连续手势不跳过01，双向切页与内容边界阅读',async({page})=>{
+test('连续手势不跳过01，三面板同位置双向切页',async({page})=>{
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto('/');
   await expect(page.getByRole('link',{name:'向下探索',exact:true})).toBeVisible();
@@ -61,13 +61,6 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
   await page.mouse.wheel(0,-100);
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
-  const reading=page.locator('.stage-discussion .stage-card-scroll');
-  if(await reading.evaluate(el=>el.scrollHeight>el.clientHeight)){
-    const box=(await reading.boundingBox())!;
-    await input.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),yDistance:-1200,speed:1000,gestureSourceType:'mouse'});
-    expect(await reading.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
-    await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
-  }
   await page.mouse.move(6,350);
   await page.waitForTimeout(250);
   await input.send('Input.synthesizeScrollGesture',{x:6,y:350,yDistance:650,speed:1000,gestureSourceType:'mouse'});
@@ -91,7 +84,7 @@ test('连续手势不跳过01，双向切页与内容边界阅读',async({page})
   expect(errors).toEqual([]);
 });
 
-test('阅读惯性不切页，下一次下滑进入公告，展开阅读隔离滚动',async({page})=>{
+test('未展开的交流直接切到公告，展开阅读隔离滚动',async({page})=>{
   await page.setViewportSize({width:1440,height:700});
   await page.goto('/');
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
@@ -103,11 +96,7 @@ test('阅读惯性不切页，下一次下滑进入公告，展开阅读隔离�
   const box=(await reading.boundingBox())!;
   const input=await page.context().newCDPSession(page);
   await input.send('Input.synthesizeScrollGesture',{x:Math.round(box.x+box.width/2),y:Math.round(box.y+box.height/2),yDistance:-1000,speed:1000,gestureSourceType:'mouse'});
-  await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
-  expect(await reading.evaluate(el=>el.scrollHeight-el.clientHeight-el.scrollTop)).toBeLessThan(3);
-  await page.waitForTimeout(250);
-  await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
-  await page.mouse.wheel(0,100);
+  expect(await reading.evaluate(el=>el.scrollTop)).toBe(0);
   await expect(page.locator('.stage-announcements')).toHaveAttribute('aria-hidden','false');
   await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
   await page.mouse.move(6,350);
@@ -123,4 +112,20 @@ test('阅读惯性不切页，下一次下滑进入公告，展开阅读隔离�
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.stage-discussion')).toHaveAttribute('aria-hidden','false');
+});
+
+test('手机面板中央触摸按首页01 02 03往返',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  await expect(page.getByRole('link',{name:'向下探索',exact:true})).toBeVisible();
+  const input=await page.context().newCDPSession(page);
+  await input.send('Emulation.setTouchEmulationEnabled',{enabled:true});
+  for(const [direction,screen,panel] of [[1,1,0],[1,1,1],[1,1,2],[-1,1,1],[-1,1,0],[-1,0,0]]){
+    await input.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:195,y:480}]});
+    await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:195,y:480-direction*70}]});
+    await input.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen',String(screen));
+    await expect(page.locator('.collaboration-stage')).toHaveAttribute('data-panel',String(panel));
+    await page.waitForTimeout(350);
+  }
 });
