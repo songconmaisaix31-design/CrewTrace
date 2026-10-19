@@ -1,5 +1,22 @@
 import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
+test('轻滑与惯性尾部渐进发力能连续切页',async({page})=>{
+  await page.goto('/');
+  await expect(page.getByRole('link',{name:'向下探索',exact:true})).toBeVisible();
+  await page.mouse.move(6,350);
+  await page.mouse.wheel(0,10);
+  await expect(page.locator('.experience-shell')).toHaveAttribute('data-screen','1');
+  for(const delta of [7,4,2,3,6,10]){
+    await page.waitForTimeout(40);
+    await page.mouse.wheel(0,delta);
+  }
+  await expect(page.locator('.collaboration-stage')).toHaveAttribute('data-panel','1');
+  await page.waitForTimeout(190);
+  await page.mouse.wheel(0,10);
+  await expect(page.locator('.collaboration-stage')).toHaveAttribute('data-panel','2');
+  await page.mouse.wheel(0,-10);
+  await expect(page.locator('.collaboration-stage')).toHaveAttribute('data-panel','1');
+});
 test('轻滚动、惯性后再次发力与触屏即时响应',async({page})=>{
   await page.goto('/');
   const shell=page.locator('.experience-shell');

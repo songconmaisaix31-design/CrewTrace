@@ -10,13 +10,12 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
   const root=useRef<HTMLDivElement>(null);
   const orbit=useRef<OrbitPoint[]>([]);
   const aperture=useRef<OrbitAperture|null>(null);
-  function enter(){currentScreen.current=1;setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
+  function enter(){currentScreen.current=1;currentPanel.current=0;setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   function home(){currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
   useEffect(()=>{
     const element=root.current!;
-    let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,decayCount=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchConsumed=false;
+    let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,peak=0,trough=Infinity,decays=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchConsumed=false;
     let lastPaint=performance.now(),stalledAt=-Infinity,paintFrame=0;
-    // 绘制停顿会合并滚轮事件，不能把这类时间间隔当成新的手势。
     function trackPaint(now:number){if(now-lastPaint>80)stalledAt=now;lastPaint=now;paintFrame=requestAnimationFrame(trackPaint);}
     paintFrame=requestAnimationFrame(trackPaint);
     const modalOpen=()=>!!document.querySelector('dialog[open]');
@@ -32,24 +31,23 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       if(!delta)return;
       const direction=Math.sign(delta);
       const magnitude=Math.abs(delta);
-      const now=performance.now();
-      const stalled=now-lastPaint>80||now-stalledAt<100;
-      // 短暂的事件间隔仍属于同一次滑动，避免连续手势跨过两个面板。
+      // 绘制停顿合并的输入不能冒充新手势，但停止后重新滑动始终可用。
       const gap=event.timeStamp-lastWheel;
-      const fresh=gap>200&&(!stalled||gap>400);
+      const stalled=performance.now()-lastPaint>80||performance.now()-stalledAt<100;
+      const fresh=gap>320||(!stalled&&(gap>200||(gap>160&&magnitude>=lastMagnitude*.85&&event.timeStamp-lastStep>180)));
       const reverse=direction!==lastDirection;
-      // 惯性连续减弱后重新明显加速，视为下一次主动滑动。
-      const renewed=!stalled&&consumed&&decayCount>=3&&event.timeStamp-lastStep>160&&magnitude>=16&&magnitude>lastMagnitude*2+8;
-      if(fresh||reverse||renewed){amount=0;consumed=false;decayCount=0;}
-      else if(magnitude<lastMagnitude)decayCount++;
-      else if(magnitude>lastMagnitude)decayCount=0;
+      // 保留衰减谷值，识别逐渐发力的新滑动，不要求瞬间加倍或连续三次衰减。
+      const renewed=!stalled&&consumed&&decays>=2&&event.timeStamp-lastStep>160&&trough<=4&&trough<peak*.6&&magnitude>=Math.max(10,trough*1.6+4);
+      if(fresh||reverse||renewed){amount=0;consumed=false;peak=0;trough=Infinity;decays=0;}
+      if(magnitude>peak){peak=magnitude;trough=Infinity;decays=0;}
+      if(magnitude<lastMagnitude){trough=Math.min(trough,magnitude);decays++;}
       lastMagnitude=magnitude;
       lastWheel=event.timeStamp;lastDirection=direction;
       // 未打开弹窗时，整个面板的滑动统一用于顺序切页。
       event.preventDefault();
       if(consumed)return;
       amount+=delta;
-      if(Math.abs(amount)>=16){consumed=true;amount=0;lastStep=event.timeStamp;step(direction);}
+      if(Math.abs(amount)>=10){consumed=true;amount=0;lastStep=event.timeStamp;step(direction);}
     }
     function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchConsumed=false;}
     function move(event:TouchEvent){
@@ -59,7 +57,7 @@ export default function ExperienceScreens({children}:{children:(navigation:{scre
       const delta=touchY-event.touches[0].clientY;
       if(Math.abs(event.touches[0].clientX-touchX)>Math.abs(delta)){touchDistance=0;return;}
       touchDistance=delta;event.preventDefault();
-      if(Math.abs(touchDistance)>=24){touchConsumed=true;step(Math.sign(touchDistance));}
+      if(Math.abs(touchDistance)>=18){touchConsumed=true;step(Math.sign(touchDistance));}
     }
     function end(){touchDistance=0;}
     function cancel(){touchDistance=0;multiTouch=true;}
