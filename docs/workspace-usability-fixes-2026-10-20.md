@@ -20,7 +20,7 @@
 - browser-stage.spec.ts 五像素轻滑、惯性后再次发力、连续手势不跳 01、桌面双向三面板和手机首页／01／02／03 往返：4 项通过。
 - 320 像素实际截图检查：顶部操作均在视窗内，未调整圆环。
 
-## 未完成的验证
+## 连接修复前的验证阻塞
 
 本地公开配置接口返回 200，但公开任务请求通过网关返回 502，直接访问后端公开任务接口也超时。第一轮包含任务／消息真实读取的浏览器回归未通过：实际任务不存在于当前页面，不能继续验证横屏标题位置、详情认领入口、正文链接、长消息悬停、真实断网后的原文及刷新保留。未用伪造接口或数据代替。
 
@@ -28,8 +28,16 @@
 
 提交中关闭、任务取消／完成确认和身份恢复后继续原操作已实现并完成静态核对，尚无真实业务写入验证。浏览器 beforeunload 提示取决于浏览器交互条件，不能保证系统强制关闭时保存草稿。翻译重试的服务成功率未验证。不同筛选保留旧列表时用状态提示标明更新或失败。
 
+## 连接修复后的补验
+
+2026-10-20 核对发现，本地 RUNTIME_URL 使用的 https://co-vibe-b.vercel.app 连接超时；同一后台的正式域名 https://mcp.davidwang.space 健康检查返回数据库 connected，公开任务读取返回 200。将忽略的 apps/web/.env.local 中 RUNTIME_URL 改为正式域名并重启本地 Vite 后，本地任务接口恢复 200，实测约 0.26 秒。没有更改数据库或公开协作记录。
+
+补验 browser-audit-fixes.spec.ts 的 3 项全部通过：横屏真实任务标题与参与入口、320 英文导航和关闭保护、真实断网保留原文与联网重试请求。补验 browser-message-entry.spec.ts 和 browser-workspace-flow.spec.ts 共 4 项全部通过，覆盖桌面／手机交流公告入口、真实任务筛选、任务交流及刷新恢复。结果分别见 .local/reconnected-audit.json（重启时中断了后续用例，前三项通过）和 .local/reconnected-workspace.json（4/4 完成）。
+
+本次确认的是翻译失败保留原文与能够发起真实重试请求，未据此宣称翻译服务已成功生成译文。新身份注册、恢复后的完整发布／认领写入，以及取消／完成业务写入仍未执行。
+
 ## 后续验收
 
-公开服务恢复后运行 browser-audit-fixes.spec.ts、browser-message-entry.spec.ts、browser-workspace-flow.spec.ts 和 browser-member-translation.spec.ts，补齐真实记录检查。完整注册／恢复 → 发布或认领、提交期间保护、取消任务等写入，应在项目独立测试数据库完成。本次不推送或部署。
+继续运行 browser-member-translation.spec.ts，核对真实翻译成功后的双语切换。完整注册／恢复 → 发布或认领、提交期间保护、取消任务等写入，应在项目独立测试数据库完成。本次不推送或部署。
 
 忽略目录证据：.local/audit-final-local.json、.local/audit-navigation.json、.local/audit-fixes-browser.json、.local/audit-320-english.png、.local/audit-draft-protection.png。失败与通过按各次运行分别记录。
