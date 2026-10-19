@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
+test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('crewtrace:music:v1','off'));});
 
 test('声音默认关闭、主动开启、切页发声、静音及偏好持久化',async({page})=>{
   const input=await page.context().newCDPSession(page);
@@ -17,7 +18,7 @@ test('声音默认关闭、主动开启、切页发声、静音及偏好持久�
   expect(contexts).toBe(0);
   await entry.click();
   await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-pressed','true');
+  await expect(toggle).toHaveAttribute('aria-checked','true');
   await expect.poll(()=>oscillators).toBe(1);
   expect(contexts).toBe(1);
   await page.keyboard.press('Escape');
@@ -33,7 +34,7 @@ test('声音默认关闭、主动开启、切页发声、静音及偏好持久�
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await entry.click();
   await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-pressed','false');
+  await expect(toggle).toHaveAttribute('aria-checked','false');
   await page.keyboard.press('Escape');
   const muted=oscillators;
   await page.getByRole('button',{name:'03 公告',exact:true}).click();
@@ -41,12 +42,12 @@ test('声音默认关闭、主动开启、切页发声、静音及偏好持久�
   expect(oscillators).toBe(muted);
   await page.reload();
   await entry.click();
-  await expect(toggle).toHaveAttribute('aria-pressed','false');
+  await expect(toggle).toHaveAttribute('aria-checked','false');
   await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-pressed','true');
+  await expect(toggle).toHaveAttribute('aria-checked','true');
   await page.reload();
   await entry.click();
-  await expect(toggle).toHaveAttribute('aria-pressed','true');
+  await expect(toggle).toHaveAttribute('aria-checked','true');
   await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'管理协作身份',exact:true}).click();
   await expect(page.getByRole('dialog')).toBeVisible();
@@ -80,7 +81,7 @@ for(const width of [320,390])test(`手机音效开关及其他顶部入口不重
     if(workspace)await page.getByRole('link',{name:'向下探索',exact:true}).click();
     await expect(page.locator('.sound-toggle[data-sound-toggle]')).toBeVisible();
     await page.waitForTimeout(400);
-    const controls=page.locator('.public-topbar .header-actions > button');
+    const controls=page.locator('.public-topbar .header-actions > button,.public-topbar .header-actions > .sound-entry-group > .sound-toggle');
     const brand=(await page.locator('.public-topbar .brand').boundingBox())!;
     let right=brand.x+brand.width;
     for(const control of await controls.all()){

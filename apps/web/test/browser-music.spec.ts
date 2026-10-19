@@ -1,5 +1,7 @@
 import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
+// 本组验证用户已选择关闭之后的手动控制；自动入场另有真实浏览器策略测试。
+test.beforeEach(async({page})=>{await page.addInitScript(()=>{if(localStorage.getItem('crewtrace:music:v1')===null)localStorage.setItem('crewtrace:music:v1','off');});});
 
 test('真实音乐主动加载、协作区连续轻声播放、弹窗压低和返回恢复',async({page})=>{
   let requests=0;
@@ -8,10 +10,10 @@ test('真实音乐主动加载、协作区连续轻声播放、弹窗压低和�
   await expect(page.getByRole('button',{name:'音乐与音效设置',exact:true})).toBeVisible();
   expect(requests).toBe(0);
   await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
-  await expect(page.getByRole('button',{name:'开启音乐',exact:true})).toBeVisible();
+  await expect(page.getByRole('switch',{name:'开启音乐',exact:true})).toBeVisible();
   expect(requests).toBe(0);
   await page.locator('[data-music-toggle]').click();
-  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-checked','true');
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect.poll(()=>requests).toBeGreaterThan(0);
@@ -57,7 +59,7 @@ test('真实音乐主动加载、协作区连续轻声播放、弹窗压低和�
   await expect.poll(async()=>(await media())[0]?.paused).toBe(true);
   await page.reload();
   await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
-  await expect(page.getByRole('button',{name:'开启音乐',exact:true})).toBeVisible();
+  await expect(page.getByRole('switch',{name:'开启音乐',exact:true})).toBeVisible();
 });
 
 test('真实媒体音量随页面和弹窗变化，独立于播放时钟检查',async({page})=>{
@@ -111,24 +113,26 @@ for(const width of [320,390])test(`中英文统一声音入口位于顶部且无
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('slider')).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCSS('opacity','1');
+    expect((await page.getByRole('dialog').boundingBox())!.height).toBeLessThan(510);
     await page.screenshot({path:`.local/sound-settings-${width}-${english?'en':'zh'}.png`});
     await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
   }
 });
 
-test('音乐记忆选择但刷新后主动恢复，音效保持独立',async({page})=>{
+test('音乐记忆音量，主动关闭后刷新仍关闭，音效保持独立',async({page})=>{
   await page.goto('/');
   await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
   await page.locator('[data-music-toggle]').click();
   await page.getByRole('slider',{name:'音乐音量',exact:true}).fill('8');
+  await page.locator('[data-music-toggle]').click();
   await page.reload();
   await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
-  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-pressed','false');
-  await expect(page.getByRole('button',{name:'恢复音乐',exact:true})).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-checked','false');
+  await expect(page.getByRole('switch',{name:'开启音乐',exact:true})).toHaveAttribute('aria-checked','false');
   await expect(page.getByRole('slider',{name:'音乐音量',exact:true})).toHaveValue('8');
   await page.locator('[data-music-toggle]').click();
-  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-pressed','true');
-  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-checked','true');
+  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-checked','false');
 });
 
 test('声音悬停只预览，移入保持，点击固定为设置弹窗',async({page})=>{
@@ -138,7 +142,7 @@ test('声音悬停只预览，移入保持，点击固定为设置弹窗',async(
   const entry=page.getByRole('button',{name:'音乐与音效设置',exact:true});
   await entry.hover();
   const preview=page.getByRole('region',{name:'音乐与音效设置',exact:true});
-  await expect(preview).toContainText('首页音乐');
+  await expect(preview).toContainText('氛围音乐');
   await preview.hover();
   await page.waitForTimeout(400);
   await expect(preview).toBeVisible();
@@ -146,8 +150,8 @@ test('声音悬停只预览，移入保持，点击固定为设置弹窗',async(
   await entry.click();
   await expect(preview).toHaveCount(0);
   await expect(page.getByRole('dialog')).toBeVisible();
-  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-pressed','false');
-  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-checked','false');
+  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-checked','false');
   await page.mouse.move(0,400);
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.keyboard.press('Escape');
@@ -165,18 +169,19 @@ test('悬浮快捷控制与完整设置共享开关和音量，键盘可进入�
   await expect(quick).toBeVisible();
   await expect(quick).toHaveCSS('opacity','1');
   const quickBox=(await quick.boundingBox())!,effectsBox=(await quick.locator('[data-quick-effects]').boundingBox())!;
+  expect(quickBox.height).toBeLessThan(300);
   expect(effectsBox.y+effectsBox.height).toBeLessThan(quickBox.y+quickBox.height);
   await page.screenshot({path:'.local/sound-quick-controls.png'});
   await quick.locator('[data-quick-music]').click();
-  await expect(quick.locator('[data-quick-music]')).toHaveAttribute('aria-pressed','true');
+  await expect(quick.locator('[data-quick-music]')).toHaveAttribute('aria-checked','true');
   await quick.getByRole('slider').fill('8');
   await quick.locator('[data-quick-effects]').click();
-  await expect(quick.locator('[data-quick-effects]')).toHaveAttribute('aria-pressed','true');
+  await expect(quick.locator('[data-quick-effects]')).toHaveAttribute('aria-checked','true');
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await entry.click();
+  await quick.getByRole('button',{name:'全部设置',exact:true}).click();
   await expect(quick).toHaveCount(0);
-  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-pressed','true');
-  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-checked','true');
+  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-checked','true');
   await expect(page.getByRole('slider')).toHaveValue('8');
   await expect(page.getByRole('dialog')).toHaveCSS('opacity','1');
   await page.screenshot({path:'.local/sound-full-settings.png'});
@@ -186,9 +191,18 @@ test('悬浮快捷控制与完整设置共享开关和音量，键盘可进入�
   await page.keyboard.press('Shift+Tab');
   await expect(quick).toBeVisible();
   await page.keyboard.press('Tab');
+  await expect(quick.getByRole('button',{name:'全部设置',exact:true})).toBeFocused();
+  await page.keyboard.press('Tab');
   await expect(quick.locator('[data-quick-music]')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(quick.getByRole('slider')).toBeFocused();
+  await quick.getByRole('slider').fill('0');
+  await expect(quick).toContainText('已静音');
+  await expect(quick.getByRole('slider')).toHaveAttribute('aria-valuetext','0%');
+  await page.keyboard.press('ArrowRight');
+  await expect(quick.getByRole('slider')).toHaveValue('1');
+  await quick.getByRole('slider').fill('100');
+  await expect(quick.getByRole('slider')).toHaveAttribute('aria-valuetext','100%');
   await page.keyboard.press('Escape');
   await expect(quick).toHaveCount(0);
   await expect(entry).toBeFocused();

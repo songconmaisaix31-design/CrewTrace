@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useId, useRef, useState, type ReactNode } f
 import { createPortal } from 'react-dom';
 import { useI18n } from './i18n';
 
-export default function HoverPreview({children,preview,onClick,className='text-button',hint,label,dialogOpen,silent=false,active=false,interactive=false}:{children:ReactNode;preview:ReactNode;onClick:()=>void;className?:string;hint?:string;label?:string;dialogOpen?:boolean;silent?:boolean;active?:boolean;interactive?:boolean}){
+export default function HoverPreview({children,preview,onClick,className='text-button',hint,label,dialogOpen,silent=false,active=false,interactive=false}:{children:ReactNode;preview:ReactNode;onClick:()=>void;className?:string;hint?:ReactNode;label?:string;dialogOpen?:boolean;silent?:boolean;active?:boolean;interactive?:boolean}){
   const {t}=useI18n();
   const id=useId(), trigger=useRef<HTMLButtonElement>(null), panel=useRef<HTMLDivElement>(null);
   const timer=useRef<ReturnType<typeof setTimeout>|undefined>(undefined);
@@ -47,7 +47,7 @@ export default function HoverPreview({children,preview,onClick,className='text-b
     {open&&createPortal(<div ref={panel} id={id} role={interactive?'region':'tooltip'} aria-label={interactive?label:undefined} className={`hover-preview${interactive?' interactive-preview':''}`} data-closing={closing} style={position}
       onPointerEnter={cancel} onPointerLeave={()=>{if(!interactive||!panel.current?.querySelector(':focus-visible'))leave();}}
       onFocusCapture={cancel} onBlurCapture={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node))leave();}}>
-      <div className="hover-preview-content">{preview}</div><small>{hint??t('点击入口查看完整内容','Click the entry to open full details')}</small>
+      <div className="hover-preview-content">{preview}</div>{hint!==null&&<small>{hint??t('点击入口查看完整内容','Click the entry to open full details')}</small>}
     </div>,document.body)}
   </>;
 }
