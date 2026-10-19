@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('crewtrace:music:v1','off'));});
 
-test('圆环共鸣、连续气流、暂停与静音使用同一个真实音效开关',async({page})=>{
+test('圆环共鸣、移动泛音、暂停与静音使用同一个真实音效开关',async({page})=>{
   const session=await page.context().newCDPSession(page);await session.send('WebAudio.enable');
   const nodes:string[]=[];session.on('WebAudio.audioNodeCreated',({node})=>nodes.push(node.nodeType));
   await page.goto('/');
@@ -28,7 +28,7 @@ test('圆环共鸣、连续气流、暂停与静音使用同一个真实音效�
   expect(nodes.length).toBe(muted);
 });
 
-test('真实气流波形在指针停下后衰减，文字区域比圆环区域轻',async({page})=>{
+test('移动泛音在指针停下后衰减，文字区域比圆环区域轻',async({page})=>{
   await page.goto('/');
   const result=await page.evaluate(async()=>{
     // @ts-expect-error 从当前 Vite 加载实际音频实现。
