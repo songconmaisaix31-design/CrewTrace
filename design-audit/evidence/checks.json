@@ -1,0 +1,46 @@
+{
+  "firstFocus": "<a class=\"skip\" href=\"#collaborate\">跳至公开协作</a>",
+  "skipFocus": {
+    "class": "experience-shell",
+    "tag": "DIV"
+  },
+  "afterSkipTab": "<a class=\"skip\" href=\"#collaborate\">跳至公开协作</a>",
+  "tabContrast": [
+    {
+      "text": "01\n协作任务",
+      "color": "rgb(238, 230, 246)",
+      "opacity": "1",
+      "background": "rgb(8, 9, 11)"
+    },
+    {
+      "text": "02\n交流与公告",
+      "color": "rgb(197, 187, 210)",
+      "opacity": "0.48",
+      "background": "rgb(8, 9, 11)"
+    }
+  ],
+  "draftAfterEscape": "",
+  "panelBeforeReload": "1",
+  "panelAfterReload": "0",
+  "backAfterClose": {
+    "url": "http://127.0.0.1:5173/?task=ba163ef9-42fc-4a94-a798-3078c05b4903#collaborate",
+    "dialogCount": 1
+  },
+  "compact": {
+    "overflow": false,
+    "reading": 245
+  },
+  "compactInput": {
+    "font": "16px",
+    "rect": {
+      "x": 39,
+      "y": 228.59375,
+      "width": 242,
+      "height": 44,
+      "top": 228.59375,
+      "right": 281,
+      "bottom": 272.59375,
+      "left": 39
+    }
+  }
+}

@@ -1,0 +1,280 @@
+[
+  {
+    "event": "mcp_connected",
+    "pid": 58868,
+    "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+    "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+    "tools": [
+      "health",
+      "get_template",
+      "list_agents",
+      "get_run",
+      "get_events",
+      "get_task",
+      "get_artifact",
+      "get_jobs",
+      "heartbeat",
+      "advance_work",
+      "accept_task",
+      "reserve_model_call",
+      "upload_artifact",
+      "submit_task",
+      "report_interruption",
+      "update_handoff",
+      "publish_announcement",
+      "list_announcements",
+      "create_note",
+      "list_notes",
+      "get_note",
+      "update_note",
+      "create_run",
+      "assign_task",
+      "assess_task",
+      "advance_run",
+      "control_run"
+    ],
+    "createdAt": "2026-10-17T09:47:19.679Z"
+  },
+  {
+    "event": "http_jobs",
+    "count": 0,
+    "createdAt": "2026-10-17T09:47:20.523Z"
+  },
+  {
+    "event": "service_health",
+    "health": {
+      "status": "degraded",
+      "database": "connected",
+      "chain": {
+        "configured": false,
+        "code": "CHAIN_NOT_CONFIGURED"
+      },
+      "validator": {
+        "configured": true,
+        "code": null
+      }
+    },
+    "createdAt": "2026-10-17T09:47:20.886Z"
+  },
+  {
+    "event": "mcp_published",
+    "announcement": {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "DATA 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "2185ac59-1aab-4374-a028-d4375190c714",
+      "author": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "createdAt": "2026-10-17T09:47:21.126Z"
+    },
+    "note": {
+      "runId": "vercel-mcp-fe9b0875-3e07-40c9-9356-12a66fb04099",
+      "taskId": "0xc01b59376a1cfeb9266759018eac77ff2a400bd2b9619d0aa8a11edf300c7fc5",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "DATA 执行条件",
+      "artifactIds": [],
+      "noteId": "eb073163-d68b-4c47-85f5-0f8c7fe24880",
+      "author": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+      "version": 2,
+      "createdAt": "2026-10-17T09:47:21.581Z",
+      "updatedAt": "2026-10-17T09:47:22.068Z"
+    },
+    "createdAt": "2026-10-17T09:47:22.329Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:47:22.727Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:47:34.202Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:47:45.789Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:47:57.523Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:48:09.120Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:48:20.888Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:48:32.580Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:48:44.358Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "09f4f829-7071-4e81-a350-f0a6436e4a94",
+      "52821308-5c98-4d0a-bef8-245f1fe4aef4",
+      "25968883-1647-4cdd-8f5e-52a815458110",
+      "bb6ae166-1b78-43d1-bf82-5cc3be0d0c48",
+      "2185ac59-1aab-4374-a028-d4375190c714"
+    ],
+    "peerAuthors": [
+      "0x6fd7b6c7397b55749034053a58a7fce876dac613"
+    ],
+    "noteIds": [
+      "60ce8262-9f08-4c02-8aeb-b984c8990c2f",
+      "1d9dc307-ad27-456b-ab7c-c3cb5cb995d1",
+      "22d5ff5e-8c0f-4f6e-9446-2fdef16bbc69",
+      "c5458f7c-342e-4eba-9dc1-3f421881574f",
+      "eb073163-d68b-4c47-85f5-0f8c7fe24880"
+    ],
+    "createdAt": "2026-10-17T09:48:56.015Z"
+  },
+  {
+    "event": "worker_stopped",
+    "pid": 58868,
+    "createdAt": "2026-10-17T09:49:04.772Z",
+    "signal": true
+  }
+]

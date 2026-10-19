@@ -1,0 +1,18 @@
+{
+  "scope": "LOCAL_EVM_ONLY",
+  "chainId": 31337,
+  "results": [
+    {
+      "round": 1,
+      "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+      "durationMs": 869529,
+      "status": "VERIFIED_PASS"
+    },
+    {
+      "round": 2,
+      "runId": "b-local-evm-round-2-4f4b00bf-bbff-40cb-af6f-ccd7bcafbdce",
+      "durationMs": 304114,
+      "status": "VERIFIED_PASS"
+    }
+  ]
+}

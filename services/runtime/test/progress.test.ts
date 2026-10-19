@@ -1,0 +1,84 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { serve } from '@hono/node-server';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { hashUtf8, nodeBindingMessage, type AgentProfile } from '../../../packages/contracts/src/index.ts';
+import { loadConfig } from '../src/config.js';
+import { Database } from '../src/db.js';
+import { migrate } from '../src/migrate.js';
+import { dependencies } from '../src/dependencies.js';
+import { Application } from '../src/application.js';
+import { createHttp } from '../src/http.js';
+import { CRITERIA_HASH } from '../../../workers/src/criteria.ts';
+
+test('真实链配置下独立推进、快速心跳与持久化创建', { timeout: 120_000 }, async () => {
+  const config = loadConfig();
+  assert.equal(config.CHAIN_ADAPTER_MODULE,'runtime-chain');
+  assert.equal(config.VALIDATOR_MODULE,'workers');
+  assert.ok(config.CHAIN_VALIDATOR);
+  const db = new Database(config.DATABASE_URL);
+  await migrate(db);
+  const actualSchema = (await db.pool.query('SELECT current_schema() AS schema')).rows[0].schema;
+  assert.ok(actualSchema.startsWith('b_startup_'),'必须使用独立的启动回归 schema');
+  const { chain,validator,collaborationChain } = await dependencies(config,db);
+  assert.ok(chain && validator);
+  const app = new Application(db,config,chain,validator,collaborationChain);
+  const http = createHttp(app);
+  const server = serve({ fetch: http.fetch,hostname: '127.0.0.1',port: 0 });
+  await new Promise<void>(resolve=>server.once('listening',resolve));
+  const address = server.address();
+  assert.ok(address && typeof address!=='string');
+  config.PUBLIC_BASE_URL = `http://127.0.0.1:${address.port}`;
+  const account = privateKeyToAccount(generatePrivateKey());
+  const agentId = account.address.toLowerCase();
+  const runtimeId = randomUUID();
+  const runId = randomUUID();
+  const request = async (path: string,body: unknown,token: string,status=200) => {
+    const response = await fetch(`${config.PUBLIC_BASE_URL}${path}`,{ method: 'POST',headers: { Authorization: `Bearer ${token}`,'Content-Type': 'application/json' },body: JSON.stringify(body),signal: AbortSignal.timeout(20_000) });
+    const result = await response.json();
+    assert.equal(response.status,status,JSON.stringify(result));
+    return result;
+  };
+  const mcp = new Client({ name: 'real-progress-regression',version: '1.0.0' });
+  try {
+    const profile = { agentId,runtimeId,roles: ['DATA'],manifestURI: `urn:co-vibe:progress:${runtimeId}`,manifestHash: hashUtf8(runtimeId),lastSeenAt: null,activeTasks: 0,maxConcurrency: 1,admitted: true,conditionsAccepted: true };
+    const signature = await account.signMessage({ message: nodeBindingMessage(profile as AgentProfile) });
+    const enrolled = await request('/admin/nodes',{ profile,signature },config.ADMIN_TOKEN,201);
+    assert.deepEqual(await request('/worker/progress',{},enrolled.token),{ status: 'PROGRESSED',runs: [] });
+    await mcp.connect(new StreamableHTTPClientTransport(new URL(`${config.PUBLIC_BASE_URL}/mcp`),{ requestInit: { headers: { Authorization: `Bearer ${enrolled.token}` } } }));
+    const progressed = CallToolResultSchema.parse(await mcp.callTool({ name: 'advance_work',arguments: {} }));
+    assert.notEqual(progressed.isError,true,JSON.stringify(progressed));
+    const text = progressed.content.find(content=>content.type==='text');
+    assert.ok(text && text.type==='text');
+    assert.deepEqual(JSON.parse(text.text),{ status: 'PROGRESSED',runs: [] });
+    const source = 'record_id,date,category,sales_yuan,orders\n'+Array.from({ length: 30 },(_,index)=>`${index+1},2026-10-17,controlled,${index+1}.00,1`).join('\n')+'\n';
+    const run = await request('/api/runs',{ runId,inputContent: source,inputHash: hashUtf8(source),criteriaHash: CRITERIA_HASH,validator: config.CHAIN_VALIDATOR },config.ADMIN_TOKEN,201);
+    assert.ok(run.tasks.every((task: { status: string })=>task.status==='OPEN'));
+    const started = performance.now();
+    await request('/worker/heartbeat',{ runtimeId,activeTasks: 0,maxConcurrency: 1 },enrolled.token);
+    const heartbeatMs = Math.round(performance.now()-started);
+    assert.ok(heartbeatMs<20_000);
+    const decisions = await db.pool.query('SELECT id FROM decisions WHERE run_id=$1',[runId]);
+    const receipts = await db.pool.query('SELECT task_id FROM chain_receipts WHERE task_id IN (SELECT id FROM tasks WHERE run_id=$1)',[runId]);
+    const events = await db.pool.query("SELECT document->>'type' AS type FROM events WHERE run_id=$1 ORDER BY seq",[runId]);
+    assert.equal(decisions.rowCount,0);
+    assert.equal(receipts.rowCount,0);
+    assert.deepEqual(events.rows.map(row=>row.type),['RUN_CREATED']);
+    console.log(JSON.stringify({ schema: actualSchema,heartbeatMs,implicitChainOperations: receipts.rowCount }));
+  } finally {
+    await mcp.close();
+    await new Promise<void>((resolve,reject)=>server.close(error=>error ? reject(error) : resolve()));
+    await db.transaction(async client=>{
+      await client.query('DELETE FROM events WHERE run_id=$1',[runId]);
+      await client.query('DELETE FROM tasks WHERE run_id=$1',[runId]);
+      await client.query('DELETE FROM runs WHERE id=$1',[runId]);
+      await client.query('DELETE FROM node_credentials WHERE agent_id=$1',[agentId]);
+      await client.query('DELETE FROM agents WHERE id=$1',[agentId]);
+    });
+    await db.close();
+  }
+});

@@ -1,0 +1,22 @@
+{
+  "schema": "b_local_20261017_0905",
+  "scope": "LOCAL_EVM_ONLY",
+  "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+  "checkedAt": "2026-10-17T09:09:38.240Z",
+  "identitySignatureMismatchRejected": true,
+  "runtimeBindingRejected": true,
+  "unauthorizedWriteRejected": true,
+  "authorSpoofingRejected": true,
+  "otherAuthorUpdateRejected": true,
+  "concurrentVersions": [
+    200,
+    409
+  ],
+  "noteId": "9bcbcba3-4b62-4516-9676-bafbde0161d9",
+  "version": 2,
+  "officialMcpWriteAndRead": true,
+  "incrementalEvents": [
+    "50cb4f7d-66fd-49c4-892d-47c2123cdcd5"
+  ],
+  "rawInputBytesAndHash": true
+}

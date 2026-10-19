@@ -1,0 +1,33 @@
+{
+  "name": "@co-vibe/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "start": "tsx src/local.ts",
+    "dev": "tsx watch src/local.ts",
+    "check": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "migrate": "tsx src/migrate.ts",
+    "test:integration": "tsx --test test/integration.test.ts",
+    "test:progress": "tsx --test test/progress.test.ts",
+    "test:chain-events": "tsx --test test/native-events.test.ts",
+    "test:collaboration": "tsx --test test/collaboration-persistence.test.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.5",
+    "@neondatabase/serverless": "1.2.0",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "hono": "4.13.13",
+    "pg": "8.23.1",
+    "viem": "2.57.7",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/pg": "8.23.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

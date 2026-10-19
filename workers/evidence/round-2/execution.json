@@ -1,0 +1,19 @@
+{
+  "mode": "LOCAL_MODEL_EXECUTION",
+  "inputPath": "C:\\Users\\DW\\orca\\workspaces\\co-vibe\\work-b-workers\\workers\\fixtures\\round-2.csv",
+  "startedAt": "2026-10-17T08:15:14.676Z",
+  "durationMs": 29479,
+  "model": "step-3.5-flash",
+  "callCount": 3,
+  "validation": {
+    "sourceHash": "0xcfe8102f8c6ed56abd7c5f97baa5be6d8d315f5c155e7baf9e8b67074327e3b7",
+    "dataHash": "0xfea72000d400d1a6ffc96f8507879697ca0014549bbb6966fc6d5aabcbc5879e",
+    "metricsHash": "0x188292a7f27054723cd9f6ad882bee7a656c07077a1db8701d3fd27cfe7982fc",
+    "reportHash": "0x96b4be72b2ad0471c4222455224aa53df5f4860cbd5546166dc1ab77eccdaa0a",
+    "normalizedRows": 36,
+    "metricsCount": 64,
+    "claimsCount": 7
+  },
+  "chainIntegration": "NOT_VERIFIED",
+  "serviceIntegration": "NOT_VERIFIED"
+}

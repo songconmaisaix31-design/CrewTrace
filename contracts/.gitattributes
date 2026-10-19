@@ -1,0 +1,4 @@
+*.sol text eol=lf
+*.ts text eol=lf
+*.json -text
+*.md text eol=lf

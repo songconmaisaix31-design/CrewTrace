@@ -1,0 +1,189 @@
+{
+  "scope": "LOCAL_EVM_ONLY",
+  "allFourUpdatedWhileWorkProgressed": true,
+  "observations": [
+    {
+      "observedAt": "2026-10-17T09:18:57.175Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:18:46.312Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "roles": [
+            "ANALYSIS"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+          "lastSeenAt": "2026-10-17T09:18:48.310Z",
+          "activeTasks": 1,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "roles": [
+            "REPORT"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+          "lastSeenAt": "2026-10-17T09:18:47.305Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:18:54.123Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-10-17T09:19:09.878Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:18:58.305Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "roles": [
+            "ANALYSIS"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+          "lastSeenAt": "2026-10-17T09:19:01.018Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "roles": [
+            "REPORT"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+          "lastSeenAt": "2026-10-17T09:18:59.300Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:18:54.123Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    },
+    {
+      "observedAt": "2026-10-17T09:19:22.050Z",
+      "agents": [
+        {
+          "agentId": "0x21c66d645a1776b4ebbfb422f03f0dba0e993d63",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-b-caa1057b-1ab4-4d8d-861e-78be290a7dc8",
+          "lastSeenAt": "2026-10-17T09:19:11.338Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+          "roles": [
+            "ANALYSIS"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+          "lastSeenAt": "2026-10-17T09:19:15.927Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xcf7e91f16c1fa51800f93b5f01e8e5d976430b79",
+          "roles": [
+            "REPORT"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "report-a5b1e1c7-9538-418a-93d0-30b18f6d3c37",
+          "lastSeenAt": "2026-10-17T09:19:12.265Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        },
+        {
+          "agentId": "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58",
+          "roles": [
+            "DATA"
+          ],
+          "manifestURI": "https://raw.githubusercontent.com/songconmaisaix31-design/co-vibe/4af89ea/workers/identities.json",
+          "manifestHash": "0xe8a77c239e2602a6f0588a28ed8a22751125d9470145ac8a60647299a666e8f5",
+          "runtimeId": "data-a-a85fe815-394a-4e02-ba92-fda823edba7f",
+          "lastSeenAt": "2026-10-17T09:19:10.202Z",
+          "activeTasks": 0,
+          "maxConcurrency": 1,
+          "admitted": true,
+          "conditionsAccepted": true
+        }
+      ]
+    }
+  ]
+}

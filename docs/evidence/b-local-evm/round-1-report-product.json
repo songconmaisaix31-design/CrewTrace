@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "worker-output-v1",
+  "role": "REPORT",
+  "sourceHash": "0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54",
+  "parentArtifacts": [
+    {
+      "artifactId": "0x456b942548a66671f605bec827bf9f599462f5916b52ac0724537776c0ac8b19-1",
+      "contentHash": "0x990dc139037b1e260144e4d6a2841a025c267bcec1e367f87ff417b0ff2f4079",
+      "schemaVersion": "worker-output-v1"
+    }
+  ],
+  "limitations": [
+    "公开合成业务数据，不代表真实商户",
+    "仅接受固定字段与已定义日期格式",
+    "同一 record_id 的冲突记录立即拒绝"
+  ],
+  "files": [
+    {
+      "name": "report.json",
+      "schemaVersion": "business-report-v1",
+      "mediaType": "application/json",
+      "content": "{\n  \"title\": \"2026年10月1日至12日合成业务销售数据报告\",\n  \"summary\": \"本报告覆盖2026年10月1日至12日的合成业务销售数据，统计周期内总销售额10073.55元，总订单373单，总记录34条，平均每单金额27.01元，数据为合成示例不反映真实业务情况\",\n  \"claims\": [\n    {\n      \"metricId\": \"total.sales_yuan\",\n      \"value\": \"10073.55\",\n      \"interpretation\": \"统计周期内全部销售数据的总销售额\"\n    },\n    {\n      \"metricId\": \"total.orders\",\n      \"value\": \"373\",\n      \"interpretation\": \"统计周期内全部销售数据的总订单数\"\n    },\n    {\n      \"metricId\": \"total.records\",\n      \"value\": \"34\",\n      \"interpretation\": \"统计周期内全部销售数据的总记录条数\"\n    },\n    {\n      \"metricId\": \"total.average_order_yuan\",\n      \"value\": \"27.01\",\n      \"interpretation\": \"统计周期内全部销售数据的平均每单金额\"\n    },\n    {\n      \"metricId\": \"category.%E9%A4%90%E9%A3%9F.sales_yuan\",\n      \"value\": \"5626.50\",\n      \"interpretation\": \"统计周期内餐食分类总销售额，为三类商品分类中销售额最高的品类\"\n    },\n    {\n      \"metricId\": \"date.2026-10-11.sales_yuan\",\n      \"value\": \"1224.50\",\n      \"interpretation\": \"2026年10月11日单日销售额，为统计周期内单日销售额最高日期\"\n    },\n    {\n      \"metricId\": \"date.2026-10-11.orders\",\n      \"value\": \"46\",\n      \"interpretation\": \"2026年10月11日单日订单数，为统计周期内单日订单数最高日期\"\n    }\n  ],\n  \"limitations\": [\n    \"本报告数据为公开合成业务数据，不代表任何真实商户的实际经营情况\",\n    \"数据仅接受固定字段与已定义日期格式的录入\",\n    \"同一record_id的冲突记录会被立即拒绝，不纳入统计\"\n  ],\n  \"schemaVersion\": \"business-report-v1\",\n  \"sourceHash\": \"0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54\",\n  \"metricsHash\": \"0x1f40d88452b1f6a015ec7dc0fe94789e326b6b447f2f62a3241af866dedd0709\"\n}\n",
+      "contentHash": "0x578041ce1a7c69713c16947636284c34ff069f2ee64a7e208a099295532a543b"
+    },
+    {
+      "name": "report.md",
+      "schemaVersion": "business-report-markdown-v1",
+      "mediaType": "text/markdown",
+      "content": "# 2026年10月1日至12日合成业务销售数据报告\n\n来源：公开合成业务 CSV。\n\n本报告覆盖2026年10月1日至12日的合成业务销售数据，统计周期内总销售额10073.55元，总订单373单，总记录34条，平均每单金额27.01元，数据为合成示例不反映真实业务情况\n\n- 全部数据销售额：10073.55 元。统计周期内全部销售数据的总销售额 [指标：total.sales_yuan]\n- 全部数据订单数：373 笔。统计周期内全部销售数据的总订单数 [指标：total.orders]\n- 全部数据记录数：34 条。统计周期内全部销售数据的总记录条数 [指标：total.records]\n- 全部数据平均订单金额：27.01 元。统计周期内全部销售数据的平均每单金额 [指标：total.average_order_yuan]\n- 餐食销售额：5626.50 元。统计周期内餐食分类总销售额，为三类商品分类中销售额最高的品类 [指标：category.%E9%A4%90%E9%A3%9F.sales_yuan]\n- 2026-10-11销售额：1224.50 元。2026年10月11日单日销售额，为统计周期内单日销售额最高日期 [指标：date.2026-10-11.sales_yuan]\n- 2026-10-11订单数：46 笔。2026年10月11日单日订单数，为统计周期内单日订单数最高日期 [指标：date.2026-10-11.orders]\n\n## 限制\n\n- 本报告数据为公开合成业务数据，不代表任何真实商户的实际经营情况\n- 数据仅接受固定字段与已定义日期格式的录入\n- 同一record\\_id的冲突记录会被立即拒绝，不纳入统计\n\n指标原始字节摘要：0x1f40d88452b1f6a015ec7dc0fe94789e326b6b447f2f62a3241af866dedd0709\n输入原始字节摘要：0x5c0e3cac6656a1d3e8e6aebe22585a875a4cd688584ed56138282b36542a5e54\n",
+      "contentHash": "0xa4f3f7b93f8394830e1f5909b83e9bf6c150458183d8acab612e7378c02ff259"
+    }
+  ]
+}

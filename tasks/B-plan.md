@@ -1,0 +1,36 @@
+# B 角色执行计划
+
+## 已确认范围
+
+完整实现 PRD 的 B 职责：共享类型、固定三角色任务、角色信誉分工、独立 Worker、产物交接、确定性验收与持久化；增加供产品运行中 Agent 使用的轻量 MCP 公告板和便签。HTTP 与 MCP 共用业务逻辑。使用 TypeScript、PostgreSQL；API/MCP 部署到 Dwwww 团队的新项目 co-vibe-b。真实模型使用阶跃星辰，密钥仅保存在忽略目录或服务端配置。
+
+## 基线与边界
+
+起点为 main 的 14e31ed08b47000abaee9949847fa876e84c1a5e，只有 AGENTS.md、PRD.md、LICENSE；HANDOFF.md 和 STATUS.md 由主 Agent 建立。A/C 已有负责人，A 后续通过用户提供的压缩包交付。B 原样导入 A 的 packages/chain/ 与 deployments/，保持其内容一致；不修改 contracts/、apps/web/、根 package.json 或根锁文件。B 的包独立安装，供 C 后续整合。交付分支 work/b-runtime，保留 main。
+
+链上接口由 A 负责。B 定义应用需要的端口并依赖实际适配器，缺配置时立即返回明确错误；不得模拟回执、信誉或部署地址。链上集成待 A 交付后验证，不把缺依赖记作质量失败。Worker 常驻主机尚待用户确认，本机真实验证可以先进行。
+
+## 并行轨道
+
+每条轨道使用一个 Orca Codex Agent、一个 Worktree 和一个分支。实际四条轨道均继承用户配置，Orca 运行状态报告模型 gpt-6.1-sol。各 Worker 自行实现、测试、返修、提交并 push，只能修改自己的 write_paths。
+
+| 轨道 | 分支 | write_paths | 交付 |
+| --- | --- | --- | --- |
+| 类型与规则 | work/b-domain | packages/contracts/**、services/runtime/src/domain/**、services/runtime/test/domain/**、docs/contracts.md、docs/b-domain.md | 共享 schema、信誉与快照、固定模板、状态约束、链上端口及文档 |
+| 服务与公告板 | work/b-service | services/runtime/**（排除 src/domain/**、test/domain/**）、docs/b-service.md | 包配置、PostgreSQL、HTTP、MCP、权限、公告板/便签、持久化和部署配置 |
+| Worker 与验收 | work/b-workers | workers/**、docs/b-workers.md | 阶跃星辰调用、独立 Worker、CSV 库、两份合成输入、三角色工具与确定性验收、实际调用验证 |
+| A 协议接入 | work/b-chain | packages/runtime-chain/**、packages/contracts/src/ports.ts、packages/contracts/src/schemas.ts、docs/contracts.md、docs/b-chain.md；原样导入 packages/chain/** 与 deployments/monad-testnet.json | 消费用户提供的 A 原始交付，转换枚举、bigint 和事件回执，增加指派所需的 runId/decisionHash |
+
+服务代码和 Worker 通过共享业务类型集成。类型轨道首先交付 docs/contracts.md 与可导入的类型，然后继续规则与测试；跨轨道修改通过交接提出。所有代码与测试禁止 mock 和伪造协议；固定合成 CSV 为 PRD 明确要求的公开演示输入，须标明来源。
+
+类型与规则轨道已完成并释放。用户随后提供 co-vibe-A-cd1d82a.zip，其中包括 A 原始适配器和部署记录；A 协议接入是新增轨道，接管已完成轨道的 ports.ts 与公共端口文档，只增加实际接入所需字段。其他轨道保持只读消费这些文件。A 的原始源文件只原样导入，不修改。
+
+## 集成与验收
+
+四条轨道完成后，由独立集成 Agent 在 work/b-runtime 合并，限于导入、路由、配置与类型衔接，领域问题退回原 Worker。主 Agent 维护本计划、状态与决策，完成最终检查、提交和 push。验证真实 PostgreSQL、实际 HTTP 与 MCP 客户端、跨身份权限、便签并发更新、事件增量读取和服务重启持久化；运行至少两个独立 Worker，记录真实模型调用与产物。部署 Vercel 后重复远程验证。链上两轮完整验证须使用 A 的真实适配器与部署，未取得时保持未通过。
+
+## 当前验收记录
+
+四轨道、独立集成与领域返修均已合并并推送。八次 Orca Worker 已释放。各包类型检查、构建和适用测试通过，真实服务重启回归 2/2 通过。两轮完整链路使用四个独立 Worker、真实阶跃星辰模型、真实 Neon 和本地 A 原合约完成；第二轮 304114 ms，120 秒目标未通过。Monad Testnet 仅完成真实只读协议验证，写入等待授权签名配置和 Gas。
+
+Vercel 公网 API/MCP 已部署，两个独立 Worker 的公告与便签互读、版本更新、分别终止及数据库持久化通过。此次公网交流验证没有链写入和模型调用。详细命令、原始记录与剩余限制见 docs/b-integration.md、docs/b-deployment.md。

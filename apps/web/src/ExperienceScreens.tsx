@@ -1,0 +1,74 @@
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ExperienceNavigation, type OrbitPoint, type OrbitAperture } from './ExperienceNavigation';
+
+export default function ExperienceScreens({children}:{children:(navigation:{screen:number;enter:()=>void;home:()=>void})=>ReactNode}){
+  const [screen,setScreen]=useState(()=>location.hash==='#collaborate'||new URLSearchParams(location.search).has('task')?1:0);
+  const [panel,setPanel]=useState(0);
+  const [paused,setPaused]=useState(false);
+  const currentScreen=useRef(screen);currentScreen.current=screen;
+  const currentPanel=useRef(panel);currentPanel.current=panel;
+  const root=useRef<HTMLDivElement>(null);
+  const orbit=useRef<OrbitPoint[]>([]);
+  const aperture=useRef<OrbitAperture|null>(null);
+  function enter(){currentScreen.current=1;currentPanel.current=0;setPanel(0);setScreen(1);const url=new URL(location.href);url.hash='collaborate';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
+  function home(){currentScreen.current=0;setScreen(0);const url=new URL(location.href);url.hash='';history.replaceState({},'',url);requestAnimationFrame(()=>root.current?.focus({preventScroll:true}));}
+  useEffect(()=>{
+    const element=root.current!;
+    let amount=0,lastWheel=0,lastDirection=0,lastMagnitude=0,peak=0,trough=Infinity,decays=0,lastStep=0,consumed=false,touchY=0,touchX=0,touchDistance=0,multiTouch=false,touchConsumed=false;
+    let lastPaint=performance.now(),stalledAt=-Infinity,paintFrame=0;
+    function trackPaint(now:number){if(now-lastPaint>80)stalledAt=now;lastPaint=now;paintFrame=requestAnimationFrame(trackPaint);}
+    paintFrame=requestAnimationFrame(trackPaint);
+    const modalOpen=()=>!!document.querySelector('dialog[open]');
+    function step(direction:number){
+      if(currentScreen.current===0){if(direction>0)enter();return;}
+      if(direction<0){if(currentPanel.current>0){currentPanel.current-=1;setPanel(currentPanel.current);}else home();}
+      else if(currentPanel.current<2){currentPanel.current+=1;setPanel(currentPanel.current);}
+    }
+    function wheel(event:WheelEvent){
+      if(modalOpen()){consumed=true;amount=0;lastWheel=event.timeStamp;lastDirection=Math.sign(event.deltaY);return;}
+      if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
+      const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
+      if(!delta)return;
+      const direction=Math.sign(delta);
+      const magnitude=Math.abs(delta);
+      // 绘制停顿合并的输入不能冒充新手势，但停止后重新滑动始终可用。
+      const gap=event.timeStamp-lastWheel;
+      const stalled=performance.now()-lastPaint>80||performance.now()-stalledAt<100;
+      const fresh=gap>320||(gap>180&&magnitude>=lastMagnitude*.8)||(!stalled&&gap>90&&magnitude>=lastMagnitude*.8&&event.timeStamp-lastStep>120);
+      const reverse=direction!==lastDirection;
+      // 保留衰减谷值，识别逐渐发力的新滑动，不要求瞬间加倍或连续三次衰减。
+      const renewed=consumed&&decays>=2&&event.timeStamp-lastStep>120&&trough<=4&&trough<peak*.6&&magnitude>=Math.max(5,trough*1.4+2);
+      if(fresh||reverse||renewed){amount=0;consumed=false;peak=0;trough=Infinity;decays=0;}
+      if(magnitude>peak){peak=magnitude;trough=Infinity;decays=0;}
+      if(magnitude<lastMagnitude){trough=Math.min(trough,magnitude);decays++;}
+      lastMagnitude=magnitude;
+      lastWheel=event.timeStamp;lastDirection=direction;
+      // 未打开弹窗时，整个面板的滑动统一用于顺序切页。
+      event.preventDefault();
+      if(consumed)return;
+      amount+=delta;
+      if(Math.abs(amount)>=5){consumed=true;amount=0;lastStep=event.timeStamp;step(direction);}
+    }
+    function start(event:TouchEvent){multiTouch=event.touches.length!==1;touchY=event.touches[0].clientY;touchX=event.touches[0].clientX;touchDistance=0;touchConsumed=false;}
+    function move(event:TouchEvent){
+      if(modalOpen()){touchConsumed=true;return;}
+      if(multiTouch||event.touches.length!==1){multiTouch=true;touchDistance=0;return;}
+      if(touchConsumed){event.preventDefault();return;}
+      const delta=touchY-event.touches[0].clientY;
+      if(Math.abs(event.touches[0].clientX-touchX)>Math.abs(delta)){touchDistance=0;return;}
+      touchDistance=delta;event.preventDefault();
+      if(Math.abs(touchDistance)>=12){touchConsumed=true;step(Math.sign(touchDistance));}
+    }
+    function end(){touchDistance=0;}
+    function cancel(){touchDistance=0;multiTouch=true;}
+    function key(event:KeyboardEvent){
+      if(event.repeat||modalOpen()||(event.key!=='PageDown'&&event.key!=='PageUp'))return;
+      if((event.target as HTMLElement).closest('input,textarea,select,button,a,[contenteditable=true]'))return;
+      const direction=event.key==='PageDown'?1:-1;
+      event.preventDefault();step(direction);
+    }
+    element.addEventListener('wheel',wheel,{passive:false});element.addEventListener('touchstart',start,{passive:true});element.addEventListener('touchmove',move,{passive:false});element.addEventListener('touchend',end);element.addEventListener('touchcancel',cancel);element.addEventListener('keydown',key);
+    return()=>{cancelAnimationFrame(paintFrame);element.removeEventListener('wheel',wheel);element.removeEventListener('touchstart',start);element.removeEventListener('touchmove',move);element.removeEventListener('touchend',end);element.removeEventListener('touchcancel',cancel);element.removeEventListener('keydown',key);};
+  },[]);
+  return <ExperienceNavigation.Provider value={{screen,panel,setPanel,home,paused,setPaused,orbit,aperture}}><div ref={root} tabIndex={-1} className="experience-shell" data-screen={screen} data-paused={paused}>{children({screen,enter,home})}</div></ExperienceNavigation.Provider>;
+}

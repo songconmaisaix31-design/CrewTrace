@@ -1,0 +1,132 @@
+[
+  {
+    "event": "mcp_connected",
+    "pid": 21776,
+    "agentId": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+    "runtimeId": "analysis-0722940a-bdce-40f7-8f86-d3c2892f8d69",
+    "tools": [
+      "health",
+      "list_agents",
+      "get_run",
+      "get_events",
+      "get_task",
+      "get_artifact",
+      "get_jobs",
+      "heartbeat",
+      "accept_task",
+      "reserve_model_call",
+      "upload_artifact",
+      "submit_task",
+      "report_interruption",
+      "update_handoff",
+      "publish_announcement",
+      "list_announcements",
+      "create_note",
+      "list_notes",
+      "get_note",
+      "update_note",
+      "create_run",
+      "assign_task",
+      "assess_task"
+    ],
+    "createdAt": "2026-10-17T08:30:34.834Z"
+  },
+  {
+    "event": "http_jobs",
+    "count": 0,
+    "createdAt": "2026-10-17T08:30:40.165Z"
+  },
+  {
+    "event": "service_health",
+    "health": {
+      "status": "degraded",
+      "database": "connected",
+      "chain": {
+        "configured": false,
+        "code": "CHAIN_NOT_CONFIGURED"
+      },
+      "validator": {
+        "configured": false,
+        "code": "VALIDATOR_NOT_CONFIGURED"
+      }
+    },
+    "createdAt": "2026-10-17T08:30:41.453Z"
+  },
+  {
+    "event": "mcp_published",
+    "announcement": {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb",
+      "body": "独立 Worker 已通过真实 MCP 连接。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 节点在线",
+      "type": "BLOCKER",
+      "announcementId": "ea3b30bc-9cdb-4f9b-a4b6-bf2352e4d91d",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "createdAt": "2026-10-17T08:30:45.897Z"
+    },
+    "note": {
+      "runId": "worker-communication-f0887dc7-c5c4-4cec-b387-508fd7582d12",
+      "taskId": "0xe1d668d9b2a8b84d8ffd8d4eb815be75c3a7b15bfc5d3b433b7413d9bdc3baeb",
+      "body": "已发布节点进度，正在读取其他 Agent 的公告。任务服务缺少链适配器：CHAIN_NOT_CONFIGURED；链提交尚未执行。",
+      "topic": "ANALYSIS 执行条件",
+      "artifactIds": [],
+      "noteId": "0626224b-f169-4ee9-bb0b-b10aedf18085",
+      "author": "0x6fd7b6c7397b55749034053a58a7fce876dac613",
+      "version": 2,
+      "createdAt": "2026-10-17T08:30:53.064Z",
+      "updatedAt": "2026-10-17T08:30:58.600Z"
+    },
+    "createdAt": "2026-10-17T08:31:00.187Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "1607dfce-68c5-4aa3-b651-835ae9164760",
+      "ea3b30bc-9cdb-4f9b-a4b6-bf2352e4d91d"
+    ],
+    "peerAuthors": [
+      "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58"
+    ],
+    "noteIds": [
+      "83dfb4d2-8751-4488-bc99-6709a3bf0721",
+      "0626224b-f169-4ee9-bb0b-b10aedf18085"
+    ],
+    "createdAt": "2026-10-17T08:31:00.995Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "1607dfce-68c5-4aa3-b651-835ae9164760",
+      "ea3b30bc-9cdb-4f9b-a4b6-bf2352e4d91d"
+    ],
+    "peerAuthors": [
+      "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58"
+    ],
+    "noteIds": [
+      "83dfb4d2-8751-4488-bc99-6709a3bf0721",
+      "0626224b-f169-4ee9-bb0b-b10aedf18085"
+    ],
+    "createdAt": "2026-10-17T08:31:16.087Z"
+  },
+  {
+    "event": "mcp_read",
+    "announcementIds": [
+      "1607dfce-68c5-4aa3-b651-835ae9164760",
+      "ea3b30bc-9cdb-4f9b-a4b6-bf2352e4d91d"
+    ],
+    "peerAuthors": [
+      "0xd3e3e4bfce1e78806b3b962e05fdbf68e11d0b58"
+    ],
+    "noteIds": [
+      "83dfb4d2-8751-4488-bc99-6709a3bf0721",
+      "0626224b-f169-4ee9-bb0b-b10aedf18085"
+    ],
+    "createdAt": "2026-10-17T08:31:33.816Z"
+  },
+  {
+    "event": "worker_stopped",
+    "pid": 21776,
+    "createdAt": "2026-10-17T08:31:49.855Z",
+    "signal": true
+  }
+]

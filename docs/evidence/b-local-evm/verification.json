@@ -1,0 +1,34 @@
+{
+  "scope": "LOCAL_EVM_ONLY",
+  "testnetVerification": "NOT_PASSED",
+  "schema": "b_local_20261017_0905",
+  "chainId": 31337,
+  "checkedAt": "2026-10-17T09:28:45.591Z",
+  "checks": [
+    {
+      "runId": "b-local-evm-round-1-0169673d-95d7-4aef-b484-3e5365b2eefc",
+      "round": 1,
+      "nativeEventsIndividuallyLocated": 9,
+      "runtimeEventsIndividuallyLocated": 61,
+      "modelCalls": 3,
+      "artifactsRecomputed": 3,
+      "originalTransactionsReconciledTwice": 9,
+      "mcpRead": true
+    },
+    {
+      "runId": "b-local-evm-round-2-4f4b00bf-bbff-40cb-af6f-ccd7bcafbdce",
+      "round": 2,
+      "nativeEventsIndividuallyLocated": 9,
+      "runtimeEventsIndividuallyLocated": 58,
+      "modelCalls": 3,
+      "artifactsRecomputed": 3,
+      "originalTransactionsReconciledTwice": 9,
+      "mcpRead": true
+    }
+  ],
+  "registrationsIndividuallyLocated": 4,
+  "secondRoundConfirmedReputationRead": true,
+  "roleIsolation": true,
+  "anonymousHttpAndMcpProgressRejected": true,
+  "recoveredOriginalAssignment": "0x2ad9c092b20f01fd0555fd8d6e7ee45e572afc87a3621e00cf6539ca38a93fbb"
+}

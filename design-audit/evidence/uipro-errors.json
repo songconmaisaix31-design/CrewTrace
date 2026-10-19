@@ -1,0 +1,41 @@
+{
+  "domain": "ux",
+  "query": "error summary validation",
+  "file": "ux-guidelines.csv",
+  "count": 3,
+  "results": [
+    {
+      "Category": "Forms / Accessibility",
+      "Issue": "Focusable Error Summary",
+      "Platform": "Web",
+      "Description": "An error summary for failed validation complements inline field errors and must be easy to find by keyboard and screen reader users",
+      "Do": "Place it at the top of the form; move focus to its heading or container after failed submit; link each item to its invalid field; retain inline errors",
+      "Don't": "Replace inline errors with a visual-only summary or move focus on every blur",
+      "Code Example Good": "<div role=\"alert\" tabindex=\"-1\" aria-labelledby=\"error-title\"><h2 id=\"error-title\">There is a problem</h2><a href=\"#email\">Enter an email address</a></div>",
+      "Code Example Bad": "Toast only with no field links or focus target",
+      "Severity": "High"
+    },
+    {
+      "Category": "Accessibility",
+      "Issue": "Error Messages",
+      "Platform": "All",
+      "Description": "Error messages must be announced",
+      "Do": "Use aria-live or role=alert for errors",
+      "Don't": "Visual-only error indication",
+      "Code Example Good": "role='alert'",
+      "Code Example Bad": "Red border only",
+      "Severity": "High"
+    },
+    {
+      "Category": "Forms",
+      "Issue": "Error Placement",
+      "Platform": "All",
+      "Description": "Each invalid field needs an inline error connected to that field",
+      "Do": "Show a specific error below the input and reference it with aria-describedby",
+      "Don't": "Show only a top-level error without identifying each invalid field",
+      "Code Example Good": "<input aria-describedby=\"email-error\"><p id=\"email-error\">Enter an email address</p>",
+      "Code Example Bad": "Red border or summary only",
+      "Severity": "High"
+    }
+  ]
+}
