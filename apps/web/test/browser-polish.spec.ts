@@ -13,7 +13,7 @@ test('圆环暂停、恢复和页面往返保持画布与相位',async({page})=>
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
   await page.waitForTimeout(500);
   await expect(page.locator('.journey-trace path')).toHaveAttribute('d',/^M/);
-  await page.getByRole('button',{name:'上一屏：首页',exact:true}).click();
+  await page.getByRole('button',{name:'返回首页',exact:true}).click();
   await page.waitForTimeout(500);
   expect(Number(await ring.getAttribute('data-phase'))).toBe(phase);
   expect(await ring.evaluate((el,original)=>el===original,canvas)).toBe(true);
