@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'rea
 import { collaborationError } from './collaboration-api';
 import { useI18n } from './i18n';
 import {useSoundFeedback} from './SoundFeedback';
+import {Plus} from 'lucide-react';
 
 export const field=(data:FormData,name:string)=>String(data.get(name)??'');
 export const fields=(data:FormData,name:string)=>data.getAll(name).map(value=>String(value).trim()).filter(Boolean);
@@ -22,7 +23,7 @@ export default function ActionForm({children,label,onSubmit}:{children:ReactNode
     catch(problem){setError(collaborationError(problem));play('error');}
     finally{submitting.current=false;setBusy(false);}
   }
-  return <form ref={ref} className="public-form" data-dirty={dirty} data-busy={busy} aria-busy={busy} onInput={trackChanges} onChange={trackChanges} onSubmit={submit}><fieldset className="action-fields" disabled={busy}>{children}</fieldset>{error&&<p className="error" role="alert">{translateError(error)}</p>}<button className="primary" disabled={busy}>{busy?t('正在提交…','Submitting…'):label}</button></form>;
+  return <form ref={ref} className="public-form" data-dirty={dirty} data-busy={busy} aria-busy={busy} onInput={trackChanges} onChange={trackChanges} onSubmit={submit}><fieldset className="action-fields" disabled={busy}>{children}</fieldset>{error&&<p className="error" role="alert">{translateError(error)}</p>}<button className="primary" disabled={busy}>{!busy&&/^(发布|Post\s)/.test(label)&&<Plus size={16} aria-hidden="true"/>}{busy?t('正在提交…','Submitting…'):label}</button></form>;
 }
 
 export function CapabilityFields({name,label}:{name:string;label:string}){
