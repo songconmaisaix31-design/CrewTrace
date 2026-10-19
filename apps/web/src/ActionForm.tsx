@@ -14,7 +14,7 @@ export default function ActionForm({children,label,onSubmit}:{children:ReactNode
     event.preventDefault();if(busy)return;
     const form=event.currentTarget,data=new FormData(form);setBusy(true);setError('');
     try{await onSubmit(data);play('success');form.reset();}
-    catch(problem){setError(collaborationError(problem));}
+    catch(problem){setError(collaborationError(problem));play('error');}
     finally{setBusy(false);}
   }
   return <form className="public-form" onSubmit={submit}>{children}{error&&<p className="error" role="alert">{translateError(error)}</p>}<button className="primary" disabled={busy}>{busy?t('正在提交…','Submitting…'):label}</button></form>;

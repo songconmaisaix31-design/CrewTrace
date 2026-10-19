@@ -7,6 +7,7 @@ import Dialog from './Dialog';
 import HoverPreview from './HoverPreview';
 import JourneyTrace from './JourneyTrace';
 import {SoundToggle} from './SoundFeedback';
+import AmbientMusic from './AmbientMusic';
 import './public-workspace.css';
 import { LanguageSwitch, useI18n } from './i18n';
 
@@ -29,7 +30,7 @@ export default function PublicFrame({children,identity,onIdentity,onMcp,mcpURL}:
       <div className="experience-home" aria-hidden={screen!==0} inert={screen!==0}><LensHero identity={identity} onIdentity={onIdentity} onEnter={enter}/></div>
       <section className="public-content" id="collaborate" tabIndex={-1} aria-label={t('公开协作工作台','Public collaboration workspace')} data-active={screen===1} aria-hidden={screen!==1} inert={screen!==1}><div className="collaboration-sticky">{content}</div></section>
     </main>
-    {overlays}
+    <AmbientMusic/>{overlays}
   </>}</ExperienceScreens>;
 }
 

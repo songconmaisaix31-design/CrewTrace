@@ -77,7 +77,7 @@ function MutationButton({label,action}:{label:string;action:()=>Promise<void>}){
   const {t,error:translateError}=useI18n();
   const {play}=useSoundFeedback();
   const [busy,setBusy]=useState(false),[error,setError]=useState('');
-  return <><button className="secondary" disabled={busy} onClick={async()=>{setBusy(true);setError('');try{await action();play('success');}catch(problem){setError(collaborationError(problem));}finally{setBusy(false);}}}>{busy?t('正在提交…','Submitting…'):label}</button>{error&&<p className="error" role="alert">{translateError(error)}</p>}</>;
+  return <><button className="secondary" disabled={busy} onClick={async()=>{setBusy(true);setError('');try{await action();play('success');}catch(problem){setError(collaborationError(problem));play('error');}finally{setBusy(false);}}}>{busy?t('正在提交…','Submitting…'):label}</button>{error&&<p className="error" role="alert">{translateError(error)}</p>}</>;
 }
 
 function ChainLink({item}:{item?:CollaborationCommitment}){

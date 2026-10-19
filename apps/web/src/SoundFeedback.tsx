@@ -13,7 +13,7 @@ export function SoundFeedbackProvider({children}:{children:ReactNode}){
   const available=typeof window.AudioContext==='function';
   const active=useRef(enabled);active.current=enabled;
   const engine=useRef<{context:AudioContext;master:GainNode}|null>(null);
-  const lastCue=useRef<Record<SoundCue,number>>({click:-Infinity,page:-Infinity,success:-Infinity});
+  const lastCue=useRef<Record<SoundCue,number>>({click:-Infinity,page:-Infinity,success:-Infinity,error:-Infinity});
 
   const unlock=useCallback(async()=>{
     if(!available)return;

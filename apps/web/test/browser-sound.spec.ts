@@ -8,7 +8,7 @@ test('声音默认关闭、主动开启、切页发声、静音及偏好持久�
   input.on('WebAudio.contextCreated',()=>contexts++);
   input.on('WebAudio.audioNodeCreated',({node})=>{if(node.nodeType==='Oscillator')oscillators++;});
   await page.goto('/');
-  const toggle=page.locator('[data-sound-toggle]');
+  const toggle=page.locator('.sound-toggle[data-sound-toggle]');
   await expect(toggle).toHaveAttribute('aria-pressed','false');
   await page.getByRole('button',{name:'接入 MCP',exact:true}).click();
   await page.keyboard.press('Escape');
@@ -35,22 +35,22 @@ test('声音默认关闭、主动开启、切页发声、静音及偏好持久�
   await page.waitForTimeout(250);
   expect(oscillators).toBe(muted);
   await page.reload();
-  await expect(page.locator('[data-sound-toggle]')).toHaveAttribute('aria-pressed','false');
-  await page.locator('[data-sound-toggle]').click();
-  await expect(page.locator('[data-sound-toggle]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.sound-toggle[data-sound-toggle]')).toHaveAttribute('aria-pressed','false');
+  await page.locator('.sound-toggle[data-sound-toggle]').click();
+  await expect(page.locator('.sound-toggle[data-sound-toggle]')).toHaveAttribute('aria-pressed','true');
   await page.reload();
-  await expect(page.locator('[data-sound-toggle]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('.sound-toggle[data-sound-toggle]')).toHaveAttribute('aria-pressed','true');
   await page.getByRole('button',{name:'管理协作身份',exact:true}).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 });
 
-test('三种合成音实际渲染有限波形且平滑结束',async({page})=>{
+test('四种合成音实际渲染有限波形且平滑结束',async({page})=>{
   await page.goto('/');
   const results=await page.evaluate(async()=>{
     // @ts-expect-error 浏览器从 Vite 加载实际模块。
     const {renderSoundCue}=await import('/src/sound-cues.ts');
     const results=[];
-    for(const cue of ['click','page','success']){
+    for(const cue of ['click','page','success','error']){
       const context=new OfflineAudioContext(1,22050,44100);
       const master=context.createGain();master.gain.value=.22;master.connect(context.destination);
       renderSoundCue(context,master,cue);
@@ -70,7 +70,7 @@ for(const width of [320,390])test(`手机音效开关及其他顶部入口不重
   await page.goto('/');
   for(const workspace of [false,true]){
     if(workspace)await page.getByRole('link',{name:'向下探索',exact:true}).click();
-    await expect(page.locator('[data-sound-toggle]')).toBeVisible();
+    await expect(page.locator('.sound-toggle[data-sound-toggle]')).toBeVisible();
     await page.waitForTimeout(400);
     const controls=page.locator('.public-topbar .header-actions > button');
     const brand=(await page.locator('.public-topbar .brand').boundingBox())!;

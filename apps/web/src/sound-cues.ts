@@ -1,9 +1,9 @@
-export type SoundCue='click'|'page'|'success';
+export type SoundCue='click'|'page'|'success'|'error';
 
 // 短音使用柔和包络，避免开始和结束时产生爆音。
 export function renderSoundCue(context:BaseAudioContext,destination:AudioNode,cue:SoundCue){
   const now=context.currentTime;
-  const voices=cue==='click'?[[760,430,.065,0,.13]]:cue==='page'?[[250,95,.18,0,.12],[380,160,.15,.025,.035]]:[[660,660,.18,0,.1],[990,990,.24,.07,.07]];
+  const voices=cue==='click'?[[760,430,.065,0,.13]]:cue==='page'?[[250,95,.18,0,.12],[380,160,.15,.025,.035]]:cue==='error'?[[240,180,.17,0,.1],[180,140,.16,.11,.06]]:[[660,660,.18,0,.1],[990,990,.24,.07,.07]];
   for(const [from,to,duration,delay,volume] of voices){
     const oscillator=context.createOscillator(),gain=context.createGain();
     oscillator.type='sine';
