@@ -1,4 +1,30 @@
-.sound-preview-status{display:grid;grid-template-columns:1fr auto;gap:12px 24px;margin-top:16px;font-size:13px}
-.sound-preview-status span:nth-child(even){color:#dfd1f4;text-align:right}
-.ambient-settings{display:grid;gap:20px;padding:4px 0 12px}.ambient-settings>p{color:#b8afc4;line-height:1.65;margin:0}.ambient-settings section{display:flex;align-items:center;justify-content:space-between;gap:16px}.ambient-settings section>div{display:grid;gap:7px}.ambient-settings strong{font-size:15px;font-weight:500}.ambient-settings section span{font-size:12px;color:#a89bb8}.ambient-settings button{flex-shrink:0;min-height:44px}.ambient-volume{display:flex;align-items:center;gap:14px;font-size:13px}.ambient-volume input{min-width:40px;flex:1;accent-color:#c5abed;height:32px}.ambient-volume output{min-width:34px;font-variant-numeric:tabular-nums}.ambient-help{font-size:12px}.ambient-credit{font-size:11px;color:#aa9bbd;justify-self:start}
-@media(max-width:600px){.ambient-settings section{gap:10px}.ambient-settings section span{font-size:11px;max-width:160px}}
+.experience-shell .centered-dialog[data-variant=sound]{width:min(520px,calc(100vw - 32px));padding:26px;background:radial-gradient(ellipse at 0 0,#37264155,transparent 65%),#121017;border:1px solid #d6bdf124;box-shadow:0 30px 120px #0009,inset 0 1px #ffffff0a}
+.ambient-settings{display:grid;gap:18px;padding:4px 0 0}
+.ambient-settings>p{color:#b8afc4;line-height:1.65;margin:0}
+.ambient-settings section,.sound-quick-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.ambient-settings .sound-section-title{display:flex;align-items:center;gap:12px;min-width:0}
+.sound-section-title>svg{flex:none;color:#bd9fdb}
+.sound-section-title>div{display:grid;gap:6px;min-width:0}
+.ambient-settings strong{font-size:15px;font-weight:500}
+.ambient-settings section span{font-size:12px;color:#a89bb8;line-height:1.5}
+.ambient-settings .sound-playback-state{font-size:11px;color:#bca2d8;margin-top:-10px}
+.sound-switch{flex:none;min-height:40px;padding:8px 13px;border:1px solid #c2a4e52b;border-radius:24px;background:#b99bd00a;color:#c8bbd7;font-size:12px;line-height:1.4;cursor:pointer;transition:background .16s,border-color .16s}
+.sound-switch[aria-pressed=true]{background:#bb99ea1c;border-color:#c9a6eb77;color:#f0e5ff}
+.sound-switch:hover{background:#c6a4ee24;border-color:#c9a6eb88}
+.sound-switch:focus-visible{outline:2px solid #c4afff;outline-offset:3px}.sound-switch:disabled{opacity:.45;cursor:not-allowed}
+.ambient-volume{display:grid;gap:4px;font-size:12px;color:#c2b5d0}
+.ambient-volume>span{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.ambient-volume input{width:100%;min-width:0;accent-color:#c5abed;height:32px;margin:0;cursor:pointer}
+.ambient-volume output{font-variant-numeric:tabular-nums;color:#eee3fb}
+.ambient-volume .volume-limits{font-size:10px;color:#94879f}
+.sound-effects-section{padding-top:20px;border-top:1px solid #c4a5ff18}
+.ambient-help{font-size:12px;color:#a89bb8}.ambient-help summary{cursor:pointer;min-height:30px;align-content:center}.ambient-help p{line-height:1.7;margin:8px 0 0}
+.ambient-credit{font-size:11px;color:#aa9bbd;justify-self:start}
+.sound-quick{display:grid;gap:16px}.sound-quick-row{font-size:13px}.sound-quick-row>div{display:grid;gap:4px}
+.interactive-preview .sound-quick-row small{margin:0;color:#a99ab8;font-size:11px}
+.sound-quick>p{font-size:12px;color:#d6bddf;margin:0;line-height:1.6}
+.hover-preview.interactive-preview{width:360px;max-width:calc(100vw - 32px);padding:20px;pointer-events:auto;overflow:auto;overscroll-behavior:contain}
+.interactive-preview .hover-preview-content{max-height:none;overflow:visible;mask-image:none}
+.interactive-preview .sound-switch{min-height:36px;padding:7px 12px;font-size:11px}
+.interactive-preview>.hover-preview-content+small{border-top:1px solid #c4a5ff18;padding-top:12px;font-size:10px}
+@media(max-width:600px){.experience-shell .centered-dialog[data-variant=sound]{padding:22px 18px}.ambient-settings section{gap:10px}.ambient-settings section span{font-size:11px}.ambient-settings .sound-section-title{gap:8px}.sound-switch{padding:8px 10px;font-size:11px}.ambient-settings strong{font-size:14px}}

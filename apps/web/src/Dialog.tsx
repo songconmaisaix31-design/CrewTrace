@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { useI18n } from './i18n';
 
-export default function Dialog({title,children,onClose,variant='default'}:{title:string;children:ReactNode;onClose:()=>void;variant?:'default'|'identity'|'create'|'mcp'}){
+export default function Dialog({title,children,onClose,variant='default'}:{title:string;children:ReactNode;onClose:()=>void;variant?:'default'|'identity'|'create'|'mcp'|'sound'}){
   const {t}=useI18n();
   const ref=useRef<HTMLDialogElement>(null);
   const [closing,setClosing]=useState(false);

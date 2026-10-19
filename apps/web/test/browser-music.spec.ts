@@ -58,6 +58,8 @@ for(const width of [320,390])test(`中英文统一声音入口位于顶部且无
     await music.click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await expect(page.getByRole('slider')).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCSS('opacity','1');
+    await page.screenshot({path:`.local/sound-settings-${width}-${english?'en':'zh'}.png`});
     await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
   }
 });
@@ -83,7 +85,7 @@ test('声音悬停只预览，移入保持，点击固定为设置弹窗',async(
   await page.goto('/');
   const entry=page.getByRole('button',{name:'音乐与音效设置',exact:true});
   await entry.hover();
-  const preview=page.getByRole('tooltip');
+  const preview=page.getByRole('region',{name:'音乐与音效设置',exact:true});
   await expect(preview).toContainText('首页音乐');
   await preview.hover();
   await page.waitForTimeout(400);
@@ -101,4 +103,41 @@ test('声音悬停只预览，移入保持，点击固定为设置弹窗',async(
   await page.getByRole('link',{name:'向下探索',exact:true}).click();
   await entry.click();
   await expect(page.locator('[data-music-toggle]')).toBeVisible();
+});
+
+test('悬浮快捷控制与完整设置共享开关和音量，键盘可进入和退出',async({page})=>{
+  await page.goto('/');
+  const entry=page.getByRole('button',{name:'音乐与音效设置',exact:true});
+  await entry.hover();
+  const quick=page.getByRole('region',{name:'音乐与音效设置',exact:true});
+  await expect(quick).toBeVisible();
+  await expect(quick).toHaveCSS('opacity','1');
+  const quickBox=(await quick.boundingBox())!,effectsBox=(await quick.locator('[data-quick-effects]').boundingBox())!;
+  expect(effectsBox.y+effectsBox.height).toBeLessThan(quickBox.y+quickBox.height);
+  await page.screenshot({path:'.local/sound-quick-controls.png'});
+  await quick.locator('[data-quick-music]').click();
+  await expect(quick.locator('[data-quick-music]')).toHaveAttribute('aria-pressed','true');
+  await quick.getByRole('slider').fill('8');
+  await quick.locator('[data-quick-effects]').click();
+  await expect(quick.locator('[data-quick-effects]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await entry.click();
+  await expect(quick).toHaveCount(0);
+  await expect(page.locator('[data-music-toggle]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-effects-toggle]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.getByRole('slider')).toHaveValue('8');
+  await expect(page.getByRole('dialog')).toHaveCSS('opacity','1');
+  await page.screenshot({path:'.local/sound-full-settings.png'});
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('button',{name:'接入 MCP',exact:true}).focus();
+  await page.keyboard.press('Shift+Tab');
+  await expect(quick).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(quick.locator('[data-quick-music]')).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(quick.getByRole('slider')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(quick).toHaveCount(0);
+  await expect(entry).toBeFocused();
 });

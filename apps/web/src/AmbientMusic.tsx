@@ -1,5 +1,5 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
-import {Volume2,VolumeX} from 'lucide-react';
+import {Music2,Volume2,VolumeX} from 'lucide-react';
 import Dialog from './Dialog';
 import HoverPreview from './HoverPreview';
 import {useExperienceNavigation} from './ExperienceNavigation';
@@ -69,17 +69,21 @@ export default function AmbientMusic(){
   }
   const active=enabled&&started;
   const musicStatus=error?t('播放失败','Playback failed'):!enabled?t('关闭','Off'):!started?t('待恢复','Resume needed'):screen!==0?t('协作区暂停','Paused in workspace'):playing?t('播放中','Playing'):t('准备播放','Ready to play');
+  function musicButton(quick=false){return <button type="button" className="sound-switch" data-music-toggle={!quick||undefined} data-quick-music={quick||undefined} data-sound-toggle aria-pressed={active} aria-busy={loading} onClick={toggle}>{active?t('关闭音乐','Turn music off'):enabled?t('恢复音乐','Resume music'):t('开启音乐','Turn music on')}</button>;}
+  function effectsButton(quick=false){return <button type="button" className="sound-switch" data-effects-toggle={!quick||undefined} data-quick-effects={quick||undefined} data-sound-toggle aria-pressed={sound.enabled} disabled={!sound.available} onClick={sound.toggle}>{sound.enabled?t('关闭音效','Turn effects off'):t('开启音效','Turn effects on')}</button>;}
+  function volumeControl(){return <label className="ambient-volume"><span>{t('音乐音量','Music volume')}<output>{Math.round(volume*100)}%</output></span><input aria-label={t('音乐音量','Music volume')} type="range" min="2" max="30" value={Math.round(volume*100)} onChange={event=>{const next=Number(event.target.value)/100;setVolume(next);localStorage.setItem(volumeKey,String(next));}}/><span className="volume-limits"><span>2%</span><span>30%</span></span></label>;}
   return <>
-    <HoverPreview className="sound-toggle" silent active={active||sound.enabled} label={t('音乐与音效设置','Music and sound settings')} dialogOpen={settings} onClick={()=>setSettings(true)} hint={t('点击调整音乐与音效','Click to adjust music and sound effects')} preview={<><strong>{t('声音','Sound')}</strong><div className="sound-preview-status"><span>{t('首页音乐','Homepage music')}</span><span>{musicStatus}</span><span>{t('交互音效','Interaction sounds')}</span><span>{sound.enabled?t('已开启','On'):t('关闭','Off')}</span></div>{sound.error&&<p>{t(sound.error,'Sound effects could not start. Try again.')}</p>}</>}>{active||sound.enabled?<Volume2 size={16}/>:<VolumeX size={16}/>}</HoverPreview>
-    {settings&&<Dialog title={t('声音','Sound')} onClose={()=>setSettings(false)}>
+    <HoverPreview className="sound-toggle" silent interactive active={active||sound.enabled} label={t('音乐与音效设置','Music and sound settings')} dialogOpen={settings} onClick={()=>setSettings(true)} hint={t('点击顶部声音图标，打开完整设置','Click the sound icon above for full settings')} preview={<div className="sound-quick"><strong>{t('声音','Sound')}</strong><div className="sound-quick-row"><div><span>{t('首页音乐','Homepage music')}</span><small>{musicStatus}</small></div>{musicButton(true)}</div>{volumeControl()}<div className="sound-quick-row"><span>{t('交互音效','Interaction sounds')}</span>{effectsButton(true)}</div>{loading&&<p role="status">{t('正在加载音乐…','Loading music…')}</p>}{error&&<p role="alert">{t(error,'Music could not play. Please try again.')}</p>}{sound.error&&<p role="status">{t(sound.error,'Sound effects could not start. Try again.')}</p>}</div>}>{active||sound.enabled?<Volume2 size={16}/>:<VolumeX size={16}/>}</HoverPreview>
+    {settings&&<Dialog title={t('声音','Sound')} variant="sound" onClose={()=>setSettings(false)}>
       <div className="ambient-settings">
-        <section><div><strong>{t('首页氛围音乐','Homepage music')}</strong><span>Futuristic Pulse · Universfield</span></div><button className="secondary" data-music-toggle data-sound-toggle aria-pressed={active} aria-busy={loading} onClick={toggle}>{active?t('关闭音乐','Turn music off'):enabled?t('恢复音乐','Resume music'):t('开启音乐','Turn music on')}</button></section>
+        <section><div className="sound-section-title"><Music2 size={18} aria-hidden="true"/><div><strong>{t('首页氛围音乐','Homepage music')}</strong><span>Futuristic Pulse · Universfield</span></div></div>{musicButton()}</section>
+        <p className="sound-playback-state" role="status">{musicStatus}</p>
         {loading&&<p role="status">{t('正在加载音乐…','Loading music…')}</p>}
-        <label className="ambient-volume">{t('音乐音量','Music volume')}<input aria-label={t('音乐音量','Music volume')} type="range" min="2" max="30" value={Math.round(volume*100)} onChange={event=>{const next=Number(event.target.value)/100;setVolume(next);localStorage.setItem(volumeKey,String(next));}}/><output>{Math.round(volume*100)}%</output></label>
-        <p className="ambient-help">{t('进入协作区渐停，打开弹窗时降低音量。切换后台暂停；刷新后需主动恢复。','Fades out in the workspace, softens in dialogs and pauses in background tabs. Resume manually after reloading.')}</p>
+        {volumeControl()}
         {error&&<p role="alert" className="error">{t(error,'Music could not play. Please try again.')}</p>}
-        <section><div><strong>{t('交互音效','Interaction sounds')}</strong><span>{sound.available?t('点击、切页及提交反馈','Clicks, page changes and submission feedback'):t('当前浏览器不支持音效','Sound effects are unavailable in this browser')}</span></div><button className="secondary" data-effects-toggle data-sound-toggle aria-pressed={sound.enabled} disabled={!sound.available} onClick={sound.toggle}>{sound.enabled?t('关闭音效','Turn effects off'):t('开启音效','Turn effects on')}</button></section>
+        <section className="sound-effects-section"><div className="sound-section-title"><Volume2 size={18} aria-hidden="true"/><div><strong>{t('交互音效','Interaction sounds')}</strong><span>{sound.available?t('点击、切页及提交反馈','Clicks, page changes and submission feedback'):t('当前浏览器不支持音效','Sound effects are unavailable in this browser')}</span></div></div>{effectsButton()}</section>
         {sound.error&&<p role="status" className="error">{t(sound.error,'Sound effects could not start. Try again.')}</p>}
+        <details className="ambient-help"><summary>{t('播放规则','Playback behavior')}</summary><p>{t('进入协作区渐停，打开弹窗时降低音量。切换后台暂停；刷新后需主动恢复。','Fades out in the workspace, softens in dialogs and pauses in background tabs. Resume manually after reloading.')}</p></details>
         <a className="ambient-credit" href="https://pixabay.com/music/pulses-futuristic-pulse-212484/" target="_blank" rel="noreferrer">{t('音乐来源与许可','Music source and license')} ↗</a>
       </div>
     </Dialog>}
