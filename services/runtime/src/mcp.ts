@@ -1,86 +1,43 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
-import { admin,type Principal } from './auth.js';
-import type { Application } from './service.js';
-import { errorBody } from './errors.js';
 import { z } from 'zod';
-import {
-  AcceptTaskRequestSchema, AnnouncementCreateSchema, ArtifactUploadRequestSchema, CreateRunWithInputRequestSchema,
-  HashSchema, HeartbeatRequestSchema, IdSchema, InterruptRequestSchema, ModelCallRequestSchema, NoteCreateSchema,
-  NoteUpdateSchema, HandoffUpdateRequestSchema, SubmitTaskRequestSchema,
-  CollaborationGuideResponseSchema,
-} from '../../../packages/contracts/src/index.ts';
-import { Board } from './board.js';
-import { Execution } from './execution.js';
-import { collaborationTools } from './collaboration-tools.js';
-import { publicMcpURL } from './config.js';
-import { collaborationPrompt,collaborationPromptName,collaborationPromptURL,collaborationSkillURL } from './collaboration-prompt.js';
+import type { Actor,Commerce } from './service.js';
+import { DeliverySchema,OrderSchema,RegisterSchema,ReviewSchema,ServiceSchema } from './domain.js';
+import { AppError,errorBody } from './errors.js';
 
-export async function mcpResponse(app: Application, principal: Principal, request: Request) {
-  const server = new McpServer({ name: 'crewtrace-runtime', version: '0.1.0' }, {
-    maxToolInputElements: 1000,
-    instructions: `连接 ${publicMcpURL(app.config)}（Streamable HTTP），先调用匿名只读 get_collaboration_guide({})，或通过 prompts/get 读取无参数提示词 ${collaborationPromptName}，按用户需求使用 join_collaboration 加入协作、发布或参与悬赏。实际参数在 tools/list；凭证保持私密，悬赏当前为 MOCK。简短接入引导：${collaborationSkillURL}；${collaborationPromptURL}。`,
-  });
-  server.registerPrompt(collaborationPromptName,{
-    title:'CrewTrace 协作与悬赏流程',description:'起名加入、私密凭证、悬赏发布查询改价、分工认领、真实交付、退回重交、验收完成与释放取消；当前 MOCK，无需参数',
-  },async()=>({messages:[{role:'user',content:{type:'text',text:collaborationPrompt(publicMcpURL(app.config))}}]}));
-  server.registerTool('get_collaboration_guide',{
-    description:'开始协作 / Read guide：匿名只读、无参数，返回起名加入与完整 MOCK 悬赏流程；正文与原生 crewtrace_collaboration 提示词相同，适用于只支持 tools 的客户端',
-    inputSchema:z.strictObject({}),
-    annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false},
-  },async()=>({content:[{type:'text',text:JSON.stringify(CollaborationGuideResponseSchema.parse({promptName:collaborationPromptName,text:collaborationPrompt(publicMcpURL(app.config))}))}]}));
-  const board = new Board(app);
-  const execution = new Execution(app);
-  const register = (name: string,description: string,schema: z.ZodObject<any>,operation: (input: any)=>Promise<unknown>) => {
-    server.registerTool(name,{ description,inputSchema: schema },async input=>{
-      try {
-        const result = await operation(input);
-        return { content: [{ type: 'text' as const,text: JSON.stringify(result) }] };
-      } catch (error) {
-        return { isError: true,content: [{ type: 'text' as const,text: JSON.stringify(errorBody(error)) }] };
-      }
-    });
+export const guide=(base:string)=>`CrewTrace：发现专业 Agent 服务、确认价格与需求、支付宝按次付款、交付验收。\n1. 使用 list_services 查找服务及实际履历。没有评价表示能力尚未验证；免费评价与正式实付评价分开。\n2. 使用 join_collaboration 创建身份，妥善保存返回的 credential。后续使用 Authorization: Bearer 或工具 credential 参数。\n3. 取得用户对服务、固定报价、需求与金额上限的明确同意，再调用 create_order；用稳定 idempotencyKey 重试。同一 key 不可改变输入。\n4. request_payment 返回支付宝 amtPaymentLink 和 HTTP 资源地址。通过支付宝官方支付能力由用户确认付款。将官方 Payment-Proof 传给 verify_payment 或订单 HTTP 资源端点，不编造凭证。\n5. 内置服务 execute_order 执行真实 CSV 检查；外部 Agent 用 list_orders 找到分配给自己的工作，execute_order 开始，submit_delivery 交付完整 Markdown。\n6. 买家读取 get_order 检查原文，review_delivery 接受、退回重交或提出售后。仅已验收订单产生评价；验收与支付宝资金托管无关。\n7. 免费订单可直接执行。支付未配置时收费不可用，禁止宣称已付款。平台当前单商户收款，服务上架须商户核对登记资源与价格，不提供自动分账。\nREST: ${base}/api；MCP: ${base}/mcp。原始需求和交付仅订单双方可读。`;
+
+export async function mcpResponse(app:Commerce,principal:Actor|null,request:Request){
+  const server=new McpServer({name:'crewtrace',version:'0.2.0'},{instructions:guide(app.config.PUBLIC_BASE_URL)});
+  server.registerPrompt('crewtrace_collaboration',{description:'CrewTrace 支付与履约流程'},async()=>({messages:[{role:'user',content:{type:'text',text:guide(app.config.PUBLIC_BASE_URL)}}]}));
+  const identity=async(credential?:string)=>{
+    if(!credential)return principal;
+    const actor=await app.authenticate(`Bearer ${credential}`);
+    if(principal&&principal.id!==actor?.id)throw new AppError(403,'IDENTITY_MISMATCH','连接凭证与工具凭证必须对应同一身份');return actor;
   };
-  const contextFilter = z.strictObject({ runId: IdSchema.optional(),taskId: HashSchema.optional() });
-  const taskKey = z.strictObject({ taskId: HashSchema });
-  for (const tool of collaborationTools(app,principal)) register(tool.name,tool.description,tool.schema,tool.operation);
-  register('health','读取真实数据库与链依赖状态',z.strictObject({}),()=>app.health());
-  register('get_template','读取固定三角色流程与真实规则原文地址',z.strictObject({}),async()=>app.template());
-  register('list_agents','读取节点身份与实际心跳',z.strictObject({}),async()=>({ agents: await app.agents() }));
-  register('get_run','读取运行、任务进度、产物、决策和交接',z.strictObject({ runId: IdSchema }),input=>app.runDetails(input.runId));
-  register('get_events','按数据库 seq 增量读取事件',z.strictObject({ runId: IdSchema,after: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0) }),input=>app.store.events(input.runId,input.after));
-  register('get_task','读取任务状态',taskKey,input=>app.task(input.taskId));
-  register('get_artifact','读取原始 UTF-8 产物与摘要',z.strictObject({ artifactId: IdSchema }),async input=>{
-    const result = await app.artifact(input.artifactId);
-    return { artifact: result.artifact,content: result.bytes.toString('utf8') };
-  });
-  register('get_jobs','读取当前凭证节点的任务',z.strictObject({}),()=>app.jobs(principal));
-  register('heartbeat','报告当前节点在线状态',HeartbeatRequestSchema,input=>app.heartbeat(principal,input));
-  register('advance_work','节点推进管理员已创建的固定运行',z.strictObject({}),input=>app.advanceWork(principal,input));
-  register('accept_task','启动已指派任务，校验已接受的上游交接',AcceptTaskRequestSchema.extend({ taskId: HashSchema }),input=>execution.accept(principal,input.taskId,input.attempt));
-  register('reserve_model_call','在实际模型调用前预留预算',ModelCallRequestSchema.extend({ taskId: HashSchema }),input=>execution.reserveModelCall(principal,input.taskId,input.attempt));
-  register('upload_artifact','持久化原始 UTF-8 产物并验证摘要',ArtifactUploadRequestSchema,input=>execution.upload(principal,input));
-  register('submit_task','核对真实节点提交回执',z.strictObject({ taskId: HashSchema,request: SubmitTaskRequestSchema }),input=>execution.submit(principal,input.taskId,input.request));
-  register('report_interruption','记录运行中断并等待人工处理',InterruptRequestSchema.extend({ taskId: HashSchema }),input=>execution.interrupt(principal,input.taskId,input.attempt,input.reason));
-  register('update_handoff','核对已验收原始文件并接受或退回交接',HandoffUpdateRequestSchema.extend({ handoffId: IdSchema }),input=>execution.handoff(principal,input.handoffId,input.status,input.reason));
-  register('publish_announcement','发布当前节点的进度、阻塞或成果交接公告',AnnouncementCreateSchema,input=>board.publish(principal,input));
-  register('list_announcements','公开读取公告，按 runId/taskId 查询',contextFilter,input=>board.announcements(input.runId,input.taskId));
-  register('create_note','创建当前节点的便签与交接说明',NoteCreateSchema,input=>board.createNote(principal,input));
-  register('list_notes','公开读取便签，按 runId/taskId 查询',contextFilter,input=>board.notes(input.runId,input.taskId));
-  register('get_note','读取便签与完整版本历史',z.strictObject({ noteId: IdSchema }),input=>board.note(input.noteId));
-  register('update_note','按 expectedVersion 更新作者便签',z.strictObject({ noteId: IdSchema,request: NoteUpdateSchema }),input=>board.updateNote(principal,input.noteId,input.request));
-  register('create_run','管理凭证创建固定 CSV 工作流',CreateRunWithInputRequestSchema,input=>app.createRun(principal,input));
-  register('assign_task','管理凭证按真实链上信誉快照指派任务',taskKey,input=>execution.assign(principal,input.taskId));
-  register('assess_task','管理凭证执行确定性验收并写入真实链',taskKey,input=>execution.assess(principal,input.taskId));
-  register('advance_run','管理凭证按原交易恢复固定流程',z.strictObject({ runId: IdSchema }),async input=>{ admin(principal); return app.progress(input.runId); });
-  register('control_run','管理凭证暂停、恢复或取消运行',z.strictObject({ runId: IdSchema,action: z.enum(['pause','resume','cancel']) }),input=>execution.control(principal,input.runId,input.action));
-  const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
-  await server.connect(transport);
-  try {
-    const response=await transport.handleRequest(request);
-    response.headers.set('Cache-Control','no-store');
-    response.headers.set('Pragma','no-cache');
-    return response;
+  function tool(name:string,description:string,schema:z.ZodObject<any>,readOnly:boolean,fn:(input:any)=>Promise<unknown>){
+    server.registerTool(name,{description,inputSchema:schema,annotations:{readOnlyHint:readOnly,destructiveHint:false,openWorldHint:!readOnly}},async input=>{
+      try{return {content:[{type:'text',text:JSON.stringify(await fn(input))}]};}
+      catch(e){return {isError:true,content:[{type:'text',text:JSON.stringify(errorBody(e))}]};}
+    });
   }
-  finally { await server.close(); }
+  const auth={credential:z.string().min(1).max(100).optional()},order={orderId:z.string().length(32),...auth};
+  tool('get_collaboration_guide','读取真实支付与服务使用说明',z.strictObject({}),true,async()=>({text:guide(app.config.PUBLIC_BASE_URL)}));
+  tool('join_collaboration','创建 Agent 身份，凭证仅返回一次',RegisterSchema,false,input=>app.register(input));
+  tool('list_services','检索上架服务、人民币价格和已验收评价',z.strictObject({query:z.string().max(100).default(''),category:z.string().max(40).default('')}),true,input=>app.services(input.query,input.category));
+  tool('publish_service','发布真实服务；收费服务经商户确认登记后可上架',ServiceSchema.extend(auth),false,async({credential,...input})=>app.publish(await identity(credential),input));
+  tool('create_order','确认用户授权后创建订单，冻结价格、需求与服务版本',OrderSchema.extend(auth),false,async({credential,...input})=>app.createOrder(await identity(credential),input));
+  tool('list_orders','读取自己购买或负责交付的订单',z.strictObject(auth),true,async input=>app.listOrders(await identity(input.credential)));
+  tool('get_order','读取订单、历次交付和事件原文',z.strictObject(order),true,async input=>app.detail(await identity(input.credential),input.orderId));
+  tool('request_payment','创建官方预下单；此操作不会代替用户付款',z.strictObject(order),false,async input=>({...await app.pay(await identity(input.credential),input.orderId),resourceURL:`${app.config.PUBLIC_BASE_URL}/api/orders/${input.orderId}/resource`}));
+  tool('verify_payment','提交支付宝返回的 Base64 Payment-Proof 并由服务端验付',z.strictObject({...order,paymentProof:z.string().max(8192)}),false,async input=>app.pay(await identity(input.credential),input.orderId,input.paymentProof));
+  tool('execute_order','执行内置 CSV 服务，或由服务提供者开始处理订单',z.strictObject(order),false,async input=>app.execute(await identity(input.credential),input.orderId));
+  tool('submit_delivery','服务提供者交付完整 Markdown，支持退回后重交',DeliverySchema.extend(order),false,async input=>app.submit(await identity(input.credential),input.orderId,{content:input.content}));
+  tool('review_delivery','买家对当前版本验收，接受后登记一次真实评价',ReviewSchema.extend(order),false,async({credential,orderId,...input})=>app.review(await identity(credential),orderId,input));
+  tool('cancel_order','取消尚未发起支付且未开始工作的订单',z.strictObject(order),false,async input=>app.cancel(await identity(input.credential),input.orderId));
+  tool('open_dispute','买家提出售后，商户核实后处理',z.strictObject({...order,reason:z.string().min(5).max(2000)}),false,async input=>app.dispute(await identity(input.credential),input.orderId,input.reason));
+  tool('get_reputation','查看服务验收记录，区分免费与正式实付评价',z.strictObject({serviceId:z.string().max(80)}),true,input=>app.reputation(input.serviceId));
+  const transport=new WebStandardStreamableHTTPServerTransport({sessionIdGenerator:undefined,enableJsonResponse:true});
+  await server.connect(transport);
+  try{return await transport.handleRequest(request);}finally{await server.close();}
 }

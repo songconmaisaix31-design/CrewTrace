@@ -1,35 +1,28 @@
 import { z } from 'zod';
 
-const configSchema = z.object({
-  DATABASE_URL: z.url(),
-  ADMIN_TOKEN: z.string().min(32),
-  PUBLIC_BASE_URL: z.url(),
-  PUBLIC_MCP_URL: z.url().optional(),
+export const ConfigSchema = z.object({
+  DATABASE_URL: z.string().default('pglite://.local/crewtrace'),
+  PUBLIC_BASE_URL: z.url().default('http://127.0.0.1:3000'),
+  ALLOWED_ORIGINS: z.string().default('http://127.0.0.1:5173'),
   PORT: z.coerce.number().int().min(0).max(65535).default(3000),
-  CHAIN_ADAPTER_MODULE: z.string().min(1).optional(),
-  CHAIN_ID: z.coerce.number().int().positive().default(10143),
-  CHAIN_RPC_URL: z.url().optional(),
-  CHAIN_DEPLOYMENT_BLOCK: z.string().regex(/^(0|[1-9][0-9]*)$/).optional(),
-  CHAIN_CONTRACT: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
-  CHAIN_COORDINATOR: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
-  CHAIN_VALIDATOR: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
-  CHAIN_COORDINATOR_PRIVATE_KEY: z.string().regex(/^0x[0-9a-fA-F]{64}$/).optional(),
-  CHAIN_VALIDATOR_PRIVATE_KEY: z.string().regex(/^0x[0-9a-fA-F]{64}$/).optional(),
-  COLLABORATION_CHAIN_ID: z.coerce.number().int().positive().default(10143),
-  COLLABORATION_CHAIN_RPC_URL: z.url().optional(),
-  COLLABORATION_CHAIN_DEPLOYMENT_BLOCK: z.string().regex(/^(0|[1-9][0-9]*)$/).optional(),
-  COLLABORATION_CHAIN_CONTRACT: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
-  COLLABORATION_CHAIN_RECORDER: z.string().regex(/^0x[0-9a-fA-F]{40}$/).optional(),
-  COLLABORATION_CHAIN_RECORDER_PRIVATE_KEY: z.string().regex(/^0x[0-9a-fA-F]{64}$/).optional(),
-  COLLABORATION_CHAIN_EXPLORER: z.url().default('https://testnet.monadscan.com'),
-  COLLABORATION_CHAIN_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(15000),
-  VALIDATOR_MODULE: z.string().min(1).optional(),
-  ALLOWED_ORIGINS: z.string().default(''),
+  HOST: z.string().default('127.0.0.1'),
+  PAYMENT_MODE: z.enum(['disabled','sandbox','production']).default('disabled'),
+  ADMIN_TOKEN: z.string().min(32).optional(),
+  ALIPAY_APP_ID: z.string().optional(),
+  ALIPAY_PRIVATE_KEY: z.string().optional(),
+  ALIPAY_PUBLIC_KEY: z.string().optional(),
+  ALIPAY_KEY_TYPE: z.enum(['PKCS1','PKCS8']).default('PKCS8'),
+  ALIPAY_GATEWAY: z.url().optional(),
+  ALIPAY_SELLER_ID: z.string().optional(),
+}).superRefine((c,ctx)=>{
+  if(c.PAYMENT_MODE!=='disabled'){
+    for(const key of ['ALIPAY_APP_ID','ALIPAY_PRIVATE_KEY','ALIPAY_PUBLIC_KEY','ALIPAY_SELLER_ID','ADMIN_TOKEN'] as const)
+      if(!c[key]) ctx.addIssue({code:'custom',path:[key],message:'启用支付必须配置此项'});
+    const gateway=c.PAYMENT_MODE==='production'?'https://openapi.alipay.com/gateway.do':'https://openapi-sandbox.dl.alipaydev.com/gateway.do';
+    if(c.ALIPAY_GATEWAY && c.ALIPAY_GATEWAY!==gateway)ctx.addIssue({code:'custom',path:['ALIPAY_GATEWAY'],message:'支付环境与官方网关不一致'});
+  }
+  if(c.PAYMENT_MODE==='production' && (!c.PUBLIC_BASE_URL.startsWith('https://') || c.DATABASE_URL.startsWith('pglite:')))
+    ctx.addIssue({code:'custom',message:'正式支付要求 HTTPS 与独立 PostgreSQL'});
 });
-
-export function loadConfig() { return configSchema.parse(process.env); }
-export type Config = z.infer<typeof configSchema>;
-
-export function publicMcpURL(config: Config) {
-  return config.PUBLIC_MCP_URL ?? `${config.PUBLIC_BASE_URL}/mcp`;
-}
+export type Config=z.infer<typeof ConfigSchema>;
+export const loadConfig=()=>ConfigSchema.parse(process.env);

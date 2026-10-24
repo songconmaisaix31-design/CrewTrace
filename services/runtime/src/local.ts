@@ -1,10 +1,10 @@
 import { serve } from '@hono/node-server';
-import app, { runtime } from './index.js';
-
-const server = serve({ fetch: app.fetch, hostname: '127.0.0.1', port: Number(process.env.PORT ?? 3000) }, info => {
-  if (runtime.config.PORT===0) runtime.config.PUBLIC_BASE_URL = `http://127.0.0.1:${info.port}`;
-  console.log(JSON.stringify({ event: 'listening',url: `http://127.0.0.1:${info.port}` }));
-});
-const shutdown = () => server.close(() => { void runtime.db.close(); });
-process.on('SIGTERM',shutdown);
-process.on('SIGINT',shutdown);
+import { serveStatic } from '@hono/node-server/serve-static';
+import { fileURLToPath } from 'node:url';
+import app,{database,runtime} from './index.js';
+await database.migrate();
+const root=fileURLToPath(new URL('../../../apps/web/dist',import.meta.url));
+app.use('/*',serveStatic({root}));
+const server=serve({fetch:app.fetch,hostname:runtime.config.HOST,port:runtime.config.PORT},info=>console.log(JSON.stringify({event:'listening',port:info.port,paymentMode:runtime.config.PAYMENT_MODE})));
+const shutdown=()=>server.close(()=>{void database.close();});
+process.on('SIGINT',shutdown);process.on('SIGTERM',shutdown);

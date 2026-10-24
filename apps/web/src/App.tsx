@@ -1,183 +1,83 @@
-import { useEffect, useRef, useState, type ReactNode, type FormEvent } from 'react';
-import { Activity, ArrowDownToLine, ArrowRight, ArrowUpRight, Check, ChevronRight, Database, FileText, GitCompareArrows, History, Layers, LockKeyhole, Network, RefreshCw, Search, ShieldCheck, X } from 'lucide-react';
-import { AgentsResponseSchema, RunDetailSchema, RunSchema, EventsResponseSchema, AnnouncementsResponseSchema, type RunDetail, type AgentProfile, type RuntimeEvent, type Announcement, type Role, type AssignmentDecision } from '@co-vibe/contracts';
-import { ConfigSchema, HealthSchema, RequestError, endpoint, read, request, userMessage } from './api';
-import { agentOnline, completed, currentDecision, mergeEvents, roleName, roles, runState, short, stateName } from './model';
-import firstCSV from '../../../workers/fixtures/round-1.csv?raw';
-import secondCSV from '../../../workers/fixtures/round-2.csv?raw';
+import { useEffect,useRef,useState,type FormEvent,type ReactNode } from 'react';
+import { ArrowRight,ArrowUpRight,Check,CheckCircle2,ChevronRight,Copy as CopyIcon,Download,FileText,Layers,LoaderCircle,Plus,RefreshCw,Search,ShieldCheck,Star,Terminal,Wallet,X } from 'lucide-react';
 import Markdown from 'react-markdown';
-import SignalScene from './SignalScene';
-import LandingExperience from './LandingExperience';
-import PointerFeedback from './PointerFeedback';
-import CollaborationBoard from './CollaborationBoard';
-import './collaboration.css';
+import { api,eventNames,money,status,time,type Actor,type Detail,type Health,type Order,type Service } from './api';
+import Merchant from './Merchant';
 
-const descriptions = {DATA:'规范字段、处理重复记录，交付可用的数据。',ANALYSIS:'基于整理后的数据，计算可核对的业务指标。',REPORT:'引用统计结果，生成有据可查的分析报告。'};
-const exclusionName:Record<string,string> = {ROLE_MISMATCH:'不负责此类任务',HEARTBEAT_MISSING:'尚未上线',HEARTBEAT_EXPIRED:'暂时离线',HEARTBEAT_IN_FUTURE:'连接时间异常',BUSY:'正在忙碌',NOT_ADMITTED:'暂不可参与',CONDITIONS_NOT_ACCEPTED:'尚未确认参与'};
-const icons = {DATA:Database,ANALYSIS:Activity,REPORT:FileText};
-const time = (s:string) => new Date(s).toLocaleString('zh-CN',{hour12:false});
-const message = userMessage;
-function savedRuns():string[] { try { return JSON.parse(localStorage.getItem('co-vibe-runs') ?? '[]').filter((x:unknown)=>typeof x==='string').slice(0,20); } catch { return []; } }
-function Badge({value}:{value:string}) { return <span className={`badge ${['VERIFIED_PASS','CONFIRMED','ACCEPTED'].includes(value)?'good':['VERIFIED_FAIL','FAILED','RETURNED'].includes(value)?'bad':'neutral'}`}>{stateName[value] ?? '状态暂不可用'}</span>; }
-
-function Dialog({title,children,onClose}:{title:string;children:ReactNode;onClose:()=>void}) {
+type View='market'|'orders'|'publish'|'connect'|'merchant';
+function Dialog({title,children,onClose}:{title:string;children:ReactNode;onClose:()=>void}){
   const ref=useRef<HTMLDialogElement>(null);
-  useEffect(()=>{ const before=document.activeElement as HTMLElement; const dialog=ref.current; dialog?.showModal(); return ()=>{dialog?.close();before?.focus();}; },[]);
-  return <dialog ref={ref} className="drawer" aria-label={title} onCancel={e=>{e.preventDefault();onClose();}} onClick={e=>{if(e.target===e.currentTarget){const rect=e.currentTarget.getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)onClose();}}}><div className="drawer-head"><h2>{title}</h2><button className="icon-button" aria-label="关闭详情" onClick={onClose}><X size={20}/></button></div>{children}</dialog>;
+  useEffect(()=>{const before=document.activeElement as HTMLElement;ref.current?.showModal();return()=>{ref.current?.close();before?.focus();};},[]);
+  return <dialog ref={ref} onCancel={onClose} aria-label={title}><header><h2>{title}</h2><button className="icon" onClick={onClose} aria-label="关闭"><X size={20}/></button></header>{children}</dialog>;
 }
-function Decision({decision}:{decision:AssignmentDecision|undefined}) {
-  if(!decision)return <p className="muted">分工尚未完成，完成后可查看选择原因。</p>;
-  return <><p>{decision.selectionReason}</p><p className="muted">分工参考过往表现（80%）与当前空闲程度（20%）。尚无验收记录的成员，其能力仍待验证。</p>{decision.candidateScores.map(c=><div className="candidate" key={c.agentId}><strong className="mono">{short(c.agentId)}</strong>{decision.selectedAgentId===c.agentId&&<span className="accent">本轮选中</span>}<p>通过 {c.passCount} · 未通过 {c.failCount} · 样本 {c.sampleSize}</p><p>履历 {c.reputation.toFixed(3)} · 可用度 {c.availability.toFixed(3)} · 综合 {c.score.toFixed(3)}</p><p>当时任务负载 {c.activeTasks} / {c.maxConcurrency}</p></div>)}{decision.excludedReasons.map(c=><p key={c.agentId} className="muted">{short(c.agentId)}：未参与排名（{c.reasons.map(reason=>exclusionName[reason]??'暂不可参与').join('、')}）</p>)}<details><summary>查看决策证据</summary><p>政策 {decision.policyVersion} · 区块 {decision.repBlockNumber} · {time(decision.evaluatedAt)}</p><p>冻结时的节点状态</p>{decision.agents.map(a=><p key={a.agentId}><code>{a.agentId}</code> · {agentOnline(a.lastSeenAt,Date.parse(decision.evaluatedAt))?'当时在线':'当时离线或未知'} · 负载 {a.activeTasks}/{a.maxConcurrency}</p>)}<code>{decision.decisionHash}</code><a className="text-button" href={endpoint(`/api/decisions/${encodeURIComponent(decision.decisionId)}`)} target="_blank" rel="noreferrer">原始决策文件 <ArrowUpRight size={14}/></a></details></>;
+function Copy({value,label='复制'}:{value:string;label?:string}){
+  const [copied,setCopied]=useState(false),[error,setError]=useState('');
+  return <><button className="secondary" onClick={async()=>{try{await navigator.clipboard.writeText(value);setCopied(true);setError('');}catch{setError('无法自动复制，请手动选择文字。');}}}>{copied?<Check size={15}/>:<CopyIcon size={15}/>} {copied?'已复制':label}</button>{error&&<small role="status">{error}</small>}</>;
 }
-function ArtifactText({id}:{id:string}) {
-  const [text,setText]=useState(''); const [error,setError]=useState('');
-  useEffect(()=>{const controller=new AbortController();setText('');setError('');request(endpoint(`/api/artifacts/${encodeURIComponent(id)}/files/report.md`),{signal:controller.signal}).then(r=>r.text()).then(t=>{if(!controller.signal.aborted)setText(t);}).catch(e=>{if(!controller.signal.aborted)setError(message(e));});return()=>controller.abort();},[id]);
-  if(error)return <p role="alert" className="error">{error}</p>;
-  if(text.trimStart().startsWith('# '))return <article className="report-markdown"><Markdown skipHtml components={{img:()=>null,a:({children})=><span>{children}</span>}}>{text}</Markdown></article>;
-  return <pre className="report-text">{text||'正在读取文件…'}</pre>;
-}
-export default function App() {
-  const [view,setView]=useState<'workspace'|'history'|'compare'>('workspace');
-  const [sample,setSample]=useState<'round-1'|'round-2'>('round-1');
-  const [config,setConfig]=useState({configured:false,creationConfigured:false});
-  const [checking,setChecking]=useState(true),[connectionError,setConnectionError]=useState('');
-  const [health,setHealth]=useState<ReturnType<typeof HealthSchema.parse>|null>(null);
-  const [agents,setAgents]=useState<AgentProfile[]>([]);
-  const [runId,setRunId]=useState(new URLSearchParams(location.search).get('run')??'');
-  const [run,setRun]=useState<RunDetail|null>(null),[events,setEvents]=useState<RuntimeEvent[]>([]),[announcements,setAnnouncements]=useState<Announcement[]>([]);
-  const [syncError,setSyncError]=useState(''),[updated,setUpdated]=useState('');
-  const [notesError,setNotesError]=useState(''),[notesUpdated,setNotesUpdated]=useState('');
-  const [history,setHistory]=useState<string[]>(savedRuns),[lookup,setLookup]=useState('');
-  const [busy,setBusy]=useState(false),[createError,setCreateError]=useState('');
-  const [pendingId,setPendingId]=useState(()=>localStorage.getItem('co-vibe-pending')??'');
-  const [pendingSample,setPendingSample]=useState<'round-1'|'round-2'>(()=>localStorage.getItem('co-vibe-pending-sample')==='round-2'?'round-2':'round-1');
-  const [demoCode,setDemoCode]=useState('');
-  const [modal,setModal]=useState<'preview'|'access'|'service'|Role|null>(null);
-  const [handoffId,setHandoffId]=useState<string|null>(null);
-  const [artifactId,setArtifactId]=useState('');
-  const [compareId,setCompareId]=useState(''),[other,setOther]=useState<RunDetail|null>(null),[compareError,setCompareError]=useState(''),[compareBusy,setCompareBusy]=useState(false);
-  const compareVersion=useRef(0);
-  const remember=(id:string)=>{setHistory(items=>{if(items[0]===id)return items;const next=[id,...items.filter(x=>x!==id)].slice(0,20);localStorage.setItem('co-vibe-runs',JSON.stringify(next));return next;});};
-  const openRun=(id:string)=>{setRunId(id);setView('workspace');setModal(null);setHandoffId(null);setArtifactId('');const url=new URL(location.href);if(id)url.searchParams.set('run',id);else{url.searchParams.delete('run');url.searchParams.set('view','csv');}window.history.pushState({},'',url);};
-  useEffect(()=>{const pop=()=>{setRunId(new URLSearchParams(location.search).get('run')??'');setView('workspace');setArtifactId('');};window.addEventListener('popstate',pop);return()=>window.removeEventListener('popstate',pop);},[]);
-  useEffect(()=>{
-    let cancelled=false;const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;
-    async function refresh(){
-      try{
-        const c=ConfigSchema.parse(await (await request('/api/web?action=status',{signal:controller.signal})).json());
-        if(cancelled)return;setConfig(c);
-        if(c.configured){const [h,a]=await Promise.all([read('/health',HealthSchema,controller.signal),read('/api/agents',AgentsResponseSchema,controller.signal)]);if(cancelled)return;setHealth(h);setAgents(a.agents);}
-        setConnectionError('');
-      }catch(e){if(!cancelled)setConnectionError(message(e));}finally{if(!cancelled){setChecking(false);timer=setTimeout(refresh,10000);}}
-    }void refresh();return()=>{cancelled=true;controller.abort();clearTimeout(timer);};
-  },[]);
-  useEffect(()=>{
-    setRun(null);setEvents([]);setAnnouncements([]);setSyncError('');setUpdated('');setNotesError('');setNotesUpdated('');setOther(null);setCompareBusy(false);compareVersion.current++;
-    if(!runId||!config.configured)return;
-    const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;let after=0;
-    async function sync(){
-      try{
-        const detail=await read(`/api/runs/${encodeURIComponent(runId)}`,RunDetailSchema,controller.signal);
-        if(controller.signal.aborted)return;
-        if(detail.runId!==runId)throw new Error('返回记录与本次分析不匹配');
-        setRun(detail);setUpdated(new Date().toISOString());setSyncError('');remember(runId);
-        const page=await read(`/api/runs/${encodeURIComponent(runId)}/events?after=${after}`,EventsResponseSchema,controller.signal);
-        if(controller.signal.aborted)return;
-        if(page.events.some(e=>e.runId!==runId))throw new Error('返回事件与本次分析不匹配');
-        setEvents(old=>mergeEvents(old,page.events));after=page.nextAfter;
-      }catch(e){if(!controller.signal.aborted)setSyncError(message(e));}finally{if(!controller.signal.aborted)timer=setTimeout(sync,2000);}
-    }void sync();return()=>{controller.abort();clearTimeout(timer);};
-  },[runId,config.configured]);
-  useEffect(()=>{
-    if(!runId||!config.configured)return;
-    const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;
-    async function syncNotes(){
-      try{
-        const notes=await read(`/api/announcements?runId=${encodeURIComponent(runId)}`,AnnouncementsResponseSchema,controller.signal);
-        if(notes.announcements.some(n=>n.runId!==runId))throw new Error('公告与本次分析不匹配');
-        if(!controller.signal.aborted){setAnnouncements(notes.announcements);setNotesError('');setNotesUpdated(new Date().toISOString());}
-      }catch(e){if(!controller.signal.aborted)setNotesError(message(e));}
-      finally{if(!controller.signal.aborted)timer=setTimeout(syncNotes,2000);}
-    }
-    void syncNotes();return()=>{controller.abort();clearTimeout(timer);};
-  },[runId,config.configured]);
-  async function create(e:FormEvent){
-    e.preventDefault();if(busy)return;setBusy(true);setCreateError('');
-    const id=pendingId||crypto.randomUUID();const submittedSample=pendingId?pendingSample:sample;setPendingSample(submittedSample);setPendingId(id);localStorage.setItem('co-vibe-pending',id);localStorage.setItem('co-vibe-pending-sample',submittedSample);
+function Empty({title,children}:{title:string;children:ReactNode}){return <div className="empty"><Layers size={32}/><h3>{title}</h3><p>{children}</p></div>;}
+
+export default function App(){
+  const [view,setView]=useState<View>('market'),[token,setToken]=useState(()=>sessionStorage.getItem('crewtrace-credential')??'');
+  const [actor,setActor]=useState<Actor|null>(null),[health,setHealth]=useState<Health|null>(null),[services,setServices]=useState<Service[]>([]),[orders,setOrders]=useState<Order[]>([]);
+  const [query,setQuery]=useState(''),[category,setCategory]=useState(''),[sort,setSort]=useState('recent');
+  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+  const [identity,setIdentity]=useState(false),[selected,setSelected]=useState<Service|null>(null),[detail,setDetail]=useState<Detail|null>(null),[reviews,setReviews]=useState<{rating:number;comment:string;paid:boolean;buyer_name:string}[]>([]);
+  const [orderInput,setOrderInput]=useState(''),[pendingKey,setPendingKey]=useState(()=>crypto.randomUUID()),[proof,setProof]=useState('');
+  const generation=useRef(0);
+  async function refresh(){
+    const version=++generation.current;setLoading(true);
     try{
-      const response=await request(endpoint('/api/runs'),{method:'POST',headers:{'Content-Type':'application/json','X-Demo-Code':demoCode},body:JSON.stringify({runId:id,sample:submittedSample})});
-      const created=RunSchema.parse(await response.json());
-      if(created.runId!==id)throw new Error('创建返回的分析编号 不匹配');
-      setPendingId('');localStorage.removeItem('co-vibe-pending');setDemoCode('');remember(id);openRun(id);
-    }catch(e){
-      if(e instanceof RequestError&&e.status<500&&e.status!==409){setCreateError(message(e));return;}
-      try{const recovered=await read(`/api/runs/${encodeURIComponent(id)}`,RunDetailSchema);if(recovered.runId!==id)throw Error('分析编号 不匹配');setPendingId('');localStorage.removeItem('co-vibe-pending');setDemoCode('');remember(id);openRun(id);}
-      catch{setCreateError(`${message(e)} 尚未确认提交结果，请先点击“查看上次提交结果”；重试将继续上次提交。`);}
-    }finally{setBusy(false);}
+      const [h,s]=await Promise.all([api<Health>('/health'),api<{services:Service[]}>('/api/services',token)]);
+      if(version!==generation.current)return;setHealth(h);setServices(s.services);
+      if(token){const [me,o]=await Promise.all([api<Actor>('/api/me',token),api<{orders:Order[]}>('/api/orders',token)]);if(version!==generation.current)return;setActor(me);setOrders(o.orders);}
+      else{setActor(null);setOrders([]);}setError('');
+    }catch(e){if(version===generation.current)setError((e as Error).message);}
+    finally{if(version===generation.current)setLoading(false);}
   }
-  async function compare(e:FormEvent){e.preventDefault();const version=++compareVersion.current;setCompareError('');setOther(null);setCompareBusy(true);try{if(compareId.trim()===runId)throw new Error('请输入另一份分析的编号');const result=await read(`/api/runs/${encodeURIComponent(compareId.trim())}`,RunDetailSchema);if(result.runId!==compareId.trim())throw Error('返回的分析编号 不匹配');if(version===compareVersion.current)setOther(result);}catch(e){if(version===compareVersion.current)setCompareError(message(e));}finally{if(version===compareVersion.current)setCompareBusy(false);}}
-  const unavailable=checking?'正在检查服务':!config.configured?'暂时无法开始分析，可先预览数据':connectionError?'服务暂时无法访问':!config.creationConfigured?'分析暂未开放':!health?.validator.configured?'结果检查暂不可用':'';
-  const waitingRoles=roles.filter(role=>!agents.some(a=>a.roles.includes(role)&&a.admitted&&a.conditionsAccepted&&agentOnline(a.lastSeenAt)&&a.activeTasks<a.maxConcurrency));
-  const executionWarning=health&&!connectionError?[
-    !health.chain.writable?'记录验证暂不可用。创建后将等待分工，尚不能生成已确认的分析结果。':'',
-    waitingRoles.length?`${waitingRoles.map(role=>roleName[role]).join('、')}的协作成员暂未就绪，创建后将等待分工。`:'',
-  ].filter(Boolean).join(' '):'';
-  const selectedTask=run?.tasks.find(t=>t.role==='REPORT');
-  const reports=run?.artifacts.filter(a=>a.taskId===selectedTask?.taskId&&a.attempt===selectedTask.attempt)??[];
-  const selectedArtifact=run?.artifacts.find(a=>a.artifactId===artifactId);
-  const handoff=run?.handoffs.find(h=>h.handoffId===handoffId);
-  const collaboration=<CollaborationBoard key={runId||'unstarted'} run={run} runId={runId} notes={announcements} updated={notesUpdated} error={notesError||(runId&&!config.configured?'服务未连接，暂时无法读取公告。':'')} onRole={role=>setModal(role)} onHandoff={setHandoffId}/>;
+  useEffect(()=>{void refresh();return()=>{generation.current++;};},[token]);
+  useEffect(()=>{
+    if(!detail)return;const orderId=detail.order.id;
+    const timer=setInterval(()=>{void api<Detail>(`/api/orders/${orderId}`,token).then(d=>setDetail(current=>current?.order.id===orderId?d:current)).catch(e=>setError(e.message));},8000);
+    return()=>clearInterval(timer);
+  },[detail?.order.id,token]);
+  async function action(fn:()=>Promise<void>){if(busy)return;setBusy(true);setError('');setNotice('');try{await fn();}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+  function remember(value:string){sessionStorage.setItem('crewtrace-credential',value);setToken(value);}
+  function logout(){sessionStorage.removeItem('crewtrace-credential');setToken('');setActor(null);setOrders([]);setDetail(null);setIdentity(false);}
+  async function openService(service:Service){setSelected(service);setOrderInput('');setPendingKey(crypto.randomUUID());setReviews([]);await action(async()=>{const r=await api<{reviews:typeof reviews}>(`/api/services/${service.id}/reputation`);setReviews(r.reviews);});}
+  async function openOrder(orderId:string){await action(async()=>{setDetail(await api<Detail>(`/api/orders/${orderId}`,token));setProof('');setSelected(null);});}
+  async function orderAction(endpoint:string,body:unknown={}){if(!detail)return;await api(`/api/orders/${detail.order.id}/${endpoint}`,token,body);setDetail(await api<Detail>(`/api/orders/${detail.order.id}`,token));await refresh();}
+  const filtered=services.filter(s=>(!category||s.category===category)&&`${s.title} ${s.description} ${s.seller_name}`.toLowerCase().includes(query.toLowerCase())).sort((a,b)=>sort==='price'?a.price_fen-b.price_fen:sort==='rating'?(b.rating??0)-(a.rating??0):0);
+  const nav:Record<View,string>={market:'发现服务',orders:'我的订单',publish:'提供服务',connect:'接入 Agent',merchant:'商户'};
+  const isBuyer=detail?.order.buyer_id===actor?.id;
+  const latest=detail?.deliveries.at(-1);
+  const state=detail?.order.status;
+  function download(){if(!latest)return;const url=URL.createObjectURL(new Blob([latest.content],{type:'text/markdown;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`crewtrace-${detail!.order.id}-v${latest.version}.md`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   return <>
-    <PointerFeedback/>
-    <a className="skip" href="#main">跳至工作台</a>
-    <header className="topbar"><button className="brand" onClick={()=>setView('workspace')} aria-label="CrewTrace 工作台"><span className="brand-mark"><Layers size={22}/></span>CrewTrace<span className="brand-divider"/> <span className="brand-caption">协作工作台</span></button><nav aria-label="主导航"><button className={view==='workspace'?'nav active':'nav'} onClick={()=>setView('workspace')}>工作台</button><button className={view==='history'?'nav active':'nav'} onClick={()=>setView('history')}>分析记录</button></nav><button className="connection" onClick={()=>setModal('service')}><span className={`dot ${health&&!connectionError?'online':''}`}/>{checking?'检查连接':!config.configured?'服务未连接':connectionError?'连接异常':health?.chain.writable?'服务已连接':'部分功能暂不可用'}<ChevronRight size={14}/></button></header>
-    <main id="main" className={view==='workspace'&&!runId?'landing':'working'}>
-      {(view!=='workspace'||runId)&&<div className="hero-stage"><div className="hero-pin">
-      <SignalScene/>
-      <section className="intro"><div><span className="eyebrow">CrewTrace / 协作有迹可循</span><h1>以履历驱动的<span>Agent 协作网络</span></h1><p className="lead">让这次合作的成果，成为下次分工的依据。</p><a className="hero-link" href="#analysis">进入协作 <ArrowRight size={20}/></a></div><div className="intro-aside"><Network size={24}/><span>独立协作 · 成果可查</span><small>证据记录于 Monad</small></div></section><div className="hero-word" aria-hidden="true">CrewTrace</div></div></div>}
-      {(view!=='workspace'||runId)&&<div className="section-line" id="analysis" tabIndex={-1}><div className="section-title"><span className="mini-mark"/><h2>{view==='history'?'分析记录':view==='compare'?'两轮分工比较':runId?'本次分析':'开始一次有据可查的协作'}</h2></div><span className="muted small">{run ? `${run.mode==='REPLAY'?'回放':'实时运行'} · ${short(run.runId)}` : '业务数据分析'}</span></div>}
-      {view==='history'?<section className="panel history-panel"><h3>查找分析记录</h3><p className="muted">输入分析编号，查看进度和结果。</p><form className="inline-form" onSubmit={e=>{e.preventDefault();openRun(lookup.trim());}}><label className="sr-only" htmlFor="lookup">分析编号</label><input id="lookup" value={lookup} onChange={e=>setLookup(e.target.value)} placeholder="粘贴分析编号" required maxLength={200}/><button className="primary" disabled={!lookup.trim()}><Search size={16}/>打开记录</button></form><div className="history-list">{history.length?history.map(id=><button key={id} onClick={()=>openRun(id)}><History size={18}/><span className="mono">{id}</span><ArrowRight size={16}/></button>):<div className="empty"><History size={28}/><h3>还没有浏览过分析记录</h3><p>打开一份分析后，可在这里再次找到它。</p></div>}</div><p className="small muted">这里显示你在此设备上查看过的记录。</p></section>:view==='compare'?<section className="panel comparison"><button className="text-button" onClick={()=>setView('workspace')}>← 返回本次分析</button><p>看看两次分析由谁完成，以及分工依据发生了什么变化。</p><form className="inline-form" onSubmit={compare}><label className="sr-only" htmlFor="compare-id">另一份分析的编号</label><input id="compare-id" value={compareId} onChange={e=>setCompareId(e.target.value)} placeholder="另一份分析的编号" required maxLength={200}/><button className="primary" disabled={!compareId.trim()||compareBusy}>{compareBusy?'正在读取':'开始比较'}</button></form>{compareError&&<p className="error" role="alert">{compareError}</p>}{run&&other&&roles.map(role=><section className="compare-role" key={role}><h3>{roleName[role]}</h3><div className="compare-grid">{[run,other].map(r=><article key={r.runId}><p className="mono muted">{short(r.runId)}</p><Decision decision={currentDecision(r,role)}/></article>)}</div></section>)}</section>:<>
-      {!runId&&<LandingExperience collaboration={collaboration} sample={sample} onSample={setSample} unavailable={unavailable} warning={executionWarning} onPreview={()=>setModal('preview')} onStart={()=>{setCreateError('');setModal('access');}} onHistory={()=>setView('history')}/>}
-      {runId&&run&&!completed(run)&&executionWarning&&<p className="notice" role="status">{executionWarning}</p>}
-      {run&&<section className="panel input-evidence">
-        <p>{run.mode==='LIVE'?'真实运行记录':'历史回放'} · {run.templateVersion} · 验收者 <code>{run.validator}</code></p>
-        <p>运行网络：{[...new Set(run.taskReceipts.map(r=>r.receipt.chainId))].map(id=>id===10143?'Monad Testnet（10143）':id===31337?'本地验证链（31337）':`链 ID ${id}`).join('、')||'尚无链上回执'}</p>
-        <div className="summary-actions"><a className="secondary" href={endpoint(`/api/runs/${encodeURIComponent(run.runId)}/input`)}>下载本次原始输入</a><a className="secondary" href={endpoint('/api/criteria')}>读取固定验收规则</a></div>
-        <details><summary>输入与规则凭证</summary><p>输入 <code>{run.inputHash}</code></p><p>规则 <code>{run.criteriaHash}</code></p></details>
-      </section>}
-      {runId&&collaboration}
-      {runId&&<section className="run-summary panel"><div><span className="overline">本次分析</span><p className="mono">{runId}</p><span className="muted small">{run?`${time(run.createdAt)} · ${stateName[run.runtimeStatus]}`:'正在读取分析记录'}</span></div><div className="summary-actions">{run&&<Badge value={runState(run)}/>}<button className="secondary" onClick={()=>setView('compare')} disabled={!run}><GitCompareArrows size={16}/>比较另一轮</button><button className="text-button" onClick={()=>openRun('')}>新建分析</button></div></section>}
-      {(syncError||runId&&!config.configured)&&<p className="notice" role="status">{syncError||'暂时无法读取这份分析，请稍后再试。'}{updated&&` 保留上次状态：${time(updated)}`}</p>}
-      {run&&<><div className="section-line"><h2>成果与证据</h2><span className="small muted">查看报告及验证结果</span></div><section className="panel results">{reports.length?<><div className="result-header"><div><FileText size={22}/><h3>分析报告</h3></div><span className="muted small">{completed(run)?'分析已通过验证，记录已确认':'验证进度见各文件下方'}</span></div><div className="artifact-tabs">{reports.map(a=><button className={artifactId===a.artifactId?'chosen':''} onClick={()=>setArtifactId(a.artifactId)} key={a.artifactId}>{short(a.artifactId)}</button>)}</div>{artifactId&&selectedArtifact?<ArtifactText id={artifactId}/>:<p className="muted">选择一份报告开始阅读。</p>}</>:<div className="empty"><FileText size={28}/><h3>报告尚未生成</h3><p>报告完成后会显示在这里。你可以先查看分析进度。</p></div>}<div className="artifacts">{run.artifacts.map(a=>{const assessment=run.assessments.find(s=>s.taskId===a.taskId&&s.attempt===a.attempt);return <div className="artifact" key={a.artifactId}><div><strong>{(run.tasks.find(t=>t.taskId===a.taskId)?.role ? roleName[run.tasks.find(t=>t.taskId===a.taskId)!.role] : '分析')}成果</strong><p className="small mono muted">{short(a.artifactId)} · 第 {a.attempt} 次执行</p><p className="small">验收：{assessment?assessment.verdict==='PASS'?'通过':assessment.verdict==='FAIL'?'未通过':'待定':'尚未验收'} · 链上：{assessment?.receipt?stateName[assessment.receipt.status]:'暂无回执'}</p>{a.limitations.length>0&&<p className="small muted">限制：{a.limitations.join('；')}</p>}</div><a className="secondary" href={endpoint(`/api/artifacts/${encodeURIComponent(a.artifactId)}`)}><ArrowDownToLine size={15}/>下载</a><details><summary>查看来源与技术凭证</summary><p>文件格式 {a.schemaVersion}</p><p>由谁完成 <code>{a.producer}</code></p><p>文件校验值 <code>{a.contentHash}</code></p><p>引用文件：{a.parentArtifactIds.join('、')||'原始输入'}</p>{assessment&&<><p>验收项：{assessment.checks.map(c=>`${c.passed?'通过':'未通过'}：${c.message}`).join('；')}</p><a href={endpoint(`/api/tasks/${encodeURIComponent(a.taskId)}/assessments/${a.attempt}/evidence`)} target="_blank" rel="noreferrer">读取验收证据</a>{assessment.receipt&&<p>交易 <code>{assessment.receipt.txHash}</code>区块 {assessment.receipt.blockNumber??'等待确认'}</p>}</>}</details></div>;})}</div></section><section className="panel activity-panel"><div className="result-header"><h3>运行证据</h3><span className="small muted">{updated?`最近同步 ${time(updated)}`:'等待同步'}</span></div><details><summary>技术记录（最近 {events.length} 条）</summary>{events.map(e=><div className="event" key={e.eventId}><span className="mono small">#{e.seq} {e.type}</span><time>{time(e.createdAt)}</time><pre>{JSON.stringify(e.data,null,2)}</pre>{e.receipt&&<Badge value={e.receipt.status}/>}</div>)}</details></section></>}
-      {run&&<section className="panel"><h3>成果文件</h3>{run.artifacts.map(a=><div className="artifact" key={a.artifactId}><span>{roleName[run.tasks.find(t=>t.taskId===a.taskId)!.role]}</span>{(run.tasks.find(t=>t.taskId===a.taskId)!.role==='DATA'?['data.csv','data-plan.json']:run.tasks.find(t=>t.taskId===a.taskId)!.role==='ANALYSIS'?['metrics.json']:['report.md','report.json']).map(name=><a className="text-button" key={name} href={endpoint(`/api/artifacts/${encodeURIComponent(a.artifactId)}/files/${name}`)}>下载 {name}</a>)}</div>)}</section>}
-      {run&&<section className="panel"><h3>链上回执</h3>{run.taskReceipts.map(r=><details key={`${r.taskId}-${r.attempt}-${r.operation}`}><summary>{roleName[run.tasks.find(t=>t.taskId===r.taskId)!.role]} · {r.operation} · {stateName[r.receipt.status]}</summary><p>链 ID {r.receipt.chainId} · 区块 {r.receipt.blockNumber??'等待确认'}</p><code>{r.receipt.txHash}</code>{r.receipt.chainId===10143&&<p><a href={`https://testnet.monadexplorer.com/tx/${r.receipt.txHash}`} target="_blank" rel="noreferrer">查看区块浏览器</a></p>}</details>)}</section>}
-      {runId&&<section className="network-section"><div><span className="overline"><ShieldCheck size={16}/> 可验证协作</span><h3>看得见成果，也看得见选择的依据。</h3><p className="muted">履历按角色分别计算。已确认的验收记录，才会进入下一次分工。</p></div><button className="text-button" onClick={()=>setModal('service')}>{agents.length?`${agents.length} 个协作成员`:'查看服务状态'}<ArrowUpRight size={15}/></button></section>}
-      </>}
-      <footer><span>CrewTrace <span className="footer-separator">/</span> 本次合作，为下次选择留下依据。</span><span>Monad · 验证记录</span></footer>
-    </main>
-    {modal&&<Dialog title={modal==='preview'?'示例数据预览':modal==='access'?'开始分析':modal==='service'?'服务状态':`${roleName[modal]} · 分工依据`} onClose={()=>{if(!busy)setModal(null);}}>
-      {modal==='preview'?<>
-        <p className="muted">这是一份合成示例数据，用于体验数据分析，不包含真实经营信息。</p>
-        <pre className="csv-preview">{sample==='round-1'?firstCSV:secondCSV}</pre>
-        <a className="secondary" href={endpoint('/api/criteria')}>读取固定验收规则</a>
-      </>:modal==='access'?<form onSubmit={create}>
-        <p>使用 {pendingId?pendingSample:sample}.csv 进行分析。提交后等待分工，你可以随时查看进度和报告。</p>
-        {executionWarning&&<p className="notice" role="status">{executionWarning}</p>}
-        <label htmlFor="demo-code">访问码</label><input id="demo-code" autoComplete="off" type="password" value={demoCode} onChange={e=>setDemoCode(e.target.value)} required/>
-        <p className="muted small">访问码由活动负责人提供。</p>{createError&&<p role="alert" className="error">{createError}</p>}
-        {pendingId&&<button type="button" className="text-button" onClick={()=>openRun(pendingId)}>查看上次提交结果</button>}
-        <button className="primary" disabled={busy||!demoCode||Boolean(unavailable)}>{busy?<RefreshCw size={16} className="spin"/>:<LockKeyhole size={16}/>} {busy?'正在提交，请勿重复操作':pendingId?'重试上次提交':'确认开始'}</button>
-      </form>:modal==='service'?<>
-        <p className="muted">查看分析、验证服务和协作成员的当前状态。具体分析的验证结果会显示在报告下方。</p>
-        <dl className="service-grid"><dt>分析服务</dt><dd>{!config.configured?'暂不可用':connectionError?'无法访问':health?'已连接':'检查中'}</dd>
-          <dt>记录验证</dt><dd>{connectionError?'状态未更新':health?health.chain.writable?'可写入记录':health.chain.configured?'尚未配置签名':'暂不可用':'尚未获取状态'}</dd>
-          <dt>结果检查</dt><dd>{connectionError?'状态未更新':health?health.validator.configured?'已设置':'暂不可用':'未知'}</dd></dl>
-        {executionWarning&&<p className="notice">{executionWarning}</p>}{connectionError&&<p className="error">{connectionError}</p>}
-        <h3>协作成员</h3>{agents.length?agents.map(a=><div className="candidate" key={a.agentId}><strong className="mono">{short(a.agentId)}</strong><p>{a.roles.map(r=>roleName[r]).join(' / ')}</p>
-          <p>{connectionError?'在线状态未更新':agentOnline(a.lastSeenAt)?'当前在线':'当前离线或尚未上线'}</p>
-          <p className="small muted">最近在线时间：{a.lastSeenAt?time(a.lastSeenAt):'尚未获取'}<br/>正在处理 {a.activeTasks} 项任务 · 最多同时处理 {a.maxConcurrency} 项</p></div>):<p className="muted">暂未获取成员信息。</p>}
-      </>:<Decision decision={run?currentDecision(run,modal):undefined}/>}
+    <a className="skip" href="#workspace">跳至服务工作台</a>
+    <header className="topbar"><a className="brand" href="#" onClick={e=>{e.preventDefault();setView('market');}}><img src="/crewtrace-mark.svg" alt=""/>CrewTrace<span className="edition">PAYATHON</span></a><nav aria-label="主导航">{(Object.keys(nav) as View[]).map(v=><button key={v} aria-current={view===v?'page':undefined} onClick={()=>setView(v)}>{nav[v]}</button>)}</nav><button className="identity" onClick={()=>setIdentity(true)}><span className={`dot ${actor?'on':''}`}/>{actor?.name??'创建身份'}<ChevronRight size={14}/></button></header>
+    <main id="workspace">
+      {view==='merchant'&&<Merchant/>}
+      {view==='market'&&<section className="hero"><div className="hero-copy"><span className="eyebrow"><span className="dot on"/> AGENT SERVICES · VERIFIED DELIVERY</span><h1>让专业能力<br/>成为<span>值得托付的服务。</span></h1><p>从过往交付中选择 Agent，为清楚的结果付费。<br/>每一次验收，都让下一次选择更有依据。</p><div className="hero-actions"><a className="primary" href="#services">发现服务 <ArrowRight size={17}/></a><button className="text-button" onClick={()=>setView('connect')}>让你的 Agent 接入 <ArrowUpRight size={16}/></button></div><div className="hero-foot"><ShieldCheck size={16}/> 人民币按次计费 <span>·</span> 需求与价格提前确认 <span>·</span> 交付版本可追溯</div></div><div className="orbit" aria-hidden="true"><div className="orbit-ring ring-a"/><div className="orbit-ring ring-b"/><div className="orbit-core">C<span>trace your trust</span></div><span className="orbit-tag tag-a">DISCOVER</span><span className="orbit-tag tag-b">PAY & DELIVER</span><span className="orbit-tag tag-c">BUILD TRUST</span></div></section>}
+      <div className="service-status"><span className={`dot ${health?'on':''}`}/>{health?health.paymentMode==='production'?'支付宝正式环境':health.paymentMode==='sandbox'?'支付宝沙箱环境 · 交易不计入真实收入':'支付未开通 · 免费服务可用':'正在连接服务'}<button className="text-button" onClick={()=>void refresh()} aria-label="刷新服务"><RefreshCw size={14}/></button></div>
+      {error&&<div className="alert" role="alert"><span>{error}</span><button className="text-button" onClick={()=>setError('')}>关闭</button></div>}
+      {notice&&<div className="notice" role="status"><CheckCircle2 size={18}/>{notice}</div>}
+      {view==='market'&&<section id="services" className="workspace-section"><div className="section-heading"><div><span className="eyebrow">01 / SERVICE MARKET</span><h2>找到下一位协作者</h2></div><p>展示实际验收记录。新服务从零开始。</p></div><div className="filters"><label className="search"><Search size={17}/><input aria-label="搜索服务" value={query} onChange={e=>setQuery(e.target.value)} placeholder="搜索能力、服务或提供者…"/></label><select aria-label="服务分类" value={category} onChange={e=>setCategory(e.target.value)}>{['','数据分析','研究检索','代码审查','内容创作','其他'].map(c=><option value={c} key={c}>{c||'全部分类'}</option>)}</select><select aria-label="排序方式" value={sort} onChange={e=>setSort(e.target.value)}><option value="recent">最新发布</option><option value="price">价格从低到高</option><option value="rating">验收评分</option></select></div>{loading&&!services.length?<p className="loading"><LoaderCircle/>正在读取真实服务…</p>:filtered.length?<div className="service-grid">{filtered.map(s=><article className="service-card" key={s.id}><div className="card-top"><span className="service-icon"><FileText size={24}/></span><span className="category">{s.category}</span></div><h3>{s.title}</h3><p className="description">{s.description}</p><div className="seller"><span className="avatar">{(s.seller_name??actor?.name??'A').slice(0,1)}</span><span>{s.seller_name??actor?.name}</span><small>{s.engine==='csv'?'确定性工具':'专业 Agent'}</small></div><div className="reputation"><Star size={14}/>{s.rating??'暂无评分'}<span>{s.reviews??0} 次验收 · {s.paid_reviews??0} 次实付评价</span></div><div className="card-bottom"><div><strong>{money(s.price_fen)}</strong><small> / 次 · {s.delivery_hours}h 内交付</small></div>{s.published?<button className="icon" aria-label={`查看${s.title}`} onClick={()=>void openService(s)}><ArrowUpRight size={22}/></button>:<span className="badge">等待商户登记</span>}</div>{s.seller_id===actor?.id&&s.published&&<button className="text-button" onClick={()=>void action(async()=>{await api(`/api/services/${s.id}`,token,{published:false},'PATCH');await refresh();})}>暂停上架</button>}{s.seller_id===actor?.id&&!s.published&&s.price_fen===0&&<button className="text-button" onClick={()=>void action(async()=>{await api(`/api/services/${s.id}`,token,{published:true},'PATCH');await refresh();})}>恢复上架</button>}</article>)}</div>:<Empty title="暂时没有符合条件的服务">调整搜索条件，或发布你能提供的真实服务。</Empty>}<div className="how-it-works">{[['01','确认需求','清楚的交付说明和固定报价。'],['02','按次付款','在支付宝确认后核验付款。'],['03','交付验收','查看原文，接受或提出修改。'],['04','积累履历','让实际交付支持下一次选择。']].map(([n,t,d])=><div key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></div>)}</div></section>}
+      {view==='orders'&&<section className="workspace-section"><div className="section-heading"><div><span className="eyebrow">02 / DELIVERY DESK</span><h1 className="page-title">每一笔委托，都有下文。</h1></div><button className="secondary" onClick={()=>void refresh()}><RefreshCw size={16}/>刷新订单</button></div>{!actor?<Empty title="先创建你的身份">订单与交付仅对交易双方可见。<button className="primary" onClick={()=>setIdentity(true)}>创建或连接身份</button></Empty>:orders.length?<div className="order-list">{orders.map(o=><button className="order-row" key={o.id} onClick={()=>void openOrder(o.id)}><span className="service-icon"><FileText size={21}/></span><div><h3>{o.snapshot.title}</h3><small>{o.buyer_id===actor.id?'我购买的服务':'需要我交付'} · {time(o.created_at)}</small></div><span className={`badge state-${o.status}`}>{status[o.status]}</span><strong>{money(o.price_fen)}</strong><ChevronRight size={18}/></button>)}</div>:<Empty title="你的第一笔委托，从这里开始">选择服务并确认需求后，订单会在这里显示。<button className="primary" onClick={()=>setView('market')}>发现服务 <ArrowRight size={16}/></button></Empty>}</section>}
+      {view==='publish'&&<section className="workspace-section narrow"><span className="eyebrow">03 / SHARE YOUR EXPERTISE</span><h1 className="page-title">把你的专业，交付给更多人。</h1><p className="muted">写清能完成什么、需要什么输入、交付内容与验收标准。Agent 通过 MCP 获取订单、提交成果。</p>{!actor?<button className="primary" onClick={()=>setIdentity(true)}>创建服务提供者身份</button>:<form className="panel form" onSubmit={e=>{e.preventDefault();const form=e.currentTarget;const d=new FormData(form);void action(async()=>{const s=await api<Service>('/api/services',token,{title:d.get('title'),description:d.get('description'),category:d.get('category'),priceFen:Math.round(Number(d.get('price'))*100),deliveryHours:Number(d.get('hours'))});form.reset();setNotice(s.published?'服务已上架，可接受真实订单。':'服务已保存，等待商户核对支付宝登记资源和定价后上架。');await refresh();});}}><label>服务名称<input name="title" required minLength={2} maxLength={32} placeholder="例如：技术文档审阅与修订建议"/></label><label>交付说明与验收条件<textarea name="description" rows={6} required minLength={20} maxLength={3000} placeholder="说明需要的输入、提供的成果、完成条件和服务限制。"/></label><div className="form-grid"><label>服务分类<select name="category">{['数据分析','研究检索','代码审查','内容创作','其他'].map(c=><option key={c}>{c}</option>)}</select></label><label>每次价格（元）<input name="price" type="number" min="0" max="50" step="0.01" defaultValue="0" required/></label><label>承诺交付时间（小时）<input name="hours" type="number" min="1" max="168" defaultValue="24" required/></label></div><p className="callout">收费服务使用商户统一收款，需完成官方资源登记与价格核对后上架。当前不提供自动分账。免费服务可立即发布并积累独立标记的验收记录。</p><button className="primary" disabled={busy}><Plus size={16}/>{busy?'正在保存…':'发布服务'}</button></form>}</section>}
+      {view==='connect'&&<section className="workspace-section connect-layout"><div><span className="eyebrow">04 / AGENT NATIVE</span><h1 className="page-title">让你的 Agent<br/>带着能力加入。</h1><p className="muted">同一套订单、支付记录和交付原文，供网页与 MCP 客户端使用。所有操作遵守身份权限。</p><div className="connect-steps"><p><b>01</b> 连接 MCP，读取协作指南。</p><p><b>02</b> 创建身份，发布服务或选择委托。</p><p><b>03</b> 确认用户授权，完成付款与交付。</p></div></div><div className="panel connect-card"><Terminal size={27}/><h2>接入 CrewTrace</h2>{health?<><p>复制这句话给你的 Agent：</p><pre>连接 {health.mcpURL}，使用 Streamable HTTP，先调用 get_collaboration_guide，按指南参与 CrewTrace。</pre><Copy value={`连接 ${health.mcpURL}，使用 Streamable HTTP，先调用 get_collaboration_guide，按指南参与 CrewTrace。`} label="复制接入指令"/><details><summary>客户端配置</summary><pre>{JSON.stringify({mcpServers:{crewtrace:{url:health.mcpURL}}},null,2)}</pre><p>私密凭证通过客户端安全配置的 Bearer header 提供，也可使用工具 credential 参数。不要把凭证写入公开消息或仓库。</p></details></>:<p>服务连接后显示当前 MCP 地址。</p>}<a className="text-button" href="https://aipay.alipay.com/docs/ai-receive/MACHINE_PAY.html" target="_blank" rel="noreferrer">支付宝 Machine Pay 官方指南 <ArrowUpRight size={16}/></a></div></section>}
+    </main><footer><a className="brand" href="#">CrewTrace</a><span>每一次交付，留下值得信任的下一步。</span><a href="https://aipay.alipay.com/community/events/payathon-2026" target="_blank" rel="noreferrer">PAYATHON 2026 <ArrowUpRight size={13}/></a></footer>
+    {identity&&<Dialog title={actor?'你的 CrewTrace 身份':'连接你的协作身份'} onClose={()=>setIdentity(false)}>{actor?<><h3>{actor.name}</h3><p>{actor.bio||'你的订单与交付记录已关联此身份。'}</p><label>私密凭证<input type="password" value={token} readOnly onFocus={e=>e.target.select()}/></label><p className="muted">凭证只保存在当前浏览器会话。请安全保存，以便换设备或重新登录。</p><div className="action-row"><Copy value={token} label="复制凭证"/><button className="secondary" onClick={()=>void action(async()=>{const r=await api<{credential:string}>('/api/me/rotate',token,{});remember(r.credential);setNotice('凭证已轮换，旧凭证已失效。');})}>轮换凭证</button><button className="text-button" onClick={logout}>退出此设备</button></div></>:<><form className="form" onSubmit={e=>{e.preventDefault();const data=new FormData(e.currentTarget);void action(async()=>{const r=await api<{actor:Actor;credential:string}>('/api/identities','',{name:data.get('name'),bio:data.get('bio')});remember(r.credential);setActor(r.actor);});}}><label>身份名称<input name="name" required minLength={2} maxLength={40} placeholder="你的名字或 Agent 名称"/></label><label>能力介绍<input name="bio" maxLength={500} placeholder="你擅长的领域（选填）"/></label><button className="primary" disabled={busy}>创建身份 <ArrowRight size={16}/></button></form><details><summary>已有凭证，连接身份</summary><form className="form" onSubmit={e=>{e.preventDefault();const credential=String(new FormData(e.currentTarget).get('credential')).trim();void action(async()=>{const me=await api<Actor>('/api/me',credential);remember(credential);setActor(me);});}}><label>私密凭证<input type="password" name="credential" required autoComplete="off"/></label><button className="secondary" disabled={busy}>连接身份</button></form></details></>}{error&&<p role="alert" className="error-text">{error}</p>}</Dialog>}
+    {selected&&<Dialog title={selected.title} onClose={()=>setSelected(null)}><div className="price-line"><strong>{money(selected.price_fen)} <small>/ 次</small></strong><span>{selected.delivery_hours} 小时内交付</span></div><p>{selected.description}</p><div className="review-list"><h3>真实验收记录</h3>{reviews.length?reviews.map((r,i)=><blockquote key={i}><span>{r.buyer_name} · {r.rating}/5 · {r.paid?'正式实付':'免费或沙箱'}</span><p>{r.comment}</p></blockquote>):<p className="muted">尚无验收记录，服务能力需要通过实际交付验证。</p>}</div><form className="form" onSubmit={e=>{e.preventDefault();void action(async()=>{const o=await api<Order>('/api/orders',token,{serviceId:selected.id,input:orderInput,idempotencyKey:pendingKey,expectedVersion:selected.version,maxAmountFen:selected.price_fen});setSelected(null);setDetail(await api<Detail>(`/api/orders/${o.id}`,token));setView('orders');await refresh();});}}><label>{selected.engine==='csv'?'粘贴需要检查的 CSV 原文':'描述你的需求与验收条件'}<textarea value={orderInput} onChange={e=>{setOrderInput(e.target.value);setPendingKey(crypto.randomUUID());}} required minLength={5} maxLength={100000} rows={6} placeholder={selected.engine==='csv'?'包含表头，最多 10000 行、100 列。':'需要解决的问题、提供的素材、成果格式和验收标准。'}/></label><label className="checkbox"><input type="checkbox" required/>我确认上述需求与 {money(selected.price_fen)} 固定报价。</label>{!actor?<button type="button" className="primary" onClick={()=>{setSelected(null);setIdentity(true);}}>先创建身份</button>:<button className="primary" disabled={busy||!selected.paymentReady||selected.seller_id===actor.id}>{busy?'正在创建…':selected.seller_id===actor.id?'不能购买自己的服务':!selected.paymentReady?'支付尚未开通':'确认并创建订单'}<ArrowRight size={16}/></button>}<p className="muted small">订单创建后冻结本次输入和报价。付费订单需在支付宝确认，创建订单不会扣款。</p></form>{error&&<p role="alert" className="error-text">{error}</p>}</Dialog>}
+    {detail&&<Dialog title={detail.order.snapshot.title} onClose={()=>setDetail(null)}><div className="price-line"><span className={`badge state-${state}`}>{status[state!]}</span><strong>{money(detail.order.price_fen)}</strong></div><p className="muted small">订单 {detail.order.id}</p><p className="muted">{detail.order.payment_status==='FREE'?'免费服务':detail.order.payment_status==='VERIFIED'?'支付宝已核验付款':detail.order.payment_status==='REFUNDED'?'支付宝已确认退款':'尚未确认付款'}{detail.order.due_at&&` · 交付期限 ${time(detail.order.due_at)}`}</p><details><summary>查看已确认的需求</summary><pre>{detail.order.input}</pre></details>
+      {state==='AWAITING_PAYMENT'&&isBuyer&&<section className="payment-box"><Wallet size={22}/><h3>通过支付宝完成付款</h3><p>先获取预下单信息，再交给支持支付宝支付能力的 Agent。支付成功后提交官方返回的 Payment-Proof 核验。</p><button className="primary" disabled={busy} onClick={()=>void action(async()=>{await api(`/api/orders/${detail.order.id}/payment`,token,{});setDetail(await api<Detail>(`/api/orders/${detail.order.id}`,token));})}>获取支付宝付款信息</button>{detail.order.prepay_id&&<><pre>{detail.order.prepay_id}</pre><Copy value={detail.order.prepay_id} label="复制预下单号"/>{detail.order.qr_code_url&&<a className="secondary" href={detail.order.qr_code_url} target="_blank" rel="noreferrer">打开支付宝返回的付款二维码</a>}</>}<label>Payment-Proof<textarea value={proof} onChange={e=>setProof(e.target.value)} maxLength={8192} rows={3} placeholder="由支付宝官方支付能力返回的 Base64 凭证"/></label><button className="secondary" disabled={busy||!proof.trim()} onClick={()=>void action(async()=>{await api(`/api/orders/${detail.order.id}/payment`,token,{},'POST',{'Payment-Proof':proof.trim()});setProof('');setDetail(await api<Detail>(`/api/orders/${detail.order.id}`,token));await refresh();})}>核验付款结果</button></section>}
+      {state==='READY'&&((isBuyer&&detail.order.snapshot.engine==='csv')||!isBuyer)&&<button className="primary" disabled={busy} onClick={()=>void action(()=>orderAction('execute'))}>{detail.order.snapshot.engine==='csv'?'生成数据质量报告':'开始处理订单'}<ArrowRight size={16}/></button>}
+      {!isBuyer&&['READY','IN_PROGRESS','REVISION_REQUESTED'].includes(state!)&&<form className="form" onSubmit={e=>{e.preventDefault();const content=String(new FormData(e.currentTarget).get('content'));void action(()=>orderAction('deliveries',{content}));}}><label>提交交付成果（Markdown）<textarea name="content" rows={9} required minLength={20} maxLength={200000}/></label><button className="primary" disabled={busy}>提交成果</button></form>}
+      {latest&&<section className="delivery"><div className="section-heading"><h3>交付成果 · v{latest.version}</h3><button className="secondary" onClick={download}><Download size={15}/>下载</button></div><article className="markdown"><Markdown skipHtml components={{img:()=>null,a:({children})=><span>{children}</span>}}>{latest.content}</Markdown></article>{detail.deliveries.length>1&&<details><summary>查看历史交付版本</summary>{detail.deliveries.slice(0,-1).map(d=><details key={d.id}><summary>v{d.version} · {time(d.created_at)}</summary><pre>{d.content}</pre></details>)}</details>}</section>}
+      {state==='DELIVERED'&&isBuyer&&latest&&<form className="form review-form" onSubmit={(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();const d=new FormData(e.currentTarget);void action(()=>orderAction('review',{decision:d.get('decision'),deliveryVersion:latest.version,rating:Number(d.get('rating')),comment:d.get('comment')}));}}><h3>检查交付并完成验收</h3><div className="form-grid"><label>验收决定<select name="decision"><option value="accept">接受成果</option>{detail.order.snapshot.engine!=='csv'&&<option value="revise">退回修改</option>}<option value="dispute">提出售后</option></select></label><label>服务评分<select name="rating">{[5,4,3,2,1].map(n=><option key={n} value={n}>{n} / 5</option>)}</select></label></div><label>验收意见<textarea name="comment" rows={3} required minLength={5} maxLength={2000} placeholder="说明哪些要求已满足，或具体需要修改的地方。"/></label><button className="primary" disabled={busy}><ShieldCheck size={16}/>提交验收</button></form>}
+      {isBuyer&&['AWAITING_PAYMENT','READY'].includes(state!)&&!detail.order.prepay_id&&detail.order.payment_status!=='VERIFIED'&&<button className="text-button danger" disabled={busy} onClick={()=>void action(()=>orderAction('cancel'))}>取消尚未开始的订单</button>}
+      {isBuyer&&['READY','IN_PROGRESS','REVISION_REQUESTED','ACCEPTED'].includes(state!)&&<details><summary>申请售后</summary><form className="form" onSubmit={e=>{e.preventDefault();const reason=String(new FormData(e.currentTarget).get('reason'));void action(()=>orderAction('dispute',{reason}));}}><label>售后原因<textarea name="reason" required minLength={5} maxLength={2000}/></label><button className="secondary" disabled={busy}>提交售后申请</button></form></details>}
+      {state==='DISPUTED'&&<p className="callout">售后申请已记录。商户核对交付与支付记录后处理，退款须取得支付宝确认。请保留订单编号。</p>}
+      <section className="timeline"><h3>订单轨迹</h3>{detail.events.map(e=><div className="timeline-item" key={e.seq}><span/><div><strong>{eventNames[e.kind]??e.kind}</strong><small>{time(e.created_at)}</small>{(e.detail.comment||e.detail.reason)&&<p>{e.detail.comment||e.detail.reason}</p>}</div></div>)}</section>{error&&<p role="alert" className="error-text">{error}</p>}
     </Dialog>}
-    {handoff&&<Dialog title="交接详情" onClose={()=>setHandoffId(null)}><p>{run?.tasks.find(t=>t.taskId===handoff.fromTaskId)?.role?roleName[run.tasks.find(t=>t.taskId===handoff.fromTaskId)!.role]:'上游任务'} → {run?.tasks.find(t=>t.taskId===handoff.toTaskId)?.role?roleName[run.tasks.find(t=>t.taskId===handoff.toTaskId)!.role]:'下游任务'}</p><Badge value={handoff.status}/><p>交付文件：<code>{handoff.artifactId}</code></p><p className="small muted">下游验收条件：当前接口未提供可读说明。</p><p>{handoff.reason}</p><details><summary>查看文件凭证</summary><p>文件编号 <code>{handoff.artifactId}</code></p><p>文件格式 {handoff.schemaVersion}</p><p>文件校验值 <code>{handoff.contentHash}</code></p></details><p className="muted">{time(handoff.createdAt)}</p><a className="secondary" href={endpoint(`/api/artifacts/${encodeURIComponent(handoff.artifactId)}`)}>下载交接文件<ArrowDownToLine size={15}/></a></Dialog>}
   </>;
 }
