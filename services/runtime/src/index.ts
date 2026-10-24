@@ -1,12 +1,8 @@
-import { Hono } from 'hono';
 import { loadConfig } from './config.js';
 import { Database } from './db.js';
-import { Application } from './service.js';
+import { Commerce } from './service.js';
 import { createHttp } from './http.js';
-import { dependencies } from './dependencies.js';
-
-const config = loadConfig();
-const db = new Database(config.DATABASE_URL);
-const { chain,validator,collaborationChain } = await dependencies(config,db);
-export const runtime = new Application(db, config,chain,validator,collaborationChain);
-export default new Hono().route('/', createHttp(runtime));
+const config=loadConfig();
+export const database=new Database(config.DATABASE_URL);
+export const runtime=new Commerce(database,config);
+export default createHttp(runtime);

@@ -1,5 +1,6 @@
 {
-  "name": "co-vibe", "private": true,
-  "workspaces": ["apps/web", "packages/contracts"],
-  "scripts": {"dev":"npm --prefix apps/web run dev","build":"npm --prefix apps/web run build","test":"npm --prefix apps/web test","check":"npm --prefix apps/web run check"}
+  "name": "crewtrace", "private": true, "version": "0.2.0",
+  "workspaces": ["apps/web", "services/runtime"],
+  "engines": {"node": ">=24"},
+  "scripts": {"dev":"npm run dev -w @crewtrace/web","start":"npm run start -w @crewtrace/runtime","migrate":"npm run migrate -w @crewtrace/runtime","build":"npm run build --workspaces","check":"npm run check --workspaces","test":"npm run test -w @crewtrace/runtime","test:browser":"npm run test:browser -w @crewtrace/web"}
 }

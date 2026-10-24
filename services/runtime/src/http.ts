@@ -1,100 +1,62 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { bodyLimit } from 'hono/body-limit';
+import { secureHeaders } from 'hono/secure-headers';
 import { z } from 'zod';
-import { Auth, type Principal } from './auth.js';
-import { AppError, errorBody } from './errors.js';
-import type { Application } from './service.js';
-import { mcpResponse } from './mcp.js';
-import { Board } from './board.js';
-import { Execution } from './execution.js';
-import { mountCollaboration } from './collaboration-http.js';
-import { publicMcpURL } from './config.js';
-import {
-  AcceptTaskRequestSchema, AddressSchema, AssignTaskRequestSchema, CreateRunWithInputRequestSchema,
-  HandoffUpdateRequestSchema, InterruptRequestSchema, ModelCallRequestSchema, NodeEnrollmentRequestSchema,
-} from '../../../packages/contracts/src/index.ts';
+import type { Actor,Commerce } from './service.js';
+import { AppError,errorBody } from './errors.js';
+import { guide,mcpResponse } from './mcp.js';
 
-export function createHttp(app: Application) {
-  const http = new Hono<{ Variables: { principal: Principal } }>();
-  const auth = new Auth(app.db, app.config.ADMIN_TOKEN);
-  const board = new Board(app);
-  const execution = new Execution(app);
-  const origins = app.config.ALLOWED_ORIGINS.split(',').filter(Boolean);
-  const ownOrigin = new URL(app.config.PUBLIC_BASE_URL).origin;
-  http.use('*', cors({ origin: origins, allowHeaders: ['Authorization', 'Content-Type', 'mcp-protocol-version'], allowMethods: ['GET','POST','PATCH','DELETE','OPTIONS'] }));
-  http.use('*', bodyLimit({ maxSize: 2 * 1024 * 1024, onError: () => { throw new AppError(413, 'BODY_TOO_LARGE', '请求内容超过 2 MiB'); } }));
-  http.use('*', async (c, next) => {
-    c.header('Cache-Control','no-store');
-    const origin = c.req.header('Origin');
-    if (origin && origin !== ownOrigin && !origins.includes(origin)) throw new AppError(403, 'ORIGIN_REJECTED', '请求来源未获授权');
-    if (c.req.path === '/mcp') {
-      const host=new URL(c.req.url).host;
-      const allowedHosts=[new URL(app.config.PUBLIC_BASE_URL).host,new URL(publicMcpURL(app.config)).host];
-      if(!allowedHosts.includes(host)) throw new AppError(403,'HOST_REJECTED','MCP Host 不匹配');
-    }
-    c.set('principal', await auth.authenticate(c.req.header('Authorization')));
+export function createHttp(app:Commerce){
+  const http=new Hono<{Variables:{actor:Actor|null}}>();
+  const allowed=new Set([new URL(app.config.PUBLIC_BASE_URL).origin,...app.config.ALLOWED_ORIGINS.split(',').map(s=>s.trim()).filter(Boolean)]);
+  http.use('*',secureHeaders());
+  http.use('*',bodyLimit({maxSize:300000,onError:c=>c.json({error:{code:'PAYLOAD_TOO_LARGE',message:'输入超过 300KB'}},413)}));
+  http.use('*',async(c,next)=>{c.header('Cache-Control','no-store');const origin=c.req.header('Origin');if(origin&&!allowed.has(origin))throw new AppError(403,'ORIGIN_DENIED','请求来源未获准');await next();});
+  http.use('*',cors({origin:origin=>allowed.has(origin)?origin:undefined,allowMethods:['GET','POST','PATCH','OPTIONS'],allowHeaders:['Content-Type','Authorization','Payment-Proof','MCP-Protocol-Version'],exposeHeaders:['amtPaymentLink'],maxAge:600}));
+  http.onError((e,c)=>{const {status,error}=errorBody(e);return c.json({error},status as 400);});
+  http.get('/health',async c=>c.json(await app.health()));
+  http.get('/api/guide',c=>c.text(guide(app.config.PUBLIC_BASE_URL)));
+  http.post('/api/identities',async c=>c.json(await app.register(await c.req.json()),201));
+  http.use('/api/*',async(c,next)=>{
+    if(c.req.path.startsWith('/api/admin/')){app.admin(c.req.header('Authorization'));c.set('actor',null);}
+    else c.set('actor',await app.authenticate(c.req.header('Authorization')));
     await next();
   });
-  http.onError((error,c) => { const body = errorBody(error); return c.json({ error: body.error }, body.status as 400); });
-  http.notFound(c => c.json({ error: { code: 'NOT_FOUND', message: '端点不存在' } },404));
-  mountCollaboration(http,app);
-  http.get('/health', async c => c.json(await app.health()));
-  http.get('/api/template',c=>c.json(app.template()));
-  http.get('/api/criteria',()=>new Response(new Uint8Array(app.criteria()),{ headers: { 'Content-Type': 'application/json; charset=utf-8' } }));
-  http.get('/api/agents',async c=>c.json({ agents: await app.agents() }));
-  http.post('/api/runs',async c=>c.json(await app.createRun(c.get('principal'),CreateRunWithInputRequestSchema.parse(await c.req.json())),201));
-  http.get('/api/runs/:id',async c=>c.json(await app.runDetails(c.req.param('id'))));
-  http.get('/api/runs/:id/input',async c=>new Response(new Uint8Array(await app.input(c.req.param('id'))),{ headers: { 'Content-Type': 'text/csv; charset=utf-8','Content-Disposition': 'attachment; filename="input.csv"' } }));
-  http.get('/api/runs/:id/events', async c => c.json(await app.store.events(c.req.param('id'), z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).parse(c.req.query('after') ?? 0))));
-  http.get('/api/artifacts/:id',async c=>{
-    const { artifact,bytes } = await app.artifact(c.req.param('id'));
-    return new Response(new Uint8Array(bytes),{ headers: { 'Content-Type': 'text/plain; charset=utf-8','X-Content-Hash': artifact.contentHash,'Content-Disposition': `attachment; filename="${encodeURIComponent(artifact.artifactId)}"` } });
+  http.get('/api/me',c=>c.json(app.actor(c.get('actor'))));
+  http.post('/api/me/rotate',async c=>c.json(await app.rotate(c.get('actor'))));
+  http.get('/api/services',async c=>c.json(await app.services(c.req.query('q'),c.req.query('category'),c.get('actor'))));
+  http.post('/api/services',async c=>c.json(await app.publish(c.get('actor'),await c.req.json()),201));
+  http.patch('/api/services/:id',async c=>{const {published}=z.strictObject({published:z.boolean()}).parse(await c.req.json());return c.json(await app.setPublished(c.get('actor'),c.req.param('id'),published));});
+  http.get('/api/services/:id/reputation',async c=>c.json(await app.reputation(c.req.param('id'))));
+  http.post('/api/orders',async c=>c.json(await app.createOrder(c.get('actor'),await c.req.json()),201));
+  http.get('/api/orders',async c=>c.json(await app.listOrders(c.get('actor'))));
+  http.get('/api/orders/:id',async c=>c.json(await app.detail(c.get('actor'),c.req.param('id'))));
+  const pay=async(c:any)=>{
+    const result=await app.pay(c.get('actor'),c.req.param('id'),c.req.header('Payment-Proof'));
+    if(!result.paid){c.header('amtPaymentLink',String(result.payment!.amtPaymentLink));return c.json(result,402);}
+    return c.json(result);
+  };
+  http.post('/api/orders/:id/payment',pay);
+  http.get('/api/orders/:id/resource',async c=>{
+    const result=await app.pay(c.get('actor'),c.req.param('id'),c.req.header('Payment-Proof'));
+    if(!result.paid){c.header('amtPaymentLink',String(result.payment!.amtPaymentLink));return c.json(result,402);}
+    if(result.order.snapshot.engine==='csv'&&result.order.status==='READY')await app.execute(c.get('actor'),c.req.param('id'));
+    const detail=await app.detail(c.get('actor'),c.req.param('id'));return c.json(detail,detail.deliveries.length?200:202);
   });
-  http.get('/api/artifacts/:id/metadata',async c=>c.json((await app.artifact(c.req.param('id'))).artifact));
-  http.get('/api/tasks/:id',async c=>c.json(await app.task(c.req.param('id'))));
-  http.get('/api/decisions/:id',async c=>{
-    const result = await execution.decisionBytes(c.req.param('id'));
-    return new Response(new Uint8Array(result.bytes),{ headers: { 'Content-Type': 'application/json; charset=utf-8','X-Content-Hash': result.contentHash } });
-  });
-  http.get('/api/tasks/:id/assessments/:attempt/evidence',async c=>new Response(new Uint8Array(await execution.evidence(c.req.param('id'),z.coerce.number().int().positive().parse(c.req.param('attempt')))),{ headers: { 'Content-Type':'application/json; charset=utf-8' } }));
-  http.post('/admin/nodes',async c=>{
-    const request = NodeEnrollmentRequestSchema.parse(await c.req.json());
-    return c.json(await app.enroll(c.get('principal'),request.profile,request.signature),201);
-  });
-  http.post('/admin/nodes/:id/rotate',async c=>c.json(await app.rotateCredential(c.get('principal'),AddressSchema.parse(c.req.param('id')))));
-  http.post('/admin/nodes/:id/register',async c=>c.json(await app.registerChain(c.get('principal'),AddressSchema.parse(c.req.param('id')))));
-  http.post('/admin/tasks/:id/assign',async c=>{
-    const request = AssignTaskRequestSchema.parse(await c.req.json());
-    return c.json(await execution.assign(c.get('principal'),c.req.param('id'),request));
-  });
-  http.post('/admin/tasks/:id/assess',async c=>c.json(await execution.assess(c.get('principal'),c.req.param('id'))));
-  http.post('/admin/runs/:id/advance',async c=>{
-    if (c.get('principal').kind!=='admin') throw new AppError(403,'UNAUTHORIZED','需要管理凭证');
-    return c.json(await app.progress(c.req.param('id')));
-  });
-  http.post('/admin/runs/:id/:action',async c=>c.json(await execution.control(c.get('principal'),c.req.param('id'),z.enum(['pause','resume','cancel']).parse(c.req.param('action')))));
-  http.post('/worker/heartbeat',async c=>c.json(await app.heartbeat(c.get('principal'),await c.req.json())));
-  http.post('/worker/progress',async c=>c.json(await app.advanceWork(c.get('principal'),await c.req.json())));
-  http.get('/worker/jobs',async c=>c.json(await app.jobs(c.get('principal'))));
-  http.post('/worker/tasks/:id/accept',async c=>c.json(await execution.accept(c.get('principal'),c.req.param('id'),AcceptTaskRequestSchema.parse(await c.req.json()).attempt)));
-  http.post('/worker/artifacts',async c=>c.json(await execution.upload(c.get('principal'),await c.req.json()),201));
-  http.post('/worker/tasks/:id/submit',async c=>c.json(await execution.submit(c.get('principal'),c.req.param('id'),await c.req.json())));
-  http.post('/worker/tasks/:id/model-calls',async c=>c.json(await execution.reserveModelCall(c.get('principal'),c.req.param('id'),ModelCallRequestSchema.parse(await c.req.json()).attempt)));
-  http.post('/worker/tasks/:id/interrupt',async c=>{
-    const request = InterruptRequestSchema.parse(await c.req.json());
-    return c.json(await execution.interrupt(c.get('principal'),c.req.param('id'),request.attempt,request.reason));
-  });
-  http.post('/worker/handoffs/:id',async c=>{
-    const request = HandoffUpdateRequestSchema.parse(await c.req.json());
-    return c.json(await execution.handoff(c.get('principal'),c.req.param('id'),request.status as 'ACCEPTED'|'RETURNED',request.reason));
-  });
-  http.get('/api/announcements',async c=>c.json(await board.announcements(c.req.query('runId'),c.req.query('taskId'))));
-  http.post('/api/announcements',async c=>c.json(await board.publish(c.get('principal'),await c.req.json()),201));
-  http.get('/api/notes',async c=>c.json(await board.notes(c.req.query('runId'),c.req.query('taskId'))));
-  http.post('/api/notes',async c=>c.json(await board.createNote(c.get('principal'),await c.req.json()),201));
-  http.get('/api/notes/:id',async c=>c.json(await board.note(c.req.param('id'))));
-  http.patch('/api/notes/:id',async c=>c.json(await board.updateNote(c.get('principal'),c.req.param('id'),await c.req.json())));
-  http.all('/mcp', c => mcpResponse(app,c.get('principal'),c.req.raw));
+  http.post('/api/orders/:id/execute',async c=>c.json(await app.execute(c.get('actor'),c.req.param('id'))));
+  http.post('/api/orders/:id/deliveries',async c=>c.json(await app.submit(c.get('actor'),c.req.param('id'),await c.req.json()),201));
+  http.post('/api/orders/:id/review',async c=>c.json(await app.review(c.get('actor'),c.req.param('id'),await c.req.json())));
+  http.post('/api/orders/:id/cancel',async c=>c.json(await app.cancel(c.get('actor'),c.req.param('id'))));
+  http.post('/api/orders/:id/dispute',async c=>{const {reason}=z.strictObject({reason:z.string()}).parse(await c.req.json());return c.json(await app.dispute(c.get('actor'),c.req.param('id'),reason));});
+  http.post('/api/admin/services/:id/binding',async c=>c.json(await app.bind(c.req.param('id'),await c.req.json())));
+  http.post('/api/admin/orders/:id/refund',async c=>c.json(await app.refund(c.req.param('id'))));
+  http.get('/api/admin/metrics',async c=>c.json({...await app.metrics(),environment:app.config.PAYMENT_MODE}));
+  http.get('/api/admin/services',async c=>c.json(await app.adminServices()));
+  http.patch('/api/admin/services/:id/price',async c=>{const {priceFen}=z.strictObject({priceFen:z.number().int().min(0).max(5000)}).parse(await c.req.json());return c.json(await app.setPrice(c.req.param('id'),priceFen));});
+  http.get('/api/admin/disputes',async c=>c.json(await app.disputes()));
+  http.post('/api/admin/orders/:id/resolve',async c=>{const {reason}=z.strictObject({reason:z.string()}).parse(await c.req.json());return c.json(await app.resolve(c.req.param('id'),reason));});
+  http.post('/mcp',async c=>mcpResponse(app,await app.authenticate(c.req.header('Authorization')),c.req.raw));
+  http.get('/mcp',c=>c.json({error:{code:'METHOD_NOT_ALLOWED',message:'请使用 Streamable HTTP POST'}},405));
   return http;
 }

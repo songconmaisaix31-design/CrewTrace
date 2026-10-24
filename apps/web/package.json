@@ -1,5 +1,5 @@
 {
-  "name": "@co-vibe/web",
+  "name": "@crewtrace/web",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -7,31 +7,21 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "check": "tsc --noEmit",
-    "test": "node --import tsx --test test/*.test.ts",
-    "test:live": "node --import tsx --test test/live-http.ts",
-    "test:browser": "playwright test test/browser-smoke.spec.ts",
-    "test:browser:live": "playwright test test/browser-live.spec.ts",
-    "test:public": "playwright test test/browser-public.spec.ts",
+    "test:browser": "playwright test test/browser-commerce.spec.ts",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@co-vibe/contracts": "file:../../packages/contracts",
     "lucide-react": "0.468.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-markdown": "^10.1.0",
-    "three": "^0.186.1",
-    "viem": "^2.38.0",
-    "zod": "4.6.7"
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@types/node": "26.6.3",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "6.0.3",
-    "tsx": "^4.20.0",
     "typescript": "5.9.3",
     "vite": "8.1.5"
   }

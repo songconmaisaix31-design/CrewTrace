@@ -1,4 +1,6 @@
-# Astrocyte Agent 执行协议
+# CrewTrace Agent 执行协议
+
+当前任务入口为 tasks/payathon.md、PRD.md、HANDOFF.md 和 STATUS.md。用户于 2026-10-24 授权将运行版本切换到支付宝 PAYATHON；legacy/monad 仅保存历史版本，不参与当前构建。下文历史项目与 Codex 控制器条目仅在对应历史任务适用。当前没有 Orca CLI，使用单 Agent 顺序开发。
 
 ## 1. 适用范围与规则优先级
 

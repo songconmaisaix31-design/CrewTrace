@@ -1,26 +1,30 @@
-import { Pool, type PoolClient } from '@neondatabase/serverless';
-import { databaseErrorCode } from './errors.js';
+import { Pool } from 'pg';
+import { PGlite } from '@electric-sql/pglite';
+import { readFile } from 'node:fs/promises';
 
-export class Database {
-  readonly pool: Pool;
-  constructor(connectionString: string) {
-    this.pool = new Pool({ connectionString, max: 5, connectionTimeoutMillis: 10_000, idleTimeoutMillis: 10_000,statement_timeout: 30_000,query_timeout: 35_000 });
-    this.pool.on('error', (error: unknown) => { console.error(JSON.stringify({ event: 'database_idle_connection_error',code: databaseErrorCode(error) })); });
+export interface SQL {query<T extends Record<string,any>=Record<string,any>>(sql:string,args?:unknown[]):Promise<{rows:T[]}>}
+export class Database implements SQL {
+  private readonly pg?:Pool;
+  private readonly embedded?:PGlite;
+  constructor(url:string){
+    if(url.startsWith('pglite://'))this.embedded=new PGlite(url.slice('pglite://'.length)||undefined);
+    else this.pg=new Pool({connectionString:url,max:5,connectionTimeoutMillis:10000,statement_timeout:20000});
   }
-
-  async transaction<T>(operation: (client: PoolClient) => Promise<T>, serializeWrites = false): Promise<T> {
-    const client = await this.pool.connect();
-    try {
-      await client.query(serializeWrites ? 'BEGIN; SELECT pg_advisory_xact_lock(83521001)' : 'BEGIN');
-      const result = await operation(client);
-      await client.query('COMMIT');
-      return result;
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
+  async query<T extends Record<string,any>=Record<string,any>>(sql:string,args:unknown[]=[]):Promise<{rows:T[]}>{
+    if(this.embedded)return this.embedded.query<T>(sql,args);
+    return this.pg!.query<T>(sql,args);
   }
-  async close() { await this.pool.end(); }
+  async transaction<T>(fn:(db:SQL)=>Promise<T>):Promise<T>{
+    if(this.embedded)return this.embedded.transaction(tx=>fn(tx));
+    const client=await this.pg!.connect();
+    try{await client.query('BEGIN');const result=await fn(client);await client.query('COMMIT');return result;}
+    catch(e){await client.query('ROLLBACK');throw e;}
+    finally{client.release();}
+  }
+  async migrate(){
+    const sql=await readFile(new URL('../migrations/001_commerce.sql',import.meta.url),'utf8');
+    if(this.embedded)await this.embedded.exec(`BEGIN; ${sql} COMMIT;`);
+    else await this.transaction(async db=>{await db.query(sql);});
+  }
+  async close(){if(this.embedded)await this.embedded.close();else await this.pg!.end();}
 }
