@@ -44,17 +44,18 @@ export function SoundFeedbackProvider({children}:{children:ReactNode}){
   }
   useEffect(()=>{
     if(!enabled||!available)return;
-    // 刷新后保留开关选择，但只在主动交互时启动音频。
     const activate=()=>{void unlock().catch(failed);};
+    activate();
     const click=(event:MouseEvent)=>{
       const target=event.target instanceof Element?event.target.closest('button,a'):null;
       if(!target||target.matches(':disabled,[data-sound-toggle]')||target.closest('.stage-switch,.stage-directions')||target.matches('.lens-enter,.brand'))return;
       play('click');
     };
     document.addEventListener('pointerdown',activate,{passive:true});
+    document.addEventListener('pointerup',activate,{passive:true});
     document.addEventListener('keydown',activate);
     document.addEventListener('click',click,true);
-    return()=>{document.removeEventListener('pointerdown',activate);document.removeEventListener('keydown',activate);document.removeEventListener('click',click,true);};
+    return()=>{document.removeEventListener('pointerdown',activate);document.removeEventListener('pointerup',activate);document.removeEventListener('keydown',activate);document.removeEventListener('click',click,true);};
   },[enabled,available,unlock,failed,play]);
   useEffect(()=>()=>{const audio=engine.current;engine.current=null;if(audio)void audio.context.close();},[]);
   return <SoundContext.Provider value={{enabled,available,error,toggle,play}}>{children}</SoundContext.Provider>;

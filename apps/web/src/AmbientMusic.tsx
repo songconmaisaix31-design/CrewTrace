@@ -15,8 +15,6 @@ export default function AmbientMusic(){
   const [settings,setSettings]=useState(false);
   const [enabled,setEnabled]=useState(()=>localStorage.getItem(preferenceKey)!=='off');
   const [needsStart,setNeedsStart]=useState(false);
-  const [invitation,setInvitation]=useState<'hidden'|'visible'|'leaving'>('hidden');
-  const invited=useRef(false);
   const [started,setStarted]=useState(false),[playing,setPlaying]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState('');
   const [volume,setVolume]=useState(()=>{const saved=Number(localStorage.getItem(volumeKey)??.12);return Number.isFinite(saved)?Math.min(.3,Math.max(0,saved)):.12;});
   const [visible,setVisible]=useState(!document.hidden),[dialogOpen,setDialogOpen]=useState(false);
@@ -48,7 +46,7 @@ export default function AmbientMusic(){
     const target=audible?volume*(screen===0?1:.25)*(dialogOpen?.28:1):0;
     // 等实际 playing 事件后再渐入，加载时间不会消耗渐入时长。
     if(audible&&!playing){
-      if(track.paused)void track.play().catch(()=>{if(token===generation.current)fail();});
+      if(track.paused&&!loading)void track.play().catch(()=>{if(token===generation.current)fail();});
       return stopFade;
     }
     if(!audible&&track.volume===0){track.pause();return;}
@@ -66,15 +64,8 @@ export default function AmbientMusic(){
     if(audible&&track.paused){void track.play().then(()=>{if(token===generation.current)fade();else if(!intent.current)track.pause();}).catch(()=>{if(token===generation.current)fail();});}
     else fade();
     return stopFade;
-  },[enabled,started,playing,screen,visible,dialogOpen,volume,fail,stopFade]);
+  },[enabled,started,playing,loading,screen,visible,dialogOpen,volume,fail,stopFade]);
 
-  useEffect(()=>{
-    if(!needsStart||screen!==0||settings){setInvitation('hidden');return;}
-    if(invited.current)return;
-    invited.current=true;setInvitation('visible');
-    const leave=setTimeout(()=>setInvitation('leaving'),3000),hide=setTimeout(()=>setInvitation('hidden'),3280);
-    return()=>{clearTimeout(leave);clearTimeout(hide);};
-  },[needsStart,screen,settings]);
 
   useEffect(()=>{
     const track=audio.current;
@@ -87,7 +78,7 @@ export default function AmbientMusic(){
       if(audio.current!==track||!intent.current)return;
       if(problem instanceof DOMException&&problem.name==='NotAllowedError'){
         intent.current=false;stopFade();track.pause();track.volume=0;
-        setStarted(false);setEnabled(false);setLoading(false);setNeedsStart(true);
+        setStarted(false);setLoading(false);setNeedsStart(true);
       }else fail();
     });
   },[visible,fail,stopFade]);
@@ -96,44 +87,49 @@ export default function AmbientMusic(){
     if(!needsStart || error || localStorage.getItem(preferenceKey)==='off')return;
     const resume=(event:Event)=>{
       if(!event.isTrusted || document.hidden || (event.target instanceof Element && event.target.closest('[data-sound-toggle]')))return;
-      if(event instanceof KeyboardEvent && (event.repeat || !['Enter',' '].includes(event.key)))return;
+      if(event instanceof KeyboardEvent&&(event.repeat||event.isComposing||event.metaKey||event.ctrlKey||event.altKey))return;
+      if(event.type==='pointerdown'&&(event as PointerEvent).pointerType!=='mouse')return;
       const track=audio.current;
       if(!track || intent.current)return;
-      entryFade.current=true;intent.current=true;setLoading(true);
+      entryFade.current=true;intent.current=true;setLoading(true);setStarted(true);
       void track.play().then(()=>{
-        if(audio.current!==track)return;
+        if(audio.current!==track||!intent.current)return;
         setNeedsStart(false);setEnabled(true);setStarted(true);
-      }).catch(fail);
+      }).catch(problem=>{
+        if(audio.current!==track||!intent.current)return;
+        if(problem instanceof DOMException&&problem.name==='NotAllowedError'){
+          intent.current=false;setStarted(false);setLoading(false);
+        }else fail();
+      });
     };
-    document.addEventListener('click',resume,true);
-    document.addEventListener('keydown',resume,true);
-    return()=>{document.removeEventListener('click',resume,true);document.removeEventListener('keydown',resume,true);};
+    const gestures=['pointerdown','pointerup','click','keydown'];
+    for(const gesture of gestures)document.addEventListener(gesture,resume,true);
+    return()=>{for(const gesture of gestures)document.removeEventListener(gesture,resume,true);};
   },[needsStart,error,fail]);
 
   function toggle(){
     setError('');
-    if(enabled&&started){intent.current=false;entryFade.current=false;setNeedsStart(false);setEnabled(false);setLoading(false);localStorage.setItem(preferenceKey,'off');return;}
+    if(enabled&&!error){intent.current=false;entryFade.current=false;setNeedsStart(false);setEnabled(false);setLoading(false);setStarted(false);localStorage.setItem(preferenceKey,'off');return;}
     const track=audio.current;if(!track)return;
     autoAttempt.current=track;
     if(!track.getAttribute('src'))track.src='/audio/futuristic-pulse.mp3';
     entryFade.current=true;intent.current=true;setNeedsStart(false);setLoading(true);void track.play().catch(()=>{if(intent.current)fail();});setEnabled(true);setStarted(true);localStorage.setItem(preferenceKey,'on');
   }
   const active=enabled&&started;
-  const musicStatus=error?t('播放失败','Playback failed'):needsStart?t('等待开启','Tap to play'):!active?t('已关闭','Off'):volume===0?t('已静音','Muted'):loading?t('正在加载','Loading'):playing?(screen===0?t('播放中','Playing'):t('轻声播放','Playing softly')):t('准备播放','Ready to play');
+  const musicStatus=error?t('播放失败','Playback failed'):needsStart?t('已开启，首次点按或按键后播放','On · playback begins with your first tap or keypress'):!active?t('已关闭','Off'):volume===0?t('已静音','Muted'):loading?t('正在加载','Loading'):playing?(screen===0?t('播放中','Playing'):t('轻声播放','Playing softly')):t('准备播放','Ready to play');
   function openSettings(){soundEntry.current?.querySelector<HTMLButtonElement>('.sound-toggle')?.focus();window.dispatchEvent(new CustomEvent('crewtrace:preview',{detail:null}));setSettings(true);}
-  function musicButton(quick=false){return <button type="button" role="switch" className="sound-switch" aria-label={active?t('关闭音乐','Turn music off'):t('开启音乐','Turn music on')} data-music-toggle={!quick||undefined} data-quick-music={quick||undefined} data-sound-toggle aria-checked={active} aria-busy={loading} onClick={toggle}><span aria-hidden="true"/></button>;}
+  function musicButton(quick=false){return <button type="button" role="switch" className="sound-switch" aria-label={enabled&&!error?t('关闭音乐','Turn music off'):t('开启音乐','Turn music on')} data-music-toggle={!quick||undefined} data-quick-music={quick||undefined} data-sound-toggle aria-checked={enabled&&!error} aria-busy={loading} onClick={toggle}><span aria-hidden="true"/></button>;}
   function effectsButton(quick=false){return <button type="button" role="switch" className="sound-switch" aria-label={sound.enabled?t('关闭音效','Turn effects off'):t('开启音效','Turn effects on')} data-effects-toggle={!quick||undefined} data-quick-effects={quick||undefined} data-sound-toggle aria-checked={sound.enabled} disabled={!sound.available} onClick={sound.toggle}><span aria-hidden="true"/></button>;}
   function volumeControl(){const percent=Math.round(volume/.3*100);return <label className="ambient-volume"><span>{t('音乐音量','Music volume')}<output>{percent}%</output></span><input aria-label={t('音乐音量','Music volume')} aria-valuetext={`${percent}%`} type="range" min="0" max="100" value={percent} style={{'--sound-fill':`${percent}%`} as React.CSSProperties} onChange={event=>{const next=Number(event.target.value)/100*.3;setVolume(next);localStorage.setItem(volumeKey,String(next));}}/></label>;}
   function audioErrors(){return <>{error&&<p role="alert" className="sound-error-message">{t(error,'Music could not play. Please try again.')}</p>}{sound.error&&<p role="status" className="sound-error-message">{t(sound.error,'Sound effects could not start. Try again.')}</p>}</>;}
   return <><span className="sound-entry-group" ref={soundEntry}>
-    <HoverPreview className="sound-toggle" silent interactive active={active||sound.enabled} label={t('音乐与音效设置','Music and sound settings')} dialogOpen={settings} onClick={openSettings} hint={null} preview={<div className="sound-quick">
+    <HoverPreview className="sound-toggle" silent interactive active={enabled||sound.enabled} label={t('音乐与音效设置','Music and sound settings')} dialogOpen={settings} onClick={openSettings} hint={null} preview={<div className="sound-quick">
       <div className="sound-quick-head"><strong>{t('声音','Sound')}</strong><button type="button" className="sound-more" data-sound-toggle onClick={openSettings}>{t('全部设置','All settings')}<ArrowUpRight size={13} aria-hidden="true"/></button></div>
       <div className="sound-setting-row"><div className="sound-setting-label"><Music2 size={16} aria-hidden="true"/><div><strong>{t('氛围音乐','Ambient music')}</strong><small>{musicStatus}</small></div></div>{musicButton(true)}</div>
       {volumeControl()}
       <div className="sound-setting-row sound-quick-effects"><div className="sound-setting-label"><Volume2 size={16} aria-hidden="true"/><strong>{t('交互音效','Interaction sounds')}</strong></div>{effectsButton(true)}</div>
       {audioErrors()}
-    </div>}>{active||sound.enabled?<Volume2 size={16}/>:<VolumeX size={16}/>}</HoverPreview>
-    {invitation!=='hidden'&&screen===0&&!settings&&<button type="button" className="sound-entry-prompt" data-leaving={invitation==='leaving'} data-sound-toggle onClick={toggle}><Music2 size={13} aria-hidden="true"/>{error?t('重试氛围声音','Retry ambient audio'):t('轻点开启氛围声音','Tap to enable ambient audio')}</button>}
+    </div>}>{enabled||sound.enabled?<Volume2 size={16}/>:<VolumeX size={16}/>}</HoverPreview>
     </span>{settings&&<Dialog title={t('声音','Sound')} variant="sound" onClose={()=>setSettings(false)}>
       <div className="ambient-settings">
         <div className="sound-setting-row"><div className="sound-setting-label"><Music2 size={18} aria-hidden="true"/><div><strong>{t('氛围音乐','Ambient music')}</strong><small role="status">{musicStatus}</small></div></div>{musicButton()}</div>
