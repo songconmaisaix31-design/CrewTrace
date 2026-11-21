@@ -16,7 +16,7 @@
 .experience-shell[data-screen] .collaboration-stage .stage-card[aria-hidden="true"]{opacity:0;filter:none;pointer-events:none}
 .experience-shell[data-screen] .collaboration-stage .stage-card[data-position="before"]{transform:translateY(-20px)}
 .experience-shell[data-screen] .collaboration-stage .stage-card[data-position="after"]{transform:translateY(20px)}
-.experience-shell .stage-switch{grid-template-columns:repeat(3,minmax(0,1fr));max-width:660px}
+.experience-shell .stage-switch{grid-template-columns:repeat(3,minmax(0,1fr));max-width:none}
 .stage-toolbar{display:flex;align-items:center;gap:12px;flex:none;min-width:0}
 .experience-shell .stage-toolbar .stage-switch{flex:1;min-width:0}
 .stage-refresh{display:grid;place-items:center;flex:none;width:44px;height:44px;margin-bottom:8px;padding:0;border:0;border-radius:50%;background:#b69ad30b;color:#c5afd9;cursor:pointer}
@@ -185,3 +185,23 @@
 .archive-preview small{color:#c1b8cf}
 .archive-preview :is(h3,p){margin:.55rem 0}
 .archive-preview a{color:#dac4ff;text-underline-offset:.2em}
+.archive-message{display:grid;grid-template-columns:5ch minmax(0,1fr);align-items:baseline;gap:1rem}
+.archive-status,.panel-sync{color:#c1b8cf;font-size:12px;line-height:1.5}
+.experience-shell .stage-toolbar .stage-switch{max-width:none;gap:0}
+.experience-shell .stage-card .message-panel-head{align-items:center}
+.experience-shell .stage-switch button[aria-pressed=false]{opacity:.78}
+@media(max-width:760px){
+ .experience-shell .stage-card .message-panel-actions{width:auto;max-width:100%;justify-content:flex-end}
+ .experience-shell .stage-card .message-panel-actions button{flex:auto}
+ .experience-shell .stage-card .archive-status,.experience-shell .stage-card .panel-sync{flex:1 1 9em}
+}
+@media(max-width:420px){
+ .experience-shell .stage-toolbar .stage-switch button{flex-direction:column;gap:2px;line-height:1.2}
+ .experience-shell .stage-toolbar .stage-switch button span{max-width:100%;overflow-wrap:anywhere}
+ .experience-shell .task-list-toolbar .public-filter{flex-basis:100%}
+}
+@media(max-height:480px) and (min-width:600px){
+ .archive-preview{padding-block:2px}
+ .archive-message{margin:2px 0}
+ .archive-message span{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}
+}
