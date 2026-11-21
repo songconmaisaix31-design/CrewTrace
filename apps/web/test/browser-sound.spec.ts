@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
 test.beforeEach(async({page})=>{await page.addInitScript(()=>localStorage.setItem('crewtrace:music:v1','off'));});
 
-test('声音默认关闭、主动开启、切页发声、静音及偏好持久化',async({page})=>{
+test('音效默认开启、切页发声、静音及偏好持久化',async({page})=>{
   const input=await page.context().newCDPSession(page);
   let contexts=0,oscillators=0;
   await input.send('WebAudio.enable');
@@ -11,13 +11,11 @@ test('声音默认关闭、主动开启、切页发声、静音及偏好持久�
   await page.goto('/');
   const entry=page.locator('.sound-toggle[data-sound-toggle]');
   const toggle=page.locator('[data-effects-toggle]');
-  await expect(entry).not.toHaveAttribute('data-active','true');
+  await expect(entry).toHaveAttribute('data-active','true');
   await page.getByRole('button',{name:'接入 MCP',exact:true}).click();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  expect(contexts).toBe(0);
   await entry.click();
-  await toggle.click();
   await expect(toggle).toHaveAttribute('aria-checked','true');
   await expect.poll(()=>oscillators).toBe(1);
   expect(contexts).toBe(1);

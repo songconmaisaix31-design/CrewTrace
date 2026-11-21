@@ -6,7 +6,7 @@ const SoundContext=createContext({enabled:false,available:false,error:'',toggle:
 export const useSoundFeedback=()=>useContext(SoundContext);
 
 export function SoundFeedbackProvider({children}:{children:ReactNode}){
-  const [enabled,setEnabled]=useState(()=>localStorage.getItem(preferenceKey)==='on');
+  const [enabled,setEnabled]=useState(()=>localStorage.getItem(preferenceKey)!=='off');
   const [error,setError]=useState('');
   const available=typeof window.AudioContext==='function';
   const active=useRef(enabled);active.current=enabled;

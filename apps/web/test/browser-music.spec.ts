@@ -2,6 +2,7 @@ import {test,expect} from '@playwright/test';
 test.use({channel:'chrome',launchOptions:{args:['--enable-unsafe-swiftshader']}});
 // 本组验证用户已选择关闭之后的手动控制；自动入场另有真实浏览器策略测试。
 test.beforeEach(async({page})=>{await page.addInitScript(()=>{if(localStorage.getItem('crewtrace:music:v1')===null)localStorage.setItem('crewtrace:music:v1','off');});});
+test.beforeEach(async({page})=>{await page.addInitScript(()=>{if(localStorage.getItem('crewtrace:sound:v1')===null)localStorage.setItem('crewtrace:sound:v1','off');});});
 
 test('真实音乐主动加载、协作区连续轻声播放、弹窗压低和返回恢复',async({page})=>{
   let requests=0;

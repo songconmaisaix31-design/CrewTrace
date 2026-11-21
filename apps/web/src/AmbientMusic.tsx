@@ -92,13 +92,30 @@ export default function AmbientMusic(){
     });
   },[visible,fail,stopFade]);
 
+  useEffect(()=>{
+    if(!needsStart || error || localStorage.getItem(preferenceKey)==='off')return;
+    const resume=(event:Event)=>{
+      if(!event.isTrusted || document.hidden || (event.target instanceof Element && event.target.closest('[data-sound-toggle]')))return;
+      if(event instanceof KeyboardEvent && (event.repeat || !['Enter',' '].includes(event.key)))return;
+      const track=audio.current;
+      if(!track || intent.current)return;
+      entryFade.current=true;intent.current=true;setLoading(true);
+      void track.play().then(()=>{
+        if(audio.current!==track)return;
+        setNeedsStart(false);setEnabled(true);setStarted(true);
+      }).catch(fail);
+    };
+    document.addEventListener('click',resume,true);
+    document.addEventListener('keydown',resume,true);
+    return()=>{document.removeEventListener('click',resume,true);document.removeEventListener('keydown',resume,true);};
+  },[needsStart,error,fail]);
+
   function toggle(){
     setError('');
     if(enabled&&started){intent.current=false;entryFade.current=false;setNeedsStart(false);setEnabled(false);setLoading(false);localStorage.setItem(preferenceKey,'off');return;}
     const track=audio.current;if(!track)return;
     autoAttempt.current=track;
     if(!track.getAttribute('src'))track.src='/audio/futuristic-pulse.mp3';
-    // 被拦截后，只由明确的音乐开启操作恢复，不监听任意点击或滚动。
     entryFade.current=true;intent.current=true;setNeedsStart(false);setLoading(true);void track.play().catch(()=>{if(intent.current)fail();});setEnabled(true);setStarted(true);localStorage.setItem(preferenceKey,'on');
   }
   const active=enabled&&started;

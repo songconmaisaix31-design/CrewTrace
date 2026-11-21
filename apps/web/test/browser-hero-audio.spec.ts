@@ -9,8 +9,7 @@ test('开启普通音效后，圆环与文字交互仍保持安静且不请求�
   page.on('request',request=>{if(request.url().includes('/audio/hero/'))assets.push(request.url());});
   await page.goto('/');
   await page.getByRole('button',{name:'音乐与音效设置',exact:true}).click();
-  await page.getByRole('switch',{name:'开启音效',exact:true}).click();
-  await expect.poll(()=>nodes.filter(type=>type==='Oscillator').length).toBe(1);
+  await expect(page.getByRole('switch',{name:'关闭音效',exact:true})).toBeChecked();
   await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);
   const scene=(await page.locator('.lens-scene').boundingBox())!,x=scene.x+scene.width/2,y=scene.y+scene.height/2;
   const before=nodes.length;
