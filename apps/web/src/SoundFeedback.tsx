@@ -49,7 +49,8 @@ export function SoundFeedbackProvider({children}:{children:ReactNode}){
     const click=(event:MouseEvent)=>{
       const target=event.target instanceof Element?event.target.closest('button,a'):null;
       if(!target||target.matches(':disabled,[data-sound-toggle]')||target.closest('.stage-switch,.stage-directions')||target.matches('.lens-enter,.brand'))return;
-      play('click');
+      if(engine.current?.context.state==='running')play('click');
+      else void unlock().then(()=>play('click')).catch(failed);
     };
     document.addEventListener('pointerdown',activate,{passive:true});
     document.addEventListener('pointerup',activate,{passive:true});
