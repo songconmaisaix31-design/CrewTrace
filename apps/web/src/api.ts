@@ -15,7 +15,10 @@ export async function request(path:string, init?:RequestInit) {
   const timeout=AbortSignal.timeout(45000);
   const response = await fetch(path, {...init, signal:init?.signal ? AbortSignal.any([init.signal,timeout]) : timeout});
   if (!response.ok) {
-    const errorBody = z.object({error:z.object({code:z.string().optional()})}).safeParse(await response.json());
+    const payload = response.headers.get('content-type')?.includes('json')
+      ? await response.json().catch(() => null)
+      : null;
+    const errorBody = z.object({error:z.object({code:z.string().optional()})}).safeParse(payload);
     const code = errorBody.success ? errorBody.data.error.code : undefined;
     const reasons:Record<string,string> = {
       CHAIN_NOT_CONFIGURED:'记录验证暂不可用，本次分析尚不能继续执行。',

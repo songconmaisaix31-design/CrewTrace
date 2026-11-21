@@ -179,3 +179,5 @@
 }
 .experience-shell .public-topbar{pointer-events:none}
 .experience-shell .public-topbar>.brand,.experience-shell .public-topbar>.header-actions{pointer-events:auto}
+.task-recovery{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:1rem 0;color:#e6deef}
+.task-recovery p{margin:.35rem 0 0;color:#c1b8cf}
