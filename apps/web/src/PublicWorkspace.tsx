@@ -201,6 +201,7 @@ export default function PublicWorkspace(){
         {listError && <div className="task-recovery" role="status">
           <div><strong>{t('任务列表暂时无法更新','Task list unavailable')}</strong><p>{updated ? t(`显示 ${time(updated)} 读取的记录。`,`Showing records from ${time(updated)}.`) : translateError(listError)}</p></div>
           <button className="secondary" disabled={syncing} onClick={reload}>{syncing ? t('正在重试…','Retrying…') : t('重新加载','Retry')}</button>
+          <a href="/showcase.html">{t('查看历史协作回放','View archived collaboration')}</a>
         </div>}
         {taskRecords(true)}
         {!tasks.length&&!listError&&<p className="public-empty">{loaded?t('当前页暂无符合条件的任务。','No matching tasks on this page.'):t('正在读取公开任务…','Loading public tasks…')}</p>}
