@@ -37,4 +37,23 @@ jobs:
           PUBLIC_BASE_URL: http://127.0.0.1:3000
         run: |
           export ADMIN_TOKEN="$(openssl rand -hex 32)"
-          node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts test/mcp-host.test.ts
+          node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts test/portfolio-auto.test.ts test/mcp-host.test.ts
+      - run: npx playwright install --with-deps chromium
+      - name: Browser and independent workers
+        env:
+          DATABASE_URL: postgresql://crewtrace_test:local_ci_only@127.0.0.1:5432/crewtrace_v2_test
+          PUBLIC_BASE_URL: http://127.0.0.1:55581
+          RUNTIME_URL: http://127.0.0.1:55581
+          WEB_BASE_URL: http://127.0.0.1:55173
+        run: |
+          export ADMIN_TOKEN="$(openssl rand -hex 32)"
+          (cd services/runtime && exec node --import tsx test/portfolio-browser-host.ts) &
+          backend=$!
+          (cd apps/web && exec node ../../node_modules/vite/bin/vite.js --host 127.0.0.1 --port 55173 --strictPort) &
+          website=$!
+          trap 'kill "$backend" "$website" 2>/dev/null || true' EXIT
+          curl --retry 20 --retry-connrefused --retry-delay 1 -fsS "$RUNTIME_URL/api/collaboration" >/dev/null
+          curl --retry 20 --retry-connrefused --retry-delay 1 -fsS "$WEB_BASE_URL/" >/dev/null
+          (cd apps/web && ../../node_modules/.bin/playwright test browser-portfolio.spec.ts)
+      - name: Reproduce load benchmark
+        run: (cd workers && node --import tsx src/portfolio-load-benchmark.ts) | diff - docs/portfolio/benchmark-load-v1.json

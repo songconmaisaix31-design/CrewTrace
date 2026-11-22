@@ -16,3 +16,22 @@
 cd workers
 node --import tsx src/portfolio-benchmark.ts
 ```
+
+## Load and interruption experiment
+
+The second experiment is a deterministic discrete-time simulation with real CSV transformations and rule checks. It uses 60 identical holdout inputs per strategy, three initial Worker profiles, one cold-start profile, fixed arrival bursts, explicit outage windows and one running assignment per worker. The seeded input generator changes the defect mix halfway through. Training preserves a separate 16-item history for each initial worker. During holdout, only accepted passes affect reputation. An interrupted execution consumes a lease and can be reassigned, with a maximum of three attempts.
+
+| Policy | First attempt passes | Accepted | Retried | Timeouts | Mean successful completion (ticks) | Assignment concentration |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Random | 47/60 | 59/60 | 13 | 4 | 13.03 | 0.2504 |
+| Capability | 44/60 | 56/60 | 16 | 4 | 13.63 | 0.2525 |
+| Reputation | 44/60 | 56/60 | 16 | 4 | 13.63 | 0.2525 |
+
+Concentration is the sum of squared worker assignment shares. The JSON also contains attempts and online/busy ticks per worker. Capability and reputation produced identical decisions under the fixed profile ordering. Random did better on this workload. A single seed and synthetic profiles provide no basis for a general ranking of the policies. Simulated ticks measure the scheduling model, while the separate integration tests exercise actual concurrent worker processes and the Runtime. Monetary costs were unavailable.
+
+[Inputs, raw attempts and statistics](docs/portfolio/benchmark-load-v1.json)
+
+```sh
+cd workers
+node --import tsx src/portfolio-load-benchmark.ts
+```

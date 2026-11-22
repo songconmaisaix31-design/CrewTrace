@@ -1,5 +1,12 @@
 # CrewTrace V2 实验变更
 
+## Release Candidate 工作
+
+- 增加自动分工与三位独立 Worker 的 HTTP 执行，绑定角色、在线状态、负载和决策快照。
+- 增加有界重试、超时重派、旧租期拒绝和提交幂等；作者审核后自动继续。
+- 增加交付复算、历史运行与并发评测；原始 30 任务实验继续保留。
+- CI 增加真实 PostgreSQL、Worker 子进程及 Playwright 浏览器闭环。
+
 - 从团队 main 创建独立工作目录。Web、API、MCP 接入资源使用同一环境地址。
 - Runtime 支持标准 PostgreSQL TCP 与本地 Unix socket。
 - 加入 CSV 验证证据与验收后信誉事件，按角色和任务保存候选决策。

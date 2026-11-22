@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
 
-test.use({ channel: 'chrome' });
+test.use({ channel: process.env.CI?'chromium':'chrome' });
 
 test('任务发布者能保存 CSV 候选排名并读取真实验证证据', async ({ page, request, baseURL }) => {
+  test.setTimeout(120_000);
   test.skip(baseURL !== 'http://127.0.0.1:55173', '此测试只向实验用本地 Runtime 写入');
   const configured = await request.get('/api/web?action=collaboration-config');
   expect(await configured.json()).toMatchObject({ mcpURL: 'http://127.0.0.1:55581/mcp' });
@@ -30,11 +32,24 @@ test('任务发布者能保存 CSV 候选排名并读取真实验证证据', asy
   await page.reload();
   await expect(dialog.getByText('csv-role-reputation-v1',{exact:false})).toBeVisible();
   await page.screenshot({path:'../../.local/portfolio-web-evidence.png'});
-  const managed = await post('/tasks',{title:'Portfolio browser workflow',description:'Three-step fixed input',requiredCapabilities:['csv-data-review']},owner.credential);
+  const workflowTitle=`Portfolio browser workflow ${randomUUID().slice(0,8)}`;
+  const managed = await post('/tasks',{title:workflowTitle,description:'Three-step fixed input',requiredCapabilities:['csv-data-review']},owner.credential);
   await page.goto(`/?task=${managed.taskId}#collaborate`);
   await dialog.getByText('配置三步骤 CSV 工作流',{exact:true}).click();
   await dialog.getByLabel('公开 CSV 输入').fill('record_id,amount_cents\nsource-1,88\n');
   await dialog.getByRole('button',{name:'保存工作流'}).click();
-  await expect(dialog.getByText('csv-workflow-v1',{exact:true})).toBeVisible();
-  await expect(dialog.getByText('等待上游',{exact:false})).toHaveCount(2);
+  await expect(dialog.getByText('csv-workflow-v1 · 自动分工',{exact:true})).toBeVisible();
+  for(let step=0;step<3;step++){
+    const review=dialog.getByRole('button',{name:'确认交接处理',exact:true});
+    await expect(review).toHaveCount(1);
+    await review.click();
+    await expect(dialog.getByText('成果已接收',{exact:false})).toHaveCount(step+1);
+  }
+  await expect(dialog.getByText('成果已接收',{exact:false})).toHaveCount(3);
+  await expect(dialog.getByText('PASS · csv-ledger-v1 · 已计入信誉',{exact:true})).toBeVisible();
+  await page.screenshot({path:'../../.local/portfolio-rc-web.png'});
+  await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'运行与评测',exact:true}).click();
+  await expect(dialog.getByRole('button',{name:workflowTitle,exact:true})).toBeVisible();
+  await expect(dialog.getByRole('link',{name:'下载原始评测记录',exact:true})).toBeVisible();
 });
