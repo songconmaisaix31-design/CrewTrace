@@ -1,4 +1,4 @@
-import type { PoolClient } from '@neondatabase/serverless';
+import type { PoolClient } from 'pg';
 import { ChainBroadcastError } from '../../../packages/runtime-chain/src/index.ts';
 import { ChainReceiptSchema,ChainEventSchema,type ChainReceipt,type Task } from '../../../packages/contracts/src/index.ts';
 import type { Application } from './application.js';

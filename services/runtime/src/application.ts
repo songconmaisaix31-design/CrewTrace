@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { verifyMessage } from 'viem';
-import type { PoolClient } from '@neondatabase/serverless';
+import type { PoolClient } from 'pg';
 import {
   AgentProfileSchema, ArtifactSchema, AssignmentDecisionSchema, CreateRunWithInputRequestSchema, HeartbeatRequestSchema, TaskSchema,RunDetailSchema,WorkerJobsResponseSchema,
   hashUtf8, nodeBindingMessage, type AgentProfile, type Artifact, type AssessmentCheck, type ChainPort, type Task,

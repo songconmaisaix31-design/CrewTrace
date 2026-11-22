@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { PoolClient } from '@neondatabase/serverless';
+import type { PoolClient } from 'pg';
 import type { Database } from './db.js';
 import { requireValue } from './errors.js';
 import { EventsResponseSchema } from '../../../packages/contracts/src/index.ts';
