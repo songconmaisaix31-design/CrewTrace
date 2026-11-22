@@ -44,6 +44,10 @@ The protocol and code are implemented: pre-ordering, the 402 response, proof par
 
 Verified: the free order flow from creation to delivery, acceptance and download; idempotent re-submission; state recovery after refresh; public access, rate limits and pause behavior through a temporary tunnel; the Cloudflare Pages showcase; CI and local tests. Unverified: Alipay sandbox and production payments, refunds, asynchronous notifications, a stable public production deployment, and real paying users. Evidence is listed in `06-test-evidence.md`.
 
+## Origin and attribution
+
+CrewTrace began as an OpenBuild × Monad Blitz V3 team project. The identity, public task and handoff models, original web workbench, MCP transport, legacy agent runtime and Monad adapters come from the team project; this repository retains the original commit history and the Apache-2.0 license. The V2 personal extension adds the fixed CSV workflow, PostgreSQL dispatch, standalone workers, recomputable evidence, reputation, benchmarks and the payment flow, as listed in `docs/portfolio/PERSONAL-CONTRIBUTIONS.md` and the repository README. Team authorization must be confirmed before competition submission or commercial use.
+
 ## Current limitations
 
 The catalog currently offers only CSV cleaning and validation; the paid service is fixed at CNY 1.00 per run with no tiered pricing; production monitoring and backup are not complete; official payment depends on merchant qualification and a real transaction, which require a human decision.

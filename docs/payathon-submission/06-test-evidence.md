@@ -1,6 +1,6 @@
 # 测试与验收证据
 
-证据采集时间 2026-11-23，代码基线为远程分支 `feat/payathon-commerce` 提交 `de1b4b8`。本目录材料提交后会新增一个文档提交，不改变代码。
+证据采集时间 2026-11-23，代码基线为远程分支 `feat/payathon-commerce` 提交 `dafbd31`。本目录材料提交后会新增一个文档提交，不改变代码。
 
 ## 本地自动化测试
 
@@ -18,6 +18,7 @@
 
 | 提交 | 工作流 | 结论 |
 | --- | --- | --- |
+| `dafbd31` | CrewTrace portfolio checks | success：https://github.com/NextVariable/crewtrace-v2/actions/runs/45054722915 |
 | `de1b4b8` | CrewTrace portfolio checks | success：https://github.com/NextVariable/crewtrace-v2/actions/runs/45047921315 |
 | `0f95b43` | CrewTrace portfolio checks | success：https://github.com/NextVariable/crewtrace-v2/actions/runs/45045178292 |
 
