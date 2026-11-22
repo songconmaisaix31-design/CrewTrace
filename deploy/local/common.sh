@@ -17,6 +17,24 @@ fi
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
+# 项目使用 Node 24；本机其他版本会通过缓存的 node@24 可执行文件运行脚本。
+NODE_BIN="${NODE_BIN:-$(command -v node || true)}"
+node_major() { [[ -n "$1" ]] && "$1" -p 'process.versions.node.split(".")[0]' 2>/dev/null || true; }
+if [[ "$(node_major "$NODE_BIN")" != "24" ]]; then
+  NODE24_BIN="$LOCAL_DIR/node24/bin/node"
+  if [[ ! -x "$NODE24_BIN" ]]; then
+    NODE24_PATH="$(npx -y node@24 -p 'process.execPath' 2>/dev/null || true)"
+    if [[ -z "$NODE24_PATH" ]]; then
+      echo "未找到 Node 24，请安装 Node 24 或设置 NODE_BIN" >&2
+      exit 1
+    fi
+    mkdir -p "$(dirname "$NODE24_BIN")"
+    ln -sf "$NODE24_PATH" "$NODE24_BIN"
+  fi
+  export PATH="$(dirname "$NODE24_BIN"):$PATH"
+  NODE_BIN="$NODE24_BIN"
+fi
+
 PGDATA="${PGDATA:-$LOCAL_DIR/pg-data}"
 PGPORT="${PGPORT:-55481}"
 PGSOCK="${PGSOCK:-/Users/${USER}/.crewtrace-pg-sock}"
@@ -42,25 +60,47 @@ fi
 
 log() { printf '%s\n' "$*"; }
 
-pid_running() {
-  local file="$RUN_DIR/$1.pid"
-  [[ -f "$file" ]] && kill -0 "$(cat "$file")" 2>/dev/null
+# PID 文件保存 PID 与命令行指纹两行。只有命令行仍匹配本项目进程时才视为本项目进程，
+# 避免陈旧 PID 文件或 PID 复用导致误杀无关进程。
+pid_command() { ps -p "$1" -ww -o command= 2>/dev/null || true; }
+
+pid_matches() {
+  local name="$1"
+  local file="$RUN_DIR/$name.pid"
+  local pid marker
+  [[ -f "$file" ]] || return 1
+  pid="$(head -n 1 "$file")"
+  marker="$(sed -n '2p' "$file")"
+  [[ -n "$pid" && -n "$marker" ]] || return 1
+  kill -0 "$pid" 2>/dev/null || return 1
+  [[ "$(pid_command "$pid")" == *"$marker"* ]]
 }
 
-write_pid() { echo "$2" > "$RUN_DIR/$1.pid"; }
+pid_running() { pid_matches "$1"; }
+
+write_pid() { printf '%s\n%s\n' "$2" "$3" > "$RUN_DIR/$1.pid"; }
 
 stop_pid() {
-  local name="$1" file="$RUN_DIR/$name.pid"
+  local name="$1"
+  local file="$RUN_DIR/$name.pid"
   [[ -f "$file" ]] || return 0
-  local pid
-  pid="$(cat "$file")"
-  if kill -0 "$pid" 2>/dev/null; then
+  local pid marker
+  pid="$(head -n 1 "$file")"
+  marker="$(sed -n '2p' "$file")"
+  if [[ -z "$pid" || -z "$marker" ]]; then
+    echo "忽略 $name.pid：缺少进程身份校验信息，不终止 PID ${pid:-unknown}" >&2
+    rm -f "$file"
+    return 0
+  fi
+  if pid_matches "$name"; then
     kill -TERM "$pid" 2>/dev/null || true
     for _ in $(seq 1 40); do
       kill -0 "$pid" 2>/dev/null || break
       sleep 0.25
     done
     if kill -0 "$pid" 2>/dev/null; then kill -KILL "$pid" 2>/dev/null || true; fi
+  elif kill -0 "$pid" 2>/dev/null; then
+    echo "忽略 $name.pid：PID $pid 的命令行与本项目不符，不终止该进程" >&2
   fi
   rm -f "$file"
 }

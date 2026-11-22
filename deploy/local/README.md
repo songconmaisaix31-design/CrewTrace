@@ -12,7 +12,7 @@
 | Worker ×3 | 无监听 | 轮询 Runtime 领取 CSV 步骤 |
 | cloudflared | 出站连接 | 可选，Quick Tunnel 临时 HTTPS 入口 |
 
-公网请求路径为 `https://<随机>.trycloudflare.com` → cloudflared → `127.0.0.1:8080` → Runtime `127.0.0.1:3000`。网关把转发给 Runtime 的 Host 固定为 `PUBLIC_BASE_URL` 的 host，避免隧道或客户端改写 Host 导致 `/mcp` 校验失败；同时把 `CF-Connecting-IP` 覆写为 `X-Forwarded-For`，Runtime 以 `PROXY_TRUST_MODE=cidr` 只信任 `127.0.0.1/32` 与 `::1/128`。
+公网请求路径为 `https://<随机>.trycloudflare.com` → cloudflared → `127.0.0.1:8080` → Runtime `127.0.0.1:3000`。网关把转发给 Runtime 的 Host 固定为 `PUBLIC_BASE_URL` 的 host，避免隧道或客户端改写 Host 导致 `/mcp` 校验失败。来源地址默认采用 socket 对端地址，不采信客户端可提交的 `CF-Connecting-IP`；`X-Forwarded-For` 与 `X-Real-IP` 也由网关覆写。Runtime 以 `PROXY_TRUST_MODE=cidr` 只信任 `127.0.0.1/32` 与 `::1/128`。因此公网流量共享同一个回环来源计数，轮换伪造请求头不能绕过配额。只有确认隧道确实覆写来源头时才可设置 `GATEWAY_TRUST_CF_HEADER=true`。
 
 ## 前置条件
 
@@ -52,6 +52,10 @@ CREWTRACE_TUNNEL_AUTHORIZED=yes ./deploy/local/start.sh --tunnel
 
 未设置该变量时脚本拒绝启动 cloudflared。Quick Tunnel 域名每次启动都会变化，脚本会先启动隧道、解析地址，再用该地址启动 Runtime，因此不需要手工修改配置。隧道地址写入 `.local/tunnel-url`，停止脚本会删除它。
 
+启动过程使用统一回滚：Runtime 未就绪、网关未就绪、三个 Worker 未全部在线或公网健康检查失败时，脚本会关闭本次创建的隧道并停止本次启动的进程，再以非零状态退出。`.local/run/*.pid` 同时记录 PID 与命令行指纹，停止操作只终止命令行匹配本项目进程的 PID，陈旧 PID 文件、缺少身份信息的旧格式文件以及其他项目的 cloudflared 都不会被终止。重复执行 `start.sh` 会先按身份校验停止上一组进程，再启动新的一组。
+
+系统 Node 不是 24 时，脚本会通过 `npx node@24` 缓存可执行文件并加入 `PATH`，也可用 `NODE_BIN` 显式指定。
+
 ## 故障处理
 
 | 现象 | 处理 |
@@ -68,7 +72,7 @@ CREWTRACE_TUNNEL_AUTHORIZED=yes ./deploy/local/start.sh --tunnel
 
 ## 安全事实
 
-Runtime、网关与 PostgreSQL 都只监听 `127.0.0.1`；网关不转发 `/admin`，管理接口只能从本机访问。支付固定 `PAYMENT_MODE=disabled`，链上写入固定 `EXPERIMENT_CHAIN_WRITES=OFF`，收费服务下单返回 `PAYMENT_NOT_CONFIGURED`。管理员令牌、Worker 凭证与隧道状态保存在 `.local`（权限 600，已在 `.gitignore` 中排除）。日志只包含事件名、状态码与订单标识，不记录令牌、凭证或支付密钥。外部用户只能访问构建后的静态文件与 Runtime 的公开接口，无法读取本机其他文件。
+Runtime、网关与 PostgreSQL 都只监听 `127.0.0.1`；网关不转发 `/admin`，管理接口只能从本机访问。网关拒绝目录穿越，静态文件只能来自 `apps/web/dist`。支付固定 `PAYMENT_MODE=disabled`，链上写入固定 `EXPERIMENT_CHAIN_WRITES=OFF`，收费服务下单返回 `PAYMENT_NOT_CONFIGURED`。管理员令牌、Worker 凭证与隧道状态保存在 `.local`（权限 600，已在 `.gitignore` 中排除）。日志只包含事件名、状态码与订单标识，不记录令牌、凭证或支付密钥。外部用户只能访问构建后的静态文件与 Runtime 的公开接口，无法读取本机其他文件。公网模式不信任 `CF-Connecting-IP`，伪造来源头无法获得额外配额。
 
 ## 费用
 

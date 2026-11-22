@@ -39,7 +39,11 @@ export function mountCommerce(http: Hono<{ Variables: { principal: Principal } }
   }));
   http.get(`${prefix}/services`, async c => c.json(await commerce.services()));
   http.post(`${prefix}/orders`, async c => c.json(await commerce.createOrder(c.get('principal'), await c.req.json(), requestClientAddress(c, app.config)), 201));
-  http.get(`${prefix}/orders`, async c => c.json(await commerce.listOrders(c.get('principal'), OrderQuerySchema.parse(c.req.query()))));
+  http.get(`${prefix}/orders`, async c => {
+    const limit = c.req.query('limit');
+    // HTTP 查询参数是字符串，转为数字后交给统一契约校验；缺省由 schema 提供默认值。
+    return c.json(await commerce.listOrders(c.get('principal'), OrderQuerySchema.parse(limit === undefined ? {} : { limit: Number(limit) })));
+  });
   http.get(`${prefix}/orders/:id`, async c => c.json(await commerce.getOrder(c.get('principal'), id(c.req.param('id')))));
   http.post(`${prefix}/orders/:id/payment`, async c => {
     const payment = await commerce.requestPayment(c.get('principal'), id(c.req.param('id')));

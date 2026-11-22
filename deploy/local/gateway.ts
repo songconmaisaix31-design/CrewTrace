@@ -1,5 +1,6 @@
 import { createReadStream, statSync } from 'node:fs';
 import { createServer, request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http';
+import { isIP } from 'node:net';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gateway } from '../../apps/web/server/gateway.ts';
@@ -20,10 +21,17 @@ const MIME: Record<string, string> = {
   '.webmanifest': 'application/manifest+json',
 };
 
-type Options = { runtime: URL; webDist: string; publicOrigin?: string };
+type Options = {
+  runtime: URL;
+  webDist: string;
+  publicOrigin?: string;
+  /** 只有确认隧道确实覆写来源头时才启用；默认不采信客户端可提交的 CF-Connecting-IP。 */
+  trustCloudflareHeader?: boolean;
+};
 
 export function createDemoGateway(options: Options) {
   const { runtime, webDist, publicOrigin } = options;
+  const trustCloudflareHeader = options.trustCloudflareHeader === true;
 
   function json(res: ServerResponse, status: number, body: unknown) {
     res.statusCode = status;
@@ -33,10 +41,14 @@ export function createDemoGateway(options: Options) {
   }
 
   function clientAddress(req: IncomingMessage): string {
-    // Cloudflare 注入 CF-Connecting-IP；网关覆写 X-Forwarded-For，客户端自带的同名头不参与。
-    const forwarded = req.headers['cf-connecting-ip'];
-    const value = Array.isArray(forwarded) ? forwarded[0] : forwarded;
-    if (value) return value.trim();
+    // 默认使用 socket 地址。Cloudflare Quick Tunnel 的来源头无法在本机证明不可伪造，
+    // 因此默认忽略 CF-Connecting-IP，公网流量统一按回环地址计数，避免轮换请求头绕过配额。
+    if (trustCloudflareHeader) {
+      const forwarded = req.headers['cf-connecting-ip'];
+      const value = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+      const candidate = value?.trim();
+      if (candidate && isIP(candidate)) return candidate;
+    }
     return req.socket.remoteAddress ?? 'unknown';
   }
 
@@ -117,6 +129,7 @@ if (import.meta.main) {
     runtime: new URL(process.env.GATEWAY_RUNTIME_URL ?? 'http://127.0.0.1:3000'),
     webDist,
     publicOrigin: process.env.GATEWAY_PUBLIC_ORIGIN,
+    trustCloudflareHeader: process.env.GATEWAY_TRUST_CF_HEADER === 'true',
   });
   const port = Number(process.env.GATEWAY_PORT ?? 8080);
   server.listen(port, '127.0.0.1', () => {

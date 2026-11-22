@@ -63,7 +63,7 @@ test('网关只提供静态构建与公开代理，不暴露管理端与本机�
   assert.equal(traversal.status, 200, '代理路径由 Runtime 再次校验，网关不使用静态文件处理器');
 });
 
-test('网关转发 Host 与请求体，并用 Cloudflare 来源覆写转发地址', async t => {
+test('网关转发 Host 与请求体，并覆写客户端提交的来源头', async t => {
   prepare();
   t.after(() => { rmSync(dist, { recursive: true, force: true }); rmSync(secretDirectory, { recursive: true, force: true }); });
   const seen: { method?: string; url?: string; headers?: Record<string, string | string[]>; body?: string }[] = [];
@@ -90,6 +90,7 @@ test('网关转发 Host 与请求体，并用 Cloudflare 来源覆写转发地�
         Host: 'attacker.example',
         'CF-Connecting-IP': '203.0.113.7',
         'X-Forwarded-For': '9.9.9.9',
+        'X-Real-IP': '198.51.100.8',
         'Mcp-Protocol-Version': '2025-06-18',
       },
     }, res => {
@@ -106,14 +107,41 @@ test('网关转发 Host 与请求体，并用 Cloudflare 来源覆写转发地�
   assert.equal(forwarded.method, 'POST');
   assert.equal(forwarded.url, '/mcp');
   assert.equal(forwarded.headers?.host, 'demo.trycloudflare.com');
-  assert.equal(forwarded.headers?.['x-forwarded-for'], '203.0.113.7');
-  assert.equal(forwarded.headers?.['x-real-ip'], '203.0.113.7');
+  // 默认不采信 CF-Connecting-IP，也不转发客户端自带转发链。
+  assert.equal(forwarded.headers?.['x-forwarded-for'], '127.0.0.1');
+  assert.equal(forwarded.headers?.['x-real-ip'], '127.0.0.1');
   assert.equal(forwarded.headers?.['x-forwarded-proto'], 'https');
   assert.equal(forwarded.headers?.['mcp-protocol-version'], '2025-06-18');
   assert.deepEqual(JSON.parse(forwarded.body ?? '{}'), { jsonrpc: '2.0', id: 1, method: 'tools/list' });
 
-  await fetch(`${base}/api/commerce`, { headers: { 'X-Forwarded-For': '9.9.9.9' } });
+  // 轮换伪造请求头不会改变网关上报的来源地址。
+  await fetch(`${base}/api/commerce`, { headers: { 'CF-Connecting-IP': '203.0.113.90', 'X-Forwarded-For': '9.9.9.9', 'X-Real-IP': '198.51.100.9' } });
   assert.equal(seen[1].headers?.['x-forwarded-for'], '127.0.0.1');
+  assert.equal(seen[1].headers?.['x-real-ip'], '127.0.0.1');
+});
+
+test('显式信任 Cloudflare 来源头时才使用合法地址，非法值回退到 socket', async t => {
+  prepare();
+  t.after(() => { rmSync(dist, { recursive: true, force: true }); rmSync(secretDirectory, { recursive: true, force: true }); });
+  const seen: Record<string, string | string[]>[] = [];
+  const upstream = createServer((req, res) => {
+    req.resume();
+    req.on('end', () => { seen.push(req.headers); res.end('{}'); });
+  });
+  const upstreamPort = await listen(upstream);
+  const server = createDemoGateway({
+    runtime: new URL(`http://127.0.0.1:${upstreamPort}`), webDist: dist, trustCloudflareHeader: true,
+  });
+  const port = await listen(server);
+  t.after(async () => { await close(server); await close(upstream); });
+  const base = `http://127.0.0.1:${port}`;
+
+  await fetch(`${base}/health`, { headers: { 'CF-Connecting-IP': '203.0.113.7', 'X-Forwarded-For': '9.9.9.9' } });
+  assert.equal(seen[0]['x-forwarded-for'], '203.0.113.7');
+  assert.equal(seen[0]['x-real-ip'], '203.0.113.7');
+
+  await fetch(`${base}/health`, { headers: { 'CF-Connecting-IP': 'not-an-ip' } });
+  assert.equal(seen[1]['x-forwarded-for'], '127.0.0.1');
 });
 
 test('网关把 /api/web 交给 Web 入口处理并使用公网地址展示 MCP', async t => {

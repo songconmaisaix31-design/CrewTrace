@@ -80,7 +80,7 @@ Runtime 只有在直接连接来自 `TRUSTED_PROXY_CIDRS` 中的代理时才读�
 
 启动与故障处理见 `deploy/local/README.md`。常用命令为 `./deploy/local/start.sh`、`./deploy/local/status.sh`、`./deploy/local/pause.sh`、`./deploy/local/resume.sh`、`./deploy/local/stop.sh`，开启公网入口使用 `CREWTRACE_TUNNEL_AUTHORIZED=yes ./deploy/local/start.sh --tunnel`。
 
-Quick Tunnel 兼容性结论：`/mcp` 使用无状态 Streamable HTTP 与 JSON 响应，不依赖会话粘滞或长连接；入口网关把转发给 Runtime 的 Host 固定为 `PUBLIC_BASE_URL` 的 host，Runtime 的 Host 校验因此与隧道地址一致。入口网关把 `CF-Connecting-IP` 覆写为 `X-Forwarded-For`，Runtime 以 `PROXY_TRUST_MODE=cidr` 只信任 `127.0.0.1/32` 与 `::1/128`，客户端自带的转发头不生效。隧道域名每次启动变化，因此启动顺序固定为隧道、解析地址、网关、Runtime，隧道地址变化后需要重启 Runtime。以上机制由 `deploy/local/gateway.test.ts` 覆盖；真实公网域名验证需要显式授权后执行 `.local/rc4-tunnel-check.sh`。
+Quick Tunnel 兼容性结论：`/mcp` 使用无状态 Streamable HTTP 与 JSON 响应，不依赖会话粘滞或长连接；入口网关把转发给 Runtime 的 Host 固定为 `PUBLIC_BASE_URL` 的 host，Runtime 的 Host 校验因此与隧道地址一致。网关默认不采信客户端可提交的 `CF-Connecting-IP`，`X-Forwarded-For` 与 `X-Real-IP` 由网关按 socket 对端地址覆写；Runtime 以 `PROXY_TRUST_MODE=cidr` 只信任 `127.0.0.1/32` 与 `::1/128`。公网流量因此共享同一个回环来源计数，轮换伪造来源头不能绕过配额。只有确认隧道确实覆写来源头时才可设置 `GATEWAY_TRUST_CF_HEADER=true`。隧道域名每次启动变化，因此启动顺序固定为隧道、解析地址、网关、Runtime，隧道地址变化后需要重启 Runtime。启动脚本在 Runtime、网关、Worker 在线或公网健康检查失败时关闭本次创建的隧道并停止本次启动的进程；PID 文件带命令行指纹，不会误杀其他项目的 cloudflared。以上机制由 `deploy/local/gateway.test.ts`、`services/runtime/test/gateway-proxy-quota.test.ts` 与本地故障注入验证；真实公网域名验证需要显式授权后执行 `.local/rc4-tunnel-check.sh`。
 
 ## 支付结果未知与人工核对
 

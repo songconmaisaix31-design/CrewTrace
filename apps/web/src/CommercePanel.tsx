@@ -97,7 +97,7 @@ export default function CommercePanel({ credential, onRegister }: { credential: 
   async function accept(orderId: string, decision: 'ACCEPTED' | 'DECLINED', rating: number, comment: string) {
     setError('');
     try {
-      await commerce(`/orders/${orderId}/acceptance`, AcceptanceSchema.pick({ orderId: true, decision: true }), {
+      await commerce(`/orders/${orderId}/acceptance`, AcceptanceSchema, {
         method: 'POST', credential, body: { decision, rating: rating || null, comment: comment || null },
       });
       await open(orderId); setReload(value => value + 1);
