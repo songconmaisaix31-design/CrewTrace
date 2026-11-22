@@ -87,7 +87,7 @@ test('网关转发 Host 与请求体，并用 Cloudflare 来源覆写转发地�
       hostname: '127.0.0.1', port, path: '/mcp', method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Host: 'demo.trycloudflare.com',
+        Host: 'attacker.example',
         'CF-Connecting-IP': '203.0.113.7',
         'X-Forwarded-For': '9.9.9.9',
         'Mcp-Protocol-Version': '2025-06-18',

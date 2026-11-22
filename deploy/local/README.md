@@ -12,7 +12,7 @@
 | Worker ×3 | 无监听 | 轮询 Runtime 领取 CSV 步骤 |
 | cloudflared | 出站连接 | 可选，Quick Tunnel 临时 HTTPS 入口 |
 
-公网请求路径为 `https://<随机>.trycloudflare.com` → cloudflared → `127.0.0.1:8080` → Runtime `127.0.0.1:3000`。网关把 `CF-Connecting-IP` 覆写为 `X-Forwarded-For`，Runtime 以 `PROXY_TRUST_MODE=cidr` 只信任 `127.0.0.1/32` 与 `::1/128`。Quick Tunnel 保留原始 Host，因此 `/mcp` 的 Host 校验通过 `PUBLIC_BASE_URL` 匹配。
+公网请求路径为 `https://<随机>.trycloudflare.com` → cloudflared → `127.0.0.1:8080` → Runtime `127.0.0.1:3000`。网关把转发给 Runtime 的 Host 固定为 `PUBLIC_BASE_URL` 的 host，避免隧道或客户端改写 Host 导致 `/mcp` 校验失败；同时把 `CF-Connecting-IP` 覆写为 `X-Forwarded-For`，Runtime 以 `PROXY_TRUST_MODE=cidr` 只信任 `127.0.0.1/32` 与 `::1/128`。
 
 ## 前置条件
 
@@ -30,7 +30,7 @@ GATEWAY_PORT=8080
 DEPLOYMENT_ENV=staging
 ```
 
-数据库账号需要 TCP 密码认证。PostgreSQL 未启动时脚本会用 `PGDATA`、`PGPORT`、`PGSOCK` 启动，并只监听 `127.0.0.1`。管理员令牌首次运行自动生成到 `.local/admin-token`，权限 600，不写入仓库与日志。
+数据库账号需要 TCP 密码认证。未设置 `DATABASE_URL` 时，脚本按当前系统用户名与 `PGPASSWORD`（默认空则使用示例密码 `local_ci_only`）连接 `127.0.0.1:${PGPORT}` 的 `crewtrace_v2_test`。PostgreSQL 未启动时脚本会用 `PGDATA`、`PGPORT`、`PGSOCK` 启动，并只监听 `127.0.0.1`。管理员令牌首次运行自动生成到 `.local/admin-token`，权限 600，不写入仓库与日志。
 
 ## 启动、停止、恢复
 
@@ -61,7 +61,7 @@ CREWTRACE_TUNNEL_AUTHORIZED=yes ./deploy/local/start.sh --tunnel
 | Runtime 未在 60 秒内就绪 | 查看 `.local/logs/runtime.log`；常见原因是 `DATABASE_URL` 认证失败或迁移未执行 |
 | Worker 在线数小于 3 | 查看 `.local/logs/worker-*.log`；重新执行 `start.sh` 会复用已有身份并重启进程 |
 | 公网返回 502 | 本机 `curl http://127.0.0.1:8080/health` 确认网关与 Runtime；查看 `.local/logs/cloudflared.log` |
-| 公网 `/mcp` 返回 `HOST_REJECTED` | 确认隧道保留原始 Host；如代理改写 Host，改用 `cloudflared tunnel --url http://127.0.0.1:8080 --http-host-header <隧道域名>` 重新启动 |
+| 公网 `/mcp` 返回 `HOST_REJECTED` | 确认 `PUBLIC_BASE_URL` 与隧道地址一致；网关会用该地址覆写上游 Host，不一致时重启 `start.sh --tunnel` |
 | 页面提示服务未配置 | 检查网关进程环境中的 `GATEWAY_RUNTIME_URL` 是否为 `http://127.0.0.1:3000` |
 | 额度或容量耗尽 | `status.sh` 查看 `quotas` 与 `active`；`pause.sh` 停止接单，次日计数自动切换 |
 | 需要立即断开公网 | 执行 `stop.sh`，cloudflared 先被终止，公网入口立即失效 |

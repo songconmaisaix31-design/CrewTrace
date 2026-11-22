@@ -49,7 +49,11 @@ export function createDemoGateway(options: Options) {
     const address = clientAddress(req);
     headers['x-forwarded-for'] = address;
     headers['x-real-ip'] = address;
-    if (publicOrigin) headers['x-forwarded-proto'] = 'https';
+    if (publicOrigin) {
+      // 固定上游 Host，避免隧道或客户端改写 Host 导致 MCP 校验失败，也避免 Host 头注入。
+      headers.host = new URL(publicOrigin).host;
+      headers['x-forwarded-proto'] = 'https';
+    }
     const upstream = httpRequest({
       protocol: runtime.protocol, hostname: runtime.hostname, port: runtime.port || 80,
       method: req.method, path: req.url, headers,
