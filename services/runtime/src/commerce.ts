@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import {
@@ -9,7 +9,7 @@ import {
   OrderSchema, OrdersResponseSchema, PaymentModeSchema, PaymentProofResponseSchema, PaymentProviderSchema,
   PaymentRequestResponseSchema, PaymentStatusSchema, PaymentSummarySchema, PrepaySchema, ServiceQuoteSchema,
   TimestampSchema, CountSchema, HashSchema, hashUtf8,
-  type PaymentStatus,
+  type PaymentRequestResponse, type PaymentStatus,
 } from '../../../packages/contracts/src/index.ts';
 import type { Application } from './application.js';
 import type { Principal } from './auth.js';
@@ -18,11 +18,19 @@ import { Collaboration } from './collaboration.js';
 import { acceptedStep, CSV_STEPS, CSV_WORKFLOW_VERSION, normalizedDelivery, workflow } from './csv-workflow.js';
 import { verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
 import { AppError, requireValue } from './errors.js';
-import { decodePaymentProof, proofHash, type PaymentProvider } from './payment.js';
+import {
+  ALIPAY_AMOUNT_LIMIT_FEN, alipayPayBefore, decodePaymentProof, proofHash,
+  type PaymentProvider, type VerifyExpected,
+} from './payment.js';
 
 const SYSTEM_AGENT_ID = 'f0000000-0000-4000-8000-000000000001';
 const SYSTEM_TOKEN_HASH = 'c1'.padStart(64, '0');
 const SYSTEM_PRINCIPAL: Principal = { kind: 'collaborator', agentId: SYSTEM_AGENT_ID, credentialId: SYSTEM_TOKEN_HASH };
+
+/** 预下单网络请求超过该时间仍未落到本地 PENDING，视为未确认并允许重新预下单。 */
+const PREPARE_TIMEOUT_MS = 60_000;
+const PREPARE_WAIT_MS = 5_000;
+const PREPARE_POLL_MS = 100;
 
 const STEP_TITLE: Record<string, string> = {
   'csv-source-inspection': '结构巡检',
@@ -65,6 +73,7 @@ const PaymentRecordSchema = z.strictObject({
   expiresAt: TimestampSchema,
   verifiedAt: TimestampSchema.nullable(),
   createdAt: TimestampSchema,
+  attempt: CountSchema.min(1).default(1),
   // simulated 模式的本地签名绑定与内部凭证只在服务端保存，绝不返回给买家之外的使用者。
   binding: z.string().nullable(),
   simulatedProof: z.string().nullable(),
@@ -80,21 +89,22 @@ const StepRowSchema = z.object({
   failure: z.string().nullable(),
 });
 
+type PaymentOutcome =
+  | { kind: 'ready'; record: OrderRecord; payment: PaymentRecord }
+  | { kind: 'preparing'; record: OrderRecord; payment: PaymentRecord }
+  | { kind: 'created'; record: OrderRecord; payment: PaymentRecord }
+  | { kind: 'paid'; record: OrderRecord; payment: PaymentRecord }
+  | { kind: 'invalid'; record: OrderRecord };
+
 function isUniqueViolation(error: unknown) {
   return Boolean(error && typeof error === 'object' && 'code' in error && error.code === '23505');
 }
 
-function alipayTime(date: Date) {
-  return new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
-  }).format(date);
-}
-
-function paymentStatusOf(order: OrderRecord, payment: PaymentRecord | null): PaymentStatus {
+function paymentStatusOf(order: OrderRecord, payments: PaymentRecord[], mode: string): PaymentStatus {
   if (order.quote.priceFen === 0) return 'NOT_REQUIRED';
-  if (!payment) return 'UNPAID';
-  return payment.status;
+  if (!payments.length) return 'UNPAID';
+  const current = payments.filter(payment => payment.mode === mode);
+  return (current.find(payment => payment.status === 'VERIFIED') ?? current[0])?.status ?? 'EXPIRED';
 }
 
 export class Commerce {
@@ -134,9 +144,21 @@ export class Commerce {
     return OrderRecordSchema.parse(row.document);
   }
 
-  private async latestPayment(orderId: string, client: Pick<PoolClient, 'query'> = this.app.db.pool): Promise<PaymentRecord | null> {
-    const row = (await client.query(
-      'SELECT document FROM commerce_payments WHERE order_id=$1 ORDER BY created_at DESC,id DESC LIMIT 1', [orderId],
+  private async orderRecordForUpdate(orderId: string, client: Pick<PoolClient, 'query'>): Promise<OrderRecord> {
+    const row = requireValue((await client.query('SELECT document FROM commerce_orders WHERE id=$1 FOR UPDATE', [orderId])).rows[0]);
+    return OrderRecordSchema.parse(row.document);
+  }
+
+  private async paymentsFor(orderId: string, client: Pick<PoolClient, 'query'> = this.app.db.pool): Promise<PaymentRecord[]> {
+    const rows = (await client.query(
+      'SELECT document FROM commerce_payments WHERE order_id=$1 ORDER BY created_at DESC,id DESC', [orderId],
+    )).rows;
+    return rows.map(row => PaymentRecordSchema.parse(row.document));
+  }
+
+  private async paymentById(orderId: string, paymentId: string): Promise<PaymentRecord | null> {
+    const row = (await this.app.db.pool.query(
+      'SELECT document FROM commerce_payments WHERE id=$1 AND order_id=$2', [paymentId, orderId],
     )).rows[0];
     return row ? PaymentRecordSchema.parse(row.document) : null;
   }
@@ -162,6 +184,9 @@ export class Commerce {
     if (quote.priceFen > 0 && this.payments.mode === 'disabled') {
       throw new AppError(503, 'PAYMENT_NOT_CONFIGURED', '默认未开通支付宝支付，收费服务暂不可下单');
     }
+    if (quote.priceFen > ALIPAY_AMOUNT_LIMIT_FEN && this.payments.official) {
+      throw new AppError(409, 'PRICE_EXCEEDS_ALIPAY_LIMIT', '支付宝按量付费单笔金额不能超过 50 元');
+    }
     const inputHash = hashUtf8(request.inputCsv);
     const requestHash = hashUtf8(JSON.stringify({ serviceId: quote.serviceId, serviceVersion: quote.serviceVersion, priceFen: quote.priceFen, inputHash }));
     const existing = (await this.app.db.pool.query(
@@ -178,14 +203,24 @@ export class Commerce {
       quote, taskId: null, inputHash, inputRows, deliveryId: null, deliveryVersion: null, acceptance: null, failure: null,
       paidAt: quote.priceFen === 0 ? now : null, deliveredAt: null, createdAt: now, updatedAt: now, version: 1,
     });
-    await this.app.store.write(async client => {
-      await client.query(
-        `INSERT INTO commerce_orders(id,buyer_agent_id,idempotency_key,request_hash,status,task_id,input_csv,document,version)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-        [record.orderId, actor.agentId, request.idempotencyKey, requestHash, record.status, null, request.inputCsv, record, record.version],
-      );
-      await this.emit(client, record.orderId, 'ORDER_CREATED', 'BUYER', { serviceId: quote.serviceId, priceFen: quote.priceFen });
-    });
+    try {
+      await this.app.store.write(async client => {
+        await client.query(
+          `INSERT INTO commerce_orders(id,buyer_agent_id,idempotency_key,request_hash,status,task_id,input_csv,document,version)
+           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+          [record.orderId, actor.agentId, request.idempotencyKey, requestHash, record.status, null, request.inputCsv, record, record.version],
+        );
+        await this.emit(client, record.orderId, 'ORDER_CREATED', 'BUYER', { serviceId: quote.serviceId, priceFen: quote.priceFen });
+      });
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error;
+      const raced = (await this.app.db.pool.query(
+        'SELECT id, request_hash FROM commerce_orders WHERE buyer_agent_id=$1 AND idempotency_key=$2', [actor.agentId, request.idempotencyKey],
+      )).rows[0];
+      if (!raced) throw error;
+      if (raced.request_hash !== requestHash) throw new AppError(409, 'IDEMPOTENCY_CONFLICT', '幂等编号已用于不同的订单内容');
+      return this.getOrder(principal, raced.id);
+    }
     if (record.status === 'READY') await this.startExecution(record.orderId);
     return this.getOrder(principal, record.orderId);
   }
@@ -197,12 +232,12 @@ export class Commerce {
 
   private async detail(orderId: string) {
     const record = await this.refresh(orderId);
-    const payment = await this.latestPayment(orderId);
+    const payments = await this.paymentsFor(orderId);
     const history = (await this.app.db.pool.query(
       'SELECT seq,document FROM commerce_order_events WHERE order_id=$1 ORDER BY seq LIMIT 100', [orderId],
     )).rows.map(row => OrderEventSchema.parse({ ...row.document, seq: Number(row.seq) }));
     return OrderDetailSchema.parse({
-      ...record, payment: this.paymentSummary(record, payment), execution: await this.executionSummary(record), history,
+      ...record, payment: this.paymentSummary(record, payments), execution: await this.executionSummary(record), history,
     });
   }
 
@@ -215,24 +250,27 @@ export class Commerce {
     const orders = [];
     for (const row of rows) {
       const record = OrderRecordSchema.parse(row.document);
-      const payment = await this.latestPayment(record.orderId);
-      orders.push(OrderSchema.parse({ ...record, payment: this.paymentSummary(record, payment), execution: await this.executionSummary(record) }));
+      const payments = await this.paymentsFor(record.orderId);
+      orders.push(OrderSchema.parse({ ...record, payment: this.paymentSummary(record, payments), execution: await this.executionSummary(record) }));
     }
     return OrdersResponseSchema.parse({ orders });
   }
 
-  private paymentSummary(record: OrderRecord, payment: PaymentRecord | null) {
+  private paymentSummary(record: OrderRecord, payments: PaymentRecord[]) {
+    const current = payments.filter(payment => payment.mode === this.payments.mode);
+    const chosen = current.find(payment => payment.status === 'VERIFIED') ?? current[0] ?? null;
+    const status = paymentStatusOf(record, payments, this.payments.mode);
     return PaymentSummarySchema.parse({
-      paymentId: payment?.paymentId ?? null,
+      paymentId: chosen?.paymentId ?? null,
       mode: this.payments.mode,
-      provider: payment?.provider ?? null,
-      status: paymentStatusOf(record, payment),
+      provider: chosen?.provider ?? null,
+      status,
       amountFen: record.quote.priceFen,
       currency: 'CNY',
       payable: record.quote.priceFen > 0 && record.status === 'AWAITING_PAYMENT' && this.payments.mode !== 'disabled',
-      expiresAt: payment?.expiresAt ?? null,
-      verifiedAt: payment?.verifiedAt ?? null,
-      providerTradeNo: payment?.providerTradeNo ?? null,
+      expiresAt: chosen?.expiresAt ?? null,
+      verifiedAt: chosen?.verifiedAt ?? null,
+      providerTradeNo: chosen?.providerTradeNo ?? null,
     });
   }
 
@@ -275,9 +313,13 @@ export class Commerce {
   private async refresh(orderId: string): Promise<OrderRecord> {
     let record = await this.orderRecord(orderId);
     if (record.status === 'AWAITING_PAYMENT') {
-      const payment = await this.latestPayment(orderId);
-      if (payment?.status === 'PENDING' && Date.parse(payment.expiresAt) <= Date.now()) {
-        record = await this.setStatus(record, 'EXPIRED', { payment });
+      const payments = await this.paymentsFor(orderId);
+      const active = payments.find(payment => payment.mode === this.payments.mode && (payment.status === 'PENDING' || payment.status === 'PREPARING'));
+      if (active?.status === 'PREPARING' && Date.now() - Date.parse(active.createdAt) > PREPARE_TIMEOUT_MS) {
+        await this.transitionPayment(active, 'FAILED', 'PAYMENT_PREPARE_FAILED', { reason: 'PREPARE_TIMEOUT' });
+      } else if (active?.status === 'PENDING' && Date.parse(active.expiresAt) <= Date.now()) {
+        // 只把本地支付尝试标记为超时，订单保留待支付状态，已付款但延迟到达的凭证仍可验证。
+        await this.transitionPayment(active, 'EXPIRED', 'PAYMENT_EXPIRED', { reason: 'PAY_BEFORE_PASSED' });
       }
     }
     if (record.status === 'READY' && !record.taskId) await this.startExecution(orderId);
@@ -291,79 +333,154 @@ export class Commerce {
     return this.orderRecord(orderId);
   }
 
-  private async setStatus(record: OrderRecord, status: z.infer<typeof CommerceOrderStatusSchema>, extra: { payment?: PaymentRecord; failure?: z.infer<typeof OrderFailureSchema> } = {}) {
+  private async setStatus(record: OrderRecord, status: z.infer<typeof CommerceOrderStatusSchema>, extra: { failure?: z.infer<typeof OrderFailureSchema> } = {}) {
     const now = new Date().toISOString();
     const next = OrderRecordSchema.parse({
       ...record, status, failure: extra.failure ?? record.failure, version: record.version + 1, updatedAt: now,
     });
     await this.app.store.write(async client => {
-      await client.query('UPDATE commerce_orders SET status=$2,document=$3,version=$4,updated_at=now() WHERE id=$1', [record.orderId, next.status, next, next.version]);
-      if (extra.payment) {
-        await client.query('UPDATE commerce_payments SET status=$2,document=jsonb_set(document,\'{status}\',to_jsonb($2::text)) WHERE id=$1', [extra.payment.paymentId, 'EXPIRED']);
-      }
-      await this.emit(client, record.orderId, status === 'EXPIRED' ? 'PAYMENT_EXPIRED' : 'EXECUTION_FAILED', status === 'EXPIRED' ? 'PAYMENT' : 'SYSTEM', { status });
+      // 版本条件更新避免读取后过期状态覆盖其他写入。
+      const updated = await client.query(
+        'UPDATE commerce_orders SET status=$2,document=$3,version=$4,updated_at=now() WHERE id=$1 AND version=$5',
+        [record.orderId, next.status, next, next.version, record.version],
+      );
+      if (!updated.rowCount) return;
+      await this.emit(client, record.orderId, status === 'FAILED' ? 'EXECUTION_FAILED' : 'ORDER_STATUS_CHANGED', 'SYSTEM', { status });
     });
-    return next;
+    return this.orderRecord(record.orderId);
+  }
+
+  private async transitionPayment(payment: PaymentRecord, status: 'FAILED' | 'EXPIRED', event: string, detail: Record<string, unknown>) {
+    await this.app.store.write(async client => {
+      const next = PaymentRecordSchema.parse({ ...payment, status });
+      const updated = await client.query(
+        'UPDATE commerce_payments SET status=$2,document=$3 WHERE id=$1 AND status=$4',
+        [payment.paymentId, status, next, payment.status],
+      );
+      if (!updated.rowCount) return;
+      await this.emit(client, payment.orderId, event, 'PAYMENT', { paymentId: payment.paymentId, status, ...detail });
+    });
+  }
+
+  private orderReference(orderId: string, attempt: number) {
+    // 支付宝 out_trade_no 上限 32 位；按订单与尝试序号稳定派生，重试同一尝试时得到相同值。
+    return createHash('sha256').update(`${orderId}:${attempt}`).digest('hex').slice(0, 32);
   }
 
   async requestPayment(principal: Principal, orderId: string) {
-    const record = await this.owned(principal, orderId);
-    const current = await this.refresh(record.orderId);
-    const existing = await this.latestPayment(current.orderId);
+    const owned = await this.owned(principal, orderId);
+    const current = await this.refresh(owned.orderId);
     if (current.quote.priceFen === 0) {
       return PaymentRequestResponseSchema.parse({
         orderId: current.orderId, mode: this.payments.mode, official: this.payments.official, simulated: this.payments.simulated,
-        amountFen: 0, currency: 'CNY', status: 'NOT_REQUIRED', prepay: null,
+        amountFen: 0, currency: 'CNY', status: 'NOT_REQUIRED', prepay: null, paymentLink: null,
         paymentProofHeader: 'Payment-Proof', instruction: '该服务免费，无需支付即可执行。', simulatedProof: null,
       });
     }
-    if (current.status !== 'AWAITING_PAYMENT') {
-      if (existing?.status === 'VERIFIED') {
-        return PaymentRequestResponseSchema.parse({
-          orderId: current.orderId, mode: this.payments.mode, official: this.payments.official, simulated: this.payments.simulated,
-          amountFen: current.quote.priceFen, currency: 'CNY', status: 'VERIFIED', prepay: null,
-          paymentProofHeader: 'Payment-Proof', instruction: '该订单已完成支付。', simulatedProof: null,
-        });
-      }
-      throw new AppError(409, 'INVALID_STATE', '当前订单状态不接受支付');
-    }
     if (this.payments.mode === 'disabled') throw new AppError(503, 'PAYMENT_NOT_CONFIGURED', '默认未开通支付宝支付，收费服务暂不可支付');
-    if (existing && existing.status === 'PENDING' && Date.parse(existing.expiresAt) > Date.now()) {
-      return this.paymentResponse(current, existing);
-    }
-    const expiresAt = new Date(Date.now() + this.app.config.PAYMENT_TTL_SECONDS * 1000);
-    const prepay = await this.payments.precreate({
-      orderReference: current.orderId.replace(/-/g, ''), serviceId: current.quote.serviceId,
-      title: current.quote.title, amountFen: current.quote.priceFen, payBefore: alipayTime(expiresAt),
-    });
-    const payment = PaymentRecordSchema.parse({
-      paymentId: randomUUID(), orderId: current.orderId, mode: this.payments.mode,
-      provider: this.payments.simulated ? 'simulated' : 'alipay', status: 'PENDING',
-      amountFen: current.quote.priceFen, currency: 'CNY', orderReference: current.orderId.replace(/-/g, ''),
-      prepayId: prepay.prepayId, qrCodeUrl: prepay.qrCodeUrl, providerTradeNo: prepay.providerTradeNo,
-      expiresAt: expiresAt.toISOString(), verifiedAt: null, createdAt: new Date().toISOString(),
-      binding: prepay.binding, simulatedProof: prepay.simulatedProof,
-    });
-    await this.app.store.write(async client => {
+    const outcome = await this.app.store.write(async (client): Promise<PaymentOutcome> => {
+      const record = await this.orderRecordForUpdate(orderId, client);
+      if (record.quote.priceFen === 0 || record.status !== 'AWAITING_PAYMENT') {
+        const payments = await this.paymentsFor(orderId, client);
+        const verified = payments.find(payment => payment.mode === this.payments.mode && payment.status === 'VERIFIED');
+        return verified ? { kind: 'paid', record, payment: verified } : { kind: 'invalid', record };
+      }
+      const payments = await this.paymentsFor(orderId, client);
+      const currentMode = payments.filter(payment => payment.mode === this.payments.mode);
+      const active = currentMode.find(payment => payment.status === 'PENDING' || payment.status === 'PREPARING');
+      if (active) {
+        if (active.status === 'PENDING' && Date.parse(active.expiresAt) > Date.now()) {
+          return { kind: 'ready', record, payment: active };
+        }
+        if (active.status === 'PREPARING' && Date.now() - Date.parse(active.createdAt) <= PREPARE_TIMEOUT_MS) {
+          return { kind: 'preparing', record, payment: active };
+        }
+        const next = PaymentRecordSchema.parse({ ...active, status: 'FAILED' });
+        const closed = await client.query(
+          'UPDATE commerce_payments SET status=$2,document=$3 WHERE id=$1 AND status=$4',
+          [active.paymentId, 'FAILED', next, active.status],
+        );
+        if (closed.rowCount) {
+          await this.emit(client, orderId, 'PAYMENT_PREPARE_FAILED', 'PAYMENT', { paymentId: active.paymentId, reason: 'PREPARE_STALE' });
+        }
+      }
+      // 每个尝试使用独立商户订单号；失败尝试不会与新的预下单争用同一 out_trade_no。
+      const attempt = Math.max(0, ...currentMode.map(payment => payment.attempt)) + 1;
+      const expiresAt = new Date(Date.now() + this.app.config.PAYMENT_TTL_SECONDS * 1000);
+      const payment = PaymentRecordSchema.parse({
+        paymentId: randomUUID(), orderId: record.orderId, mode: this.payments.mode,
+        provider: this.payments.simulated ? 'simulated' : 'alipay', status: 'PREPARING',
+        amountFen: record.quote.priceFen, currency: 'CNY', orderReference: this.orderReference(record.orderId, attempt),
+        prepayId: null, qrCodeUrl: null, providerTradeNo: null, expiresAt: expiresAt.toISOString(), verifiedAt: null,
+        createdAt: new Date().toISOString(), attempt, binding: null, simulatedProof: null,
+      });
       await client.query(
         `INSERT INTO commerce_payments(id,order_id,mode,provider,status,amount_fen,currency,provider_trade_no,document)
          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-        [payment.paymentId, payment.orderId, payment.mode, payment.provider, payment.status, payment.amountFen, payment.currency, payment.providerTradeNo, payment],
+        [payment.paymentId, payment.orderId, payment.mode, payment.provider, payment.status, payment.amountFen, payment.currency, null, payment],
       );
-      await this.emit(client, current.orderId, 'PAYMENT_REQUESTED', 'PAYMENT', { paymentId: payment.paymentId, provider: payment.provider });
+      await this.emit(client, orderId, 'PAYMENT_PREPARING', 'PAYMENT', { paymentId: payment.paymentId, attempt, provider: payment.provider });
+      return { kind: 'created', record, payment };
     });
-    return this.paymentResponse(current, payment);
+    if (outcome.kind === 'paid') return this.paymentResponse(outcome.record, outcome.payment);
+    if (outcome.kind === 'invalid') throw new AppError(409, 'INVALID_STATE', '当前订单状态不接受支付');
+    if (outcome.kind === 'ready') return this.paymentResponse(outcome.record, outcome.payment);
+    if (outcome.kind === 'preparing') {
+      const settled = await this.waitForPayment(orderId, outcome.payment.paymentId);
+      if (settled) return this.paymentResponse(outcome.record, settled);
+      throw new AppError(409, 'PAYMENT_PREPARING', '支付预下单正在处理，请稍后重试');
+    }
+    let prepay;
+    try {
+      prepay = await this.payments.precreate({
+        orderReference: outcome.payment.orderReference, serviceId: outcome.record.quote.serviceId,
+        title: outcome.record.quote.title, amountFen: outcome.record.quote.priceFen,
+        payBefore: alipayPayBefore(new Date(outcome.payment.expiresAt)),
+      });
+    } catch (error) {
+      await this.transitionPayment(outcome.payment, 'FAILED', 'PAYMENT_PREPARE_FAILED', {
+        reason: error instanceof AppError ? error.code : 'PREPARE_ERROR',
+      });
+      throw error;
+    }
+    const payment = PaymentRecordSchema.parse({
+      ...outcome.payment, status: 'PENDING', prepayId: prepay.prepayId, qrCodeUrl: prepay.qrCodeUrl,
+      providerTradeNo: prepay.providerTradeNo, binding: prepay.binding, simulatedProof: prepay.simulatedProof,
+    });
+    await this.app.store.write(async client => {
+      const updated = await client.query(
+        `UPDATE commerce_payments SET status='PENDING',provider_trade_no=$2,document=$3
+         WHERE id=$1 AND status='PREPARING'`,
+        [payment.paymentId, payment.providerTradeNo, payment],
+      );
+      if (!updated.rowCount) throw new AppError(409, 'INVALID_STATE', '支付预下单状态已经变化，请重新查询订单');
+      await this.emit(client, orderId, 'PAYMENT_REQUESTED', 'PAYMENT', { paymentId: payment.paymentId, provider: payment.provider, attempt: payment.attempt });
+    });
+    return this.paymentResponse(outcome.record, payment);
+  }
+
+  private async waitForPayment(orderId: string, paymentId: string): Promise<PaymentRecord | null> {
+    const deadline = Date.now() + PREPARE_WAIT_MS;
+    while (Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, PREPARE_POLL_MS));
+      const payment = await this.paymentById(orderId, paymentId);
+      if (!payment) return null;
+      if (payment.status === 'PENDING') return payment;
+      if (payment.status === 'FAILED') return null;
+    }
+    return null;
   }
 
   private paymentResponse(record: OrderRecord, payment: PaymentRecord) {
     return PaymentRequestResponseSchema.parse({
       orderId: record.orderId, mode: payment.mode, official: this.payments.official, simulated: this.payments.simulated,
       amountFen: payment.amountFen, currency: payment.currency, status: payment.status,
-      prepay: PrepaySchema.parse({
-        prepayId: payment.prepayId ?? payment.paymentId, qrCodeUrl: payment.qrCodeUrl,
+      prepay: payment.prepayId ? PrepaySchema.parse({
+        prepayId: payment.prepayId, qrCodeUrl: payment.qrCodeUrl,
         providerTradeNo: payment.providerTradeNo, expiresAt: payment.expiresAt,
-      }),
+      }) : null,
       paymentProofHeader: 'Payment-Proof',
+      paymentLink: payment.prepayId,
       instruction: payment.provider === 'simulated'
         ? '当前为内部模拟支付：simulatedProof 只用于验证内部状态机，不代表支付宝官方支付成功。'
         : '请使用支付宝完成支付，随后把 Payment-Proof 请求头提交到本订单的 payment-proof 端点。',
@@ -373,63 +490,116 @@ export class Commerce {
 
   async submitPaymentProof(principal: Principal, orderId: string, header: string) {
     await this.owned(principal, orderId);
-    const proof = decodePaymentProof(header);
-    const canonicalHash = proofHash(Buffer.from(JSON.stringify(proof)).toString('base64'));
     const record = await this.orderRecord(orderId);
     if (record.quote.priceFen === 0) throw new AppError(409, 'INVALID_STATE', '免费订单不需要支付凭证');
-    const current = await this.latestPayment(orderId);
-    if (!current) throw new AppError(409, 'INVALID_STATE', '请先请求预下单');
-    if (current.status === 'VERIFIED') {
-      if (current.orderReference && Date.parse(current.expiresAt) < Date.now()) throw new AppError(409, 'INVALID_STATE', '支付凭证已过期');
-      return PaymentProofResponseSchema.parse({
-        orderId, status: 'VERIFIED', official: this.payments.official, simulated: this.payments.simulated,
-        providerTradeNo: current.providerTradeNo, verifiedAt: current.verifiedAt,
-      });
+    const proof = decodePaymentProof(header);
+    const canonical = Buffer.from(JSON.stringify({
+      protocol: { payment_proof: proof.protocol.payment_proof, trade_no: proof.protocol.trade_no },
+      method: { client_session: proof.method.client_session ?? null },
+    })).toString('base64');
+    const canonicalHash = proofHash(canonical);
+    const initialPayments = await this.paymentsFor(orderId);
+    const currentMode = initialPayments.filter(payment => payment.mode === this.payments.mode);
+    const verifiedAlready = currentMode.find(payment => payment.status === 'VERIFIED');
+    if (verifiedAlready) {
+      await this.startExecution(orderId);
+      return this.verifiedResponse(orderId, verifiedAlready);
     }
-    if (record.status !== 'AWAITING_PAYMENT' || current.status !== 'PENDING') throw new AppError(409, 'INVALID_STATE', '当前订单状态不接受支付凭证');
-    if (Date.parse(current.expiresAt) <= Date.now()) {
-      await this.setStatus(record, 'EXPIRED', { payment: current });
-      throw new AppError(409, 'PAYMENT_EXPIRED', '支付已超时，请重新下单');
+    if (!['AWAITING_PAYMENT', 'EXPIRED'].includes(record.status)) {
+      throw new AppError(409, 'INVALID_STATE', '当前订单状态不接受支付凭证');
     }
-    const verified = await this.payments.verify({
-      proof, header, orderReference: current.orderReference, serviceId: record.quote.serviceId,
-      amountFen: record.quote.priceFen, expectedProviderTradeNo: current.providerTradeNo, binding: current.binding,
-    });
+    if (!currentMode.length) {
+      throw new AppError(409, 'PAYMENT_MODE_MISMATCH', '订单支付尝试与当前支付模式不一致，请重新预下单');
+    }
+    const candidate = this.payments.simulated
+      ? currentMode.find(payment => payment.providerTradeNo && payment.providerTradeNo === proof.protocol.trade_no)
+        ?? currentMode.find(payment => payment.status !== 'FAILED') ?? currentMode[0]
+      : currentMode.find(payment => payment.status === 'PENDING')
+        ?? currentMode.find(payment => payment.status === 'EXPIRED')
+        ?? currentMode.find(payment => payment.status === 'PREPARING') ?? currentMode[0];
+    if (this.payments.simulated && (!candidate.binding || candidate.status === 'PREPARING')) {
+      throw new AppError(409, 'PAYMENT_PREPARING', '支付预下单尚未完成，请稍后重试');
+    }
+    const expected: VerifyExpected | null = this.payments.simulated ? {
+      orderReference: candidate.orderReference, serviceId: record.quote.serviceId,
+      amountFen: record.quote.priceFen, binding: candidate.binding, providerTradeNo: candidate.providerTradeNo,
+    } : null;
+    const verified = await this.payments.verify({ proof, header, expected });
+    if (verified.providerTradeNo !== proof.protocol.trade_no) {
+      throw new AppError(402, 'PAYMENT_MISMATCH', '支付凭证交易号不一致');
+    }
+    const matched = (verified.orderReference
+      ? currentMode.find(payment => payment.orderReference === verified.orderReference)
+      : candidate) ?? null;
+    if (!matched) throw new AppError(402, 'PAYMENT_MISMATCH', '支付凭证不属于该订单');
+    if (verified.amountFen !== null && verified.amountFen !== record.quote.priceFen) {
+      throw new AppError(402, 'PAYMENT_MISMATCH', '支付金额与订单金额不一致');
+    }
     const now = new Date().toISOString();
+    let already: PaymentRecord | null = null;
     try {
       await this.app.store.write(async client => {
+        const fresh = await this.orderRecordForUpdate(orderId, client);
+        const payments = await this.paymentsFor(orderId, client);
+        const verifiedRow = payments.find(payment => payment.mode === this.payments.mode && payment.status === 'VERIFIED');
+        if (verifiedRow) { already = verifiedRow; return; }
+        if (!['AWAITING_PAYMENT', 'EXPIRED'].includes(fresh.status)) {
+          throw new AppError(409, 'INVALID_STATE', '当前订单状态不接受支付凭证');
+        }
         const duplicate = (await client.query(
-          'SELECT order_id FROM commerce_payments WHERE (proof_hash=$1 OR provider_trade_no=$2) AND id<>$3 LIMIT 1',
-          [canonicalHash, verified.providerTradeNo, current.paymentId],
+          `SELECT id FROM commerce_payments
+           WHERE (proof_hash=$1 OR ($2::text IS NOT NULL AND provider_trade_no=$2)) AND id<>$3 LIMIT 1`,
+          [canonicalHash, verified.providerTradeNo, matched.paymentId],
         )).rows[0];
         if (duplicate) throw new AppError(409, 'PROOF_ALREADY_USED', '该支付凭证已用于其他订单');
-        const inserted = await client.query(
-          `UPDATE commerce_payments SET status='VERIFIED',proof_hash=$2,provider_trade_no=$3,verified_at=now(),
-             document=$4 WHERE id=$1 AND status='PENDING'`,
-          [current.paymentId, canonicalHash, verified.providerTradeNo, PaymentRecordSchema.parse({
-            ...current, status: 'VERIFIED', providerTradeNo: verified.providerTradeNo, verifiedAt: now,
-          })],
+        const nextPayment = PaymentRecordSchema.parse({
+          ...matched, status: 'VERIFIED', providerTradeNo: verified.providerTradeNo, verifiedAt: now,
+        });
+        const updated = await client.query(
+          `UPDATE commerce_payments SET status='VERIFIED',proof_hash=$2,provider_trade_no=$3,verified_at=now(),document=$4
+           WHERE id=$1 AND status<>'VERIFIED'`,
+          [matched.paymentId, canonicalHash, verified.providerTradeNo, nextPayment],
         );
-        if (!inserted.rowCount) throw new AppError(409, 'INVALID_STATE', '支付记录状态已经变化');
-        const updated = OrderRecordSchema.parse({ ...record, status: 'READY', paidAt: now, version: record.version + 1, updatedAt: now });
-        await client.query('UPDATE commerce_orders SET status=$2,document=$3,version=$4,updated_at=now() WHERE id=$1', [orderId, updated.status, updated, updated.version]);
-        await this.emit(client, orderId, 'PAYMENT_VERIFIED', 'PAYMENT', { providerTradeNo: verified.providerTradeNo, official: this.payments.official });
+        if (!updated.rowCount) {
+          const latest = await this.paymentById(orderId, matched.paymentId);
+          if (latest?.status === 'VERIFIED') { already = latest; return; }
+          throw new AppError(409, 'INVALID_STATE', '支付记录状态已经变化');
+        }
+        const nextOrder = OrderRecordSchema.parse({
+          ...fresh, status: 'READY', paidAt: now, version: fresh.version + 1, updatedAt: now,
+        });
+        const moved = await client.query(
+          'UPDATE commerce_orders SET status=$2,document=$3,version=$4,updated_at=now() WHERE id=$1 AND version=$5',
+          [orderId, nextOrder.status, nextOrder, nextOrder.version, fresh.version],
+        );
+        if (!moved.rowCount) throw new AppError(409, 'INVALID_STATE', '订单状态已经变化，请重新查询订单');
+        await this.emit(client, orderId, 'PAYMENT_VERIFIED', 'PAYMENT', {
+          providerTradeNo: verified.providerTradeNo, official: this.payments.official, orderReference: verified.orderReference,
+        });
       });
     } catch (error) {
       if (isUniqueViolation(error)) throw new AppError(409, 'PROOF_ALREADY_USED', '该支付凭证已被使用');
       throw error;
     }
+    if (already) {
+      await this.startExecution(orderId);
+      return this.verifiedResponse(orderId, already);
+    }
     await this.startExecution(orderId);
+    return this.verifiedResponse(orderId, { ...matched, status: 'VERIFIED', providerTradeNo: verified.providerTradeNo, verifiedAt: now });
+  }
+
+  private verifiedResponse(orderId: string, payment: PaymentRecord) {
     return PaymentProofResponseSchema.parse({
       orderId, status: 'VERIFIED', official: this.payments.official, simulated: this.payments.simulated,
-      providerTradeNo: verified.providerTradeNo, verifiedAt: now,
+      providerTradeNo: payment.providerTradeNo, verifiedAt: payment.verifiedAt,
     });
   }
 
   private async startExecution(orderId: string) {
     const now = new Date().toISOString();
     const started = await this.app.store.write(async client => {
-      const current = await this.orderRecord(orderId, client);
+      const current = await this.orderRecordForUpdate(orderId, client);
       if (current.taskId || current.status !== 'READY') return false;
       const input = z.string().parse((await client.query('SELECT input_csv FROM commerce_orders WHERE id=$1', [orderId])).rows[0]?.input_csv);
       const task = CollaborationTaskSchema.parse({
@@ -442,7 +612,11 @@ export class Commerce {
       await this.collaboration.store.event(client, 'TASK_CREATED', SYSTEM_AGENT_ID, task.taskId, { taskId: task.taskId, orderId });
       await client.query('INSERT INTO experiment_csv_workflows(task_id,input_csv,lease_seconds,version,mode) VALUES($1,$2,$3,$4,$5)', [task.taskId, input, 300, CSV_WORKFLOW_VERSION, 'AUTO']);
       const next = OrderRecordSchema.parse({ ...current, status: 'IN_PROGRESS', taskId: task.taskId, version: current.version + 1, updatedAt: now });
-      await client.query('UPDATE commerce_orders SET status=$2,task_id=$3,document=$4,version=$5,updated_at=now() WHERE id=$1', [orderId, next.status, task.taskId, next, next.version]);
+      const moved = await client.query(
+        'UPDATE commerce_orders SET status=$2,task_id=$3,document=$4,version=$5,updated_at=now() WHERE id=$1 AND version=$6',
+        [orderId, next.status, task.taskId, next, next.version, current.version],
+      );
+      if (!moved.rowCount) throw new AppError(409, 'INVALID_STATE', '订单状态已经变化，无法开始执行');
       await this.emit(client, orderId, 'EXECUTION_STARTED', 'SYSTEM', { taskId: task.taskId, workflowVersion: CSV_WORKFLOW_VERSION });
       return true;
     });
@@ -471,16 +645,22 @@ export class Commerce {
       contentHash: hashUtf8(cleaned), cleanedCsv: cleaned, report, evidence, createdAt: now,
     });
     await this.app.store.write(async client => {
-      const fresh = await this.orderRecord(orderId, client);
-      if (fresh.deliveryId) return;
-      await client.query(
-        'INSERT INTO commerce_deliveries(id,order_id,version,task_id,content,content_hash,document) VALUES($1,$2,$3,$4,$5,$6,$7)',
-        [delivery.deliveryId, orderId, delivery.version, current.taskId, delivery.cleanedCsv, delivery.contentHash, delivery],
+      const fresh = await this.orderRecordForUpdate(orderId, client);
+      if (fresh.deliveryId || !fresh.taskId) return;
+      const inserted = await client.query(
+        `INSERT INTO commerce_deliveries(id,order_id,version,task_id,content,content_hash,document)
+         VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (order_id,version) DO NOTHING RETURNING id`,
+        [delivery.deliveryId, orderId, delivery.version, fresh.taskId, delivery.cleanedCsv, delivery.contentHash, delivery],
       );
+      if (!inserted.rowCount) return;
       const next = OrderRecordSchema.parse({
         ...fresh, status: 'DELIVERED', deliveryId: delivery.deliveryId, deliveryVersion: 1, deliveredAt: now, version: fresh.version + 1, updatedAt: now,
       });
-      await client.query('UPDATE commerce_orders SET status=$2,document=$3,version=$4,updated_at=now() WHERE id=$1', [orderId, next.status, next, next.version]);
+      const moved = await client.query(
+        'UPDATE commerce_orders SET status=$2,document=$3,version=$4,updated_at=now() WHERE id=$1 AND version=$5',
+        [orderId, next.status, next, next.version, fresh.version],
+      );
+      if (!moved.rowCount) throw new AppError(409, 'INVALID_STATE', '订单状态已经变化，无法记录交付');
       await this.emit(client, orderId, 'DELIVERED', 'SYSTEM', { deliveryId: delivery.deliveryId, version: 1 });
     });
   }
@@ -529,30 +709,85 @@ export class Commerce {
       acceptanceId: randomUUID(), orderId, decision: request.decision, rating: request.rating, comment: request.comment,
       reputation, createdAt: now,
     });
-    await this.app.store.write(async client => {
-      await client.query('INSERT INTO commerce_acceptances(id,order_id,decision,document) VALUES($1,$2,$3,$4)', [acceptance.acceptanceId, orderId, acceptance.decision, acceptance]);
-      const next = OrderRecordSchema.parse({
-        ...record, status: request.decision, acceptance, version: record.version + 1, updatedAt: now,
+    try {
+      await this.app.store.write(async client => {
+        const fresh = await this.orderRecordForUpdate(orderId, client);
+        const accepted = (await client.query('SELECT id FROM commerce_acceptances WHERE order_id=$1', [orderId])).rows[0];
+        if (accepted) throw new AppError(409, 'ALREADY_ACCEPTED', '该订单已经完成验收');
+        if (fresh.status !== 'DELIVERED') throw new AppError(409, 'INVALID_STATE', '订单尚未交付，不能验收');
+        await client.query('INSERT INTO commerce_acceptances(id,order_id,decision,document) VALUES($1,$2,$3,$4)', [acceptance.acceptanceId, orderId, acceptance.decision, acceptance]);
+        const next = OrderRecordSchema.parse({
+          ...fresh, status: request.decision, acceptance, version: fresh.version + 1, updatedAt: now,
+        });
+        const moved = await client.query(
+          'UPDATE commerce_orders SET status=$2,document=$3,version=$4,updated_at=now() WHERE id=$1 AND version=$5',
+          [orderId, next.status, next, next.version, fresh.version],
+        );
+        if (!moved.rowCount) throw new AppError(409, 'INVALID_STATE', '订单状态已经变化，无法记录验收');
+        await this.emit(client, orderId, 'ACCEPTANCE_RECORDED', 'BUYER', { decision: request.decision, rating: request.rating });
       });
-      await client.query('UPDATE commerce_orders SET status=$2,document=$3,version=$4,updated_at=now() WHERE id=$1', [orderId, next.status, next, next.version]);
-      await this.emit(client, orderId, 'ACCEPTANCE_RECORDED', 'BUYER', { decision: request.decision, rating: request.rating });
-    });
+    } catch (error) {
+      if (isUniqueViolation(error)) throw new AppError(409, 'ALREADY_ACCEPTED', '该订单已经完成验收');
+      throw error;
+    }
     return acceptance;
   }
 
-  async delivery(principal: Principal, orderId: string) {
-    const record = await this.owned(principal, orderId);
-    if (!record.deliveryId) {
-      if (record.status === 'AWAITING_PAYMENT') throw new AppError(402, 'PAYMENT_REQUIRED', '该订单尚未支付');
-      throw new AppError(404, 'NOT_FOUND', '该订单尚无交付');
+  private paymentRequired(record: OrderRecord, payment: PaymentRequestResponse) {
+    return new AppError(402, 'PAYMENT_REQUIRED', '该订单尚未支付', {
+      headers: payment.paymentLink ? { amtPaymentLink: payment.paymentLink } : undefined,
+      details: {
+        payment: {
+          orderId: record.orderId, mode: payment.mode, official: payment.official, simulated: payment.simulated,
+          amountFen: payment.amountFen, currency: payment.currency, status: payment.status,
+          paymentLink: payment.paymentLink, prepay: payment.prepay, simulatedProof: payment.simulatedProof,
+          instruction: payment.instruction,
+        },
+      },
+    });
+  }
+
+  private async accessPayment(principal: Principal, orderId: string) {
+    try {
+      return await this.requestPayment(principal, orderId);
+    } catch (error) {
+      if (!(error instanceof AppError && error.code === 'PAYMENT_PREPARING')) throw error;
+      const payments = await this.paymentsFor(orderId);
+      const payment = payments.find(item => item.mode === this.payments.mode && item.prepayId);
+      if (!payment) throw error;
+      return this.paymentResponse(await this.orderRecord(orderId), payment);
     }
+  }
+
+  async delivery(principal: Principal, orderId: string, proofHeader?: string) {
+    await this.owned(principal, orderId);
+    if (proofHeader) {
+      try { await this.submitPaymentProof(principal, orderId, proofHeader); }
+      catch (error) { if (!(error instanceof AppError && error.status === 402)) throw error; }
+    }
+    let record = await this.refresh(CollaborationIdSchema.parse(orderId));
+    if (!record.deliveryId && record.status === 'AWAITING_PAYMENT') {
+      const payment = await this.accessPayment(principal, orderId);
+      if (payment.status === 'VERIFIED') record = await this.refresh(orderId);
+      else throw this.paymentRequired(record, payment);
+    }
+    if (!record.deliveryId) throw new AppError(404, 'NOT_FOUND', '该订单尚无交付');
     const row = requireValue((await this.app.db.pool.query('SELECT content,content_hash FROM commerce_deliveries WHERE id=$1', [record.deliveryId])).rows[0]);
     return DeliveryDownloadSchema.parse({ orderId, version: record.deliveryVersion, contentHash: row.content_hash, content: row.content });
   }
 
-  async execution(principal: Principal, orderId: string) {
-    const record = await this.owned(principal, orderId);
-    if (record.status === 'AWAITING_PAYMENT') throw new AppError(402, 'PAYMENT_REQUIRED', '该订单尚未支付');
+  async execution(principal: Principal, orderId: string, proofHeader?: string) {
+    await this.owned(principal, orderId);
+    if (proofHeader) {
+      try { await this.submitPaymentProof(principal, orderId, proofHeader); }
+      catch (error) { if (!(error instanceof AppError && error.status === 402)) throw error; }
+    }
+    const record = await this.refresh(CollaborationIdSchema.parse(orderId));
+    if (record.status === 'AWAITING_PAYMENT') {
+      const payment = await this.accessPayment(principal, orderId);
+      if (payment.status === 'VERIFIED') return this.executionSummary(await this.refresh(orderId));
+      throw this.paymentRequired(record, payment);
+    }
     return this.executionSummary(record);
   }
 }

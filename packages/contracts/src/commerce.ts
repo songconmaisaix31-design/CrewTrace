@@ -7,7 +7,7 @@ export const CommerceCurrencySchema = z.literal('CNY');
 export const CommerceEngineSchema = z.literal('csv-clean-verify');
 export const PaymentModeSchema = z.enum(['disabled', 'sandbox', 'production', 'simulated']);
 export const PaymentProviderSchema = z.enum(['free', 'alipay', 'simulated']);
-export const PaymentStatusSchema = z.enum(['NOT_REQUIRED', 'UNPAID', 'PENDING', 'VERIFIED', 'FAILED', 'EXPIRED']);
+export const PaymentStatusSchema = z.enum(['NOT_REQUIRED', 'UNPAID', 'PREPARING', 'PENDING', 'VERIFIED', 'FAILED', 'EXPIRED']);
 export const CommerceOrderStatusSchema = z.enum([
   'AWAITING_PAYMENT', 'READY', 'IN_PROGRESS', 'DELIVERED', 'ACCEPTED', 'DECLINED', 'FAILED', 'EXPIRED', 'CANCELLED',
 ]);
@@ -169,6 +169,7 @@ export const PaymentRequestResponseSchema = z.strictObject({
   status: PaymentStatusSchema,
   prepay: PrepaySchema.nullable(),
   paymentProofHeader: z.literal('Payment-Proof'),
+  paymentLink: z.string().min(1).max(512).nullable(),
   instruction: z.string().min(1).max(2000),
   simulatedProof: z.string().max(20000).nullable(),
 });
@@ -197,8 +198,14 @@ export const CommerceToolSchemas = {
   create_service_order: z.strictObject({ request: CreateOrderRequestSchema, ...mcpCredential }),
   get_service_order: z.strictObject({ orderId: CollaborationIdSchema, ...mcpCredential }),
   list_service_orders: OrderQuerySchema.extend(mcpCredential),
+  request_service_payment: z.strictObject({ orderId: CollaborationIdSchema, ...mcpCredential }),
+  submit_service_payment: z.strictObject({
+    orderId: CollaborationIdSchema,
+    paymentProof: z.string().min(16).max(20000).describe('Base64 编码的 Payment-Proof，结构与官方请求头一致'),
+    ...mcpCredential,
+  }),
   accept_service_delivery: z.strictObject({ orderId: CollaborationIdSchema, request: AcceptanceRequestSchema, ...mcpCredential }),
-  get_service_delivery: z.strictObject({ orderId: CollaborationIdSchema, ...mcpCredential }),
+  get_service_delivery: z.strictObject({ orderId: CollaborationIdSchema, paymentProof: z.string().min(16).max(20000).optional(), ...mcpCredential }),
 } as const;
 
 export type CommerceService = z.infer<typeof CommerceServiceSchema>;

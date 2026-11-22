@@ -7,6 +7,7 @@ import {
 import { Download, RefreshCw } from 'lucide-react';
 import ActionForm, { field } from './ActionForm';
 import { commerce, commerceError } from './commerce-api';
+import { DEFAULT_CSV_SAMPLE } from './commerce-sample';
 import { useI18n } from './i18n';
 
 const statusText: Record<string, string> = {
@@ -15,7 +16,9 @@ const statusText: Record<string, string> = {
 };
 const stepText: Record<string, string> = { PENDING: '待执行', ACTIVE: '执行中', COMPLETED: '已完成', FAILED: '失败' };
 const modeText: Record<string, string> = { disabled: '未开通（仅免费服务可用）', sandbox: '支付宝沙箱', production: '支付宝生产', simulated: '内部模拟（非官方支付）' };
-const SAMPLE = 'name,email,joined\n Alice , alice@example.com ,2025-01-02\nBob,bob@example.com,\n';
+const paymentText: Record<string, string> = {
+  NOT_REQUIRED: '无需支付', UNPAID: '未支付', PREPARING: '预下单中', PENDING: '待支付', VERIFIED: '已支付', FAILED: '支付失败', EXPIRED: '支付超时',
+};
 
 function price(service: { priceFen: number }) { return service.priceFen === 0 ? '免费' : `CNY ${(service.priceFen / 100).toFixed(2)}`; }
 
@@ -38,7 +41,11 @@ export default function CommercePanel({ credential, onRegister }: { credential: 
         const catalog = await commerce('/services', CommerceServicesResponseSchema, { signal: controller.signal });
         if (controller.signal.aborted) return;
         setServices(catalog.services); setMode(catalog.paymentMode);
-        setServiceId(current => current || catalog.services[0]?.serviceId || '');
+        // 未开通支付时默认选中免费服务，保证首次体验可以完整下单、执行、交付与验收。
+        const preferred = catalog.paymentMode === 'disabled'
+          ? catalog.services.find(item => item.priceFen === 0) ?? catalog.services[0]
+          : catalog.services[0];
+        setServiceId(current => current || preferred?.serviceId || '');
         if (credential) setOrders((await commerce('/orders?limit=20', OrdersResponseSchema, { credential, signal: controller.signal })).orders);
         else setOrders([]);
         setError('');
@@ -137,7 +144,7 @@ export default function CommercePanel({ credential, onRegister }: { credential: 
         setSelected(order); setPayment(null); setReload(value => value + 1);
       }}>
         <label>{t('服务', 'Service')}<select name="serviceId" value={service.serviceId} onChange={event => setServiceId(event.target.value)}>{services.map(item => <option key={item.serviceId} value={item.serviceId}>{item.title} · {price(item)}</option>)}</select></label>
-        <label>{t('待清洗的 CSV', 'CSV to clean')}<textarea name="inputCsv" required defaultValue={SAMPLE} rows={6}/></label>
+        <label>{t('待清洗的 CSV', 'CSV to clean')}<textarea name="inputCsv" required defaultValue={DEFAULT_CSV_SAMPLE} rows={6}/></label>
       </ActionForm>}
     </section>
     <section className="public-task-subsection">
@@ -168,7 +175,7 @@ function OrderDetailView({ order, payment, onPrepay, onProve, onAccept, onDownlo
   return <section className="public-task-subsection" data-order-id={order.orderId}>
     <h3>{t('订单详情', 'Order detail')} · {order.orderId.slice(0, 8)}</h3>
     <p><span className="public-pill">{statusText[order.status] ?? order.status}</span> {order.quote.title} · CNY {(order.quote.priceFen / 100).toFixed(2)}</p>
-    <p className="public-muted">{t('支付状态', 'Payment')}: {order.payment.status} · {t('方式', 'Mode')}: {order.payment.mode} · {t('金额', 'Amount')}: CNY {(order.payment.amountFen / 100).toFixed(2)}{order.payment.providerTradeNo ? ` · ${t('交易号', 'Trade No.')} ${order.payment.providerTradeNo}` : ''}</p>
+    <p className="public-muted">{t('支付状态', 'Payment')}: {paymentText[order.payment.status] ?? order.payment.status} · {t('方式', 'Mode')}: {order.payment.mode} · {t('金额', 'Amount')}: CNY {(order.payment.amountFen / 100).toFixed(2)}{order.payment.providerTradeNo ? ` · ${t('交易号', 'Trade No.')} ${order.payment.providerTradeNo}` : ''}</p>
     {order.status === 'AWAITING_PAYMENT' && order.payment.payable && <div className="public-actions">
       <button className="primary" onClick={() => void onPrepay(order.orderId)}>{t('发起支付', 'Start payment')}</button>
     </div>}

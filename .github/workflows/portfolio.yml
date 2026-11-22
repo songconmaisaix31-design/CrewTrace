@@ -1,7 +1,7 @@
 name: CrewTrace portfolio checks
 on:
   push:
-    branches: [experiment/reputation-v2]
+    branches: [experiment/reputation-v2, feat/payathon-commerce]
   workflow_dispatch:
 permissions:
   contents: read
@@ -37,7 +37,7 @@ jobs:
           PUBLIC_BASE_URL: http://127.0.0.1:3000
         run: |
           export ADMIN_TOKEN="$(openssl rand -hex 32)"
-          node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts test/portfolio-auto.test.ts test/mcp-host.test.ts
+          node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts test/portfolio-auto.test.ts test/mcp-host.test.ts test/commerce-flow.test.ts test/commerce-payment.test.ts
       - run: npx playwright install --with-deps chromium
       - name: Browser and independent workers
         env:

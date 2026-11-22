@@ -45,6 +45,8 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
     if (disposition) res.setHeader('Content-Disposition', disposition);
     const contentHash = upstream.headers.get('X-Content-Hash');
     if(contentHash)res.setHeader('X-Content-Hash',contentHash);
+    const paymentLink = upstream.headers.get('amtPaymentLink');
+    if (paymentLink) res.setHeader('amtPaymentLink', paymentLink);
     res.end(Buffer.from(await upstream.arrayBuffer()));
   } catch (error) {
     if (error instanceof SyntaxError) json(400,{error:{message:'请求字段不符合接口约定'}});

@@ -191,8 +191,30 @@ test('商业闭环：服务目录、订单、模拟支付、三 Agent 履约、�
     assert.equal(fetched.orderId, remoteOrder.orderId);
     const listed = await tool('list_service_orders', { credential: buyer.credential, limit: 20 });
     assert.ok(listed.orders.length >= 4);
+    const remotePayment = await tool('request_service_payment', { credential: buyer.credential, orderId: remoteOrder.orderId });
+    assert.equal(remotePayment.status, 'PENDING');
+    assert.ok(remotePayment.paymentLink);
+    assert.equal(remotePayment.simulated, true);
+    const remoteProof = await tool('submit_service_payment', {
+      credential: buyer.credential, orderId: remoteOrder.orderId, paymentProof: remotePayment.simulatedProof,
+    });
+    assert.equal(remoteProof.status, 'VERIFIED');
+    const remotePaid = await tool('get_service_order', { credential: buyer.credential, orderId: remoteOrder.orderId });
+    assert.equal(remotePaid.status, 'IN_PROGRESS');
+    assert.equal(remotePaid.payment.status, 'VERIFIED');
     const delivery = await tool('get_service_delivery', { credential: buyer.credential, orderId: free.orderId });
     assert.equal(delivery.content, download.content);
+    const mcpFree = await tool('create_service_order', {
+      credential: buyer.credential,
+      request: { serviceId: 'csv-clean-verify-free', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
+    });
+    assert.equal(mcpFree.status, 'IN_PROGRESS');
+    const mcpDelivered = await drive(mcpFree.orderId);
+    assert.equal(mcpDelivered.status, 'DELIVERED');
+    const mcpAccepted = await tool('accept_service_delivery', {
+      credential: buyer.credential, orderId: mcpFree.orderId, request: { decision: 'ACCEPTED', rating: 5, comment: 'MCP 验收' },
+    });
+    assert.equal(mcpAccepted.decision, 'ACCEPTED');
   } finally { await mcp.close(); }
 
   const disabledConfig = { ...runtime.config, PAYMENT_MODE: 'disabled' as const };

@@ -27,7 +27,7 @@ export function createHttp(app: Application) {
   app.commerce = commerce;
   const origins = app.config.ALLOWED_ORIGINS.split(',').filter(Boolean);
   const ownOrigin = new URL(app.config.PUBLIC_BASE_URL).origin;
-  http.use('*', cors({ origin: origins, allowHeaders: ['Authorization', 'Content-Type', 'mcp-protocol-version', 'Payment-Proof'], allowMethods: ['GET','POST','PATCH','DELETE','OPTIONS'] }));
+  http.use('*', cors({ origin: origins, allowHeaders: ['Authorization', 'Content-Type', 'mcp-protocol-version', 'Payment-Proof'], exposeHeaders: ['amtPaymentLink'], allowMethods: ['GET','POST','PATCH','DELETE','OPTIONS'] }));
   http.use('*', bodyLimit({ maxSize: 2 * 1024 * 1024, onError: () => { throw new AppError(413, 'BODY_TOO_LARGE', '请求内容超过 2 MiB'); } }));
   http.use('*', async (c, next) => {
     c.header('Cache-Control','no-store');
@@ -41,7 +41,11 @@ export function createHttp(app: Application) {
     c.set('principal', await auth.authenticate(c.req.header('Authorization')));
     await next();
   });
-  http.onError((error,c) => { const body = errorBody(error); return c.json({ error: body.error }, body.status as 400); });
+  http.onError((error,c) => {
+    const body = errorBody(error);
+    if (error instanceof AppError) for (const [name, value] of Object.entries(error.headers ?? {})) c.header(name, value);
+    return c.json({ error: body.error }, body.status as 400);
+  });
   http.notFound(c => c.json({ error: { code: 'NOT_FOUND', message: '端点不存在' } },404));
   mountCollaboration(http,app);
   mountCommerce(http,app,commerce);

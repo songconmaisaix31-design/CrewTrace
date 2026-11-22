@@ -29,13 +29,15 @@ const configSchema = z.object({
   VALIDATOR_MODULE: z.string().min(1).optional(),
   ALLOWED_ORIGINS: z.string().default(''),
   PAYMENT_MODE: z.enum(['disabled','sandbox','production','simulated']).default('disabled'),
-  PAYMENT_TTL_SECONDS: z.coerce.number().int().min(60).max(86400).default(900),
+  PAYMENT_TTL_SECONDS: z.coerce.number().int().min(60).max(43200).default(900),
   PAYMENT_SIMULATION_SECRET: z.string().min(32).optional(),
   ALIPAY_APP_ID: z.string().min(1).optional(),
   ALIPAY_PRIVATE_KEY: z.string().min(1).optional(),
   ALIPAY_PUBLIC_KEY: z.string().min(1).optional(),
   ALIPAY_KEY_TYPE: z.enum(['PKCS1','PKCS8']).default('PKCS8'),
   ALIPAY_GATEWAY: z.url().optional(),
+  /** 内部 serviceId 到支付宝按量付费后台 service_id 的 JSON 映射，两者不得混用。 */
+  ALIPAY_SERVICE_IDS: z.string().min(2).optional(),
 }).superRefine((value, context) => {
   if (value.PAYMENT_MODE === 'simulated') {
     if (process.env.NODE_ENV === 'production') {
@@ -48,6 +50,25 @@ const configSchema = z.object({
   if (value.PAYMENT_MODE === 'sandbox' || value.PAYMENT_MODE === 'production') {
     for (const key of ['ALIPAY_APP_ID','ALIPAY_PRIVATE_KEY','ALIPAY_PUBLIC_KEY'] as const) {
       if (!value[key]) context.addIssue({ code: 'custom', path: [key], message: '官方支付宝模式缺少必要配置' });
+    }
+    if (!value.ALIPAY_SERVICE_IDS) {
+      context.addIssue({ code: 'custom', path: ['ALIPAY_SERVICE_IDS'], message: '官方支付宝模式必须配置内部 serviceId 到官方 service_id 的映射' });
+    } else {
+      let mapping: unknown;
+      try { mapping = JSON.parse(value.ALIPAY_SERVICE_IDS); } catch {
+        context.addIssue({ code: 'custom', path: ['ALIPAY_SERVICE_IDS'], message: 'ALIPAY_SERVICE_IDS 必须是合法 JSON' });
+      }
+      if (mapping !== undefined) {
+        if (!mapping || typeof mapping !== 'object' || Array.isArray(mapping) || !Object.keys(mapping).length) {
+          context.addIssue({ code: 'custom', path: ['ALIPAY_SERVICE_IDS'], message: 'ALIPAY_SERVICE_IDS 必须是非空 JSON 对象' });
+        } else {
+          for (const [internal, official] of Object.entries(mapping)) {
+            if (internal.length < 1 || internal.length > 80 || typeof official !== 'string' || !/^[A-Za-z0-9_.-]{1,32}$/.test(official)) {
+              context.addIssue({ code: 'custom', path: ['ALIPAY_SERVICE_IDS'], message: 'ALIPAY_SERVICE_IDS 的键或官方 service_id 不合法' });
+            }
+          }
+        }
+      }
     }
   }
 });

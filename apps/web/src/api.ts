@@ -36,6 +36,13 @@ export async function request(path:string, init?:RequestInit) {
       ALREADY_ACCEPTED:'该订单已经完成验收。',
       INPUT_TOO_LARGE:'订单输入超过 80,000 字符上限。',
       INVALID_PROOF:'支付凭证格式不正确。',
+      PAYMENT_PREPARING:'支付预下单正在处理，请稍后重试。',
+      PAYMENT_MODE_MISMATCH:'订单支付模式与当前服务端配置不一致，请重新预下单。',
+      PAYMENT_REJECTED:'支付宝未确认该支付凭证，请确认支付完成后重试。',
+      ALIPAY_UNAVAILABLE:'支付宝接口暂时不可用，请稍后重试。',
+      PAYMENT_AMOUNT_LIMIT:'支付宝按量付费单笔金额必须在 0.01 元至 50 元之间。',
+      PAYMENT_SERVICE_UNMAPPED:'该服务尚未在支付宝按量付费后台注册。',
+      PRICE_EXCEEDS_ALIPAY_LIMIT:'订单金额超过支付宝按量付费 50 元上限。',
     };
     const messages:Record<number,string> = {
       400:'提交内容有误，请检查后重试。',
