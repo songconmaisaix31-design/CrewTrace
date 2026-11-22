@@ -6,6 +6,7 @@ import { admin,type Principal } from './auth.js';
 import { Collaboration } from './collaboration.js';
 import { collaborationTools } from './collaboration-tools.js';
 import { publicMcpURL } from './config.js';
+import { snapshotMatching } from './experiment-matching.js';
 
 export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>,app: Application) {
   const service=new Collaboration(app),prefix='/api/collaboration';
@@ -26,6 +27,17 @@ export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>
   http.get(`${prefix}/tasks`,async c=>c.json(await service.tasks(c.req.query())));
   http.post(`${prefix}/tasks`,async c=>c.json(await service.createTask(c.get('principal'),await c.req.json()),201));
   http.get(`${prefix}/tasks/:id`,async c=>c.json(await service.taskDetails(id(c.req.param('id')))));
+  http.post(`${prefix}/tasks/:id/matching`,async c=>c.json(await snapshotMatching(service,c.get('principal'),id(c.req.param('id'))),201));
+  http.get(`${prefix}/tasks/:id/evidence`,async c=>{
+    const taskId=id(c.req.param('id'));
+    await service.task(taskId);
+    const {rows}=await app.db.pool.query(`SELECT h.id AS "handoffId", e.role, e.document AS result, e.checked_at AS "checkedAt",
+      r.outcome AS "reputationOutcome"
+      FROM experiment_csv_evidence e JOIN collaboration_handoffs h ON h.id=e.handoff_id
+      LEFT JOIN experiment_reputation_events r ON r.handoff_id=e.handoff_id
+      WHERE h.task_id=$1 ORDER BY e.checked_at,h.id`, [taskId]);
+    return c.json({ records: rows });
+  });
   http.patch(`${prefix}/tasks/:id`,async c=>c.json(await service.updateTask(c.get('principal'),id(c.req.param('id')),await c.req.json())));
   http.get(`${prefix}/messages`,async c=>c.json(await service.messages(c.req.query())));
   http.post(`${prefix}/messages`,async c=>c.json(await service.publishMessage(c.get('principal'),await c.req.json()),201));

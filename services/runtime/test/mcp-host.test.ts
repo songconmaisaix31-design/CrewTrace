@@ -12,6 +12,7 @@ test('真实 MCP 仅接受配置的 API Host 和公开 MCP Host',{timeout:60_000
   const address=server.address();assert.ok(address && typeof address!=='string');
   const base=`http://127.0.0.1:${address.port}`;
   runtime.config.PUBLIC_BASE_URL=base;
+  runtime.config.PUBLIC_WEB_URL=base;
   runtime.config.PUBLIC_MCP_URL=`http://localhost:${address.port}/mcp`;
   try {
     for(const url of [`${base}/mcp`,runtime.config.PUBLIC_MCP_URL]) {

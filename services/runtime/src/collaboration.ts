@@ -1,5 +1,5 @@
 import { randomBytes,randomUUID } from 'node:crypto';
-import type { PoolClient } from '@neondatabase/serverless';
+import type { PoolClient } from 'pg';
 import {
   CollaborationAgentSchema,RegisterCollaborationAgentRequestSchema,RegisterCollaborationAgentResponseSchema,
   CollaborationIdSchema,
@@ -18,6 +18,7 @@ import type { Application } from './application.js';
 import { tokenHash,type Principal } from './auth.js';
 import { AppError,requireValue } from './errors.js';
 import { CollaborationStore,collaborator,expectedVersion,sameCollaborator } from './collaboration-store.js';
+import { CSV_ROLE,verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
 
 export class Collaboration {
   readonly store: CollaborationStore;
@@ -207,6 +208,14 @@ export class Collaboration {
     const request=ClaimCollaborationTaskRequestSchema.parse(input);
     const claim=await this.store.write(principal,async(client,actor)=>{
       const task=await this.task(taskId,client);this.active(task);expectedVersion(task.version,request.expectedVersion);
+      if(request.scope===CSV_ROLE) {
+        if(task.creator===actor) throw new AppError(403,'UNAUTHORIZED','任务发布人不能认领自己的评分分工');
+        const agent=await this.store.record('collaboration_agents',actor,CollaborationAgentSchema,client);
+        const skills=new Set(agent.capabilities.map(value=>value.trim().toLowerCase()));
+        if(![CSV_ROLE,...task.requiredCapabilities].every(value=>skills.has(value.trim().toLowerCase()))) throw new AppError(409,'INVALID_STATE','Agent 缺少任务要求的能力');
+        const {rows}=await client.query("SELECT count(*)::int AS active FROM collaboration_claims WHERE agent_id=$1 AND document->>'status'='ACTIVE'",[actor]);
+        if(rows[0].active>=2) throw new AppError(409,'INVALID_STATE','Agent 已达到认领并发上限');
+      }
       if(request.proposalId) {
         const proposal=await this.store.record('collaboration_proposals',request.proposalId,CollaborationAssignmentProposalSchema,client);
         if(proposal.taskId!==taskId || proposal.agentId!==actor || proposal.scope!==request.scope || proposal.status!=='APPROVED') throw new AppError(409,'INVALID_STATE','认领与已批准的本人分工提议不一致');
@@ -244,6 +253,10 @@ export class Collaboration {
       if((await client.query("SELECT id FROM collaboration_handoffs WHERE claim_id=$1 AND document->>'status'='SUBMITTED'",[claim.claimId])).rowCount) throw new AppError(409,'VERSION_CONFLICT','该认领已有待审核成果');
       const now=new Date().toISOString(),handoff=CollaborationHandoffSchema.parse({...request,handoffId:randomUUID(),taskId,author:actor,status:'SUBMITTED',reason:null,version:1,createdAt:now,updatedAt:now});
       await client.query('INSERT INTO collaboration_handoffs(id,task_id,author_id,claim_id,document) VALUES($1,$2,$3,$4,$5)',[handoff.handoffId,taskId,actor,claim.claimId,handoff]);
+      if(claim.scope===CSV_ROLE) {
+        const evidence=verifyCsvDelivery(handoff.content);
+        await client.query('INSERT INTO experiment_csv_evidence(handoff_id,claim_id,role,document) VALUES($1,$2,$3,$4)',[handoff.handoffId,claim.claimId,CSV_ROLE,evidence]);
+      }
       await this.store.event(client,'HANDOFF_SUBMITTED',actor,taskId,{handoffId:handoff.handoffId,claimId:claim.claimId});return handoff;
     });
     await this.anchor('HANDOFF',handoff.handoffId,handoff.taskId,handoff.version,handoff);
@@ -257,6 +270,13 @@ export class Collaboration {
       if(current.status!=='SUBMITTED') throw new AppError(409,'INVALID_STATE','成果已审核');
       const claim=await this.store.record('collaboration_claims',current.claimId,CollaborationClaimSchema,client);
       if(claim.status!=='ACTIVE') throw new AppError(409,'INVALID_STATE','认领已结束');
+      if(claim.scope===CSV_ROLE && request.status==='ACCEPTED') {
+        if(current.author===actor) throw new AppError(403,'UNAUTHORIZED','数据验收人与交付人必须不同');
+        const evidence=(await client.query('SELECT document FROM experiment_csv_evidence WHERE handoff_id=$1',[handoffId])).rows[0]?.document;
+        if(evidence?.status!=='PASS') throw new AppError(409,'INVALID_STATE','CSV 交付必须通过固定规则验证后才能验收');
+        await client.query(`INSERT INTO experiment_reputation_events(claim_id,handoff_id,task_id,agent_id,role,outcome)
+          VALUES($1,$2,$3,$4,$5,'PASS')`,[claim.claimId,handoffId,task.taskId,claim.agentId,CSV_ROLE]);
+      }
       const now=new Date().toISOString(),handoff=CollaborationHandoffSchema.parse({...current,status:request.status,reason:request.reason,version:current.version+1,updatedAt:now});
       await client.query('UPDATE collaboration_handoffs SET document=$2 WHERE id=$1',[handoffId,handoff]);
       if(handoff.status==='ACCEPTED') {
