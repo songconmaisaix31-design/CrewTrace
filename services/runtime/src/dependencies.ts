@@ -14,6 +14,13 @@ import type { PreparedChainTransaction } from '../../../packages/runtime-chain/s
 function moduleSpecifier(value: string) { return value.startsWith('.') || isAbsolute(value) ? pathToFileURL(resolve(value)).href : value; }
 
 export async function dependencies(config: Config,db: Database): Promise<{ chain: ChainPort | null; validator: Validator | null; collaborationChain: CollaborationChain }> {
+  const chainRequested = config.CHAIN_ADAPTER_MODULE || config.CHAIN_COORDINATOR_PRIVATE_KEY || config.CHAIN_VALIDATOR_PRIVATE_KEY
+    || config.COLLABORATION_CHAIN_CONTRACT || config.COLLABORATION_CHAIN_RPC_URL
+    || config.COLLABORATION_CHAIN_DEPLOYMENT_BLOCK || config.COLLABORATION_CHAIN_RECORDER_PRIVATE_KEY;
+  if (chainRequested && (config.EXPERIMENT_CHAIN_WRITES !== 'TESTNET'
+    || config.CHAIN_ID !== 10143 || config.COLLABORATION_CHAIN_ID !== 10143)) {
+    throw new Error('实验 Runtime 默认关闭链上执行，显式启用时仅接受 Monad Testnet (10143)');
+  }
   let chain: ChainPort | null = null;
   let validator: Validator | null = null;
   if (config.CHAIN_ADAPTER_MODULE) {

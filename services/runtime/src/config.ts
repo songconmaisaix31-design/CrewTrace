@@ -7,6 +7,7 @@ const configSchema = z.object({
   PUBLIC_MCP_URL: z.url().optional(),
   PUBLIC_WEB_URL: z.url().optional(),
   PORT: z.coerce.number().int().min(0).max(65535).default(3000),
+  EXPERIMENT_CHAIN_WRITES: z.enum(['OFF','TESTNET']).optional(),
   CHAIN_ADAPTER_MODULE: z.string().min(1).optional(),
   CHAIN_ID: z.coerce.number().int().positive().default(10143),
   CHAIN_RPC_URL: z.url().optional(),
