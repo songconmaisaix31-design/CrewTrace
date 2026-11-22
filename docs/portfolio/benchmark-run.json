@@ -1,0 +1,1652 @@
+{
+  "seed": "crewtrace-v2-csv-2026-11-22",
+  "ruleVersion": "csv-ledger-v1",
+  "history": [
+    {
+      "id": "history-1",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-2",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-3",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-4",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-5",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-6",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-7",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-8",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-9",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-10",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-11",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "history-12",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "holdout-1",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-2",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-3",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-4",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-5",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-6",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-7",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-8",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-9",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-10",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-11",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-12",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-13",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-14",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-15",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-16",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-17",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-18",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-19",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-20",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-21",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-22",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-23",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-24",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-25",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-26",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-27",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-28",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-a,12\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-29",
+      "csv": "record_id,amount_cents\n item-a ,12 \nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    },
+    {
+      "id": "holdout-30",
+      "csv": "record_id,amount_cents\nitem-a,12\nitem-b,40\n",
+      "requiredSkill": "csv-data-review"
+    }
+  ],
+  "workers": [
+    {
+      "id": "worker-1",
+      "mode": "copy",
+      "capabilities": [
+        "csv"
+      ]
+    },
+    {
+      "id": "worker-2",
+      "mode": "normalize",
+      "capabilities": [
+        "csv",
+        "csv-data-review"
+      ]
+    },
+    {
+      "id": "worker-3",
+      "mode": "deduplicate",
+      "capabilities": [
+        "csv",
+        "csv-data-review"
+      ]
+    }
+  ],
+  "historyRuns": [
+    {
+      "worker": "worker-1",
+      "task": "history-1",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-2",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-3",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-4",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-5",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-6",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-7",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-8",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-9",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-10",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-11",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-1",
+      "task": "history-12",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-1",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-2",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-3",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-4",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-5",
+      "status": "FAIL"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-6",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-7",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-8",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-9",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-10",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-11",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-2",
+      "task": "history-12",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-1",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-2",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-3",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-4",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-5",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-6",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-7",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-8",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-9",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-10",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-11",
+      "status": "PASS"
+    },
+    {
+      "worker": "worker-3",
+      "task": "history-12",
+      "status": "PASS"
+    }
+  ],
+  "priorByWorker": {
+    "worker-1": 0.35714285714285715,
+    "worker-2": 0.7857142857142857,
+    "worker-3": 0.9285714285714286
+  },
+  "results": [
+    {
+      "strategy": "random",
+      "attempts": [
+        {
+          "task": "holdout-1",
+          "decisionMs": 8.455416000000014,
+          "elapsedMs": 8.696374999999989,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-2",
+          "decisionMs": 0.010166999999910331,
+          "elapsedMs": 0.1418749999999136,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "f9de5615cff29a2283b6c55cd7efc684abe4cdeee7ad3b4c4be985124fa46d3f"
+            },
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-3",
+          "decisionMs": 0.010833000000047832,
+          "elapsedMs": 0.07433300000002419,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-4",
+          "decisionMs": 0.013708000000065113,
+          "elapsedMs": 0.07641599999999471,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-5",
+          "decisionMs": 0.010332999999945969,
+          "elapsedMs": 0.07191699999998491,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-6",
+          "decisionMs": 0.02112499999998363,
+          "elapsedMs": 0.04787499999997635,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-7",
+          "decisionMs": 0.009625000000028194,
+          "elapsedMs": 0.0767919999999549,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-8",
+          "decisionMs": 0.00766600000008566,
+          "elapsedMs": 0.1270830000000842,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-9",
+          "decisionMs": 0.012249999999994543,
+          "elapsedMs": 0.13191700000004403,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "f9de5615cff29a2283b6c55cd7efc684abe4cdeee7ad3b4c4be985124fa46d3f"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-10",
+          "decisionMs": 0.006541999999967629,
+          "elapsedMs": 0.0857499999999618,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-11",
+          "decisionMs": 0.009624999999914507,
+          "elapsedMs": 0.08074999999996635,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-12",
+          "decisionMs": 0.009707999999932326,
+          "elapsedMs": 0.1069999999999709,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-13",
+          "decisionMs": 0.00791700000002038,
+          "elapsedMs": 0.09799999999995634,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            }
+          ]
+        },
+        {
+          "task": "holdout-14",
+          "decisionMs": 0.007334000000014385,
+          "elapsedMs": 0.10720900000001166,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-15",
+          "decisionMs": 0.0072499999999990905,
+          "elapsedMs": 0.03095799999994142,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-16",
+          "decisionMs": 0.006541999999967629,
+          "elapsedMs": 0.07699999999999818,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-17",
+          "decisionMs": 0.005249999999932697,
+          "elapsedMs": 0.08583299999997962,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            }
+          ]
+        },
+        {
+          "task": "holdout-18",
+          "decisionMs": 0.014083999999911612,
+          "elapsedMs": 0.07370900000000802,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-19",
+          "decisionMs": 0.006666999999993095,
+          "elapsedMs": 0.11775000000000091,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "f9de5615cff29a2283b6c55cd7efc684abe4cdeee7ad3b4c4be985124fa46d3f"
+            },
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-20",
+          "decisionMs": 0.008916999999996733,
+          "elapsedMs": 0.062291999999956715,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-21",
+          "decisionMs": 0.0050420000000030996,
+          "elapsedMs": 0.03166699999997036,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-22",
+          "decisionMs": 0.005125000000020918,
+          "elapsedMs": 0.06583299999999781,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-23",
+          "decisionMs": 0.007166999999981272,
+          "elapsedMs": 0.06845799999996416,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-24",
+          "decisionMs": 0.006499999999959982,
+          "elapsedMs": 0.0388749999999618,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-25",
+          "decisionMs": 0.007000000000061846,
+          "elapsedMs": 0.06141700000000583,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-26",
+          "decisionMs": 0.006708000000003267,
+          "elapsedMs": 0.10000000000002274,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            }
+          ]
+        },
+        {
+          "task": "holdout-27",
+          "decisionMs": 0.007000000000061846,
+          "elapsedMs": 0.05979200000001583,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-28",
+          "decisionMs": 0.005041000000005624,
+          "elapsedMs": 0.09337500000003729,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            }
+          ]
+        },
+        {
+          "task": "holdout-29",
+          "decisionMs": 0.005165999999917403,
+          "elapsedMs": 0.0823329999999487,
+          "results": [
+            {
+              "worker": "worker-1",
+              "status": "FAIL",
+              "contentHash": "f9de5615cff29a2283b6c55cd7efc684abe4cdeee7ad3b4c4be985124fa46d3f"
+            },
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-30",
+          "decisionMs": 0.008249999999975444,
+          "elapsedMs": 0.06333299999994324,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "firstAttemptAcceptance": 0.6333333333333333,
+        "acceptance": 0.8666666666666667,
+        "meanSuccessfulCompletionMs": 0.40995034615383036,
+        "retryRate": 0.36666666666666664,
+        "meanAssignmentDecisionMs": 0.2901319333333239,
+        "costPerSuccessfulTask": null,
+        "assignmentsByWorker": {
+          "worker-1": 13,
+          "worker-2": 17,
+          "worker-3": 11
+        }
+      }
+    },
+    {
+      "strategy": "capability",
+      "attempts": [
+        {
+          "task": "holdout-1",
+          "decisionMs": 0.005540999999993801,
+          "elapsedMs": 0.125,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-2",
+          "decisionMs": 0.003499999999917236,
+          "elapsedMs": 0.05737499999997908,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-3",
+          "decisionMs": 0.003209000000083506,
+          "elapsedMs": 0.05691699999999855,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-4",
+          "decisionMs": 0.006791000000021086,
+          "elapsedMs": 0.07100000000002638,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-5",
+          "decisionMs": 0.0030829999999468782,
+          "elapsedMs": 0.05841599999996561,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-6",
+          "decisionMs": 0.0031249999999545253,
+          "elapsedMs": 0.06687499999998181,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-7",
+          "decisionMs": 0.0031249999999545253,
+          "elapsedMs": 0.05587500000001455,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-8",
+          "decisionMs": 0.0030000000000427463,
+          "elapsedMs": 0.11591700000008132,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-9",
+          "decisionMs": 0.003125000000068212,
+          "elapsedMs": 0.0582920000000513,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-10",
+          "decisionMs": 0.0031669999999621723,
+          "elapsedMs": 0.06425000000001546,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-11",
+          "decisionMs": 0.003125000000068212,
+          "elapsedMs": 0.07279200000004948,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-12",
+          "decisionMs": 0.015667000000007647,
+          "elapsedMs": 0.24108300000000327,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-13",
+          "decisionMs": 0.01737500000001546,
+          "elapsedMs": 0.37408300000004147,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-14",
+          "decisionMs": 0.00433300000008785,
+          "elapsedMs": 0.1769170000000031,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-15",
+          "decisionMs": 0.004083000000036918,
+          "elapsedMs": 0.0847919999999931,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-16",
+          "decisionMs": 0.003249999999979991,
+          "elapsedMs": 0.059540999999967426,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-17",
+          "decisionMs": 0.0031669999999621723,
+          "elapsedMs": 0.41658399999994344,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-18",
+          "decisionMs": 0.016499999999950887,
+          "elapsedMs": 0.25891599999999926,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-19",
+          "decisionMs": 0.015124999999898137,
+          "elapsedMs": 0.17449999999996635,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-20",
+          "decisionMs": 0.01675000000000182,
+          "elapsedMs": 0.137833999999998,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-21",
+          "decisionMs": 0.006874999999922693,
+          "elapsedMs": 0.17108299999995324,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-22",
+          "decisionMs": 0.013542000000029475,
+          "elapsedMs": 0.1331670000000713,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-23",
+          "decisionMs": 0.005917000000067674,
+          "elapsedMs": 0.06620800000007421,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-24",
+          "decisionMs": 0.005583999999998923,
+          "elapsedMs": 0.15620899999998983,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-25",
+          "decisionMs": 0.013083999999935259,
+          "elapsedMs": 0.110416999999984,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-26",
+          "decisionMs": 0.00537500000007185,
+          "elapsedMs": 0.1522500000000946,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-27",
+          "decisionMs": 0.004292000000077678,
+          "elapsedMs": 0.24612500000000637,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-28",
+          "decisionMs": 0.016665999999986525,
+          "elapsedMs": 0.2533329999999978,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "FAIL",
+              "contentHash": "2da65509cd845a523dc04d78700576cf7c29b9b9cc858194c16ab5ff3dee6ce2"
+            },
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-29",
+          "decisionMs": 0.005999999999971806,
+          "elapsedMs": 0.053999999999973625,
+          "results": [
+            {
+              "worker": "worker-2",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-30",
+          "decisionMs": 0.004167000000052212,
+          "elapsedMs": 0.04949999999996635,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "firstAttemptAcceptance": 0.8,
+        "acceptance": 1,
+        "meanSuccessfulCompletionMs": 0.137308366666673,
+        "retryRate": 0.2,
+        "meanAssignmentDecisionMs": 0.007284766666668929,
+        "costPerSuccessfulTask": null,
+        "assignmentsByWorker": {
+          "worker-1": 0,
+          "worker-2": 19,
+          "worker-3": 17
+        }
+      }
+    },
+    {
+      "strategy": "reputation",
+      "attempts": [
+        {
+          "task": "holdout-1",
+          "decisionMs": 0.004041000000029271,
+          "elapsedMs": 0.06320800000003146,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-2",
+          "decisionMs": 0.0008329999999432403,
+          "elapsedMs": 0.045332999999914136,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-3",
+          "decisionMs": 0.0005830000000059954,
+          "elapsedMs": 0.042374999999992724,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-4",
+          "decisionMs": 0.0017080000000078144,
+          "elapsedMs": 0.04354200000000219,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-5",
+          "decisionMs": 0.0005409999999983484,
+          "elapsedMs": 0.04891599999996288,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-6",
+          "decisionMs": 0.0004999999999881766,
+          "elapsedMs": 1.402249999999981,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-7",
+          "decisionMs": 0.0018329999999195934,
+          "elapsedMs": 0.048957999999970525,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-8",
+          "decisionMs": 0.0007499999999254214,
+          "elapsedMs": 0.03912500000001273,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-9",
+          "decisionMs": 0.0005000000001018634,
+          "elapsedMs": 0.03875000000005002,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-10",
+          "decisionMs": 0.00045799999998052954,
+          "elapsedMs": 0.03729099999998198,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-11",
+          "decisionMs": 0.00041699999997035775,
+          "elapsedMs": 0.03641699999991488,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-12",
+          "decisionMs": 0.0004589999999780048,
+          "elapsedMs": 0.03558399999997164,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-13",
+          "decisionMs": 0.00045799999998052954,
+          "elapsedMs": 0.03379200000006222,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-14",
+          "decisionMs": 0.00045799999998052954,
+          "elapsedMs": 0.033999999999991815,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-15",
+          "decisionMs": 0.00045799999998052954,
+          "elapsedMs": 0.03550000000007003,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-16",
+          "decisionMs": 0.0004999999999881766,
+          "elapsedMs": 0.03658400000006168,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-17",
+          "decisionMs": 0.00041600000008656934,
+          "elapsedMs": 0.03354100000001381,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-18",
+          "decisionMs": 0.00041699999997035775,
+          "elapsedMs": 0.03558399999997164,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-19",
+          "decisionMs": 0.0004159999999728825,
+          "elapsedMs": 0.035166000000003805,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-20",
+          "decisionMs": 0.00041699999997035775,
+          "elapsedMs": 0.03408400000000711,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-21",
+          "decisionMs": 0.00041699999997035775,
+          "elapsedMs": 0.04349999999999454,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-22",
+          "decisionMs": 0.0004170000000840446,
+          "elapsedMs": 0.036875000000009095,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-23",
+          "decisionMs": 0.0003749999999627107,
+          "elapsedMs": 0.043791000000055647,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-24",
+          "decisionMs": 0.0004170000000840446,
+          "elapsedMs": 0.03662500000007185,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-25",
+          "decisionMs": 0.00041699999997035775,
+          "elapsedMs": 0.036458999999922526,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-26",
+          "decisionMs": 0.0004159999999728825,
+          "elapsedMs": 0.03337499999997817,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-27",
+          "decisionMs": 0.0004159999999728825,
+          "elapsedMs": 0.03370800000004692,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-28",
+          "decisionMs": 0.00045799999998052954,
+          "elapsedMs": 0.04320800000004965,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "3a9b7691762553f05cf6b595b7698be0332554e062dc796cbe8513fa48439752"
+            }
+          ]
+        },
+        {
+          "task": "holdout-29",
+          "decisionMs": 0.00041699999997035775,
+          "elapsedMs": 0.036875000000009095,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        },
+        {
+          "task": "holdout-30",
+          "decisionMs": 0.0004170000000840446,
+          "elapsedMs": 0.04158400000005713,
+          "results": [
+            {
+              "worker": "worker-3",
+              "status": "PASS",
+              "contentHash": "ba186da9a9252d4c45486c45be37fd5de452f32719abc424ab3187d12a04b770"
+            }
+          ]
+        }
+      ],
+      "metrics": {
+        "firstAttemptAcceptance": 1,
+        "acceptance": 1,
+        "meanSuccessfulCompletionMs": 0.0848666666666721,
+        "retryRate": 0,
+        "meanAssignmentDecisionMs": 0.0006776666666610254,
+        "costPerSuccessfulTask": null,
+        "assignmentsByWorker": {
+          "worker-1": 0,
+          "worker-2": 0,
+          "worker-3": 30
+        }
+      }
+    }
+  ],
+  "node": "v26.10.0"
+}

@@ -5,6 +5,7 @@ import { serve } from '@hono/node-server';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
+import { executeCsvCleanup } from '../../../workers/src/csv-cleanup.ts';
 import { migrate } from '../src/migrate.js';
 
 test('真实 PostgreSQL + HTTP + MCP：验证、验收与下一次排名', async () => {
@@ -62,7 +63,7 @@ test('真实 PostgreSQL + HTTP + MCP：验证、验收与下一次排名', async
       api(`/handoffs/${handoff.handoffId}/review`, credential, { expectedVersion: handoff.version, status, reason: 'Checked against the fixed CSV rule.' }, expected);
     await review(invalid, 'ACCEPTED', 409);
     await review(invalid, 'RETURNED');
-    const content = 'record_id,amount_cents\n"order,1",120\norder-2,0\n';
+    const content = executeCsvCleanup('record_id,amount_cents\n"order,1",120\norder-2,0\norder-2,0\n','deduplicate');
     const good = await submit(content);
     await review(good, 'ACCEPTED', 403, peer.credential);
     await review(good, 'ACCEPTED');
@@ -83,6 +84,14 @@ test('真实 PostgreSQL + HTTP + MCP：验证、验收与下一次排名', async
     assert.deepEqual(await api(`/tasks/${next.taskId}/matching`), ranked);
     const readBack = await call('get_collaboration_task', { taskId: task.taskId });
     assert.equal(readBack.handoffs.find((value: {handoffId: string})=>value.handoffId===good.handoffId).status, 'ACCEPTED');
+    const source = 'record_id,amount_cents\nthird-review, 13 \n';
+    const peerClaim = await api(`/tasks/${next.taskId}/claims`,peer.credential,{
+      expectedVersion:next.version,scope:'csv-data-review',proposalId:null,
+    },201);
+    const peerDelivery = await api(`/tasks/${next.taskId}/handoffs`,peer.credential,{
+      claimId:peerClaim.claimId,content:executeCsvCleanup(source,'normalize'),
+    },201);
+    await review(peerDelivery,'ACCEPTED');
   } finally {
     await mcp.close();
     await new Promise<void>(resolve=>server.close(()=>resolve()));
