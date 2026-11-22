@@ -190,10 +190,12 @@ export class Commerce {
     return record;
   }
 
-  async createOrder(principal: Principal, input: unknown) {
+  async createOrder(principal: Principal, input: unknown, clientAddress = 'unknown') {
     const actor = collaborator(principal);
     const request = CreateOrderRequestSchema.parse(input);
-    if (request.inputCsv.length > 80_000) throw new AppError(422, 'INPUT_TOO_LARGE', '订单输入上限为 80,000 字符');
+    if (request.inputCsv.length > this.app.config.DEMO_MAX_INPUT_CHARS) {
+      throw new AppError(422, 'INPUT_TOO_LARGE', `订单输入上限为 ${this.app.config.DEMO_MAX_INPUT_CHARS} 字符`);
+    }
     normalizedDelivery(request.inputCsv);
     const quote = await this.quote(request.serviceId, request.expectedServiceVersion);
     if (request.maxAmountFen !== undefined && quote.priceFen > request.maxAmountFen) {
@@ -216,6 +218,9 @@ export class Commerce {
     }
     const now = new Date().toISOString();
     const inputRows = z.number().int().min(1).parse(verifyCsvDelivery(normalizedDelivery(request.inputCsv)).rowCount);
+    if (inputRows > this.app.config.DEMO_MAX_INPUT_ROWS) {
+      throw new AppError(422, 'INPUT_TOO_LARGE', `订单输入上限为 ${this.app.config.DEMO_MAX_INPUT_ROWS} 行`);
+    }
     const record = OrderRecordSchema.parse({
       orderId: randomUUID(), buyerAgentId: actor.agentId, status: quote.priceFen === 0 ? 'READY' : 'AWAITING_PAYMENT',
       quote, taskId: null, inputHash, inputRows, deliveryId: null, deliveryVersion: null, acceptance: null, failure: null,
@@ -223,6 +228,7 @@ export class Commerce {
     });
     try {
       await this.app.store.write(async client => {
+        await this.app.demo.reserveOrder(client, { agentId: actor.agentId, clientAddress });
         await client.query(
           `INSERT INTO commerce_orders(id,buyer_agent_id,idempotency_key,request_hash,status,task_id,input_csv,document,version)
            VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
@@ -787,7 +793,7 @@ export class Commerce {
       });
       await client.query('INSERT INTO collaboration_tasks(id,author_id,parent_task_id,version,document) VALUES($1,$2,$3,$4,$5)', [task.taskId, SYSTEM_AGENT_ID, null, task.version, task]);
       await this.collaboration.store.event(client, 'TASK_CREATED', SYSTEM_AGENT_ID, task.taskId, { taskId: task.taskId, orderId });
-      await client.query('INSERT INTO experiment_csv_workflows(task_id,input_csv,lease_seconds,version,mode) VALUES($1,$2,$3,$4,$5)', [task.taskId, input, 300, CSV_WORKFLOW_VERSION, 'AUTO']);
+      await client.query('INSERT INTO experiment_csv_workflows(task_id,input_csv,lease_seconds,version,mode) VALUES($1,$2,$3,$4,$5)', [task.taskId, input, this.app.config.DEMO_WORKER_LEASE_SECONDS, CSV_WORKFLOW_VERSION, 'AUTO']);
       const next = OrderRecordSchema.parse({ ...current, status: 'IN_PROGRESS', taskId: task.taskId, version: current.version + 1, updatedAt: now });
       const moved = await client.query(
         'UPDATE commerce_orders SET status=$2,task_id=$3,document=$4,version=$5,updated_at=now() WHERE id=$1 AND version=$6',

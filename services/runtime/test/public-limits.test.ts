@@ -30,8 +30,11 @@ test('公开部署请求限额保护免费订单接口', async t => {
     ...runtime.config,
     PUBLIC_DEPLOYMENT: true,
     DEPLOYMENT_ENV: 'staging',
+    PROXY_TRUST_MODE: 'cidr',
+    TRUSTED_PROXY_CIDRS: '127.0.0.1/32',
     PUBLIC_RATE_LIMIT_PER_MINUTE: 3,
     PUBLIC_ORDER_LIMIT_PER_HOUR: 1,
+    PUBLIC_COLLAB_RATE_LIMIT_PER_MINUTE: 100,
     PAYMENT_MODE: 'disabled',
   });
   const app = createHttp(limited);

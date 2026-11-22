@@ -37,7 +37,7 @@ jobs:
           PUBLIC_BASE_URL: http://127.0.0.1:3000
         run: |
           export ADMIN_TOKEN="$(openssl rand -hex 32)"
-          node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts test/portfolio-auto.test.ts test/mcp-host.test.ts test/commerce-flow.test.ts test/commerce-payment.test.ts test/commerce-rc1.test.ts test/payment-config.test.ts test/alipay-proof.test.ts test/public-limits.test.ts
+          node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts test/portfolio-auto.test.ts test/mcp-host.test.ts test/commerce-flow.test.ts test/commerce-payment.test.ts test/commerce-rc1.test.ts test/payment-config.test.ts test/alipay-proof.test.ts test/public-limits.test.ts test/proxy-trust.test.ts test/demo-quotas.test.ts
       - run: npx playwright install --with-deps chromium
       - name: Browser and independent workers
         env:

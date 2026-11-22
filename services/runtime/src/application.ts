@@ -17,6 +17,7 @@ import { admin, node, sameAgent, tokenHash, type Principal } from './auth.js';
 import { AppError, requireValue } from './errors.js';
 import { encodeUtf8 } from './content.js';
 import { RUN_QUERY, RUN_DETAILS_QUERY, parseRunRecord } from './run-read.js';
+import { DemoGuard } from './demo-guard.js';
 
 export interface ValidationInput {
   task: Task; artifact: Artifact; content: string; inputContent: string;
@@ -30,8 +31,9 @@ export interface CommerceHooks {
 
 export class Application {
   readonly store: Store;
+  readonly demo: DemoGuard;
   commerce: CommerceHooks | null = null;
-  constructor(readonly db: Database, readonly config: Config, readonly chain: ChainPort | null = null, readonly validator: Validator | null = null, readonly collaborationChain: CollaborationChain | null = null) { this.store = new Store(db); }
+  constructor(readonly db: Database, readonly config: Config, readonly chain: ChainPort | null = null, readonly validator: Validator | null = null, readonly collaborationChain: CollaborationChain | null = null) { this.store = new Store(db); this.demo = new DemoGuard(this); }
   async health() {
     await this.db.pool.query('SELECT 1');
     const writable = Boolean(this.chain && this.config.CHAIN_COORDINATOR_PRIVATE_KEY && this.config.CHAIN_VALIDATOR_PRIVATE_KEY);
@@ -40,6 +42,8 @@ export class Application {
     const collaborationWritable = Boolean(this.collaborationChain?.configured && commitmentReady);
     return {
       status: collaborationWritable || (writable && this.validator) ? 'ok' : 'degraded', database: 'connected',
+      deployment: { sha: this.config.DEPLOYMENT_SHA ?? null, env: this.config.DEPLOYMENT_ENV, publicDeployment: this.config.PUBLIC_DEPLOYMENT },
+      demo: { paused: await this.demo.paused() },
       chain: { configured: Boolean(this.chain),writable, code: writable ? null : 'CHAIN_NOT_CONFIGURED' },
       collaborationChain: { configured: Boolean(this.collaborationChain?.configured), writable: Boolean(this.collaborationChain?.configured && commitmentReady), code: this.collaborationChain?.configured ? (this.collaborationChain && commitmentReady ? null : 'CHAIN_NOT_CONFIGURED') : 'CHAIN_NOT_CONFIGURED' },
       validator: { configured: Boolean(this.validator), code: this.validator ? null : 'VALIDATOR_NOT_CONFIGURED' },

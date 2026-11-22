@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { bodyLimit } from 'hono/body-limit';
 import { z } from 'zod';
-import { Auth, type Principal } from './auth.js';
+import { Auth, admin, type Principal } from './auth.js';
 import { AppError, errorBody } from './errors.js';
 import type { Application } from './service.js';
 import { mcpResponse } from './mcp.js';
@@ -13,6 +13,8 @@ import { mountCommerce } from './commerce-http.js';
 import { Commerce } from './commerce.js';
 import { createPaymentProvider } from './payment.js';
 import { publicMcpURL } from './config.js';
+import { requestClientAddress } from './client-address.js';
+import { publicDemoGuard } from './public-guard.js';
 import {
   AcceptTaskRequestSchema, AddressSchema, AssignTaskRequestSchema, CreateRunWithInputRequestSchema,
   HandoffUpdateRequestSchema, InterruptRequestSchema, ModelCallRequestSchema, NodeEnrollmentRequestSchema,
@@ -41,6 +43,7 @@ export function createHttp(app: Application) {
     c.set('principal', await auth.authenticate(c.req.header('Authorization')));
     await next();
   });
+  if (app.config.PUBLIC_DEPLOYMENT) http.use('*', publicDemoGuard(app));
   http.onError((error,c) => {
     const body = errorBody(error);
     if (error instanceof AppError) for (const [name, value] of Object.entries(error.headers ?? {})) c.header(name, value);
@@ -50,6 +53,12 @@ export function createHttp(app: Application) {
   mountCollaboration(http,app);
   mountCommerce(http,app,commerce);
   http.get('/health', async c => c.json(await app.health()));
+  http.get('/admin/demo', async c => { admin(c.get('principal')); return c.json(await app.demo.ops()); });
+  http.post('/admin/demo/pause', async c => {
+    admin(c.get('principal'));
+    const request = z.strictObject({ paused: z.boolean() }).parse(await c.req.json());
+    return c.json(await app.demo.setPaused(request.paused));
+  });
   http.get('/api/template',c=>c.json(app.template()));
   http.get('/api/criteria',()=>new Response(new Uint8Array(app.criteria()),{ headers: { 'Content-Type': 'application/json; charset=utf-8' } }));
   http.get('/api/agents',async c=>c.json({ agents: await app.agents() }));
@@ -105,6 +114,6 @@ export function createHttp(app: Application) {
   http.post('/api/notes',async c=>c.json(await board.createNote(c.get('principal'),await c.req.json()),201));
   http.get('/api/notes/:id',async c=>c.json(await board.note(c.req.param('id'))));
   http.patch('/api/notes/:id',async c=>c.json(await board.updateNote(c.get('principal'),c.req.param('id'),await c.req.json())));
-  http.all('/mcp', c => mcpResponse(app,c.get('principal'),c.req.raw));
+  http.all('/mcp', c => mcpResponse(app,c.get('principal'),c.req.raw,requestClientAddress(c,app.config)));
   return http;
 }

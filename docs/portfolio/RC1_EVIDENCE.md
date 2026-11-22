@@ -165,3 +165,56 @@ node --import tsx scripts/alipay-sandbox-acceptance.ts
 ```
 
 未设置 `ALIPAY_SANDBOX_CONFIRM=yes` 时输出 `BLOCKED`，退出码 2。设置确认但缺少 `ALIPAY_APP_ID` 时同样输出 `BLOCKED`，退出码 2。没有真实沙箱商户凭证，`PRECREATE_OK` 与 `VERIFIED` 均未取得。
+
+# Release Candidate 3 验证记录
+
+验证日期 2026-11-22。分支 `feat/payathon-commerce`，起点远程提交 `02af1797c98101eaaeb8d413a13cfa17b279a025`。本轮只处理公网免费 Demo 加固、全局额度、部署架构核查与验收监控，没有增加商品、支付方式或 Marketplace，也没有重写 Agent Core。
+
+## 代理信任边界
+
+新增 `services/runtime/src/proxy-trust.ts` 与 `client-address.ts`。只有直接连接来自 `TRUSTED_PROXY_CIDRS` 时才读取 `X-Forwarded-For` 与 `X-Real-IP`，转发链从右向左跳过可信代理，取第一个不可信地址。直接连接不可信时使用 socket 地址。格式异常的转发链退回 socket 地址。`PROXY_TRUST_MODE=cidr` 必须提供合法 CIDR，`PUBLIC_DEPLOYMENT=true` 时必须显式设置代理模式，并同时满足 `NODE_ENV=production`、HTTPS、来源白名单、部署 SHA 与启用的限额。
+
+## 数据库全局额度
+
+新增迁移 `015_demo_quotas.sql`，建立 `demo_usage_counters` 与 `runtime_settings`。订单额度、单地址额度、单 Agent 额度、Agent 注册额度与每日协作任务额度均使用单条带条件 UPSERT 原子递增，超限不返回行；所有额度与订单写入位于同一事务，失败整体回滚。创建订单前统计 `READY` 与 `IN_PROGRESS` 订单，超过并发上限返回 `503 DEMO_CAPACITY_REACHED`。CSV 输入上限改为可配置的字符数与行数，分别返回 `422 INPUT_TOO_LARGE`。Worker 重试上限与租约改为 `DEMO_CSV_MAX_ATTEMPTS` 与 `DEMO_WORKER_LEASE_SECONDS`。
+
+管理员通过 `POST /admin/demo/pause` 打开或关闭新订单、新注册与新协作任务，通过 `GET /admin/demo` 读取订单状态、失败数、平均执行时间、Worker 在线数量与额度使用量。公开部署下非管理员不能通过 HTTP 或 MCP 创建或修改协作任务，MCP 工具列表隐藏高成本工具，其余入口返回 `403 PUBLIC_DEMO_READ_ONLY`。
+
+## 测试结果
+
+Runtime 全量测试在 Node 24.22.3 下运行：
+
+```bash
+cd services/runtime
+DATABASE_URL=... ADMIN_TOKEN=... PUBLIC_BASE_URL=... \
+  node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts \
+  test/portfolio-auto.test.ts test/mcp-host.test.ts test/commerce-flow.test.ts \
+  test/commerce-payment.test.ts test/commerce-rc1.test.ts test/payment-config.test.ts \
+  test/alipay-proof.test.ts test/public-limits.test.ts test/proxy-trust.test.ts test/demo-quotas.test.ts
+```
+
+61 项全部通过，0 失败，耗时约 106 秒。新增 16 项覆盖：
+
+- 可信代理 CIDR 校验、无代理忽略请求头、不可信来源不采信、多级代理取客户端、`X-Real-IP` 回退与异常链回退。
+- 并发 8 个订单在全局每日额度 3 下恰好 3 个成功、5 个返回 `429 DEMO_QUOTA_EXCEEDED`。
+- 单地址额度独立计数，第 3 单返回 `429`。
+- 暂停开关拒绝新订单，恢复后可继续下单。
+- 同时执行上限返回 `503 DEMO_CAPACITY_REACHED`。
+- 输入行数超限返回 `422 INPUT_TOO_LARGE`。
+- 非管理员 HTTP 创建任务返回 `403 PUBLIC_DEMO_READ_ONLY`，MCP 工具列表不含 `create_collaboration_task`、`create_run` 与 `submit_collaboration_handoff`。
+- 伪造 `X-Forwarded-For` 无法绕过限流，可信代理下不同客户端独立计数。
+- 管理端可观测数据包含订单、Worker 与额度。
+
+Web 类型检查与构建通过，Web 测试 3 项通过，Worker 测试 7 项通过。
+
+Playwright 免费 Demo 端到端测试使用隔离 schema、真实 Runtime 与三个真实 Worker，`browser-portfolio.spec.ts` 1 项通过，耗时 41.1 秒。Worker 断线与重新领取路径由现有 `portfolio-flow.test.ts` 的 `expire-csv`、`portfolio-auto.test.ts` 与 `commerce-flow.test.ts` 的 `worker-failure` 覆盖，均包含在全量测试中。
+
+## 部署预检与架构
+
+`npm run preflight:deploy` 在 Node 24 下输出 `LOCAL_READY`，迁移 `001` 至 `015`、额度表、暂停开关、Worker 在线状态表、代理信任、部署 SHA、全局额度、输入上限、Worker 重试与租约全部通过。云端仍为 `BLOCKED`，没有创建任何云资源。
+
+架构核查结论为推荐方案 A：独立 Web、独立 PostgreSQL、单台 VPS 同时运行 Runtime 与三个 Worker。MCP 使用无状态 Streamable HTTP，不要求长连接；三个 Worker 每 1.5 秒轮询，约 17.3 万次/天，若放在 Serverless 会产生约 518 万次/月的函数调用并反复建立数据库连接。详细对比与费用估算写入 `DEPLOYMENT.md`。
+
+## 支付宝验收
+
+支付保持 `disabled`，未扩展 Machine Pay，未使用真实商户密钥，未发起资金交易。沙箱验收脚本在缺少确认标记或商户凭证时仍输出 `BLOCKED`，退出码 2，`PRECREATE_OK` 与 `VERIFIED` 未取得。

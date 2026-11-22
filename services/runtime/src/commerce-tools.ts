@@ -4,13 +4,13 @@ import { Auth, type Principal } from './auth.js';
 import { collaborationPrincipal } from './collaboration-auth.js';
 import type { Commerce } from './commerce.js';
 
-export function commerceTools(commerce: Commerce, app: Application, principal: Principal) {
+export function commerceTools(commerce: Commerce, app: Application, principal: Principal, clientAddress = 'unknown') {
   const auth = new Auth(app.db, app.config.ADMIN_TOKEN);
   const operations: Record<keyof typeof CommerceToolSchemas, { description: string; operation: (input: any, actor: Principal) => Promise<unknown> }> = {
     list_service_catalog: { description: '读取标准服务目录、固定价格、货币与当前支付模式；公开只读', operation: () => commerce.services() },
     create_service_order: {
       description: '创建服务订单 / Create service order：request 填 serviceId、expectedServiceVersion、idempotencyKey 与 inputCsv；返回报价快照、支付状态与执行状态',
-      operation: (input, actor) => commerce.createOrder(actor, input.request),
+      operation: (input, actor) => commerce.createOrder(actor, input.request, clientAddress),
     },
     get_service_order: {
       description: '读取自己的订单：包含支付状态、执行步骤、交付与验收历史',

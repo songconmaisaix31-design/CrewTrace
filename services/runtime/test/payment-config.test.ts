@@ -11,6 +11,11 @@ const BASE: Record<string, string> = {
 const ISOLATED_KEYS = [
   'NODE_ENV', 'PAYMENT_MODE', 'DEPLOYMENT_ENV', 'PUBLIC_DEPLOYMENT', 'PAYMENT_SIMULATED_ACK',
   'PAYMENT_SIMULATION_SECRET', 'ALIPAY_APP_ID', 'ALIPAY_PRIVATE_KEY', 'ALIPAY_PUBLIC_KEY', 'ALIPAY_SERVICE_IDS',
+  'PROXY_TRUST_MODE', 'TRUSTED_PROXY_CIDRS', 'DEPLOYMENT_SHA', 'ALLOWED_ORIGINS',
+  'PUBLIC_RATE_LIMIT_PER_MINUTE', 'PUBLIC_ORDER_LIMIT_PER_HOUR', 'PUBLIC_COLLAB_RATE_LIMIT_PER_MINUTE',
+  'DEMO_MAX_INPUT_CHARS', 'DEMO_MAX_INPUT_ROWS', 'DEMO_MAX_ACTIVE_ORDERS', 'DEMO_GLOBAL_ORDERS_PER_DAY',
+  'DEMO_IP_ORDERS_PER_DAY', 'DEMO_AGENT_ORDERS_PER_DAY', 'DEMO_AGENT_REGISTRATIONS_PER_IP_DAY',
+  'DEMO_DAILY_TASKS', 'DEMO_CSV_MAX_ATTEMPTS', 'DEMO_WORKER_LEASE_SECONDS',
 ];
 
 function withEnv(values: Record<string, string | undefined>, run: () => void) {
@@ -109,9 +114,12 @@ test('官方支付宝模式必须提供完整凭证与官方服务映射', () =>
     assert.equal(config.PAYMENT_MODE, 'sandbox');
     assert.deepEqual(JSON.parse(config.ALIPAY_SERVICE_IDS!), { 'csv-clean-verify': 'CSV_CLEAN_VERIFY' });
   });
-  withEnv({ PAYMENT_MODE: 'production', ...ALIPAY, DEPLOYMENT_ENV: 'production', PUBLIC_DEPLOYMENT: 'true', PAYMENT_SIMULATED_ACK: undefined }, () => {
+  withEnv({ PAYMENT_MODE: 'production', ...ALIPAY, DEPLOYMENT_ENV: 'production', PUBLIC_DEPLOYMENT: 'true', PAYMENT_SIMULATED_ACK: undefined, NODE_ENV: 'production', PUBLIC_BASE_URL: 'https://demo.example.com', ALLOWED_ORIGINS: 'https://demo.example.com', PROXY_TRUST_MODE: 'none', DEPLOYMENT_SHA: 'a'.repeat(40) }, () => {
     const config = loadConfig();
     assert.equal(config.PAYMENT_MODE, 'production');
     assert.equal(config.PUBLIC_DEPLOYMENT, true);
+  });
+  withEnv({ DEPLOYMENT_ENV: 'staging', PUBLIC_DEPLOYMENT: 'true', NODE_ENV: 'production', PUBLIC_BASE_URL: 'https://demo.example.com', ALLOWED_ORIGINS: 'https://demo.example.com', DEPLOYMENT_SHA: 'a'.repeat(40) }, () => {
+    assert.throws(() => loadConfig(), /PROXY_TRUST_MODE/);
   });
 });

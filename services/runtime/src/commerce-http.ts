@@ -1,20 +1,11 @@
-import type { Context, Hono, MiddlewareHandler } from 'hono';
+import type { Hono, MiddlewareHandler } from 'hono';
 import { CollaborationIdSchema, OrderQuerySchema } from '../../../packages/contracts/src/index.ts';
 import type { Application } from './application.js';
 import type { Principal } from './auth.js';
 import type { Commerce } from './commerce.js';
+import { requestClientAddress } from './client-address.js';
 import { AppError } from './errors.js';
 import { FixedWindowLimiter } from './rate-limit.js';
-
-function clientAddress(c: Context): string {
-  // 只信任反向代理覆写后的首个 X-Forwarded-For；Runtime 不应直接暴露在公网。
-  const forwarded = c.req.header('x-forwarded-for')?.split(',')[0]?.trim();
-  if (forwarded && forwarded.length <= 64) return forwarded;
-  const real = c.req.header('x-real-ip')?.trim();
-  if (real && real.length <= 64) return real;
-  const incoming = (c.env as { incoming?: { socket?: { remoteAddress?: string } } } | undefined)?.incoming;
-  return incoming?.socket?.remoteAddress ?? 'unknown';
-}
 
 export function mountCommerce(http: Hono<{ Variables: { principal: Principal } }>, app: Application, commerce: Commerce) {
   const prefix = '/api/commerce';
@@ -23,7 +14,7 @@ export function mountCommerce(http: Hono<{ Variables: { principal: Principal } }
   if (app.config.PUBLIC_DEPLOYMENT) {
     const limit: MiddlewareHandler<{ Variables: { principal: Principal } }> = async (c, next) => {
       if (c.get('principal').kind === 'admin') return next();
-      const address = clientAddress(c);
+      const address = requestClientAddress(c, app.config);
       if (c.req.method === 'POST' && c.req.path === `${prefix}/orders`) {
         const order = orderLimiter.take(`order:${address}`);
         if (!order.allowed) {
@@ -47,7 +38,7 @@ export function mountCommerce(http: Hono<{ Variables: { principal: Principal } }
     deploymentEnv: app.config.DEPLOYMENT_ENV, publicDeployment: app.config.PUBLIC_DEPLOYMENT,
   }));
   http.get(`${prefix}/services`, async c => c.json(await commerce.services()));
-  http.post(`${prefix}/orders`, async c => c.json(await commerce.createOrder(c.get('principal'), await c.req.json()), 201));
+  http.post(`${prefix}/orders`, async c => c.json(await commerce.createOrder(c.get('principal'), await c.req.json(), requestClientAddress(c, app.config)), 201));
   http.get(`${prefix}/orders`, async c => c.json(await commerce.listOrders(c.get('principal'), OrderQuerySchema.parse(c.req.query()))));
   http.get(`${prefix}/orders/:id`, async c => c.json(await commerce.getOrder(c.get('principal'), id(c.req.param('id')))));
   http.post(`${prefix}/orders/:id/payment`, async c => {

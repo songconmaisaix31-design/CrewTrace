@@ -22,7 +22,6 @@ import { CSV_ROLE,replayCsvDelivery,verifyCsvDelivery } from '../../../workers/s
 import { acceptedStep, csvWorkflowInput, CSV_STEPS, CSV_WORKFLOW_VERSION, evidenceReport, inspectSource, normalizedDelivery, sameDelivery, workflow } from './csv-workflow.js';
 import { rankAndSave } from './experiment-matching.js';
 
-const CSV_MAX_ATTEMPTS=3;
 
 export class Collaboration {
   readonly store: CollaborationStore;
@@ -115,6 +114,7 @@ export class Collaboration {
         if(parent.creator!==actor && !(await client.query("SELECT id FROM collaboration_claims WHERE task_id=$1 AND agent_id=$2 AND document->>'status'='ACTIVE'",[parent.taskId,actor])).rowCount) throw new AppError(403,'UNAUTHORIZED','创建子任务需要参与父任务');
       }
       const now=new Date().toISOString();
+      await this.app.demo.reserveCollaborationTask(client,actor,new Date(now));
       const task=CollaborationTaskSchema.parse({...request,taskId:randomUUID(),creator:actor,status:'OPEN',version:1,createdAt:now,updatedAt:now});
       await client.query('INSERT INTO collaboration_tasks(id,author_id,parent_task_id,version,document) VALUES($1,$2,$3,$4,$5)',[task.taskId,actor,task.parentTaskId,task.version,task]);
       await this.store.event(client,'TASK_CREATED',actor,task.taskId,{taskId:task.taskId});return task;
@@ -145,6 +145,7 @@ export class Collaboration {
   async createCsvWorkflow(principal: Principal,taskId: string,input: unknown) {
     const request=csvWorkflowInput.parse(input);
     normalizedDelivery(request.input);
+    const leaseSeconds=this.app.config.PUBLIC_DEPLOYMENT?Math.min(request.leaseSeconds,this.app.config.DEMO_WORKER_LEASE_SECONDS):request.leaseSeconds;
     return this.store.write(principal,async(client,actor)=>{
       const task=await this.task(taskId,client);
       sameCollaborator(actor,task.creator);
@@ -152,7 +153,7 @@ export class Collaboration {
       if(task.status!=='OPEN'||await workflow(client,taskId)||(await client.query('SELECT id FROM collaboration_claims WHERE task_id=$1 LIMIT 1',[taskId])).rowCount) {
         throw new AppError(409,'INVALID_STATE','CSV 工作流只能在尚未认领的开放任务配置一次');
       }
-      await client.query('INSERT INTO experiment_csv_workflows(task_id,input_csv,lease_seconds,version,mode) VALUES($1,$2,$3,$4,$5)',[taskId,request.input,request.leaseSeconds,CSV_WORKFLOW_VERSION,request.mode]);
+      await client.query('INSERT INTO experiment_csv_workflows(task_id,input_csv,lease_seconds,version,mode) VALUES($1,$2,$3,$4,$5)',[taskId,request.input,leaseSeconds,CSV_WORKFLOW_VERSION,request.mode]);
       await this.saveTask(client,{...task,version:task.version+1,updatedAt:new Date().toISOString()});
       await this.store.event(client,'CSV_WORKFLOW_CONFIGURED',actor,taskId,{version:CSV_WORKFLOW_VERSION,mode:request.mode,source:JSON.parse(inspectSource(request.input))});
       return {taskVersion:task.version+1,steps:CSV_STEPS,version:CSV_WORKFLOW_VERSION,mode:request.mode};
@@ -250,10 +251,11 @@ export class Collaboration {
     await client.query('UPDATE collaboration_claims SET document=$2,version=$3 WHERE id=$1',[claim.claimId,updated,updated.version]);
     const {rows:[attempt]}=await client.query(`UPDATE experiment_csv_attempts SET failure_code=$2,
       expired_at=CASE WHEN $2='TIMEOUT' THEN now() ELSE expired_at END WHERE claim_id=$1 RETURNING attempt`,[claim.claimId,code]);
-    if(attempt.attempt>=CSV_MAX_ATTEMPTS)await client.query('UPDATE experiment_csv_workflows SET failed_at=now(),failed_step=$2 WHERE task_id=$1',[claim.taskId,claim.scope]);
+    const maxAttempts=this.app.config.DEMO_CSV_MAX_ATTEMPTS;
+    if(attempt.attempt>=maxAttempts)await client.query('UPDATE experiment_csv_workflows SET failed_at=now(),failed_step=$2 WHERE task_id=$1',[claim.taskId,claim.scope]);
     const task=await this.task(claim.taskId,client);
     await this.saveTask(client,{...task,version:task.version+1,updatedAt:now});
-    await this.store.event(client,'CSV_ATTEMPT_FAILED',actor,task.taskId,{claimId:claim.claimId,attempt:attempt.attempt,code,terminal:attempt.attempt>=CSV_MAX_ATTEMPTS});
+    await this.store.event(client,'CSV_ATTEMPT_FAILED',actor,task.taskId,{claimId:claim.claimId,attempt:attempt.attempt,code,terminal:attempt.attempt>=maxAttempts});
   }
 
   private async recordClaim(client:PoolClient,task:CollaborationTask,agentId:string,scope:string,proposalId:string|null,leaseSeconds?:number,decisionId?:string) {
