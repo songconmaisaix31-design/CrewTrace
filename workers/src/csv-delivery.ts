@@ -34,3 +34,11 @@ export function verifyCsvDelivery(content: string) {
   }
   return { ruleVersion: CSV_RULE_VERSION, contentHash, rowCount, status: issues.length ? 'FAIL' as const : 'PASS' as const, issues };
 }
+
+export function replayCsvDelivery(content:string,stored:Partial<ReturnType<typeof verifyCsvDelivery>>|null|undefined) {
+  const result=verifyCsvDelivery(content);
+  const matches=result.ruleVersion===stored?.ruleVersion&&result.status===stored.status&&
+    result.contentHash===stored.contentHash&&result.rowCount===stored.rowCount&&
+    JSON.stringify(result.issues)===JSON.stringify(stored.issues);
+  return {matches,result};
+}

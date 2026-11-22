@@ -8,6 +8,7 @@ const configSchema = z.object({
   PUBLIC_WEB_URL: z.url().optional(),
   PORT: z.coerce.number().int().min(0).max(65535).default(3000),
   EXPERIMENT_CHAIN_WRITES: z.enum(['OFF','TESTNET']).optional(),
+  EXPERIMENT_WORKER_AGENT_IDS: z.string().regex(/^[0-9a-f-]{36}(?:,[0-9a-f-]{36})*$/i).optional(),
   CHAIN_ADAPTER_MODULE: z.string().min(1).optional(),
   CHAIN_ID: z.coerce.number().int().positive().default(10143),
   CHAIN_RPC_URL: z.url().optional(),

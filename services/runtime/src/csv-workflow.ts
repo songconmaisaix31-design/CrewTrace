@@ -1,8 +1,7 @@
-import { createHash } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { CSV_ROLE, verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
-import { CsvError,executeCsvCleanup } from '../../../workers/src/csv-cleanup.ts';
+import { CsvConflictError,CsvError,executeCsvCleanup } from '../../../workers/src/csv-cleanup.ts';
 import { AppError } from './errors.js';
 
 export const CSV_WORKFLOW_VERSION = 'csv-workflow-v1';
@@ -15,25 +14,24 @@ export const csvWorkflowInput = z.strictObject({
   input: z.string().min(1).max(80000),
   expectedVersion: z.number().int().positive(),
   leaseSeconds: z.number().int().min(5).max(3600).default(300),
+  mode:z.enum(['MANUAL','AUTO']).default('MANUAL'),
 });
 
 export async function workflow(client: Pick<PoolClient,'query'>, taskId: string) {
-  const row = (await client.query('SELECT input_csv, lease_seconds, version FROM experiment_csv_workflows WHERE task_id=$1',[taskId])).rows[0];
-  return row ? { input: z.string().parse(row.input_csv), leaseSeconds: z.number().parse(row.lease_seconds), version: z.literal(CSV_WORKFLOW_VERSION).parse(row.version) } : null;
+  const row = (await client.query('SELECT input_csv, lease_seconds, version, mode, failed_at, failed_step FROM experiment_csv_workflows WHERE task_id=$1',[taskId])).rows[0];
+  return row ? { input: z.string().parse(row.input_csv), leaseSeconds: z.number().parse(row.lease_seconds), version: z.literal(CSV_WORKFLOW_VERSION).parse(row.version),
+    mode:z.enum(['MANUAL','AUTO']).parse(row.mode), failedAt:z.date().nullable().parse(row.failed_at)?.toISOString()??null,
+    failedStep:z.string().nullable().parse(row.failed_step),
+  } : null;
 }
 
-export function inspectSource(input: string) {
-  return JSON.stringify({inputHash:createHash('sha256').update(input,'utf8').digest('hex'),bytes:Buffer.byteLength(input,'utf8')});
-}
-export function evidenceReport(content: string) {
-  const {ruleVersion,contentHash,rowCount}=verifyCsvDelivery(content);
-  return JSON.stringify({ruleVersion,contentHash,rowCount});
-}
+export { inspectSource,evidenceReport } from '../../../workers/src/csv-steps.ts';
 export function normalizedDelivery(input: string) {
   let normalized: string;
   try {
     normalized=executeCsvCleanup(input,'deduplicate');
   } catch (error) {
+    if(error instanceof CsvConflictError)throw new AppError(422,'INVALID_INPUT','重复记录的金额不一致，需人工确认来源');
     if (!(error instanceof CsvError)) throw error;
     throw new AppError(422,'INVALID_INPUT','不能解析 CSV 输入');
   }

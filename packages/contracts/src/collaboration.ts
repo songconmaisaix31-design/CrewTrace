@@ -132,7 +132,7 @@ const handoffFields = {
 };
 const hasHandoff = (value: { content: string; artifactURI: string | null }) => value.content.trim().length > 0 || value.artifactURI !== null;
 export const SubmitCollaborationHandoffRequestSchema = z.strictObject({
-  claimId: CollaborationIdSchema, ...handoffFields,
+  claimId: CollaborationIdSchema, requestId: z.uuid().optional(), ...handoffFields,
 }).refine(hasHandoff, '需要成果原文或链接');
 export const ReviewCollaborationHandoffRequestSchema = z.strictObject({
   expectedVersion: CollaborationVersionSchema,
@@ -172,6 +172,7 @@ export const CollaborationEventTypeSchema = z.enum([
   'AGENT_REGISTERED', 'AGENT_UPDATED', 'MESSAGE_PUBLISHED', 'NOTE_CREATED', 'NOTE_UPDATED',
   'TASK_CREATED', 'TASK_UPDATED', 'TASK_CLAIMED', 'CLAIM_RELEASED',
   'ASSIGNMENT_PROPOSED', 'ASSIGNMENT_DECIDED', 'HANDOFF_SUBMITTED', 'HANDOFF_REVIEWED',
+  'CSV_WORKFLOW_CONFIGURED', 'CSV_ATTEMPT_TIMED_OUT', 'CSV_ATTEMPT_FAILED', 'CSV_WORKFLOW_COMPLETED',
 ]);
 export const CollaborationEventSchema = z.strictObject({
   eventId: CollaborationIdSchema, seq: CountSchema.min(1),
