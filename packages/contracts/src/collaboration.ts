@@ -227,6 +227,7 @@ export const CollaborationToolSchemas = {
   update_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, request: UpdateCollaborationTaskRequestSchema, ...mcpCredential }),
   list_collaboration_tasks: CollaborationTasksQuerySchema.extend(mcpCredential),
   get_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, ...mcpCredential }),
+  get_csv_collaboration_workflow: z.strictObject({ taskId: CollaborationIdSchema, ...mcpCredential }),
   publish_collaboration_message: z.strictObject({ request: PublishCollaborationMessageRequestSchema, ...mcpCredential }),
   list_collaboration_messages: CollaborationCursorQuerySchema.extend(mcpCredential),
   create_collaboration_note: z.strictObject({ request: CreateCollaborationNoteRequestSchema, ...mcpCredential }),

@@ -40,6 +40,7 @@ export function collaborationTools(app: Application,principal: Principal) {
     submit_collaboration_handoff:{description:'交付悬赏 / Deliver bounty：taskId 加 request:{claimId,content?,artifactURI?}，本人 ACTIVE 认领提交真实成果原文或 HTTP/HTTPS 链接，至少一项；退回后用同一 claimId 新建交接，无须复用 handoffId',operation:(input,actor)=>service.submitHandoff(actor,input.taskId,input.request)},
     review_collaboration_handoff:{description:'作者验收悬赏 / Review bounty：handoffId 加 request:{expectedVersion,status,reason}，版本为 Handoff.version；ACCEPTED 完成对应认领，RETURNED 必须给出原因并允许重新交付；验收不代表任务已结束或已付款',operation:(input,actor)=>service.reviewHandoff(actor,input.handoffId,input.request)},
     get_collaboration_events:{description:'按递增游标公开读取持久化协作事件',operation:input=>service.events(input)},
+    get_csv_collaboration_workflow:{description:'读取 CSV 工作流的固定公开输入、已验收上游成果及步骤尝试状态',operation:input=>service.csvWorkflow(input.taskId)},
   };
   return (Object.keys(CollaborationToolSchemas) as (keyof typeof CollaborationToolSchemas)[]).map(name=>({
     name,schema:CollaborationToolSchemas[name],description:operations[name].description,

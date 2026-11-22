@@ -30,4 +30,11 @@ test('任务发布者能保存 CSV 候选排名并读取真实验证证据', asy
   await page.reload();
   await expect(dialog.getByText('csv-role-reputation-v1',{exact:false})).toBeVisible();
   await page.screenshot({path:'../../.local/portfolio-web-evidence.png'});
+  const managed = await post('/tasks',{title:'Portfolio browser workflow',description:'Three-step fixed input',requiredCapabilities:['csv-data-review']},owner.credential);
+  await page.goto(`/?task=${managed.taskId}#collaborate`);
+  await dialog.getByText('配置三步骤 CSV 工作流',{exact:true}).click();
+  await dialog.getByLabel('公开 CSV 输入').fill('record_id,amount_cents\nsource-1,88\n');
+  await dialog.getByRole('button',{name:'保存工作流'}).click();
+  await expect(dialog.getByText('csv-workflow-v1',{exact:true})).toBeVisible();
+  await expect(dialog.getByText('等待上游',{exact:false})).toHaveCount(2);
 });

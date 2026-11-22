@@ -34,6 +34,12 @@ export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>
     return c.json(rows[0]?.document??null);
   });
   http.post(`${prefix}/tasks/:id/matching`,async c=>c.json(await snapshotMatching(service,c.get('principal'),id(c.req.param('id'))),201));
+  http.get(`${prefix}/tasks/:id/csv-workflow`,async c=>c.json(await service.csvWorkflow(id(c.req.param('id')))));
+  http.post(`${prefix}/tasks/:id/csv-workflow`,async c=>c.json(await service.createCsvWorkflow(c.get('principal'),id(c.req.param('id')),await c.req.json()),201));
+  http.post(`${prefix}/claims/:id/expire-csv`,async c=>{
+    const {expectedVersion}=z.strictObject({expectedVersion:z.number().int().positive()}).parse(await c.req.json());
+    return c.json(await service.expireCsvClaim(c.get('principal'),id(c.req.param('id')),expectedVersion));
+  });
   http.get(`${prefix}/tasks/:id/evidence`,async c=>{
     const taskId=id(c.req.param('id'));
     await service.task(taskId);

@@ -12,13 +12,20 @@ const matchingSchema = z.object({ id: z.string(), policyVersion: z.string(), can
   agentId: z.string(), name: z.string(), sampleSize: z.number(), score: z.number().nullable(),
   active: z.number(), capacity: z.number(), reasons: z.array(z.string()), missingSkills: z.array(z.string()),
 })) });
+const workflowSchema = z.object({
+  input:z.string(), version:z.string(),
+  steps:z.array(z.object({role:z.string(),dependsOn:z.string().nullable(),acceptedContent:z.string().nullable()})),
+  attempts:z.array(z.object({claimId:z.string(),step:z.string(),attempt:z.number(),status:z.string(),expiresAt:z.string(),claimVersion:z.number(),canExpire:z.boolean()})),
+});
 
-export default function ExperimentEvidence({taskId, version, credential, mayRank}:{
-  taskId: string; version: number; credential: string; mayRank: boolean;
+export default function ExperimentEvidence({taskId, version, revision, credential, mayRank, mayConfigure, onChanged}:{
+  taskId: string; version: number; revision:number; credential: string; mayRank: boolean; mayConfigure:boolean; onChanged:()=>void;
 }) {
   const {t,error:translateError}=useI18n();
   const [records,setRecords]=useState<z.infer<typeof evidenceSchema>['records']|null>(null);
   const [ranking,setRanking]=useState<z.infer<typeof matchingSchema>|null>(null);
+  const [workflow,setWorkflow]=useState<z.infer<typeof workflowSchema>|null|undefined>(undefined);
+  const [workflowRefresh,setWorkflowRefresh]=useState(0);
   const [error,setError]=useState('');
   useEffect(()=>{
     const abort = new AbortController();
@@ -26,8 +33,11 @@ export default function ExperimentEvidence({taskId, version, credential, mayRank
     void collaboration(`/tasks/${taskId}/evidence`,evidenceSchema,{signal:abort.signal})
       .then(result=>{if(!abort.signal.aborted)setRecords(result.records);})
       .catch(problem=>{if(!abort.signal.aborted)setError(collaborationError(problem));});
+    void collaboration(`/tasks/${taskId}/csv-workflow`,workflowSchema.nullable(),{signal:abort.signal})
+      .then(result=>{if(!abort.signal.aborted)setWorkflow(result);})
+      .catch(problem=>{if(!abort.signal.aborted)setError(collaborationError(problem));});
     return ()=>abort.abort();
-  },[taskId,version]);
+  },[taskId,version,revision,workflowRefresh]);
   useEffect(()=>{
     const abort = new AbortController();
     void collaboration(`/tasks/${taskId}/matching`,matchingSchema.nullable(),{signal:abort.signal})
@@ -37,6 +47,33 @@ export default function ExperimentEvidence({taskId, version, credential, mayRank
   },[taskId]);
   return <section className="public-task-subsection">
     <h3>{t('V2 匹配与交付证据','V2 matching and delivery evidence')}</h3>
+    {mayConfigure&&workflow===null&&<details>
+      <summary>{t('配置三步骤 CSV 工作流','Configure three-step CSV workflow')}</summary>
+      <ActionForm label={t('保存工作流','Save workflow')} onSubmit={async data=>{
+        await collaboration(`/tasks/${taskId}/csv-workflow`,z.object({taskVersion:z.number()}),{
+          method:'POST',credential,body:{input:String(data.get('csv')??''),expectedVersion:version},
+        });
+        onChanged();
+      }}><label>{t('公开 CSV 输入','Public CSV input')}<textarea required name="csv" maxLength={80000}/></label></ActionForm>
+    </details>}
+    {workflow&&<div>
+      <p className="public-muted">{workflow.version}</p>
+      <button className="secondary" onClick={()=>setWorkflowRefresh(value=>value+1)}>{t('刷新步骤状态','Refresh steps')}</button>
+      <ol>{workflow.steps.map(step=><li key={step.role}>
+        <strong>{step.role}</strong> · {step.acceptedContent!==null?t('已验收','Accepted'):
+          step.dependsOn&&workflow.steps.find(item=>item.role===step.dependsOn)?.acceptedContent===null?t('等待上游','Waiting for dependency'):t('待完成','Pending')}
+        {workflow.attempts.filter(attempt=>attempt.step===step.role).map(attempt=><div key={attempt.claimId}>
+          <p className="public-muted">#{attempt.attempt} · {attempt.status} · <time dateTime={attempt.expiresAt}>{new Date(attempt.expiresAt).toLocaleString()}</time></p>
+          {mayRank&&attempt.canExpire&&<ActionForm label={t('释放超时步骤','Release expired attempt')} onSubmit={async()=>{
+            await collaboration(`/claims/${attempt.claimId}/expire-csv`,z.object({claimId:z.string()}),{
+              method:'POST',credential,body:{expectedVersion:attempt.claimVersion},
+            });
+            onChanged();
+          }}>{null}</ActionForm>}
+        </div>)}
+      </li>)}</ol>
+      <details><summary>{t('查看固定输入','View fixed input')}</summary><pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{workflow.input}</pre></details>
+    </div>}
     <p className="public-muted">{t('CSV 分工使用 csv-data-review。交付时粘贴包含 record_id、amount_cents 的 CSV 原文。','Use csv-data-review as the claim scope and paste the CSV with record_id and amount_cents as the delivery.')}</p>
     {mayRank&&<ActionForm label={t('生成并保存候选排名','Rank candidates and save snapshot')} onSubmit={async()=>{
       const result=await collaboration(`/tasks/${taskId}/matching`,matchingSchema,{method:'POST',credential,body:{}});

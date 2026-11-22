@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import { setTimeout as delay } from 'node:timers/promises';
 import test from 'node:test';
 import { serve } from '@hono/node-server';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -7,6 +8,8 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
 import { executeCsvCleanup } from '../../../workers/src/csv-cleanup.ts';
 import { migrate } from '../src/migrate.js';
+import { inspectSource, evidenceReport } from '../src/csv-workflow.js';
+import { dependencies } from '../src/dependencies.js';
 
 test('真实 PostgreSQL + HTTP + MCP：验证、验收与下一次排名', async () => {
   const database = new URL(process.env.DATABASE_URL ?? '');
@@ -26,6 +29,8 @@ test('真实 PostgreSQL + HTTP + MCP：验证、验收与下一次排名', async
   try {
     await migrate(runtime.db);
     await migrate(runtime.db);
+    await assert.rejects(dependencies({...runtime.config,CHAIN_ADAPTER_MODULE:'runtime-chain'},runtime.db),/默认关闭链上执行/);
+    await assert.rejects(dependencies({...runtime.config,CHAIN_ADAPTER_MODULE:'runtime-chain',CHAIN_ID:143,EXPERIMENT_CHAIN_WRITES:'TESTNET'},runtime.db),/仅接受 Monad Testnet/);
     await mcp.connect(new StreamableHTTPClientTransport(new URL('/mcp', base)));
     const call = async (name: string, args: Record<string, unknown>) => {
       const result = await mcp.callTool({ name, arguments: args });
@@ -92,6 +97,39 @@ test('真实 PostgreSQL + HTTP + MCP：验证、验收与下一次排名', async
       claimId:peerClaim.claimId,content:executeCsvCleanup(source,'normalize'),
     },201);
     await review(peerDelivery,'ACCEPTED');
+
+    const inspector = await call('join_collaboration', { name: 'V2 source inspector', capabilities: ['csv-source-inspection'] });
+    const reporter = await call('join_collaboration', { name: 'V2 evidence reporter', capabilities: ['csv-evidence-report'] });
+    const planTask = await create('Three-agent CSV workflow');
+    const workflowPath = `/tasks/${planTask.taskId}/csv-workflow`;
+    const workflowInput = 'record_id,amount_cents\n row-a , 7 \nrow-a,7\n';
+    await api(workflowPath, peer.credential, { input:workflowInput,expectedVersion:planTask.version },403);
+    const plan = await api(workflowPath,owner.credential,{input:workflowInput,expectedVersion:planTask.version,leaseSeconds:5},201);
+    assert.deepEqual(plan.steps.map((step:{role:string})=>step.role),['csv-source-inspection','csv-data-review','csv-evidence-report']);
+    const workflowClaim = async (actor:string, scope:string, status=201) => {
+      const current = await api(`/tasks/${planTask.taskId}`);
+      return api(`/tasks/${planTask.taskId}/claims`,actor,{scope,expectedVersion:current.version},status);
+    };
+    const workflowDelivery = (actor:string, claimId:string, content:string, status=201) =>
+      api(`/tasks/${planTask.taskId}/handoffs`,actor,{claimId,content},status);
+    await workflowClaim(worker.credential,'csv-data-review',409);
+    const elapsed = await workflowClaim(inspector.credential,'csv-source-inspection');
+    await delay(5100);
+    await workflowDelivery(inspector.credential,elapsed.claimId,inspectSource(workflowInput),409);
+    await api(`/claims/${elapsed.claimId}/expire-csv`,owner.credential,{expectedVersion:elapsed.version});
+    const first = await workflowClaim(inspector.credential,'csv-source-inspection');
+    await review(await workflowDelivery(inspector.credential,first.claimId,inspectSource(workflowInput)),'ACCEPTED');
+    const second = await workflowClaim(worker.credential,'csv-data-review');
+    await workflowDelivery(worker.credential,second.claimId,'record_id,amount_cents\nwrong-id,7\n',422);
+    const cleaned = executeCsvCleanup(workflowInput,'deduplicate');
+    await review(await workflowDelivery(worker.credential,second.claimId,cleaned),'ACCEPTED');
+    const third = await workflowClaim(reporter.credential,'csv-evidence-report');
+    await review(await workflowDelivery(reporter.credential,third.claimId,evidenceReport(cleaned)),'ACCEPTED');
+    const state = await api(workflowPath);
+    assert.deepEqual(await call('get_csv_collaboration_workflow',{taskId:planTask.taskId}),state);
+    assert.ok(state.steps.every((step:{acceptedContent:string|null})=>step.acceptedContent!==null));
+    assert.deepEqual(state.attempts.filter((attempt:{step:string})=>attempt.step==='csv-source-inspection').map((attempt:{status:string})=>attempt.status),['TIMED_OUT','COMPLETED']);
+    assert.equal(new Set(state.attempts.filter((attempt:{status:string})=>attempt.status==='COMPLETED').map((attempt:{agentId:string})=>attempt.agentId)).size,3);
   } finally {
     await mcp.close();
     await new Promise<void>(resolve=>server.close(()=>resolve()));

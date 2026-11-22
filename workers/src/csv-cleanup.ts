@@ -1,5 +1,6 @@
 import { parse } from 'csv-parse/sync';
 import { stringify } from 'csv-stringify/sync';
+export { CsvError } from 'csv-parse/sync';
 
 export const CSV_WORKER_MODES = ['copy', 'normalize', 'deduplicate'] as const;
 export type CsvWorkerMode = typeof CSV_WORKER_MODES[number];

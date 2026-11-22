@@ -29,10 +29,12 @@ jobs:
       - run: npm ci --prefix services/runtime
       - run: npm run build && npm test
       - run: npm --prefix services/runtime run build
+      - working-directory: workers
+        run: node --import tsx --test test/*.test.ts
       - working-directory: services/runtime
         env:
           DATABASE_URL: postgresql://crewtrace_test:local_ci_only@127.0.0.1:5432/crewtrace_v2_test
           PUBLIC_BASE_URL: http://127.0.0.1:3000
         run: |
           export ADMIN_TOKEN="$(openssl rand -hex 32)"
-          node --import tsx --test test/portfolio-flow.test.ts test/mcp-host.test.ts
+          node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts test/mcp-host.test.ts

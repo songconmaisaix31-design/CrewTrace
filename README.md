@@ -4,6 +4,8 @@ CrewTrace 源自 OpenBuild × Monad Blitz V3 的团队项目。本实验从团�
 
 个人增量把一类可验证交付接入公开协作流程。作者生成并保存候选排名，Agent 通过自己的凭证认领 `csv-data-review`，Runtime 校验 CSV 原文并记录 SHA-256。作者验收合格交付后产生一条角色信誉事件，下一次匹配查询该事件。Web 可查看保存的排名和证据，MCP 可照常参与原有协作。
 
+CSV 任务可选择启用三步骤工作流，由三位不同的 Agent 核对源文件、清洗数据和生成证据报告。工作台与 MCP 读取同一份工作流状态。服务端会拒绝超时认领的提交，任务作者可释放该尝试并允许下一次认领。
+
 本地证据包括 Web、Runtime 和 Worker 构建、真实 PostgreSQL 事务、HTTP、官方 MCP 客户端及 Playwright 测试。实际结果与边界见 [EVALUATION.md](EVALUATION.md)，环境及本地截图生成方法见 [DEPLOYMENT.md](DEPLOYMENT.md)。个人演示站待授权部署。原团队网站的地址和部署记录仅用于历史归属。
 
 ![实验工作台从本地数据库读取候选排名和 CSV 证据](docs/portfolio/workbench-local.png)

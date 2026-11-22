@@ -19,6 +19,7 @@ import { tokenHash,type Principal } from './auth.js';
 import { AppError,requireValue } from './errors.js';
 import { CollaborationStore,collaborator,expectedVersion,sameCollaborator } from './collaboration-store.js';
 import { CSV_ROLE,verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
+import { acceptedStep, csvWorkflowInput, CSV_STEPS, CSV_WORKFLOW_VERSION, evidenceReport, inspectSource, normalizedDelivery, sameDelivery, workflow } from './csv-workflow.js';
 
 export class Collaboration {
   readonly store: CollaborationStore;
@@ -123,6 +124,9 @@ export class Collaboration {
     const task=await this.store.write(principal,async(client,actor)=>{
       const current=await this.task(taskId,client);sameCollaborator(actor,current.creator);expectedVersion(current.version,request.expectedVersion);this.active(current);
       if(request.status && ['OPEN','COMPLETED','CANCELLED'].includes(request.status)) {
+        if(request.status==='COMPLETED' && await workflow(client,taskId) && !await acceptedStep(client,taskId,'csv-evidence-report')) {
+          throw new AppError(409,'INVALID_STATE','CSV 工作流仍有未验收步骤');
+        }
         if((await client.query("SELECT id FROM collaboration_claims WHERE task_id=$1 AND document->>'status'='ACTIVE'",[taskId])).rowCount) throw new AppError(409,'INVALID_STATE','任务仍有有效认领，请先完成交接或释放');
         if(['COMPLETED','CANCELLED'].includes(request.status) && (await client.query("SELECT id FROM collaboration_tasks WHERE parent_task_id=$1 AND document->>'status' IN ('OPEN','IN_PROGRESS')",[taskId])).rowCount) throw new AppError(409,'INVALID_STATE','子任务尚未结束');
         if(request.status==='COMPLETED' && !(await client.query("SELECT id FROM collaboration_claims WHERE task_id=$1 AND document->>'status'='COMPLETED'",[taskId])).rowCount) throw new AppError(409,'INVALID_STATE','任务尚无已接受的成果交接');
@@ -133,6 +137,64 @@ export class Collaboration {
     });
     await this.anchor('TASK',task.taskId,task.taskId,task.version,task);
     return task;
+  }
+
+  async createCsvWorkflow(principal: Principal,taskId: string,input: unknown) {
+    const request=csvWorkflowInput.parse(input);
+    normalizedDelivery(request.input);
+    return this.store.write(principal,async(client,actor)=>{
+      const task=await this.task(taskId,client);
+      sameCollaborator(actor,task.creator);
+      expectedVersion(task.version,request.expectedVersion);
+      if(task.status!=='OPEN'||await workflow(client,taskId)||(await client.query('SELECT id FROM collaboration_claims WHERE task_id=$1 LIMIT 1',[taskId])).rowCount) {
+        throw new AppError(409,'INVALID_STATE','CSV 工作流只能在尚未认领的开放任务配置一次');
+      }
+      await client.query('INSERT INTO experiment_csv_workflows(task_id,input_csv,lease_seconds,version) VALUES($1,$2,$3,$4)',[taskId,request.input,request.leaseSeconds,CSV_WORKFLOW_VERSION]);
+      await this.saveTask(client,{...task,version:task.version+1,updatedAt:new Date().toISOString()});
+      await this.store.event(client,'CSV_WORKFLOW_CONFIGURED',actor,taskId,{version:CSV_WORKFLOW_VERSION,source:JSON.parse(inspectSource(request.input))});
+      return {taskVersion:task.version+1,steps:CSV_STEPS,version:CSV_WORKFLOW_VERSION};
+    });
+  }
+
+  async csvWorkflow(taskId: string) {
+    await this.task(taskId);
+    return this.app.db.transaction(async client=>{
+      await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+      const plan=await workflow(client,taskId);
+      if(!plan)return null;
+      const {rows}=await client.query(`SELECT a.step, a.attempt, a.claim_id AS "claimId", a.expires_at AS "expiresAt",
+        c.agent_id AS "agentId", c.version AS "claimVersion",
+        CASE WHEN a.expired_at IS NOT NULL THEN 'TIMED_OUT' ELSE c.document->>'status' END AS status,
+        c.document->>'status'='ACTIVE' AND a.expired_at IS NULL AND a.expires_at<=now()
+          AND NOT EXISTS (SELECT 1 FROM collaboration_handoffs h WHERE h.claim_id=c.id AND h.document->>'status'='SUBMITTED') AS "canExpire"
+        FROM experiment_csv_attempts a JOIN collaboration_claims c ON c.id=a.claim_id
+        WHERE a.task_id=$1 ORDER BY a.step,a.attempt`,[taskId]);
+      const steps=[];
+      for(const step of CSV_STEPS)steps.push({...step,acceptedContent:await acceptedStep(client,taskId,step.role)??null});
+      return {...plan,steps,attempts:rows};
+    });
+  }
+
+  async expireCsvClaim(principal: Principal,claimId: string,version: number) {
+    const claim=await this.store.write(principal,async(client,actor)=>{
+      const current=await this.store.record('collaboration_claims',claimId,CollaborationClaimSchema,client);
+      const task=await this.task(current.taskId,client);
+      sameCollaborator(actor,task.creator);
+      expectedVersion(current.version,version);
+      this.active(task);
+      const expired=(await client.query(`UPDATE experiment_csv_attempts SET expired_at=now()
+        WHERE claim_id=$1 AND expired_at IS NULL AND expires_at<=now()
+        AND NOT EXISTS (SELECT 1 FROM collaboration_handoffs WHERE claim_id=$1 AND document->>'status'='SUBMITTED')
+        RETURNING attempt`,[claimId])).rows[0];
+      if(!expired||current.status!=='ACTIVE')throw new AppError(409,'INVALID_STATE','当前步骤尚未超时或仍有待审核交付');
+      const now=new Date().toISOString(), updated=CollaborationClaimSchema.parse({...current,status:'RELEASED',version:current.version+1,updatedAt:now});
+      await client.query('UPDATE collaboration_claims SET document=$2,version=$3 WHERE id=$1',[claimId,updated,updated.version]);
+      await this.saveTask(client,{...task,version:task.version+1,updatedAt:now});
+      await this.store.event(client,'CSV_ATTEMPT_TIMED_OUT',actor,task.taskId,{claimId,attempt:expired.attempt});
+      return updated;
+    });
+    await this.anchor('CLAIM',claim.claimId,claim.taskId,claim.version,claim);
+    return claim;
   }
 
   async publishMessage(principal: Principal,input: unknown) {
@@ -208,11 +270,21 @@ export class Collaboration {
     const request=ClaimCollaborationTaskRequestSchema.parse(input);
     const claim=await this.store.write(principal,async(client,actor)=>{
       const task=await this.task(taskId,client);this.active(task);expectedVersion(task.version,request.expectedVersion);
-      if(request.scope===CSV_ROLE) {
+      const plan=await workflow(client,taskId);
+      const step=CSV_STEPS.find(item=>item.role===request.scope);
+      if(plan&&!step) throw new AppError(409,'INVALID_STATE','请选择已配置的 CSV 步骤');
+      if(plan&&step) {
+        if(step.dependsOn&&!await acceptedStep(client,taskId,step.dependsOn)) throw new AppError(409,'INVALID_STATE','上游交付尚未验收');
+        if(await acceptedStep(client,taskId,step.role)) throw new AppError(409,'INVALID_STATE','该步骤已完成');
+        const used=(await client.query("SELECT 1 FROM collaboration_claims WHERE task_id=$1 AND agent_id=$2 AND scope<>$3 AND document->>'status' IN ('ACTIVE','COMPLETED')",[taskId,actor,step.role])).rowCount;
+        if(used)throw new AppError(409,'INVALID_STATE','同一工作流的不同步骤须由不同 Agent 承担');
+      }
+      if(plan||request.scope===CSV_ROLE) {
         if(task.creator===actor) throw new AppError(403,'UNAUTHORIZED','任务发布人不能认领自己的评分分工');
         const agent=await this.store.record('collaboration_agents',actor,CollaborationAgentSchema,client);
         const skills=new Set(agent.capabilities.map(value=>value.trim().toLowerCase()));
-        if(![CSV_ROLE,...task.requiredCapabilities].every(value=>skills.has(value.trim().toLowerCase()))) throw new AppError(409,'INVALID_STATE','Agent 缺少任务要求的能力');
+        const required=request.scope===CSV_ROLE?[CSV_ROLE,...task.requiredCapabilities]:[request.scope];
+        if(!required.every(value=>skills.has(value.trim().toLowerCase()))) throw new AppError(409,'INVALID_STATE','Agent 缺少任务要求的能力');
         const {rows}=await client.query("SELECT count(*)::int AS active FROM collaboration_claims WHERE agent_id=$1 AND document->>'status'='ACTIVE'",[actor]);
         if(rows[0].active>=2) throw new AppError(409,'INVALID_STATE','Agent 已达到认领并发上限');
       }
@@ -223,6 +295,9 @@ export class Collaboration {
       if((await client.query("SELECT id FROM collaboration_claims WHERE task_id=$1 AND scope=$2 AND document->>'status'='ACTIVE'",[taskId,request.scope])).rowCount) throw new AppError(409,'VERSION_CONFLICT','该分工已被认领');
       const now=new Date().toISOString(),claim=CollaborationClaimSchema.parse({claimId:randomUUID(),taskId,agentId:actor,scope:request.scope,proposalId:request.proposalId,status:'ACTIVE',version:1,createdAt:now,updatedAt:now});
       await client.query('INSERT INTO collaboration_claims(id,task_id,agent_id,proposal_id,scope,version,document) VALUES($1,$2,$3,$4,$5,$6,$7)',[claim.claimId,taskId,actor,claim.proposalId,claim.scope,claim.version,claim]);
+      if(plan)await client.query(`INSERT INTO experiment_csv_attempts(claim_id,task_id,step,attempt,expires_at)
+        SELECT $1,$2,$3,COALESCE(max(attempt),0)+1,now()+$4::int*interval '1 second'
+        FROM experiment_csv_attempts WHERE task_id=$2 AND step=$3`,[claim.claimId,taskId,claim.scope,plan.leaseSeconds]);
       await this.saveTask(client,{...task,status:'IN_PROGRESS',version:task.version+1,updatedAt:now});
       await this.store.event(client,'TASK_CLAIMED',actor,taskId,{claimId:claim.claimId,taskVersion:task.version+1});return claim;
     });
@@ -250,6 +325,16 @@ export class Collaboration {
     const handoff=await this.store.write(principal,async(client,actor)=>{
       this.active(await this.task(taskId,client));const claim=await this.store.record('collaboration_claims',request.claimId,CollaborationClaimSchema,client);sameCollaborator(actor,claim.agentId);
       if(claim.taskId!==taskId || claim.status!=='ACTIVE') throw new AppError(409,'INVALID_STATE','成果需要绑定本任务的有效认领');
+      const plan=await workflow(client,taskId);
+      if(plan) {
+        const {rows}=await client.query('SELECT 1 FROM experiment_csv_attempts WHERE claim_id=$1 AND expires_at>now() AND expired_at IS NULL',[claim.claimId]);
+        if(!rows.length)throw new AppError(409,'STALE_ATTEMPT','当前步骤已超时');
+        const upstream=claim.scope==='csv-evidence-report'?await acceptedStep(client,taskId,CSV_ROLE):undefined;
+        if(claim.scope==='csv-evidence-report'&&upstream===undefined) throw new AppError(409,'INVALID_STATE','上游交付尚未验收');
+        const expected=claim.scope==='csv-source-inspection'?inspectSource(plan.input):
+          claim.scope===CSV_ROLE?normalizedDelivery(plan.input):evidenceReport(upstream!);
+        sameDelivery(request.content,expected,claim.scope);
+      }
       if((await client.query("SELECT id FROM collaboration_handoffs WHERE claim_id=$1 AND document->>'status'='SUBMITTED'",[claim.claimId])).rowCount) throw new AppError(409,'VERSION_CONFLICT','该认领已有待审核成果');
       const now=new Date().toISOString(),handoff=CollaborationHandoffSchema.parse({...request,handoffId:randomUUID(),taskId,author:actor,status:'SUBMITTED',reason:null,version:1,createdAt:now,updatedAt:now});
       await client.query('INSERT INTO collaboration_handoffs(id,task_id,author_id,claim_id,document) VALUES($1,$2,$3,$4,$5)',[handoff.handoffId,taskId,actor,claim.claimId,handoff]);
