@@ -35,6 +35,10 @@ const configSchema = z.object({
   PUBLIC_DEPLOYMENT: z.enum(['true','false']).default('false').transform(value => value === 'true'),
   /** 模拟支付的双重确认，只允许在本地或测试环境填写 local-only。 */
   PAYMENT_SIMULATED_ACK: z.literal('local-only').optional(),
+  /** 公开部署下每个客户端 IP 每分钟允许的 API 请求数，0 表示关闭。 */
+  PUBLIC_RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(0).max(10000).default(60),
+  /** 公开部署下每个客户端 IP 每小时允许创建的订单数，0 表示关闭。 */
+  PUBLIC_ORDER_LIMIT_PER_HOUR: z.coerce.number().int().min(0).max(10000).default(10),
   PAYMENT_TTL_SECONDS: z.coerce.number().int().min(60).max(43200).default(900),
   PAYMENT_SIMULATION_SECRET: z.string().min(32).optional(),
   ALIPAY_APP_ID: z.string().min(1).optional(),
@@ -66,6 +70,14 @@ const configSchema = z.object({
   }
   if (value.DEPLOYMENT_ENV === 'production' && value.PAYMENT_MODE === 'sandbox') {
     context.addIssue({ code: 'custom', path: ['PAYMENT_MODE'], message: 'production 部署环境不得使用支付宝沙箱模式' });
+  }
+  if (value.PUBLIC_DEPLOYMENT) {
+    if (value.DEPLOYMENT_ENV !== 'staging' && value.DEPLOYMENT_ENV !== 'production') {
+      context.addIssue({ code: 'custom', path: ['DEPLOYMENT_ENV'], message: '公开部署必须使用 staging 或 production 环境标识' });
+    }
+    if (value.PUBLIC_RATE_LIMIT_PER_MINUTE === 0 || value.PUBLIC_ORDER_LIMIT_PER_HOUR === 0) {
+      context.addIssue({ code: 'custom', path: ['PUBLIC_RATE_LIMIT_PER_MINUTE'], message: '公开部署必须启用请求限额' });
+    }
   }
   if (value.PAYMENT_MODE === 'sandbox' || value.PAYMENT_MODE === 'production') {
     for (const key of ['ALIPAY_APP_ID','ALIPAY_PRIVATE_KEY','ALIPAY_PUBLIC_KEY'] as const) {

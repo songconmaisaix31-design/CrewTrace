@@ -14,11 +14,16 @@ export const PaymentProofSchema = z.strictObject({
 export type PaymentProof = z.infer<typeof PaymentProofSchema>;
 
 export function decodePaymentProof(header: string): PaymentProof {
-  if (header.length > 20000 || !z.base64().safeParse(header).success) {
+  const value = header.trim();
+  if (/^[0-9a-fA-F]{64}$/.test(value)) {
+    // 64 位字符串是请求头里的 protocol.payment_proof 字段，不是 Payment-Proof 请求头本身。
+    throw new AppError(400, 'INVALID_PROOF', 'Payment-Proof 请求头必须是 Base64 编码的 JSON；单独的 64 位 payment_proof 字段不能作为请求头使用');
+  }
+  if (value.length > 20000 || !z.base64().safeParse(value).success) {
     throw new AppError(400, 'INVALID_PROOF', 'Payment-Proof 必须为 Base64 编码的 JSON');
   }
   try {
-    return PaymentProofSchema.parse(JSON.parse(Buffer.from(header, 'base64').toString('utf8')));
+    return PaymentProofSchema.parse(JSON.parse(Buffer.from(value, 'base64').toString('utf8')));
   } catch (cause) {
     if (cause instanceof AppError) throw cause;
     throw new AppError(400, 'INVALID_PROOF', 'Payment-Proof 结构不正确');

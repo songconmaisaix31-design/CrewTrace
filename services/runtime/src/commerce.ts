@@ -98,6 +98,7 @@ type PaymentOutcome =
   | { kind: 'ready'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'preparing'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'retry'; record: OrderRecord; payment: PaymentRecord }
+  | { kind: 'reconciliation'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'created'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'paid'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'invalid'; record: OrderRecord };
@@ -106,6 +107,8 @@ const ReconcilePaymentRequestSchema = z.strictObject({
   paymentId: CollaborationIdSchema,
   /** 运营在官方后台核对后的外部状态；不允许通过该接口把支付标记为已付款。 */
   externalState: z.enum(['NO_TRANSACTION', 'TRANSACTION_CLOSED']),
+  /** 必须显式确认已经完成资金核对，避免把未核对的尝试当成无交易自动放行。 */
+  fundsChecked: z.literal(true),
   reason: z.string().min(3).max(200),
 });
 
@@ -331,17 +334,13 @@ export class Commerce {
     let record = await this.orderRecord(orderId);
     if (record.status === 'AWAITING_PAYMENT') {
       const payments = await this.paymentsFor(orderId);
-      const active = payments.find(payment => payment.mode === this.payments.mode
-        && (payment.status === 'PENDING' || payment.status === 'PREPARING' || payment.status === 'UNKNOWN'));
-      if (active && Date.parse(active.expiresAt) <= Date.now()) {
-        if (active.status === 'PENDING') {
-          // 只把本地支付尝试标记为超时，订单保留待支付状态，已付款但延迟到达的凭证仍可验证。
-          await this.transitionPayment(active, 'EXPIRED', 'PAYMENT_EXPIRED', { reason: 'PAY_BEFORE_PASSED' });
-        } else {
-          // pay_before 已过，远端同一笔预下单不可能再被支付；不能把本地超时当成远端失败，但可以安全关闭。
-          await this.transitionPayment(active, 'FAILED', 'PAYMENT_PREPARE_CLOSED', { reason: 'PAY_BEFORE_PASSED' });
-        }
+      const pending = payments.find(payment => payment.mode === this.payments.mode && payment.status === 'PENDING');
+      if (pending && Date.parse(pending.expiresAt) <= Date.now()) {
+        // PENDING 的远端预下单已经确认，只把本地支付窗口标记为超时；迟到凭证仍可验证。
+        await this.transitionPayment(pending, 'EXPIRED', 'PAYMENT_EXPIRED', { reason: 'PAY_BEFORE_PASSED' });
       }
+      // PREPARING 与 UNKNOWN 可能已在远端创建可支付交易，截止时间过后也不自动关闭，
+      // 必须由运营完成资金核对后通过人工核对接口关闭。
     }
     if (record.status === 'READY' && !record.taskId) await this.startExecution(orderId);
     if (record.status === 'IN_PROGRESS' && record.taskId) {
@@ -478,8 +477,8 @@ export class Commerce {
       const preparing = currentMode.find(payment => payment.status === 'PREPARING');
       if (preparing) {
         if (Date.parse(preparing.expiresAt) <= Date.now()) {
-          // pay_before 已过，远端同一笔预下单不可能再被支付，可以安全关闭。
-          await closeAttempt(preparing, 'FAILED', 'PAY_BEFORE_PASSED', 'PAYMENT_PREPARE_CLOSED');
+          // 请求已发出但没有确认响应；远端可能已经创建交易，不能自动关闭后再开新交易。
+          return { kind: 'reconciliation', record, payment: preparing };
         } else if (Date.now() - Date.parse(preparing.createdAt) <= PREPARE_TIMEOUT_MS) {
           return { kind: 'preparing', record, payment: preparing };
         } else {
@@ -490,10 +489,10 @@ export class Commerce {
       const unknown = currentMode.find(payment => payment.status === 'UNKNOWN');
       if (unknown) {
         if (Date.parse(unknown.expiresAt) <= Date.now()) {
-          await closeAttempt(unknown, 'FAILED', 'PAY_BEFORE_PASSED', 'PAYMENT_PREPARE_CLOSED');
-        } else {
-          return { kind: 'retry', record, payment: unknown };
+          // UNKNOWN 可能已经在远端产生付款，截止后仍需资金核对，不能自动开放新尝试。
+          return { kind: 'reconciliation', record, payment: unknown };
         }
+        return { kind: 'retry', record, payment: unknown };
       }
       // 只有不存在未确认尝试时才创建新的商户订单号。
       const attempt = Math.max(0, ...currentMode.map(payment => payment.attempt)) + 1;
@@ -523,6 +522,14 @@ export class Commerce {
       const settled = await this.waitForPayment(orderId, outcome.payment.paymentId);
       if (settled) return this.paymentResponse(outcome.record, settled);
       throw new AppError(409, 'PAYMENT_PREPARING', '支付预下单正在处理，请稍后重试');
+    }
+    if (outcome.kind === 'reconciliation') {
+      throw new AppError(409, 'PAYMENT_AWAITING_RECONCILIATION', '该支付尝试的结果未确认且已过 pay_before，已停止自动创建新交易；请运营在支付宝后台完成资金核对后关闭该尝试', {
+        details: {
+          paymentId: outcome.payment.paymentId, attempt: outcome.payment.attempt,
+          status: outcome.payment.status, orderReference: outcome.payment.orderReference,
+        },
+      });
     }
     return this.settlePrecreate(outcome.record, outcome.payment);
   }
@@ -759,7 +766,8 @@ export class Commerce {
       if (!updated.rowCount) throw new AppError(409, 'INVALID_STATE', '支付记录状态已经变化，请重新查询订单');
       await this.emit(client, record.orderId, 'PAYMENT_MANUALLY_CLOSED', 'PAYMENT', {
         paymentId: payment.paymentId, attempt: payment.attempt, orderReference: payment.orderReference,
-        previousStatus: payment.status, externalState: request.externalState, reason: request.reason,
+        previousStatus: payment.status, externalState: request.externalState,
+        fundsChecked: request.fundsChecked, reason: request.reason,
       });
     });
     return this.detail(record.orderId);

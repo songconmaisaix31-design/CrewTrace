@@ -54,8 +54,8 @@
 2. `code` 是否为 `10000`。
 3. `active` 是否为 `true`。
 4. `trade_no` 是否与支付凭证中的 `trade_no` 一致。
-5. `out_trade_no` 是否存在，并解析为内部商户订单号。
-6. `amount` 是否可解析为金额，并与本地订单金额一致。
+5. `out_trade_no` 必须与本次预下单生成的内部商户订单号完全一致。
+6. `amount` 必须能解析为金额，并与本地预下单金额完全一致（按分比较）。
 7. 官方文档已将 `resource_id` 标记为不再使用，本轮不强制校验。
 8. 同一 `Payment-Proof` 重复提交只返回已验付结果，不重复启动工作流。
 
@@ -72,14 +72,14 @@
 
 | 本地状态 | 含义 | 允许的下一步 |
 | --- | --- | --- |
-| `PREPARING` | 已写入商户订单号，正在请求预下单 | 未超过本地等待窗口时只等待；超过窗口且远端结果未知时使用同一 `out_trade_no` 重试 |
-| `UNKNOWN` | 外部请求结果未知 | 在 `pay_before` 之前只用原 `out_trade_no` 重试；之后关闭该次尝试；管理员核对后可手动关闭 |
+| `PREPARING` | 已写入商户订单号，正在请求预下单 | 未超过本地等待窗口时只等待；超过窗口且远端结果未知时使用同一 `out_trade_no` 重试；`pay_before` 过后保留状态，等待人工核对 |
+| `UNKNOWN` | 外部请求结果未知 | 在 `pay_before` 之前只用原 `out_trade_no` 重试；之后不自动关闭也不自动创建新交易，管理员核对资金后手动关闭 |
 | `PENDING` | 已取得 `amt_pre_pay_id`，等待支付 | 等待 `Payment-Proof`；过期后标记 `EXPIRED` |
 | `VERIFIED` | 验付通过 | 订单进入执行；迟到凭证只补记售后证据 |
-| `FAILED` | 明确拒绝、`pay_before` 已过或人工核对无交易 | 可以开启新的支付尝试 |
+| `FAILED` | 明确拒绝或人工核对确认无交易 | 可以开启新的支付尝试 |
 | `EXPIRED` | 支付窗口关闭 | 重新发起支付 |
 
-本轮核对的三份官方文档中没有列出按 `out_trade_no` 或 `amt_pre_pay_id` 主动查询支付结果的接口。因此 `UNKNOWN` 状态不会自动判定远端失败，只能使用同一商户订单号重试，或由运营在支付宝后台核对后通过 `POST /api/commerce/orders/:id/payment/reconcile` 关闭该次尝试。人工核对接口只允许关闭，不能把订单标记为已付款。
+本轮核对的三份官方文档中没有列出按 `out_trade_no` 或 `amt_pre_pay_id` 主动查询支付结果的接口。因此 `PREPARING` 与 `UNKNOWN` 不会自动判定远端失败；超过 `pay_before` 后再次请求支付返回 `409 PAYMENT_AWAITING_RECONCILIATION`，不会自动创建可能重复收费的新交易。运营在支付宝后台核对资金后，通过 `POST /api/commerce/orders/:id/payment/reconcile` 关闭该次尝试，请求必须携带 `fundsChecked: true`。人工核对接口只允许关闭，不能把订单标记为已付款。
 
 ## 7. 环境变量
 
@@ -113,11 +113,12 @@ npm run acceptance:alipay
 脚本行为：
 
 - 缺少凭证、没有 `ALIPAY_SANDBOX_CONFIRM=yes`、网关不是沙箱地址时输出 `BLOCKED` 并以退出码 2 结束。
-- 使用真实沙箱预下单，金额默认 0.01 元，`out_trade_no` 每次运行独立生成。
+- 使用真实沙箱预下单，金额默认 0.01 元。`out_trade_no` 默认每次运行独立生成，也可通过 `ALIPAY_OUT_TRADE_NO` 固定，便于跨进程复用同一次预下单。
 - 预下单成功输出 `PRECREATE_OK` 和 `amt_pre_pay_id`；参数被拒绝输出 `PRECREATE_FAILED`；结果未知输出 `UNKNOWN` 并提示使用同一商户订单号重试。
-- 没有提供 `ALIPAY_TRADE_NO` 和 `ALIPAY_PAYMENT_PROOF` 时输出 `AWAITING_PROOF`，不会伪造验付成功。
-- 提供真实沙箱凭证后调用验付，逐项输出 `code`、`active`、`trade_no`、`out_trade_no`、`amount` 的检查结果。
-- 所有输出不包含私钥、公钥或完整支付凭证。
+- 验付必须提供 `ALIPAY_PAYMENT_HEADER`，值为完整的 Base64 `Payment-Proof` 请求头。脚本从中解析 `protocol.payment_proof`、`protocol.trade_no` 与 `method.client_session`，不会把 64 位 `payment_proof` 字段当作请求头使用。仅设置 `ALIPAY_PAYMENT_PROOF` 时输出 `BLOCKED` 并说明区别。
+- 没有提供请求头时输出 `AWAITING_PROOF`，同时给出需要复用的 `ALIPAY_OUT_TRADE_NO`，不会伪造验付成功。
+- 提供真实沙箱凭证后调用验付，逐项输出 `code`、`active`、`trade_no`、`out_trade_no`、`amount` 的严格比较结果；任一不一致输出 `VERIFY_REJECTED` 并以退出码 2 结束。若同时设置 `ALIPAY_TRADE_NO` 或 `ALIPAY_CLIENT_SESSION`，必须与请求头内的值一致。
+- 所有输出不包含私钥、公钥或完整支付凭证，只显示掩码后的摘要。
 
 本轮执行结果：未设置 `ALIPAY_SANDBOX_CONFIRM` 时输出 `BLOCKED`，退出码 2；设置确认但缺少 `ALIPAY_APP_ID` 时输出 `BLOCKED`，退出码 2。因为没有真实沙箱商户凭证，`PRECREATE_OK` 与 `VERIFIED` 均未取得。
 

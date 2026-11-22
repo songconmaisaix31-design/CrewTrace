@@ -348,7 +348,7 @@ test('支付预下单并发、恢复、隔离与 402 协议', async t => {
       (error: { status?: number; code?: string }) => error.status === 403 && error.code === 'UNAUTHORIZED',
     );
     const detail = await faulty.reconcilePayment({ kind: 'admin' }, order.orderId, {
-      paymentId: payment.id, externalState: 'NO_TRANSACTION', reason: '支付宝后台核对无交易',
+      paymentId: payment.id, externalState: 'NO_TRANSACTION', fundsChecked: true, reason: '支付宝后台核对无交易',
     }) as { payment: { status: string } };
     assert.equal(detail.payment.status, 'FAILED');
     const events = (await runtime.db.pool.query(
@@ -357,6 +357,74 @@ test('支付预下单并发、恢复、隔离与 402 协议', async t => {
     assert.equal(events.count, 1);
     const retry = await new Commerce(runtime, new FaultProvider(['OK'])).requestPayment(principal, order.orderId) as { status: string };
     assert.equal(retry.status, 'PENDING');
+  });
+
+  await t.test('UNKNOWN 过截止时间不自动关闭，也不自动创建第二笔支付', async () => {
+    const provider = new FaultProvider(['UNKNOWN']);
+    const faulty = new Commerce(runtime, provider);
+    const created = (await commerce('/orders', buyer.credential, {
+      body: { serviceId: 'csv-clean-verify', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
+    }, 201)).record as { orderId: string };
+    await assert.rejects(
+      () => faulty.requestPayment(principal, created.orderId),
+      (error: { code?: string }) => error.code === 'PAYMENT_PRECREATE_UNKNOWN',
+    );
+    await runtime.db.pool.query(
+      `UPDATE commerce_payments SET document=jsonb_set(document,'{expiresAt}','"2020-01-01T00:00:00.000Z"') WHERE order_id=$1`,
+      [created.orderId],
+    );
+    const before = (await runtime.db.pool.query('SELECT status FROM commerce_payments WHERE order_id=$1', [created.orderId])).rows;
+    assert.deepEqual(before.map(row => row.status), ['UNKNOWN']);
+    const detail = (await commerce(`/orders/${created.orderId}`, buyer.credential)).record as { payment: { status: string } };
+    assert.equal(detail.payment.status, 'UNKNOWN');
+    await assert.rejects(
+      () => new Commerce(runtime, new FaultProvider(['OK'])).requestPayment(principal, created.orderId),
+      (error: { status?: number; code?: string }) => error.status === 409 && error.code === 'PAYMENT_AWAITING_RECONCILIATION',
+    );
+    const after = (await runtime.db.pool.query('SELECT status FROM commerce_payments WHERE order_id=$1', [created.orderId])).rows;
+    assert.deepEqual(after.map(row => row.status), ['UNKNOWN']);
+    assert.equal(provider.calls.length, 1);
+    const paymentId = (await runtime.db.pool.query('SELECT id FROM commerce_payments WHERE order_id=$1', [created.orderId])).rows[0].id as string;
+    await assert.rejects(
+      () => faulty.reconcilePayment({ kind: 'admin' }, created.orderId, {
+        paymentId, externalState: 'NO_TRANSACTION', reason: '未确认资金核对',
+      }),
+      (error: { issues?: { path: (string | number)[] }[] }) =>
+        Boolean(error.issues?.some(issue => issue.path[0] === 'fundsChecked')),
+    );
+    const closed = await faulty.reconcilePayment({ kind: 'admin' }, created.orderId, {
+      paymentId, externalState: 'NO_TRANSACTION', fundsChecked: true, reason: '支付宝后台核对无交易',
+    }) as { payment: { status: string } };
+    assert.equal(closed.payment.status, 'FAILED');
+    const reopened = await new Commerce(runtime, new FaultProvider(['OK'])).requestPayment(principal, created.orderId) as { status: string };
+    assert.equal(reopened.status, 'PENDING');
+    const rows = (await runtime.db.pool.query(
+      'SELECT status FROM commerce_payments WHERE order_id=$1 ORDER BY created_at', [created.orderId],
+    )).rows;
+    assert.deepEqual(rows.map(row => row.status), ['FAILED', 'PENDING']);
+  });
+
+  await t.test('PREPARING 过截止时间保留原状态，等待人工资金核对', async () => {
+    const created = (await commerce('/orders', buyer.credential, {
+      body: { serviceId: 'csv-clean-verify', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
+    }, 201)).record as { orderId: string; quote: { priceFen: number } };
+    const payment = {
+      paymentId: randomUUID(), orderId: created.orderId, mode: 'simulated', provider: 'simulated', status: 'PREPARING',
+      amountFen: created.quote.priceFen, currency: 'CNY', orderReference: 'p'.repeat(32), prepayId: null, qrCodeUrl: null,
+      providerTradeNo: null, expiresAt: '2020-01-01T00:00:00.000Z', verifiedAt: null,
+      createdAt: '2020-01-01T00:00:00.000Z', attempt: 1, failureCode: null, failureMessage: null, binding: null, simulatedProof: null,
+    };
+    await runtime.db.pool.query(
+      `INSERT INTO commerce_payments(id,order_id,mode,provider,status,amount_fen,currency,provider_trade_no,document)
+       VALUES($1,$2,'simulated','simulated','PREPARING',$3,'CNY',NULL,$4)`,
+      [payment.paymentId, created.orderId, payment.amountFen, payment],
+    );
+    await assert.rejects(
+      () => new Commerce(runtime, new FaultProvider(['OK'])).requestPayment(principal, created.orderId),
+      (error: { status?: number; code?: string }) => error.status === 409 && error.code === 'PAYMENT_AWAITING_RECONCILIATION',
+    );
+    const detail = (await commerce(`/orders/${created.orderId}`, buyer.credential)).record as { payment: { status: string } };
+    assert.equal(detail.payment.status, 'PREPARING');
   });
 
   await t.test('迟到支付凭证只补记售后证据，不重复启动工作流', async () => {
