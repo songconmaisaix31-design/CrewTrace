@@ -27,14 +27,26 @@ export async function request(path:string, init?:RequestInit) {
       BUDGET_EXCEEDED:'当前分析名额已用完，请等待已有任务结束。',
       INVALID_STATE:'当前记录状态不支持此操作，请先查询原分析编号。',
       NOT_CONFIGURED:'任务服务尚未配置。',
+      PAYMENT_NOT_CONFIGURED:'支付宝支付尚未配置，收费服务暂不可用。',
+      PAYMENT_REQUIRED:'该订单尚未支付，支付完成后才能查看执行与交付。',
+      PAYMENT_EXPIRED:'支付已超时，请重新创建订单。',
+      PROOF_ALREADY_USED:'该支付凭证已被使用，请勿在不同订单间复用。',
+      SERVICE_VERSION_MISMATCH:'服务目录已更新，请重新选择服务后下单。',
+      PRICE_EXCEEDS_MAX:'服务价格超过订单允许的最高金额。',
+      ALREADY_ACCEPTED:'该订单已经完成验收。',
+      INPUT_TOO_LARGE:'订单输入超过 80,000 字符上限。',
+      INVALID_PROOF:'支付凭证格式不正确。',
     };
     const messages:Record<number,string> = {
       400:'提交内容有误，请检查后重试。',
       401:'访问授权已失效，请重新输入访问码。',
+      402:'该订单尚未支付，支付完成后才能继续。',
       403:'暂时没有操作权限，请检查访问码或联系活动负责人。',
       404:'未找到这份记录，请检查编号是否正确。',
       409:'这次提交可能已存在，请先查看上次提交结果。',
+      422:'提交内容不符合要求，请检查后重试。',
       429:'操作较频繁，请稍后再试。',
+      503:'相关服务尚未配置，请稍后重试。',
     };
     throw new RequestError((code&&reasons[code]) || messages[response.status] || '服务暂时不可用，请稍后重试。',response.status,code);
   }

@@ -28,6 +28,28 @@ const configSchema = z.object({
   COLLABORATION_CHAIN_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60000).default(15000),
   VALIDATOR_MODULE: z.string().min(1).optional(),
   ALLOWED_ORIGINS: z.string().default(''),
+  PAYMENT_MODE: z.enum(['disabled','sandbox','production','simulated']).default('disabled'),
+  PAYMENT_TTL_SECONDS: z.coerce.number().int().min(60).max(86400).default(900),
+  PAYMENT_SIMULATION_SECRET: z.string().min(32).optional(),
+  ALIPAY_APP_ID: z.string().min(1).optional(),
+  ALIPAY_PRIVATE_KEY: z.string().min(1).optional(),
+  ALIPAY_PUBLIC_KEY: z.string().min(1).optional(),
+  ALIPAY_KEY_TYPE: z.enum(['PKCS1','PKCS8']).default('PKCS8'),
+  ALIPAY_GATEWAY: z.url().optional(),
+}).superRefine((value, context) => {
+  if (value.PAYMENT_MODE === 'simulated') {
+    if (process.env.NODE_ENV === 'production') {
+      context.addIssue({ code: 'custom', path: ['PAYMENT_MODE'], message: 'simulated 支付模式禁止在生产环境启用' });
+    }
+    if (!value.PAYMENT_SIMULATION_SECRET) {
+      context.addIssue({ code: 'custom', path: ['PAYMENT_SIMULATION_SECRET'], message: 'simulated 支付模式需要至少 32 位的本地签名密钥' });
+    }
+  }
+  if (value.PAYMENT_MODE === 'sandbox' || value.PAYMENT_MODE === 'production') {
+    for (const key of ['ALIPAY_APP_ID','ALIPAY_PRIVATE_KEY','ALIPAY_PUBLIC_KEY'] as const) {
+      if (!value[key]) context.addIssue({ code: 'custom', path: [key], message: '官方支付宝模式缺少必要配置' });
+    }
+  }
 });
 
 export function loadConfig() { return configSchema.parse(process.env); }

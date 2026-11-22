@@ -24,8 +24,13 @@ export interface ValidationInput {
 }
 export type Validator = (input: ValidationInput) => AssessmentCheck[] | Promise<AssessmentCheck[]>;
 
+export interface CommerceHooks {
+  onHandoffSubmitted(taskId: string): Promise<void>;
+}
+
 export class Application {
   readonly store: Store;
+  commerce: CommerceHooks | null = null;
   constructor(readonly db: Database, readonly config: Config, readonly chain: ChainPort | null = null, readonly validator: Validator | null = null, readonly collaborationChain: CollaborationChain | null = null) { this.store = new Store(db); }
   async health() {
     await this.db.pool.query('SELECT 1');

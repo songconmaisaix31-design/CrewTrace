@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { translate } from './translation.ts';
 const publicRoutes:Record<string,RegExp[]>={
-  GET:[/^\/api\/collaboration\/tasks\/[^/?#]+\/matching\/[^/?#]+$/,/^\/api\/collaboration\/csv-runs(?:\?[^#]*)?$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/csv-replay$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:evidence|matching|csv-workflow)$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/,/^\/api\/collaboration\/commitments(?:\?[^#]*)?$/,/^\/api\/collaboration\/commitments\/[^/?#]+$/],
-  POST:[/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:matching|csv-workflow)$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|credentials\/rotate)$/,/^\/api\/collaboration\/agents\/me\/heartbeat$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:claims|proposals|handoffs)$/,/^\/api\/collaboration\/claims\/[^/?#]+\/(?:release|expire-csv)$/,/^\/api\/collaboration\/proposals\/[^/?#]+\/decision$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/review$/],
+  GET:[/^\/api\/commerce(?:\/services|\/orders(?:\?[^#]*)?)?$/,/^\/api\/commerce\/orders\/[^/?#]+(?:\/(?:delivery|execution))?$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/matching\/[^/?#]+$/,/^\/api\/collaboration\/csv-runs(?:\?[^#]*)?$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/csv-replay$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:evidence|matching|csv-workflow)$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/,/^\/api\/collaboration\/commitments(?:\?[^#]*)?$/,/^\/api\/collaboration\/commitments\/[^/?#]+$/],
+  POST:[/^\/api\/commerce\/orders$/,/^\/api\/commerce\/orders\/[^/?#]+\/(?:payment|payment-proof|acceptance)$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:matching|csv-workflow)$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|credentials\/rotate)$/,/^\/api\/collaboration\/agents\/me\/heartbeat$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:claims|proposals|handoffs)$/,/^\/api\/collaboration\/claims\/[^/?#]+\/(?:release|expire-csv)$/,/^\/api\/collaboration\/proposals\/[^/?#]+\/decision$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/review$/],
   PATCH:[/^\/api\/collaboration\/(?:agents\/me|tasks\/[^/?#]+|notes\/[^/?#]+)$/],
 };
 export function allowedPublicPath(method:string,path:string){return !/%2f|%5c|%2e|\.\.|\\|#/i.test(path)&&Boolean(publicRoutes[method]?.some(rule=>rule.test(path)));}
@@ -28,6 +28,7 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
     let body: string | undefined;
     const headers: Record<string,string> = {};
     if(req.headers.authorization)headers.Authorization=req.headers.authorization;
+    if(req.headers['payment-proof'])headers['Payment-Proof']=String(req.headers['payment-proof']);
     if(req.method!=='GET'){
       let parsed:unknown=(req as IncomingMessage&{body?:unknown}).body;
       if(parsed===undefined){

@@ -13,6 +13,9 @@ import {
 import { Board } from './board.js';
 import { Execution } from './execution.js';
 import { collaborationTools } from './collaboration-tools.js';
+import { commerceTools } from './commerce-tools.js';
+import { Commerce } from './commerce.js';
+import { createPaymentProvider } from './payment.js';
 import { publicMcpURL } from './config.js';
 import { collaborationPrompt,collaborationPromptName,collaborationResourceLinks } from './collaboration-prompt.js';
 
@@ -46,6 +49,9 @@ export async function mcpResponse(app: Application, principal: Principal, reques
   const contextFilter = z.strictObject({ runId: IdSchema.optional(),taskId: HashSchema.optional() });
   const taskKey = z.strictObject({ taskId: HashSchema });
   for (const tool of collaborationTools(app,principal)) register(tool.name,tool.description,tool.schema,tool.operation);
+  const commerce = new Commerce(app, createPaymentProvider(app.config));
+  for (const tool of commerceTools(commerce,app,principal)) register(tool.name,tool.description,tool.schema,tool.operation);
+  app.commerce = commerce;
   register('health','读取真实数据库与链依赖状态',z.strictObject({}),()=>app.health());
   register('get_template','读取固定三角色流程与真实规则原文地址',z.strictObject({}),async()=>app.template());
   register('list_agents','读取节点身份与实际心跳',z.strictObject({}),async()=>({ agents: await app.agents() }));

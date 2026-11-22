@@ -447,6 +447,7 @@ export class Collaboration {
       await this.store.event(client,'HANDOFF_SUBMITTED',actor,taskId,{handoffId:handoff.handoffId,claimId:claim.claimId});return handoff;
     });
     await this.anchor('HANDOFF',handoff.handoffId,handoff.taskId,handoff.version,handoff);
+    if (handoff.status==='SUBMITTED') await this.app.commerce?.onHandoffSubmitted(handoff.taskId);
     return handoff;
   }
   async reviewHandoff(principal: Principal,handoffId: string,input: unknown) {

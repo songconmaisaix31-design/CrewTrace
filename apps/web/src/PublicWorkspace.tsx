@@ -22,6 +22,7 @@ import CollaborationStage from './CollaborationStage';
 import CollaborationTrace from './CollaborationTrace';
 import ExperimentEvidence from './ExperimentEvidence';
 import ExperimentHistory from './ExperimentHistory';
+import CommercePanel from './CommercePanel';
 import HoverPreview from './HoverPreview';
 import TaskPreview from './TaskPreview';
 import { useI18n } from './i18n';
@@ -148,6 +149,7 @@ export default function PublicWorkspace(){
   const [originalReadingMessage,setReadingMessage]=useState<CollaborationMessage|null>(null);
   const [browseTasks,setBrowseTasks]=useState(false);
   const [browseRuns,setBrowseRuns]=useState(false);
+  const [commerceOpen,setCommerceOpen]=useState(false);
   const [taskTab,setTaskTab]=useState<'details'|'discussion'>('details');
   const pendingAction=useRef<(()=>void)|null>(null);
   function requestIdentity(resume?:()=>void){pendingAction.current=resume??null;setModal('identity');}
@@ -188,7 +190,7 @@ export default function PublicWorkspace(){
     <div className="public-section-head"><div><h2>{t('公开协作','Public collaboration')}</h2><p className="public-muted">{t('直接交流与认领，分工由参与者共同确认。','Discuss and claim work directly. Participants agree on assignments together.')}</p></div><div className="public-actions"><button className="secondary" onClick={reload} aria-label={t('刷新公开协作','Refresh collaboration')}><RefreshCw size={16}/></button></div></div>
     {identityError&&<p className="notice" role="alert">{t('身份暂不可用：','Identity unavailable: ')}{translateError(identityError)}</p>}{listError&&<p className="notice" role="status">{translateError(listError)}{updated?t(` 保留 ${time(updated)} 成功读取的列表。`,` Showing the list last loaded at ${time(updated)}.`):''}</p>}
     <CollaborationStage tasks={<section className="public-panel" aria-label={t('协作任务','Collaboration tasks')}>
-        <div className="message-panel-head task-panel-head"><h3>{t('协作任务','Collaboration tasks')}</h3><div className="message-panel-actions"><button className="secondary" onClick={()=>setBrowseRuns(true)}>{t('运行与评测','Runs and benchmark')}</button><button className="secondary" onClick={()=>setBrowseTasks(true)}>{t('浏览全部任务','Browse all tasks')}</button><HoverPreview className="primary" onClick={()=>create()} preview={<><strong>{t('发起一次协作','Start a collaboration')}</strong><p>{t('说明目标、交付内容和验收要求。','Describe the goal, deliverables and acceptance criteria.')}</p></>}><Plus size={16}/>{t('发布任务','Post task')}</HoverPreview></div></div>
+        <div className="message-panel-head task-panel-head"><h3>{t('协作任务','Collaboration tasks')}</h3><div className="message-panel-actions"><button className="secondary" onClick={()=>setCommerceOpen(true)}>{t('服务与订单','Services and orders')}</button><button className="secondary" onClick={()=>setBrowseRuns(true)}>{t('运行与评测','Runs and benchmark')}</button><button className="secondary" onClick={()=>setBrowseTasks(true)}>{t('浏览全部任务','Browse all tasks')}</button><HoverPreview className="primary" onClick={()=>create()} preview={<><strong>{t('发起一次协作','Start a collaboration')}</strong><p>{t('说明目标、交付内容和验收要求。','Describe the goal, deliverables and acceptance criteria.')}</p></>}><Plus size={16}/>{t('发布任务','Post task')}</HoverPreview></div></div>
         <TranslationControl/>
         <div className="task-list-toolbar">{taskFilter()}</div>
         {taskRecords(true)}
@@ -196,6 +198,7 @@ export default function PublicWorkspace(){
         <p className="public-muted">{updated&&`${t('最近同步','Last synced')} ${time(updated)}`}</p>
     </section>} discussion={<Messages taskId={null} refresh={refresh} credential={activeCredential} agents={agents} identity={identity} onRegister={requestIdentity} onTask={selectTask} onRead={setReadingMessage}/>} announcements={<Messages kind="ANNOUNCEMENT" taskId={null} refresh={refresh} credential={activeCredential} agents={agents} identity={identity} onRegister={requestIdentity} onTask={selectTask} onRead={setReadingMessage}/>}/>
     {browseRuns&&<Dialog title={t('运行与评测','Runs and benchmark')} onClose={()=>setBrowseRuns(false)}><ExperimentHistory onTask={id=>{setBrowseRuns(false);selectTask(id);}}/></Dialog>}
+    {commerceOpen&&<Dialog title={t('服务与订单','Services and orders')} onClose={()=>setCommerceOpen(false)}><CommercePanel credential={activeCredential} onRegister={()=>{setCommerceOpen(false);requestIdentity(()=>setCommerceOpen(true));}}/></Dialog>}
     {browseTasks&&<Dialog title={t('全部任务','All tasks')} onClose={()=>setBrowseTasks(false)}><TranslationControl/>{taskFilter()}{listError&&<p className="notice" role="status">{translateError(listError)}</p>}{taskRecords(false)}{!tasks.length&&<p>{loaded?t('当前筛选下没有任务。','No tasks match the current filter.'):t('正在读取任务…','Loading tasks…')}</p>}{(offset>0||nextOffset!==null)&&<div className="public-actions"><button className="secondary" disabled={offset===0} onClick={()=>setOffset(value=>Math.max(0,value-50))}>{t('上一页','Previous')}</button><button className="secondary" disabled={nextOffset===null} onClick={()=>setOffset(nextOffset!)}>{t('下一页','Next')}</button></div>}</Dialog>}
     {readingMessage&&<Dialog title={readingMessage.kind==='ANNOUNCEMENT'?t('公告','Announcement'):t('交流记录','Discussion record')} onClose={()=>setReadingMessage(null)}><TranslationControl/><p className="public-muted">{name(readingMessage.author)} · {time(readingMessage.createdAt)}</p><p className="message-full">{readingMessage.body}</p>{readingMessage.taskId&&<button className="secondary" onClick={()=>{selectTask(readingMessage.taskId!);setReadingMessage(null);}}>{t('查看关联协作','View related task')}</button>}</Dialog>}
     {taskId&&<Dialog title={t('协作详情','Task details')} onClose={()=>selectTask('')}>
