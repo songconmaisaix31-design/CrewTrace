@@ -1,6 +1,6 @@
 # Release Candidate 1 验证记录
 
-验证日期 2026-11-22。本地 Node 版本 26.10.0；GitHub Actions 使用项目规定的 Node 24。以下结果均来自实际执行，没有使用 mock 交易或伪造的支付宝成功响应。
+验证日期 2026-11-22。远程分支 `feat/payathon-commerce` 提交 `5203e5583c402362f93dfcb0ec84bab6a0d1d0e1`（GitHub 仓库对象，内容树与本地提交 `9b91355` 相同）。本地 Node 版本 26.10.0；GitHub Actions 使用项目规定的 Node 24。以下结果均来自实际执行，没有使用 mock 交易或伪造的支付宝成功响应。
 
 ## 类型检查与构建
 
@@ -59,14 +59,21 @@ DATABASE_URL=... ADMIN_TOKEN=... PUBLIC_BASE_URL=... \
 
 ## 浏览器验证
 
-本地执行：
+本地按 CI 相同方式启动真实 Runtime（`test/portfolio-browser-host.ts`，三个常驻 Worker）与 Vite：
 
 ```bash
-cd apps/web
-CI=1 ../../node_modules/.bin/playwright test test/browser-portfolio.spec.ts
+bash .local/run-browser.sh
 ```
 
-首页新增的服务展示区通过断言：标题“购买或体验可验证的 AI Agent 服务”、“收费服务未开通，免费服务可完整体验”以及免费服务“CSV 数据清洗与校验（免费体验）”均可见。完整浏览器用例在本地 Node 26 环境中运行到工作流三步骤完成后，在最后的“运行与评测”面板步骤触及 120 秒总超时。该步骤与支付改动无关，GitHub Actions 的 Node 24 结果作为最终依据。
+`browser-portfolio.spec.ts` 通过，耗时 12.3 秒。用例覆盖首页服务展示区（标题“购买或体验可验证的 AI Agent 服务”、“收费服务未开通，免费服务可完整体验”、免费服务“CSV 数据清洗与校验（免费体验）”）、CSV 交接证据与候选排名、页面刷新后排名仍在、三步骤工作流自动分工、连续三次确认交接、成果与信誉入账、运行与评测面板及原始评测记录下载。
+
+上一轮运行 `45006976726` 在最后一步超时，原因是新增服务展示区把协作舞台推到固定视口之外，“确认交接处理”与“运行与评测”按钮被 `.stage-directions` 覆盖。本轮把展示区压缩为两列条带，舞台改为占据剩余高度，内容超出时在容器内滚动，按钮恢复可点击，没有使用 `force` 点击或放宽断言。
+
+## GitHub Actions
+
+运行 `45008586296` 结论 `success`，提交 `5203e5583c402362f93dfcb0ec84bab6a0d1d0e1`，步骤 `checks` 从 2026-11-22T09:39:16Z 运行到 09:42:08Z，包含类型检查、Web 构建、Web 测试、Worker 测试、Runtime 41 项测试、三个常驻 Worker 的浏览器用例和负载基准复现。
+
+运行地址：https://github.com/NextVariable/crewtrace-v2/actions/runs/45008586296
 
 ## 支付宝验收脚本
 
@@ -95,4 +102,3 @@ DATABASE_URL=... ADMIN_TOKEN=... PUBLIC_BASE_URL=http://127.0.0.1:3000 \
 
 - 支付宝沙箱与正式支付：`BLOCKED`，缺少真实商户凭证。
 - 个人云独立部署：`BLOCKED`，缺少云资源授权。
-- 本地完整浏览器用例：在最后一步超时，等待 GitHub Actions 结果。
