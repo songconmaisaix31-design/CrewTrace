@@ -16,8 +16,10 @@ const statusText: Record<string, string> = {
 };
 const stepText: Record<string, string> = { PENDING: '待执行', ACTIVE: '执行中', COMPLETED: '已完成', FAILED: '失败' };
 const modeText: Record<string, string> = { disabled: '未开通（仅免费服务可用）', sandbox: '支付宝沙箱', production: '支付宝生产', simulated: '内部模拟（非官方支付）' };
+const envText: Record<string, string> = { local: '本地环境', test: '测试环境', staging: '预发布环境', production: '正式环境' };
 const paymentText: Record<string, string> = {
-  NOT_REQUIRED: '无需支付', UNPAID: '未支付', PREPARING: '预下单中', PENDING: '待支付', VERIFIED: '已支付', FAILED: '支付失败', EXPIRED: '支付超时',
+  NOT_REQUIRED: '无需支付', UNPAID: '未支付', PREPARING: '预下单中', PENDING: '待支付',
+  UNKNOWN: '预下单结果未确认', VERIFIED: '已支付', FAILED: '支付失败', EXPIRED: '支付超时',
 };
 
 function price(service: { priceFen: number }) { return service.priceFen === 0 ? '免费' : `CNY ${(service.priceFen / 100).toFixed(2)}`; }
@@ -26,6 +28,7 @@ export default function CommercePanel({ credential, onRegister }: { credential: 
   const { t } = useI18n();
   const [services, setServices] = useState<CommerceService[]>([]);
   const [mode, setMode] = useState('disabled');
+  const [env, setEnv] = useState('local');
   const [orders, setOrders] = useState<CommerceOrder[]>([]);
   const [selected, setSelected] = useState<CommerceOrderDetail | null>(null);
   const [payment, setPayment] = useState<PaymentRequestResponse | null>(null);
@@ -40,7 +43,7 @@ export default function CommercePanel({ credential, onRegister }: { credential: 
       try {
         const catalog = await commerce('/services', CommerceServicesResponseSchema, { signal: controller.signal });
         if (controller.signal.aborted) return;
-        setServices(catalog.services); setMode(catalog.paymentMode);
+        setServices(catalog.services); setMode(catalog.paymentMode); setEnv(catalog.deploymentEnv);
         // 未开通支付时默认选中免费服务，保证首次体验可以完整下单、执行、交付与验收。
         const preferred = catalog.paymentMode === 'disabled'
           ? catalog.services.find(item => item.priceFen === 0) ?? catalog.services[0]
@@ -116,7 +119,7 @@ export default function CommercePanel({ credential, onRegister }: { credential: 
 
   return <div className="commerce-panel">
     <p className="notice" data-mode={mode}>
-      {t('当前支付模式：', 'Payment mode: ')}{modeText[mode] ?? mode}
+      {t('当前支付模式：', 'Payment mode: ')}{modeText[mode] ?? mode} · {t('环境：', 'Environment: ')}{envText[env] ?? env}
       {mode === 'simulated' && t('。此模式只验证内部状态机，模拟凭证不代表支付宝官方支付成功。', '. This mode only verifies the internal state machine; simulated proofs are not evidence of official Alipay payment.')}
       {mode === 'disabled' && t('。收费服务需要配置支付宝官方参数与 PAYMENT_MODE 后才能支付。', '. Priced services require official Alipay configuration and PAYMENT_MODE before payment is possible.')}
     </p>

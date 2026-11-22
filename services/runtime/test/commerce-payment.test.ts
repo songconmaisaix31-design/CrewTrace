@@ -12,17 +12,63 @@ import { loadConfig } from '../src/config.js';
 import { normalizedDelivery } from '../src/csv-workflow.js';
 import {
   ALIPAY_AMOUNT_LIMIT_FEN, alipayPayBefore, alipayPrecreateBiz, AlipayPayment, DisabledPayment,
-  resolveOfficialServiceId, SimulatedPayment,
+  PrecreateRejectedError, PrecreateUnknownError, resolveOfficialServiceId, SimulatedPayment,
+  type PaymentProvider, type PrepayInput, type PrepayResult, type VerifyInput, type VerifyResult,
 } from '../src/payment.js';
 import { verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
 import { DEFAULT_CSV_SAMPLE } from '../../../apps/web/src/commerce-sample.ts';
 
 const INPUT = 'record_id,amount_cents\n item-a , 10 \nitem-a,10\n';
 
+/** 故障注入：按预设结果模拟远端预下单返回，不伪造任何官方 HTTP 响应。 */
+class FaultProvider implements PaymentProvider {
+  readonly mode = 'simulated' as const;
+  readonly official = false;
+  readonly simulated = true;
+  readonly calls: Array<{ orderReference: string; payBefore: string }> = [];
+  constructor(private readonly outcomes: Array<'OK' | 'UNKNOWN' | 'REJECTED'>) {}
+  async precreate(input: PrepayInput): Promise<PrepayResult> {
+    this.calls.push({ orderReference: input.orderReference, payBefore: input.payBefore });
+    const outcome = this.outcomes.shift() ?? 'OK';
+    if (outcome === 'UNKNOWN') throw new PrecreateUnknownError();
+    if (outcome === 'REJECTED') throw new PrecreateRejectedError();
+    return {
+      prepayId: `FAULT-PREPAY-${input.orderReference}`,
+      qrCodeUrl: null, providerTradeNo: null, binding: 'f'.repeat(64), simulatedProof: null,
+    };
+  }
+  async verify(_input: VerifyInput): Promise<VerifyResult> {
+    throw new Error('故障注入 provider 不处理验付');
+  }
+}
+
+/** 迟到凭证测试使用的验付实现，返回固定的外部订单号与金额。 */
+class LateProofProvider implements PaymentProvider {
+  readonly mode = 'simulated' as const;
+  readonly official = false;
+  readonly simulated = true;
+  constructor(private readonly orderReference: string, private readonly amountFenValue: number) {}
+  async precreate(input: PrepayInput): Promise<PrepayResult> {
+    return {
+      prepayId: `LATE-PREPAY-${input.orderReference}`,
+      qrCodeUrl: null, providerTradeNo: null, binding: 'e'.repeat(64), simulatedProof: null,
+    };
+  }
+  async verify(input: VerifyInput): Promise<VerifyResult> {
+    return {
+      providerTradeNo: input.proof.protocol.trade_no,
+      orderReference: this.orderReference,
+      amountFen: this.amountFenValue,
+    };
+  }
+}
+
 test('支付预下单并发、恢复、隔离与 402 协议', async t => {
   await createPortfolioTestSchema();
   process.env.PAYMENT_MODE = 'simulated';
   process.env.PAYMENT_SIMULATION_SECRET = 'commerce-payment-secret-0123456789abcdef';
+  process.env.DEPLOYMENT_ENV = 'local';
+  process.env.PAYMENT_SIMULATED_ACK = 'local-only';
   const { default: app, runtime } = await import('../src/index.js');
   await migrate(runtime.db);
   await migrate(runtime.db);
@@ -89,11 +135,12 @@ test('支付预下单并发、恢复、隔离与 402 协议', async t => {
     const saved = { ...process.env };
     try {
       process.env.NODE_ENV = 'production';
-      assert.throws(() => new SimulatedPayment('commerce-payment-secret-0123456789abcdef'));
+      assert.throws(() => new SimulatedPayment('commerce-payment-secret-0123456789abcdef', { deploymentEnv: 'local', publicDeployment: false }));
       process.env.PAYMENT_MODE = 'simulated';
       process.env.PAYMENT_SIMULATION_SECRET = 'commerce-payment-secret-0123456789abcdef';
       assert.throws(() => loadConfig());
       process.env.PAYMENT_MODE = 'sandbox';
+      delete process.env.PAYMENT_SIMULATED_ACK;
       process.env.ALIPAY_APP_ID = '2021000000000000';
       process.env.ALIPAY_PRIVATE_KEY = 'private';
       process.env.ALIPAY_PUBLIC_KEY = 'public';
@@ -176,22 +223,43 @@ test('支付预下单并发、恢复、隔离与 402 协议', async t => {
     assert.equal(((await commerce(`/orders/${late.orderId}`, buyer.credential)).record as { status: string }).status, 'IN_PROGRESS');
   });
 
-  await t.test('预下单未落库的陈旧 PREPARING 记录会被关闭并重新预下单', async () => {
+  await t.test('本地超时不会判定远端失败，使用同一商户订单号重试', async () => {
     const stale = (await commerce('/orders', buyer.credential, {
       body: { serviceId: 'csv-clean-verify', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
     }, 201)).record as { orderId: string };
-    const first = (await commerce(`/orders/${stale.orderId}/payment`, buyer.credential, { method: 'POST', body: {} })).record as { prepay: { prepayId: string } };
+    await commerce(`/orders/${stale.orderId}/payment`, buyer.credential, { method: 'POST', body: {} });
     await runtime.db.pool.query(
       `UPDATE commerce_payments SET status='PREPARING',provider_trade_no=NULL,created_at=now()-interval '10 minutes',
          document=jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(document,'{status}','"PREPARING"'),
            '{prepayId}','null'),'{providerTradeNo}','null'),'{binding}','null'),'{createdAt}','"2020-01-01T00:00:00.000Z"')
        WHERE order_id=$1 AND status='PENDING'`, [stale.orderId],
     );
-    const retried = (await commerce(`/orders/${stale.orderId}/payment`, buyer.credential, { method: 'POST', body: {} })).record as { status: string; prepay: { prepayId: string } };
+    const before = (await runtime.db.pool.query(
+      'SELECT provider_trade_no,document->>\'orderReference\' AS reference FROM commerce_payments WHERE order_id=$1', [stale.orderId],
+    )).rows[0] as { provider_trade_no: string | null; reference: string };
+    assert.equal(before.provider_trade_no, null);
+    const eventsBefore = (await runtime.db.pool.query(
+      "SELECT count(*)::int AS count FROM commerce_order_events WHERE order_id=$1 AND type='PAYMENT_REQUESTED'",
+      [stale.orderId],
+    )).rows[0] as { count: number };
+    const retried = (await commerce(`/orders/${stale.orderId}/payment`, buyer.credential, { method: 'POST', body: {} })).record as { status: string };
     assert.equal(retried.status, 'PENDING');
-    assert.notEqual(retried.prepay.prepayId, first.prepay.prepayId);
-    const rows = await runtime.db.pool.query('SELECT status,count(*)::int AS count FROM commerce_payments WHERE order_id=$1 GROUP BY status ORDER BY status', [stale.orderId]);
-    assert.deepEqual(rows.rows, [{ status: 'FAILED', count: 1 }, { status: 'PENDING', count: 1 }]);
+    // 同一尝试必须复用同一 out_trade_no，避免远端出现第二笔可支付交易。
+    const after = (await runtime.db.pool.query(
+      'SELECT document->>\'orderReference\' AS reference FROM commerce_payments WHERE order_id=$1', [stale.orderId],
+    )).rows[0] as { reference: string };
+    assert.equal(after.reference, before.reference);
+    assert.notEqual(after.reference, undefined);
+    const rows = await runtime.db.pool.query(
+      'SELECT status,count(*)::int AS count FROM commerce_payments WHERE order_id=$1 GROUP BY status', [stale.orderId],
+    );
+    assert.deepEqual(rows.rows, [{ status: 'PENDING', count: 1 }]);
+    const events = await runtime.db.pool.query(
+      "SELECT count(*)::int AS count FROM commerce_order_events WHERE order_id=$1 AND type='PAYMENT_REQUESTED' AND document->'detail'->>'resolvedFrom'='PREPARING'",
+      [stale.orderId],
+    );
+    // 首次创建与超时重试都从 PREPARING 收敛为 PENDING；重试只新增一条事件，不产生新的支付记录。
+    assert.equal(events.rows[0].count, eventsBefore.count + 1);
   });
 
   await t.test('支付凭证不能跨支付模式使用', async () => {
@@ -204,6 +272,156 @@ test('支付预下单并发、恢复、隔离与 402 协议', async t => {
       () => disabled.submitPaymentProof(principal, fresh.orderId, prepared.simulatedProof),
       (error: { status?: number; code?: string }) => error.status === 409 && error.code === 'PAYMENT_MODE_MISMATCH',
     );
+  });
+
+  await t.test('预下单结果未知时阻断新交易并复用同一商户订单号', async () => {
+    const provider = new FaultProvider(['UNKNOWN', 'UNKNOWN']);
+    const faulty = new Commerce(runtime, provider);
+    const order = (await commerce('/orders', buyer.credential, {
+      body: { serviceId: 'csv-clean-verify', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
+    }, 201)).record as { orderId: string };
+    await assert.rejects(
+      () => faulty.requestPayment(principal, order.orderId),
+      (error: { status?: number; code?: string }) => error.status === 502 && error.code === 'PAYMENT_PRECREATE_UNKNOWN',
+    );
+    const first = (await runtime.db.pool.query(
+      'SELECT status,document FROM commerce_payments WHERE order_id=$1', [order.orderId],
+    )).rows;
+    assert.equal(first.length, 1);
+    assert.equal(first[0].status, 'UNKNOWN');
+    assert.equal(first[0].document.failureCode, 'PRECREATE_UNCONFIRMED');
+    await assert.rejects(
+      () => faulty.requestPayment(principal, order.orderId),
+      (error: { code?: string }) => error.code === 'PAYMENT_PRECREATE_UNKNOWN',
+    );
+    const second = (await runtime.db.pool.query(
+      'SELECT status,document FROM commerce_payments WHERE order_id=$1', [order.orderId],
+    )).rows;
+    // 结果未知时不能自动创建第二笔可支付交易，只能在原商户订单号上重试。
+    assert.equal(second.length, 1);
+    assert.equal(second[0].status, 'UNKNOWN');
+    assert.equal(provider.calls.length, 2);
+    assert.equal(provider.calls[0].orderReference, provider.calls[1].orderReference);
+    assert.equal(provider.calls[0].payBefore, provider.calls[1].payBefore);
+  });
+
+  await t.test('支付宝明确拒绝后可以安全开启新的支付尝试', async () => {
+    const provider = new FaultProvider(['REJECTED', 'OK']);
+    const faulty = new Commerce(runtime, provider);
+    const order = (await commerce('/orders', buyer.credential, {
+      body: { serviceId: 'csv-clean-verify', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
+    }, 201)).record as { orderId: string };
+    await assert.rejects(
+      () => faulty.requestPayment(principal, order.orderId),
+      (error: { code?: string }) => error.code === 'PAYMENT_PRECREATE_REJECTED',
+    );
+    const failed = (await runtime.db.pool.query(
+      'SELECT status,document FROM commerce_payments WHERE order_id=$1', [order.orderId],
+    )).rows;
+    assert.equal(failed.length, 1);
+    assert.equal(failed[0].status, 'FAILED');
+    assert.equal(failed[0].document.attempt, 1);
+    const retried = await faulty.requestPayment(principal, order.orderId) as { status: string; paymentLink: string };
+    assert.equal(retried.status, 'PENDING');
+    const rows = (await runtime.db.pool.query(
+      'SELECT status,document FROM commerce_payments WHERE order_id=$1 ORDER BY created_at', [order.orderId],
+    )).rows;
+    assert.equal(rows.length, 2);
+    assert.equal(rows[1].document.attempt, 2);
+    assert.notEqual(rows[0].document.orderReference, rows[1].document.orderReference);
+    assert.equal(provider.calls[0].orderReference, rows[0].document.orderReference);
+    assert.equal(provider.calls[1].orderReference, rows[1].document.orderReference);
+  });
+
+  await t.test('运营核对后可关闭未确认的预下单，但不能伪造已付款', async () => {
+    const provider = new FaultProvider(['UNKNOWN']);
+    const faulty = new Commerce(runtime, provider);
+    const order = (await commerce('/orders', buyer.credential, {
+      body: { serviceId: 'csv-clean-verify', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
+    }, 201)).record as { orderId: string };
+    await assert.rejects(() => faulty.requestPayment(principal, order.orderId), (error: { code?: string }) => error.code === 'PAYMENT_PRECREATE_UNKNOWN');
+    const payment = (await runtime.db.pool.query(
+      'SELECT id FROM commerce_payments WHERE order_id=$1', [order.orderId],
+    )).rows[0] as { id: string };
+    await assert.rejects(
+      () => faulty.reconcilePayment(principal, order.orderId, { paymentId: payment.id, externalState: 'NO_TRANSACTION', reason: '非管理员操作' }),
+      (error: { status?: number; code?: string }) => error.status === 403 && error.code === 'UNAUTHORIZED',
+    );
+    const detail = await faulty.reconcilePayment({ kind: 'admin' }, order.orderId, {
+      paymentId: payment.id, externalState: 'NO_TRANSACTION', reason: '支付宝后台核对无交易',
+    }) as { payment: { status: string } };
+    assert.equal(detail.payment.status, 'FAILED');
+    const events = (await runtime.db.pool.query(
+      "SELECT count(*)::int AS count FROM commerce_order_events WHERE order_id=$1 AND type='PAYMENT_MANUALLY_CLOSED'", [order.orderId],
+    )).rows[0] as { count: number };
+    assert.equal(events.count, 1);
+    const retry = await new Commerce(runtime, new FaultProvider(['OK'])).requestPayment(principal, order.orderId) as { status: string };
+    assert.equal(retry.status, 'PENDING');
+  });
+
+  await t.test('迟到支付凭证只补记售后证据，不重复启动工作流', async () => {
+    const oldReference = 'a'.repeat(32);
+    const order = (await commerce('/orders', buyer.credential, {
+      body: { serviceId: 'csv-clean-verify', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
+    }, 201)).record as { orderId: string; quote: { priceFen: number } };
+    await runtime.db.pool.query(
+      `UPDATE commerce_orders SET status='IN_PROGRESS',version=version+1,
+         document=jsonb_set(jsonb_set(document,'{status}','"IN_PROGRESS"'),'{taskId}','null')
+       WHERE id=$1`, [order.orderId],
+    );
+    const payment = {
+      paymentId: randomUUID(), orderId: order.orderId, mode: 'simulated', provider: 'simulated', status: 'EXPIRED',
+      amountFen: order.quote.priceFen, currency: 'CNY', orderReference: oldReference, prepayId: null, qrCodeUrl: null,
+      providerTradeNo: null, expiresAt: '2020-01-01T00:00:00.000Z', verifiedAt: null,
+      createdAt: '2020-01-01T00:00:00.000Z', attempt: 1, failureCode: null, failureMessage: null, binding: null, simulatedProof: null,
+    };
+    await runtime.db.pool.query(
+      `INSERT INTO commerce_payments(id,order_id,mode,provider,status,amount_fen,currency,provider_trade_no,document)
+       VALUES($1,$2,'simulated','simulated','EXPIRED',$3,'CNY',NULL,$4)`,
+      [payment.paymentId, order.orderId, payment.amountFen, payment],
+    );
+    const proof = Buffer.from(JSON.stringify({
+      protocol: { payment_proof: 'c'.repeat(64), trade_no: 'TRADE-OLD' }, method: {},
+    })).toString('base64');
+    const lateCommerce = new Commerce(runtime, new LateProofProvider(oldReference, order.quote.priceFen));
+    const result = await lateCommerce.submitPaymentProof(principal, order.orderId, proof) as { status: string };
+    assert.equal(result.status, 'VERIFIED');
+    const after = (await runtime.db.pool.query(
+      'SELECT status,document FROM commerce_orders WHERE id=$1', [order.orderId],
+    )).rows[0] as { status: string; document: { taskId: string | null } };
+    // 迟到凭证只更新支付记录，订单状态不变，也不会创建新的协作任务。
+    assert.equal(after.status, 'IN_PROGRESS');
+    assert.equal(after.document.taskId, null);
+    const paymentAfter = (await runtime.db.pool.query(
+      'SELECT status FROM commerce_payments WHERE id=$1', [payment.paymentId],
+    )).rows[0] as { status: string };
+    assert.equal(paymentAfter.status, 'VERIFIED');
+    const events = (await runtime.db.pool.query(
+      "SELECT count(*)::int AS count FROM commerce_order_events WHERE order_id=$1 AND type='PAYMENT_VERIFIED_LATE'", [order.orderId],
+    )).rows[0] as { count: number };
+    assert.equal(events.count, 1);
+  });
+
+  await t.test('已付款但履约失败的订单保留支付与审计证据', async () => {
+    const order = (await commerce('/orders', buyer.credential, {
+      body: { serviceId: 'csv-clean-verify', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: INPUT },
+    }, 201)).record as { orderId: string };
+    const prepared = (await commerce(`/orders/${order.orderId}/payment`, buyer.credential, { method: 'POST', body: {} })).record as { simulatedProof: string };
+    await commerce(`/orders/${order.orderId}/payment-proof`, buyer.credential, {
+      method: 'POST', headers: { 'Payment-Proof': prepared.simulatedProof },
+    });
+    await runtime.db.pool.query(
+      `UPDATE commerce_orders SET status='FAILED',version=version+1,
+         document=jsonb_set(jsonb_set(document,'{status}','"FAILED"'),'{failure}','{"code":"EXECUTION_FAILED","message":"验收失败","at":"2026-01-01T00:00:00.000Z"}'::jsonb)
+       WHERE id=$1`, [order.orderId],
+    );
+    const detail = (await commerce(`/orders/${order.orderId}`, buyer.credential)).record as {
+      status: string; payment: { status: string }; history: Array<{ type: string }>;
+    };
+    assert.equal(detail.status, 'FAILED');
+    // 支付记录和验付事件不因履约失败被清理，可用于售后核对。
+    assert.equal(detail.payment.status, 'VERIFIED');
+    assert.ok(detail.history.some(event => event.type === 'PAYMENT_VERIFIED'));
   });
 
   await t.test('Web 默认 CSV 示例可以通过清洗与校验', () => {

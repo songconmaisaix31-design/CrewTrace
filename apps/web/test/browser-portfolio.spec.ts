@@ -23,6 +23,9 @@ test('任务发布者能保存 CSV 候选排名并读取真实验证证据', asy
   await post(`/tasks/${task.taskId}/handoffs`,{claimId:claim.claimId,content:'record_id,amount_cents\nsource-1,88\n'},worker.credential);
   await page.addInitScript(credential=>localStorage.setItem('co-vibe-collaboration-credential',credential),owner.credential);
   await page.goto(`/?task=${task.taskId}#collaborate`);
+  await expect(page.getByRole('heading',{name:'购买或体验可验证的 AI Agent 服务'})).toBeVisible();
+  await expect(page.getByText('收费服务未开通，免费服务可完整体验',{exact:false})).toBeVisible();
+  await expect(page.getByText('CSV 数据清洗与校验（免费体验）',{exact:true})).toBeVisible();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading',{name:'V2 匹配与交付证据'})).toBeVisible();
   await expect(dialog.getByText('PASS · csv-ledger-v1',{exact:false})).toBeVisible();

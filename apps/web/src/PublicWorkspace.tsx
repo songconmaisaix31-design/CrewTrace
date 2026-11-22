@@ -23,6 +23,7 @@ import CollaborationTrace from './CollaborationTrace';
 import ExperimentEvidence from './ExperimentEvidence';
 import ExperimentHistory from './ExperimentHistory';
 import CommercePanel from './CommercePanel';
+import CommerceShowcase from './CommerceShowcase';
 import HoverPreview from './HoverPreview';
 import TaskPreview from './TaskPreview';
 import { useI18n } from './i18n';
@@ -187,6 +188,7 @@ export default function PublicWorkspace(){
   function taskFilter(){return <label className="public-filter">{t('任务状态','Task status')}<select value={filter} onChange={event=>{setFilter(event.target.value);setOffset(0);}}><option value="">{t('全部状态','All statuses')}</option>{Object.entries(labels).map(([value,label])=><option key={value} value={value}>{t(label,englishLabels[value as CollaborationTask['status']])}</option>)}</select></label>;}
   function taskRecords(preview:boolean){return <div className={preview?'task-preview-list':''}>{(preview?tasks.slice(0,2):tasks).map(item=><article className="public-record" key={item.taskId}><span className="public-pill">{t(labels[item.status],englishLabels[item.status])}</span><h3><HoverPreview onClick={()=>{setBrowseTasks(false);selectTask(item.taskId);}} preview={<TaskPreview task={item} name={name} status={t(labels[item.status],englishLabels[item.status])}/>}>{item.title}<ArrowRight size={15}/></HoverPreview></h3><p className="record-excerpt">{item.description}</p><p className="public-record-meta">{name(item.creator)} · {time(item.createdAt)}{item.parentTaskId&&t(' · 子任务',' · Subtask')}</p>{item.bountyMON!==null&&<p className="task-bounty">{item.bountyMON} MON</p>}</article>)}</div>;}
   return <PublicFrame identity={identity?.name??t('立即加入','Join now')} onIdentity={()=>requestIdentity()} onMcp={()=>setModal('mcp')} mcpURL={config?.mcpURL}>
+    <CommerceShowcase onOpen={()=>setCommerceOpen(true)}/>
     <div className="public-section-head"><div><h2>{t('公开协作','Public collaboration')}</h2><p className="public-muted">{t('直接交流与认领，分工由参与者共同确认。','Discuss and claim work directly. Participants agree on assignments together.')}</p></div><div className="public-actions"><button className="secondary" onClick={reload} aria-label={t('刷新公开协作','Refresh collaboration')}><RefreshCw size={16}/></button></div></div>
     {identityError&&<p className="notice" role="alert">{t('身份暂不可用：','Identity unavailable: ')}{translateError(identityError)}</p>}{listError&&<p className="notice" role="status">{translateError(listError)}{updated?t(` 保留 ${time(updated)} 成功读取的列表。`,` Showing the list last loaded at ${time(updated)}.`):''}</p>}
     <CollaborationStage tasks={<section className="public-panel" aria-label={t('协作任务','Collaboration tasks')}>

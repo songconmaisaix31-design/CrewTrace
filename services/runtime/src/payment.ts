@@ -162,6 +162,44 @@ export interface PaymentProvider {
   verify(input: VerifyInput): Promise<VerifyResult>;
 }
 
+/** 支付宝预下单结果未知：远端可能已经创建交易，禁止自动发起新的支付尝试。 */
+export class PrecreateUnknownError extends AppError {
+  readonly externalState = 'UNKNOWN' as const;
+  constructor(message = '支付宝预下单结果未确认，本订单不会自动创建新的支付尝试') {
+    super(502, 'PAYMENT_PRECREATE_UNKNOWN', message, {
+      details: { externalState: 'UNKNOWN', retrySameOrderReference: true },
+    });
+  }
+}
+
+/** 支付宝明确拒绝预下单，可以安全地开启新的支付尝试。 */
+export class PrecreateRejectedError extends AppError {
+  readonly externalState = 'REJECTED' as const;
+  constructor(message = '支付宝明确拒绝了本次预下单') {
+    super(502, 'PAYMENT_PRECREATE_REJECTED', message, { details: { externalState: 'REJECTED' } });
+  }
+}
+
+export function isPrecreateUnknown(error: unknown): error is PrecreateUnknownError {
+  return error instanceof PrecreateUnknownError;
+}
+
+export function isPrecreateRejected(error: unknown): error is PrecreateRejectedError {
+  return error instanceof PrecreateRejectedError;
+}
+
+const ALIPAY_RETRYABLE_SUB_CODES = new Set(['SYSTEM_ERROR', 'isp.unknow-error', 'ACQ.SYSTEM_ERROR', 'aipay.unknown-error']);
+
+/** 支付宝系统错误和未知错误只代表本次调用未确认，不能据此判断远端没有交易。 */
+function classifyPrecreateFailure(result: Record<string, unknown>) {
+  const code = typeof result.code === 'string' ? result.code : '';
+  const subCode = typeof result.sub_code === 'string' ? result.sub_code : '';
+  if (code === '20000' || (code === '40004' && !subCode) || ALIPAY_RETRYABLE_SUB_CODES.has(subCode)) {
+    return new PrecreateUnknownError(`支付宝预下单未确认（${subCode || code || 'UNKNOWN'}），可使用同一商户订单号重试或人工核对`);
+  }
+  return new PrecreateRejectedError(`支付宝拒绝了本次预下单（${subCode || code || 'UNKNOWN'}）`);
+}
+
 export class DisabledPayment implements PaymentProvider {
   readonly mode = 'disabled' as const;
   readonly official = false;
@@ -215,11 +253,18 @@ export class AlipayPayment implements PaymentProvider {
       amountFen: input.amountFen,
       payBefore: input.payBefore,
     });
-    const result = await this.call('alipay.aipay.agent.payment.precreate', biz, {
-      status: 502, code: 'ALIPAY_REJECTED', message: '支付宝未确认本次预下单，请稍后重试',
-    });
+    let result: Record<string, unknown>;
+    try {
+      result = await this.sdk.exec('alipay.aipay.agent.payment.precreate', { bizContent: biz }, { validateSign: true }) as Record<string, unknown>;
+    } catch (error) {
+      // 网络、超时和验签异常都代表外部结果未知，不能据此创建第二笔支付。
+      if (error instanceof AppError) throw error;
+      throw new PrecreateUnknownError('支付宝预下单请求未获得确认响应，请使用同一商户订单号重试或人工核对');
+    }
+    if (result.code !== '10000') throw classifyPrecreateFailure(result);
     if (typeof result.amt_pre_pay_id !== 'string' || !result.amt_pre_pay_id || result.amt_pre_pay_id.length > 512) {
-      throw new AppError(502, 'INVALID_PREPAY', '支付宝未返回有效的预下单号');
+      // 返回缺少预下单号时无法确认远端是否已经创建交易，按未知处理。
+      throw new PrecreateUnknownError('支付宝未返回有效的预下单号，远端交易状态未确认');
     }
     return {
       prepayId: result.amt_pre_pay_id, qrCodeUrl: null, providerTradeNo: null, binding: null, simulatedProof: null,
@@ -252,8 +297,12 @@ export class SimulatedPayment implements PaymentProvider {
   readonly mode = 'simulated' as const;
   readonly official = false;
   readonly simulated = true;
-  constructor(private readonly secret: string) {
+  constructor(private readonly secret: string, environment: { deploymentEnv: Config['DEPLOYMENT_ENV']; publicDeployment: boolean }) {
     if (process.env.NODE_ENV === 'production') throw new Error('simulated 支付模式禁止在生产环境启用');
+    if (environment.deploymentEnv !== 'local' && environment.deploymentEnv !== 'test') {
+      throw new Error('simulated 支付模式只允许在 local 或 test 部署环境启用');
+    }
+    if (environment.publicDeployment) throw new Error('公开部署禁止启用 simulated 支付模式');
     if (secret.length < 32) throw new Error('simulated 支付模式需要至少 32 位的本地签名密钥');
   }
   private sign(input: { orderReference: string; serviceId: string; amountFen: number; tradeNo: string; paymentProof: string; clientSession: string }) {
@@ -301,7 +350,12 @@ export class SimulatedPayment implements PaymentProvider {
 }
 
 export function createPaymentProvider(config: Config): PaymentProvider {
-  if (config.PAYMENT_MODE === 'simulated') return new SimulatedPayment(config.PAYMENT_SIMULATION_SECRET!);
+  if (config.PAYMENT_MODE === 'simulated') {
+    return new SimulatedPayment(config.PAYMENT_SIMULATION_SECRET!, {
+      deploymentEnv: config.DEPLOYMENT_ENV,
+      publicDeployment: config.PUBLIC_DEPLOYMENT,
+    });
+  }
   if (config.PAYMENT_MODE === 'sandbox' || config.PAYMENT_MODE === 'production') {
     return new AlipayPayment(config.PAYMENT_MODE, config);
   }

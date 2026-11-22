@@ -7,7 +7,8 @@ export const CommerceCurrencySchema = z.literal('CNY');
 export const CommerceEngineSchema = z.literal('csv-clean-verify');
 export const PaymentModeSchema = z.enum(['disabled', 'sandbox', 'production', 'simulated']);
 export const PaymentProviderSchema = z.enum(['free', 'alipay', 'simulated']);
-export const PaymentStatusSchema = z.enum(['NOT_REQUIRED', 'UNPAID', 'PREPARING', 'PENDING', 'VERIFIED', 'FAILED', 'EXPIRED']);
+export const PaymentStatusSchema = z.enum(['NOT_REQUIRED', 'UNPAID', 'PREPARING', 'PENDING', 'UNKNOWN', 'VERIFIED', 'FAILED', 'EXPIRED']);
+export const DeploymentEnvSchema = z.enum(['local', 'test', 'staging', 'production']);
 export const CommerceOrderStatusSchema = z.enum([
   'AWAITING_PAYMENT', 'READY', 'IN_PROGRESS', 'DELIVERED', 'ACCEPTED', 'DECLINED', 'FAILED', 'EXPIRED', 'CANCELLED',
 ]);
@@ -30,6 +31,8 @@ export const CommerceServicesResponseSchema = z.strictObject({
   services: z.array(CommerceServiceSchema),
   paymentMode: PaymentModeSchema,
   officialPayment: z.boolean(),
+  deploymentEnv: DeploymentEnvSchema,
+  publicDeployment: z.boolean(),
 });
 export const CommerceServiceQuerySchema = z.strictObject({
   serviceId: CommerceServiceIdSchema,
@@ -55,6 +58,8 @@ export const PaymentSummarySchema = z.strictObject({
   expiresAt: TimestampSchema.nullable(),
   verifiedAt: TimestampSchema.nullable(),
   providerTradeNo: z.string().max(128).nullable(),
+  simulated: z.boolean(),
+  deploymentEnv: DeploymentEnvSchema,
 });
 
 export const ExecutionSummarySchema = z.strictObject({

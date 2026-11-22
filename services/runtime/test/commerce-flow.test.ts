@@ -20,6 +20,8 @@ test('商业闭环：服务目录、订单、模拟支付、三 Agent 履约、�
   await createPortfolioTestSchema();
   process.env.PAYMENT_MODE = 'simulated';
   process.env.PAYMENT_SIMULATION_SECRET = 'commerce-test-simulation-secret-0123456789';
+  process.env.PAYMENT_SIMULATED_ACK = 'local-only';
+  process.env.DEPLOYMENT_ENV = 'local';
   const { default: app, runtime } = await import('../src/index.js');
   await migrate(runtime.db);
   await migrate(runtime.db); // 迁移必须可重复执行
@@ -70,6 +72,8 @@ test('商业闭环：服务目录、订单、模拟支付、三 Agent 履约、�
   const catalog = await commerce('/services');
   assert.equal(catalog.paymentMode, 'simulated');
   assert.equal(catalog.officialPayment, false);
+  assert.equal(catalog.deploymentEnv, 'local');
+  assert.equal(catalog.publicDeployment, false);
   assert.deepEqual(catalog.services.map((service: { serviceId: string }) => service.serviceId), ['csv-clean-verify', 'csv-clean-verify-free']);
   assert.equal(catalog.services[0].priceFen, 100);
   assert.equal(catalog.services[0].currency, 'CNY');

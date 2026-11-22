@@ -19,3 +19,19 @@ Web 的公开协作网关连接实验 Runtime。Runtime 在同一 Hono 应用提
 任务进度由数据库重建。没有 Worker 轮询时，自动任务保持等待，租期回收在 Worker 恢复轮询后继续。当前调度器每次扫描最多 25 个待运行任务，属于作品集规模配置，需要实测更大积压时的吞吐及公平性。
 
 Monad 承诺记录继续使用原团队适配器。默认关闭签名和链适配器，显式启用时仅接受 Monad Testnet 10143。数据库检测结果与链上承诺含义独立。
+
+## 服务与支付
+
+服务目录固定为收费的 `csv-clean-verify` 和免费的 `csv-clean-verify-free`。下单后订单记录服务版本、价格、输入摘要和幂等键。免费订单直接进入执行；收费订单需要支付验付后进入执行。支付模式由 `PAYMENT_MODE` 控制，默认 `disabled`，此时收费服务在创建订单时就返回 `PAYMENT_NOT_CONFIGURED`。
+
+支付记录分为 `PREPARING`、`PENDING`、`UNKNOWN`、`VERIFIED`、`FAILED`、`EXPIRED`。每次支付尝试使用 `sha256(orderId + ':' + attempt)` 生成稳定的 32 位商户订单号，同一尝试重试复用该号码。预下单结果未知时写入 `UNKNOWN`，不会自动创建第二笔交易；在 `pay_before` 过期前只允许使用原号码重试，过期后关闭该次尝试。运营核对接口只允许把 `UNKNOWN` 或 `PREPARING` 关闭为 `FAILED`，不能伪造已付款。
+
+验付只接受支付宝返回的可验签响应，校验 `active`、`trade_no`、`out_trade_no` 和金额。重复凭证只返回已验付结果，不重复启动工作流。订单已关闭后才到达的支付凭证只补记支付证据和售后事件，不改变订单状态，也不重新启动工作流。
+
+模拟支付要求 `DEPLOYMENT_ENV` 为 `local` 或 `test`、`PUBLIC_DEPLOYMENT=false`、`PAYMENT_SIMULATED_ACK=local-only` 和至少 32 位模拟密钥，且 `NODE_ENV` 不能是 `production`。公开部署禁止模拟模式。接口、页面和统计分别标注 `simulated`、`sandbox` 和 `production`。
+
+## 执行与恢复
+
+订单创建后由 Runtime 在工作流表写入固定三步计划。三个常驻 Worker 分别具备源码检查、数据清洗和证据报告能力，通过轮询领取带租期的认领。步骤完成后由系统运营身份按固定规则自动验收，下一步骤才会进入可认领状态。租期到期由任一 Worker 的轮询触发回收，记录 `TIMEOUT` 并创建新的尝试，最多三次。
+
+订单和支付更新使用行级锁、版本条件更新和单订单唯一活动支付索引，避免并发请求重复预下单或覆盖状态。页面刷新和重新打开只读取数据库中的订单、执行和交付记录，不触发额外执行。

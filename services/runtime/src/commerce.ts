@@ -13,6 +13,7 @@ import {
 } from '../../../packages/contracts/src/index.ts';
 import type { Application } from './application.js';
 import type { Principal } from './auth.js';
+import { admin } from './auth.js';
 import { collaborator } from './collaboration-store.js';
 import { Collaboration } from './collaboration.js';
 import { acceptedStep, CSV_STEPS, CSV_WORKFLOW_VERSION, normalizedDelivery, workflow } from './csv-workflow.js';
@@ -20,6 +21,7 @@ import { verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
 import { AppError, requireValue } from './errors.js';
 import {
   ALIPAY_AMOUNT_LIMIT_FEN, alipayPayBefore, decodePaymentProof, proofHash,
+  isPrecreateRejected, isPrecreateUnknown, PrecreateUnknownError,
   type PaymentProvider, type VerifyExpected,
 } from './payment.js';
 
@@ -74,6 +76,9 @@ const PaymentRecordSchema = z.strictObject({
   verifiedAt: TimestampSchema.nullable(),
   createdAt: TimestampSchema,
   attempt: CountSchema.min(1).default(1),
+  /** 明确失败或人工关闭的原因；结果未知时也用于记录外部错误码。 */
+  failureCode: z.string().max(80).nullable().default(null),
+  failureMessage: z.string().max(500).nullable().default(null),
   // simulated 模式的本地签名绑定与内部凭证只在服务端保存，绝不返回给买家之外的使用者。
   binding: z.string().nullable(),
   simulatedProof: z.string().nullable(),
@@ -92,9 +97,17 @@ const StepRowSchema = z.object({
 type PaymentOutcome =
   | { kind: 'ready'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'preparing'; record: OrderRecord; payment: PaymentRecord }
+  | { kind: 'retry'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'created'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'paid'; record: OrderRecord; payment: PaymentRecord }
   | { kind: 'invalid'; record: OrderRecord };
+
+const ReconcilePaymentRequestSchema = z.strictObject({
+  paymentId: CollaborationIdSchema,
+  /** 运营在官方后台核对后的外部状态；不允许通过该接口把支付标记为已付款。 */
+  externalState: z.enum(['NO_TRANSACTION', 'TRANSACTION_CLOSED']),
+  reason: z.string().min(3).max(200),
+});
 
 function isUniqueViolation(error: unknown) {
   return Boolean(error && typeof error === 'object' && 'code' in error && error.code === '23505');
@@ -127,6 +140,8 @@ export class Commerce {
       services: rows.map(row => CommerceServiceSchema.parse({ ...row.document, active: row.active })),
       paymentMode: this.payments.mode,
       officialPayment: this.payments.official,
+      deploymentEnv: this.app.config.DEPLOYMENT_ENV,
+      publicDeployment: this.app.config.PUBLIC_DEPLOYMENT,
     });
   }
 
@@ -271,6 +286,8 @@ export class Commerce {
       expiresAt: chosen?.expiresAt ?? null,
       verifiedAt: chosen?.verifiedAt ?? null,
       providerTradeNo: chosen?.providerTradeNo ?? null,
+      simulated: this.payments.simulated,
+      deploymentEnv: this.app.config.DEPLOYMENT_ENV,
     });
   }
 
@@ -314,12 +331,16 @@ export class Commerce {
     let record = await this.orderRecord(orderId);
     if (record.status === 'AWAITING_PAYMENT') {
       const payments = await this.paymentsFor(orderId);
-      const active = payments.find(payment => payment.mode === this.payments.mode && (payment.status === 'PENDING' || payment.status === 'PREPARING'));
-      if (active?.status === 'PREPARING' && Date.now() - Date.parse(active.createdAt) > PREPARE_TIMEOUT_MS) {
-        await this.transitionPayment(active, 'FAILED', 'PAYMENT_PREPARE_FAILED', { reason: 'PREPARE_TIMEOUT' });
-      } else if (active?.status === 'PENDING' && Date.parse(active.expiresAt) <= Date.now()) {
-        // 只把本地支付尝试标记为超时，订单保留待支付状态，已付款但延迟到达的凭证仍可验证。
-        await this.transitionPayment(active, 'EXPIRED', 'PAYMENT_EXPIRED', { reason: 'PAY_BEFORE_PASSED' });
+      const active = payments.find(payment => payment.mode === this.payments.mode
+        && (payment.status === 'PENDING' || payment.status === 'PREPARING' || payment.status === 'UNKNOWN'));
+      if (active && Date.parse(active.expiresAt) <= Date.now()) {
+        if (active.status === 'PENDING') {
+          // 只把本地支付尝试标记为超时，订单保留待支付状态，已付款但延迟到达的凭证仍可验证。
+          await this.transitionPayment(active, 'EXPIRED', 'PAYMENT_EXPIRED', { reason: 'PAY_BEFORE_PASSED' });
+        } else {
+          // pay_before 已过，远端同一笔预下单不可能再被支付；不能把本地超时当成远端失败，但可以安全关闭。
+          await this.transitionPayment(active, 'FAILED', 'PAYMENT_PREPARE_CLOSED', { reason: 'PAY_BEFORE_PASSED' });
+        }
       }
     }
     if (record.status === 'READY' && !record.taskId) await this.startExecution(orderId);
@@ -350,9 +371,14 @@ export class Commerce {
     return this.orderRecord(record.orderId);
   }
 
-  private async transitionPayment(payment: PaymentRecord, status: 'FAILED' | 'EXPIRED', event: string, detail: Record<string, unknown>) {
+  private async transitionPayment(payment: PaymentRecord, status: 'FAILED' | 'EXPIRED' | 'UNKNOWN', event: string, detail: Record<string, unknown>) {
     await this.app.store.write(async client => {
-      const next = PaymentRecordSchema.parse({ ...payment, status });
+      const next = PaymentRecordSchema.parse({
+        ...payment,
+        status,
+        failureCode: typeof detail.reason === 'string' ? detail.reason : payment.failureCode,
+        failureMessage: typeof detail.message === 'string' ? detail.message : payment.failureMessage,
+      });
       const updated = await client.query(
         'UPDATE commerce_payments SET status=$2,document=$3 WHERE id=$1 AND status=$4',
         [payment.paymentId, status, next, payment.status],
@@ -365,6 +391,55 @@ export class Commerce {
   private orderReference(orderId: string, attempt: number) {
     // 支付宝 out_trade_no 上限 32 位；按订单与尝试序号稳定派生，重试同一尝试时得到相同值。
     return createHash('sha256').update(`${orderId}:${attempt}`).digest('hex').slice(0, 32);
+  }
+
+  private async settlePrecreate(record: OrderRecord, payment: PaymentRecord) {
+    let prepay;
+    try {
+      prepay = await this.payments.precreate({
+        orderReference: payment.orderReference, serviceId: record.quote.serviceId,
+        title: record.quote.title, amountFen: record.quote.priceFen,
+        payBefore: alipayPayBefore(new Date(payment.expiresAt)),
+      });
+    } catch (error) {
+      if (isPrecreateRejected(error)) {
+        // 支付宝明确拒绝，远端没有产生可支付交易，可以安全标记失败。
+        await this.transitionPayment(payment, 'FAILED', 'PAYMENT_PREPARE_REJECTED', {
+          reason: 'ALIPAY_REJECTED', message: error.message,
+        });
+        throw error;
+      }
+      // 网络、超时、系统错误或响应缺字段：保留同一 out_trade_no，禁止自动创建第二笔支付。
+      await this.transitionPayment(payment, 'UNKNOWN', 'PAYMENT_PREPARE_UNKNOWN', {
+        reason: 'PRECREATE_UNCONFIRMED', message: '支付宝预下单结果未确认，已保留原商户订单号等待人工核对或原样重试',
+      });
+      throw isPrecreateUnknown(error) ? error : new PrecreateUnknownError();
+    }
+    const next = PaymentRecordSchema.parse({
+      ...payment, status: 'PENDING', prepayId: prepay.prepayId, qrCodeUrl: prepay.qrCodeUrl,
+      providerTradeNo: prepay.providerTradeNo, binding: prepay.binding, simulatedProof: prepay.simulatedProof,
+      failureCode: null, failureMessage: null,
+    });
+    const settled = await this.app.store.write(async client => {
+      const updated = await client.query(
+        `UPDATE commerce_payments SET status='PENDING',provider_trade_no=$2,document=$3
+         WHERE id=$1 AND status=$4`,
+        [payment.paymentId, next.providerTradeNo, next, payment.status],
+      );
+      if (updated.rowCount) {
+        await this.emit(client, payment.orderId, 'PAYMENT_REQUESTED', 'PAYMENT', {
+          paymentId: payment.paymentId, provider: payment.provider, attempt: payment.attempt,
+          resolvedFrom: payment.status, orderReference: payment.orderReference,
+        });
+        return next;
+      }
+      const row = (await client.query(
+        'SELECT document FROM commerce_payments WHERE id=$1 AND order_id=$2', [payment.paymentId, payment.orderId],
+      )).rows[0];
+      return row ? PaymentRecordSchema.parse(row.document) : null;
+    });
+    if (!settled) throw new AppError(409, 'INVALID_STATE', '支付记录已经变化，请重新查询订单');
+    return this.paymentResponse(record, settled);
   }
 
   async requestPayment(principal: Principal, orderId: string) {
@@ -387,24 +462,40 @@ export class Commerce {
       }
       const payments = await this.paymentsFor(orderId, client);
       const currentMode = payments.filter(payment => payment.mode === this.payments.mode);
-      const active = currentMode.find(payment => payment.status === 'PENDING' || payment.status === 'PREPARING');
-      if (active) {
-        if (active.status === 'PENDING' && Date.parse(active.expiresAt) > Date.now()) {
-          return { kind: 'ready', record, payment: active };
-        }
-        if (active.status === 'PREPARING' && Date.now() - Date.parse(active.createdAt) <= PREPARE_TIMEOUT_MS) {
-          return { kind: 'preparing', record, payment: active };
-        }
-        const next = PaymentRecordSchema.parse({ ...active, status: 'FAILED' });
+      const closeAttempt = async (payment: PaymentRecord, status: 'FAILED' | 'EXPIRED', reason: string, event: string) => {
+        const next = PaymentRecordSchema.parse({ ...payment, status, failureCode: reason });
         const closed = await client.query(
           'UPDATE commerce_payments SET status=$2,document=$3 WHERE id=$1 AND status=$4',
-          [active.paymentId, 'FAILED', next, active.status],
+          [payment.paymentId, status, next, payment.status],
         );
         if (closed.rowCount) {
-          await this.emit(client, orderId, 'PAYMENT_PREPARE_FAILED', 'PAYMENT', { paymentId: active.paymentId, reason: 'PREPARE_STALE' });
+          await this.emit(client, orderId, event, 'PAYMENT', { paymentId: payment.paymentId, reason, orderReference: payment.orderReference });
+        }
+      };
+      const pending = currentMode.find(payment => payment.status === 'PENDING');
+      if (pending && Date.parse(pending.expiresAt) > Date.now()) return { kind: 'ready', record, payment: pending };
+      if (pending) await closeAttempt(pending, 'EXPIRED', 'PAY_WINDOW_CLOSED', 'PAYMENT_EXPIRED');
+      const preparing = currentMode.find(payment => payment.status === 'PREPARING');
+      if (preparing) {
+        if (Date.parse(preparing.expiresAt) <= Date.now()) {
+          // pay_before 已过，远端同一笔预下单不可能再被支付，可以安全关闭。
+          await closeAttempt(preparing, 'FAILED', 'PAY_BEFORE_PASSED', 'PAYMENT_PREPARE_CLOSED');
+        } else if (Date.now() - Date.parse(preparing.createdAt) <= PREPARE_TIMEOUT_MS) {
+          return { kind: 'preparing', record, payment: preparing };
+        } else {
+          // 超时只代表本地未确认，使用同一 out_trade_no 重试，不创建第二笔支付。
+          return { kind: 'retry', record, payment: preparing };
         }
       }
-      // 每个尝试使用独立商户订单号；失败尝试不会与新的预下单争用同一 out_trade_no。
+      const unknown = currentMode.find(payment => payment.status === 'UNKNOWN');
+      if (unknown) {
+        if (Date.parse(unknown.expiresAt) <= Date.now()) {
+          await closeAttempt(unknown, 'FAILED', 'PAY_BEFORE_PASSED', 'PAYMENT_PREPARE_CLOSED');
+        } else {
+          return { kind: 'retry', record, payment: unknown };
+        }
+      }
+      // 只有不存在未确认尝试时才创建新的商户订单号。
       const attempt = Math.max(0, ...currentMode.map(payment => payment.attempt)) + 1;
       const expiresAt = new Date(Date.now() + this.app.config.PAYMENT_TTL_SECONDS * 1000);
       const payment = PaymentRecordSchema.parse({
@@ -412,14 +503,17 @@ export class Commerce {
         provider: this.payments.simulated ? 'simulated' : 'alipay', status: 'PREPARING',
         amountFen: record.quote.priceFen, currency: 'CNY', orderReference: this.orderReference(record.orderId, attempt),
         prepayId: null, qrCodeUrl: null, providerTradeNo: null, expiresAt: expiresAt.toISOString(), verifiedAt: null,
-        createdAt: new Date().toISOString(), attempt, binding: null, simulatedProof: null,
+        createdAt: new Date().toISOString(), attempt, failureCode: null, failureMessage: null,
+        binding: null, simulatedProof: null,
       });
       await client.query(
         `INSERT INTO commerce_payments(id,order_id,mode,provider,status,amount_fen,currency,provider_trade_no,document)
          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
         [payment.paymentId, payment.orderId, payment.mode, payment.provider, payment.status, payment.amountFen, payment.currency, null, payment],
       );
-      await this.emit(client, orderId, 'PAYMENT_PREPARING', 'PAYMENT', { paymentId: payment.paymentId, attempt, provider: payment.provider });
+      await this.emit(client, orderId, 'PAYMENT_PREPARING', 'PAYMENT', {
+        paymentId: payment.paymentId, attempt, provider: payment.provider, orderReference: payment.orderReference,
+      });
       return { kind: 'created', record, payment };
     });
     if (outcome.kind === 'paid') return this.paymentResponse(outcome.record, outcome.payment);
@@ -430,33 +524,7 @@ export class Commerce {
       if (settled) return this.paymentResponse(outcome.record, settled);
       throw new AppError(409, 'PAYMENT_PREPARING', '支付预下单正在处理，请稍后重试');
     }
-    let prepay;
-    try {
-      prepay = await this.payments.precreate({
-        orderReference: outcome.payment.orderReference, serviceId: outcome.record.quote.serviceId,
-        title: outcome.record.quote.title, amountFen: outcome.record.quote.priceFen,
-        payBefore: alipayPayBefore(new Date(outcome.payment.expiresAt)),
-      });
-    } catch (error) {
-      await this.transitionPayment(outcome.payment, 'FAILED', 'PAYMENT_PREPARE_FAILED', {
-        reason: error instanceof AppError ? error.code : 'PREPARE_ERROR',
-      });
-      throw error;
-    }
-    const payment = PaymentRecordSchema.parse({
-      ...outcome.payment, status: 'PENDING', prepayId: prepay.prepayId, qrCodeUrl: prepay.qrCodeUrl,
-      providerTradeNo: prepay.providerTradeNo, binding: prepay.binding, simulatedProof: prepay.simulatedProof,
-    });
-    await this.app.store.write(async client => {
-      const updated = await client.query(
-        `UPDATE commerce_payments SET status='PENDING',provider_trade_no=$2,document=$3
-         WHERE id=$1 AND status='PREPARING'`,
-        [payment.paymentId, payment.providerTradeNo, payment],
-      );
-      if (!updated.rowCount) throw new AppError(409, 'INVALID_STATE', '支付预下单状态已经变化，请重新查询订单');
-      await this.emit(client, orderId, 'PAYMENT_REQUESTED', 'PAYMENT', { paymentId: payment.paymentId, provider: payment.provider, attempt: payment.attempt });
-    });
-    return this.paymentResponse(outcome.record, payment);
+    return this.settlePrecreate(outcome.record, outcome.payment);
   }
 
   private async waitForPayment(orderId: string, paymentId: string): Promise<PaymentRecord | null> {
@@ -465,8 +533,8 @@ export class Commerce {
       await new Promise(resolve => setTimeout(resolve, PREPARE_POLL_MS));
       const payment = await this.paymentById(orderId, paymentId);
       if (!payment) return null;
-      if (payment.status === 'PENDING') return payment;
-      if (payment.status === 'FAILED') return null;
+      if (payment.status === 'PENDING' || payment.status === 'UNKNOWN' || payment.status === 'VERIFIED') return payment;
+      if (payment.status === 'FAILED' || payment.status === 'EXPIRED') return null;
     }
     return null;
   }
@@ -483,7 +551,9 @@ export class Commerce {
       paymentLink: payment.prepayId,
       instruction: payment.provider === 'simulated'
         ? '当前为内部模拟支付：simulatedProof 只用于验证内部状态机，不代表支付宝官方支付成功。'
-        : '请使用支付宝完成支付，随后把 Payment-Proof 请求头提交到本订单的 payment-proof 端点。',
+        : payment.status === 'UNKNOWN'
+          ? '预下单结果未确认，请勿重复付款；可使用原 Payment-Proof 验证，或联系运营核对后关闭该次尝试。'
+          : '请使用支付宝完成支付，随后把 Payment-Proof 请求头提交到本订单的 payment-proof 端点。',
       simulatedProof: payment.simulatedProof,
     });
   }
@@ -502,21 +572,17 @@ export class Commerce {
     const currentMode = initialPayments.filter(payment => payment.mode === this.payments.mode);
     const verifiedAlready = currentMode.find(payment => payment.status === 'VERIFIED');
     if (verifiedAlready) {
-      await this.startExecution(orderId);
+      // 已验付订单重复提交凭证只返回既有结果，不重新启动工作流。
       return this.verifiedResponse(orderId, verifiedAlready);
     }
     if (!['AWAITING_PAYMENT', 'EXPIRED'].includes(record.status)) {
-      throw new AppError(409, 'INVALID_STATE', '当前订单状态不接受支付凭证');
+      // 订单已经进入执行或交付阶段时，迟到凭证只补记支付证据，不改变订单状态，也不重复启动 Workflow。
+      return this.verifyLatePayment(orderId, record, proof, header, canonicalHash, currentMode);
     }
     if (!currentMode.length) {
       throw new AppError(409, 'PAYMENT_MODE_MISMATCH', '订单支付尝试与当前支付模式不一致，请重新预下单');
     }
-    const candidate = this.payments.simulated
-      ? currentMode.find(payment => payment.providerTradeNo && payment.providerTradeNo === proof.protocol.trade_no)
-        ?? currentMode.find(payment => payment.status !== 'FAILED') ?? currentMode[0]
-      : currentMode.find(payment => payment.status === 'PENDING')
-        ?? currentMode.find(payment => payment.status === 'EXPIRED')
-        ?? currentMode.find(payment => payment.status === 'PREPARING') ?? currentMode[0];
+    const candidate = this.proofCandidate(currentMode, proof);
     if (this.payments.simulated && (!candidate.binding || candidate.status === 'PREPARING')) {
       throw new AppError(409, 'PAYMENT_PREPARING', '支付预下单尚未完成，请稍后重试');
     }
@@ -575,18 +641,90 @@ export class Commerce {
         if (!moved.rowCount) throw new AppError(409, 'INVALID_STATE', '订单状态已经变化，请重新查询订单');
         await this.emit(client, orderId, 'PAYMENT_VERIFIED', 'PAYMENT', {
           providerTradeNo: verified.providerTradeNo, official: this.payments.official, orderReference: verified.orderReference,
+          attempt: matched.attempt,
         });
       });
     } catch (error) {
       if (isUniqueViolation(error)) throw new AppError(409, 'PROOF_ALREADY_USED', '该支付凭证已被使用');
       throw error;
     }
-    if (already) {
-      await this.startExecution(orderId);
-      return this.verifiedResponse(orderId, already);
-    }
+    if (already) return this.verifiedResponse(orderId, already);
     await this.startExecution(orderId);
     return this.verifiedResponse(orderId, { ...matched, status: 'VERIFIED', providerTradeNo: verified.providerTradeNo, verifiedAt: now });
+  }
+
+  private proofCandidate(currentMode: PaymentRecord[], proof: ReturnType<typeof decodePaymentProof>) {
+    return this.payments.simulated
+      ? currentMode.find(payment => payment.providerTradeNo && payment.providerTradeNo === proof.protocol.trade_no)
+        ?? currentMode.find(payment => payment.status !== 'FAILED') ?? currentMode[0]
+      : currentMode.find(payment => payment.status === 'PENDING')
+        ?? currentMode.find(payment => payment.status === 'EXPIRED')
+        ?? currentMode.find(payment => payment.status === 'UNKNOWN')
+        ?? currentMode.find(payment => payment.status === 'PREPARING') ?? currentMode[0];
+  }
+
+  private async verifyLatePayment(
+    orderId: string,
+    record: OrderRecord,
+    proof: ReturnType<typeof decodePaymentProof>,
+    header: string,
+    canonicalHash: string,
+    currentMode: PaymentRecord[],
+  ) {
+    if (!currentMode.length) {
+      throw new AppError(409, 'PAYMENT_MODE_MISMATCH', '订单支付尝试与当前支付模式不一致');
+    }
+    const candidate = this.proofCandidate(currentMode, proof);
+    const expected: VerifyExpected | null = this.payments.simulated ? {
+      orderReference: candidate.orderReference, serviceId: record.quote.serviceId,
+      amountFen: record.quote.priceFen, binding: candidate.binding, providerTradeNo: candidate.providerTradeNo,
+    } : null;
+    const verified = await this.payments.verify({ proof, header, expected });
+    if (verified.providerTradeNo !== proof.protocol.trade_no) {
+      throw new AppError(402, 'PAYMENT_MISMATCH', '支付凭证交易号不一致');
+    }
+    const matched = (verified.orderReference
+      ? currentMode.find(payment => payment.orderReference === verified.orderReference)
+      : candidate) ?? null;
+    if (!matched) throw new AppError(402, 'PAYMENT_MISMATCH', '支付凭证不属于该订单');
+    if (verified.amountFen !== null && verified.amountFen !== record.quote.priceFen) {
+      throw new AppError(402, 'PAYMENT_MISMATCH', '支付金额与订单金额不一致');
+    }
+    const now = new Date().toISOString();
+    let result: PaymentRecord | null = null;
+    try {
+      await this.app.store.write(async client => {
+        const duplicate = (await client.query(
+          `SELECT id FROM commerce_payments
+           WHERE (proof_hash=$1 OR ($2::text IS NOT NULL AND provider_trade_no=$2)) AND id<>$3 LIMIT 1`,
+          [canonicalHash, verified.providerTradeNo, matched.paymentId],
+        )).rows[0];
+        if (duplicate) throw new AppError(409, 'PROOF_ALREADY_USED', '该支付凭证已用于其他订单');
+        const next = PaymentRecordSchema.parse({
+          ...matched, status: 'VERIFIED', providerTradeNo: verified.providerTradeNo, verifiedAt: now,
+        });
+        const updated = await client.query(
+          `UPDATE commerce_payments SET status='VERIFIED',proof_hash=$2,provider_trade_no=$3,verified_at=now(),document=$4
+           WHERE id=$1 AND status<>'VERIFIED'`,
+          [matched.paymentId, canonicalHash, verified.providerTradeNo, next],
+        );
+        if (updated.rowCount) {
+          result = next;
+        } else {
+          const latest = await this.paymentById(orderId, matched.paymentId);
+          if (latest?.status !== 'VERIFIED') throw new AppError(409, 'INVALID_STATE', '支付记录状态已经变化');
+          result = latest;
+        }
+        await this.emit(client, orderId, 'PAYMENT_VERIFIED_LATE', 'PAYMENT', {
+          providerTradeNo: verified.providerTradeNo, attempt: matched.attempt, orderStatus: record.status,
+          note: '迟到支付凭证只补记售后证据，不改变订单状态，也不重新启动工作流',
+        });
+      });
+    } catch (error) {
+      if (isUniqueViolation(error)) throw new AppError(409, 'PROOF_ALREADY_USED', '该支付凭证已被使用');
+      throw error;
+    }
+    return this.verifiedResponse(orderId, result!);
   }
 
   private verifiedResponse(orderId: string, payment: PaymentRecord) {
@@ -594,6 +732,37 @@ export class Commerce {
       orderId, status: 'VERIFIED', official: this.payments.official, simulated: this.payments.simulated,
       providerTradeNo: payment.providerTradeNo, verifiedAt: payment.verifiedAt,
     });
+  }
+
+  /**
+   * 运营在支付宝后台人工核对后关闭一次未确认的预下单。
+   * 该接口只允许把 UNKNOWN/PREPARING 标记为 FAILED，不能把支付伪造成已付款。
+   */
+  async reconcilePayment(principal: Principal, orderId: string, input: unknown) {
+    admin(principal);
+    const request = ReconcilePaymentRequestSchema.parse(input);
+    const record = await this.orderRecord(CollaborationIdSchema.parse(orderId));
+    const payments = await this.paymentsFor(record.orderId);
+    const payment = payments.find(item => item.paymentId === request.paymentId && item.mode === this.payments.mode);
+    if (!payment) throw new AppError(404, 'NOT_FOUND', '支付尝试不存在');
+    if (payment.status !== 'UNKNOWN' && payment.status !== 'PREPARING') {
+      throw new AppError(409, 'INVALID_STATE', '只有结果未知或未完成的预下单可以人工关闭');
+    }
+    await this.app.store.write(async client => {
+      const next = PaymentRecordSchema.parse({
+        ...payment, status: 'FAILED', failureCode: `MANUAL_CLOSE_${request.externalState}`, failureMessage: request.reason,
+      });
+      const updated = await client.query(
+        'UPDATE commerce_payments SET status=$2,document=$3 WHERE id=$1 AND status=$4',
+        [payment.paymentId, 'FAILED', next, payment.status],
+      );
+      if (!updated.rowCount) throw new AppError(409, 'INVALID_STATE', '支付记录状态已经变化，请重新查询订单');
+      await this.emit(client, record.orderId, 'PAYMENT_MANUALLY_CLOSED', 'PAYMENT', {
+        paymentId: payment.paymentId, attempt: payment.attempt, orderReference: payment.orderReference,
+        previousStatus: payment.status, externalState: request.externalState, reason: request.reason,
+      });
+    });
+    return this.detail(record.orderId);
   }
 
   private async startExecution(orderId: string) {

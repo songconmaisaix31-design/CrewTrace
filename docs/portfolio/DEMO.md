@@ -1,7 +1,50 @@
-# Demonstration
+# 三分钟演示脚本
 
-1. Start the independent Web and Runtime, then enroll three separate worker identities for source inspection, CSV cleaning and evidence reporting. Run one Worker process per identity.
-2. Join the workbench with a separate author identity. Publish a CSV task with capability `csv-data-review`, open its details, and configure a three-step workflow in automatic mode. Use public test records with header `record_id,amount_cents`.
-3. Watch the inspection handoff arrive. Accept it from the author account. Accept the cleaned CSV and then the final report. Open each assignment snapshot to see the ranking, eligibility and prior samples.
-4. Replay the cleaning evidence from the handoff and read the recorded reputation outcome. Create another task to compare the next cleaning decision. If multiple eligible cleaning workers are online, the updated reputation can affect their order.
-5. Open Runs and benchmark to find the completed task and download the fixed-seed evaluation data. Present the simulation separately from the actual local test run.
+演示目标：让观众在浏览器里看到 CrewTrace 如何把一次 CSV 清洗交给三个 AI Agent，并在支付模式关闭的情况下，用免费服务完整走通下单、执行、交付、验收和信誉记录。
+
+演示前准备：独立 Runtime 与 Web 已启动，PostgreSQL 已迁移，三个 Worker 进程分别使用检查、清洗、报告角色持续运行，`PAYMENT_MODE=disabled`。浏览器打开首页，确认顶部显示“收费服务未开通，免费服务可完整体验”。
+
+## 0:00 至 0:25 产品定位
+
+首页第一屏显示 CrewTrace 帮助用户购买或体验可验证的 AI Agent 服务，列出免费与收费服务、价格、预计时长和当前支付状态。指出三个要点：服务有明确价格，执行由三个独立 AI Agent 完成，验收由固定规则机器复算，买家验收后写入信誉记录。
+
+强调支付状态标注：免费服务显示“无需支付”，收费服务在未配置支付宝时显示“收费未开通”。内部模拟、支付宝沙箱和正式支付是三种不同状态，模拟支付不会被表述为真实支付宝支付。
+
+## 0:25 至 0:55 免费下单
+
+点击“免费体验”或“服务与订单”，选择免费 CSV 清洗服务。保留默认示例 CSV，提交订单。说明默认示例可以直接通过三个角色的校验，订单在支付模式关闭时仍然可以执行，因为免费服务不依赖支付配置。
+
+展示订单详情中的服务版本、工作流版本、支付状态“无需支付”和执行状态“等待执行/执行中”。
+
+## 0:55 至 1:35 三 Agent 执行
+
+不手动点任何执行按钮，等待三个常驻 Worker 轮询。依次看到源码检查、数据清洗、证据报告三个步骤由三个不同 Agent 完成。打开每个步骤，说明分工由固定规则和信誉排序决定，三个角色不能由同一个 Agent 兼任。
+
+执行过程中刷新页面，订单和步骤状态保持不变。关闭页面后重新打开，从历史订单进入，仍然可以看到同一任务和同一步骤进度。
+
+## 1:35 至 2:10 交付、验收与信誉
+
+订单进入“已交付”后下载 CSV。展示清洗后的内容与默认示例的固定预期一致。点击验收通过并给出评分。说明机器验收先按固定规则复算，买家验收只负责最终确认；两者都完成后才产生三个角色的信誉记录。
+
+重复点击验收会返回“已经完成验收”，不会重复产生信誉记录。
+
+## 2:10 至 2:40 支付状态与隔离
+
+回到服务目录，指出免费服务、模拟支付、支付宝沙箱和正式支付在界面与接口中是分开标注的。演示 `GET /api/commerce` 返回 `paymentMode`、`simulatedPayment`、`deploymentEnv` 和 `publicDeployment`。
+
+说明收费服务在 `PAYMENT_MODE=disabled` 时直接返回 `PAYMENT_NOT_CONFIGURED`，不会创建订单。模拟模式只允许在非公开的本地或测试环境使用，需要显式确认标记和模拟密钥；公开部署与生产环境会拒绝模拟模式。
+
+官方支付宝联调准备使用环境变量输入真实凭证，未取得商户凭证前只保留字段映射、响应验证清单和沙箱验收脚本，不伪造交易成功。
+
+## 2:40 至 3:00 架构与恢复
+
+说明架构：Web 只连接独立 Runtime，Runtime 同时提供 HTTP 和 MCP，PostgreSQL 保存订单、支付、工作流、认领、交付和事件，三个 Worker 常驻轮询。支付记录使用稳定商户订单号，预下单结果未知时不会创建第二笔交易，超时只按租期回收步骤，不把执行失败误判为支付失败。
+
+最后展示一次 Worker 停止后的恢复：停掉一个 Worker，新的同类 Worker 加入后接管后续订单；已有任务在租期到期后由新 Worker 重派同一步骤。审计日志只记录事件、角色和状态，不包含管理密钥或协作凭证。
+
+## 演示边界
+
+- 免费服务、三 Agent 执行、交付下载、机器验收、买家验收和信誉记录使用真实 PostgreSQL、真实 HTTP 和真实 Worker 进程。
+- 支付宝沙箱与正式支付未执行，因为尚未取得真实商户凭证，状态为 BLOCKED。
+- 内部模拟支付只验证状态机，不代表支付宝官方支付成功。
+- 云端独立部署未执行，因为尚未取得个人云资源授权，状态为 BLOCKED。

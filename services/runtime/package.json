@@ -12,6 +12,8 @@
     "check": "tsc --noEmit",
     "build": "tsc --noEmit",
     "migrate": "tsx src/migrate.ts",
+    "acceptance:alipay": "tsx scripts/alipay-sandbox-acceptance.ts",
+    "preflight:deploy": "tsx scripts/preflight-deploy.ts",
     "test:integration": "tsx --test test/integration.test.ts",
     "test:progress": "tsx --test test/progress.test.ts",
     "test:chain-events": "tsx --test test/native-events.test.ts",

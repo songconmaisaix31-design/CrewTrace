@@ -29,6 +29,12 @@ const configSchema = z.object({
   VALIDATOR_MODULE: z.string().min(1).optional(),
   ALLOWED_ORIGINS: z.string().default(''),
   PAYMENT_MODE: z.enum(['disabled','sandbox','production','simulated']).default('disabled'),
+  /** 独立部署环境标识，用于在不依赖 NODE_ENV 的情况下隔离模拟支付。 */
+  DEPLOYMENT_ENV: z.enum(['local','test','staging','production']).default('local'),
+  /** 公开部署必须显式为 true，模拟支付在该值为 true 时一律禁止。 */
+  PUBLIC_DEPLOYMENT: z.enum(['true','false']).default('false').transform(value => value === 'true'),
+  /** 模拟支付的双重确认，只允许在本地或测试环境填写 local-only。 */
+  PAYMENT_SIMULATED_ACK: z.literal('local-only').optional(),
   PAYMENT_TTL_SECONDS: z.coerce.number().int().min(60).max(43200).default(900),
   PAYMENT_SIMULATION_SECRET: z.string().min(32).optional(),
   ALIPAY_APP_ID: z.string().min(1).optional(),
@@ -43,9 +49,23 @@ const configSchema = z.object({
     if (process.env.NODE_ENV === 'production') {
       context.addIssue({ code: 'custom', path: ['PAYMENT_MODE'], message: 'simulated 支付模式禁止在生产环境启用' });
     }
+    if (value.DEPLOYMENT_ENV !== 'local' && value.DEPLOYMENT_ENV !== 'test') {
+      context.addIssue({ code: 'custom', path: ['PAYMENT_MODE'], message: 'simulated 支付模式只允许在 local 或 test 环境启用' });
+    }
+    if (value.PUBLIC_DEPLOYMENT) {
+      context.addIssue({ code: 'custom', path: ['PAYMENT_MODE'], message: '公开部署禁止启用 simulated 支付模式' });
+    }
+    if (value.PAYMENT_SIMULATED_ACK !== 'local-only') {
+      context.addIssue({ code: 'custom', path: ['PAYMENT_SIMULATED_ACK'], message: 'simulated 支付模式需要显式确认 PAYMENT_SIMULATED_ACK=local-only' });
+    }
     if (!value.PAYMENT_SIMULATION_SECRET) {
       context.addIssue({ code: 'custom', path: ['PAYMENT_SIMULATION_SECRET'], message: 'simulated 支付模式需要至少 32 位的本地签名密钥' });
     }
+  } else if (value.PAYMENT_SIMULATED_ACK) {
+    context.addIssue({ code: 'custom', path: ['PAYMENT_SIMULATED_ACK'], message: 'PAYMENT_SIMULATED_ACK 只能在 simulated 支付模式下设置' });
+  }
+  if (value.DEPLOYMENT_ENV === 'production' && value.PAYMENT_MODE === 'sandbox') {
+    context.addIssue({ code: 'custom', path: ['PAYMENT_MODE'], message: 'production 部署环境不得使用支付宝沙箱模式' });
   }
   if (value.PAYMENT_MODE === 'sandbox' || value.PAYMENT_MODE === 'production') {
     for (const key of ['ALIPAY_APP_ID','ALIPAY_PRIVATE_KEY','ALIPAY_PUBLIC_KEY'] as const) {

@@ -37,6 +37,8 @@ export async function request(path:string, init?:RequestInit) {
       INPUT_TOO_LARGE:'订单输入超过 80,000 字符上限。',
       INVALID_PROOF:'支付凭证格式不正确。',
       PAYMENT_PREPARING:'支付预下单正在处理，请稍后重试。',
+      PAYMENT_PRECREATE_UNKNOWN:'预下单结果暂未确认，请勿重复付款；请稍后使用原支付凭证验证或联系运营核对。',
+      PAYMENT_PRECREATE_REJECTED:'支付宝拒绝了本次预下单，请稍后重新发起支付。',
       PAYMENT_MODE_MISMATCH:'订单支付模式与当前服务端配置不一致，请重新预下单。',
       PAYMENT_REJECTED:'支付宝未确认该支付凭证，请确认支付完成后重试。',
       ALIPAY_UNAVAILABLE:'支付宝接口暂时不可用，请稍后重试。',

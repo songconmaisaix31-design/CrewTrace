@@ -11,6 +11,7 @@ export function mountCommerce(http: Hono<{ Variables: { principal: Principal } }
   http.get(prefix, c => c.json({
     status: 'ok', paymentMode: commerce.payments.mode, officialPayment: commerce.payments.official,
     simulatedPayment: commerce.payments.simulated,
+    deploymentEnv: app.config.DEPLOYMENT_ENV, publicDeployment: app.config.PUBLIC_DEPLOYMENT,
   }));
   http.get(`${prefix}/services`, async c => c.json(await commerce.services()));
   http.post(`${prefix}/orders`, async c => c.json(await commerce.createOrder(c.get('principal'), await c.req.json()), 201));
@@ -21,6 +22,9 @@ export function mountCommerce(http: Hono<{ Variables: { principal: Principal } }
     if (payment.paymentLink) c.header('amtPaymentLink', payment.paymentLink);
     return c.json(payment);
   });
+  http.post(`${prefix}/orders/:id/payment/reconcile`, async c => c.json(
+    await commerce.reconcilePayment(c.get('principal'), id(c.req.param('id')), await c.req.json()),
+  ));
   http.post(`${prefix}/orders/:id/payment-proof`, async c => {
     const header = c.req.header('Payment-Proof');
     if (!header) throw new AppError(400, 'INVALID_PROOF', '需要 Payment-Proof 请求头');
