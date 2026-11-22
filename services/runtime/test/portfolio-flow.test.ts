@@ -10,7 +10,8 @@ import { migrate } from '../src/migrate.js';
 test('真实 PostgreSQL + HTTP + MCP：验证、验收与下一次排名', async () => {
   const database = new URL(process.env.DATABASE_URL ?? '');
   assert.equal(database.pathname, '/crewtrace_v2_test');
-  assert.ok(database.searchParams.get('host')?.endsWith('/CrewTrace-reputation-v2/.local/pg-data'));
+  const socket = database.searchParams.get('host');
+  assert.ok(socket ? socket.endsWith('/CrewTrace-reputation-v2/.local/pg-data') : database.hostname === '127.0.0.1');
   assert.ok(!process.env.CHAIN_ADAPTER_MODULE && !process.env.COLLABORATION_CHAIN_CONTRACT);
   const { default: app, runtime } = await import('../src/index.js');
   const server = serve({ fetch: app.fetch, hostname: '127.0.0.1', port: 0 });
@@ -79,6 +80,7 @@ test('真实 PostgreSQL + HTTP + MCP：验证、验收与下一次排名', async
     assert.equal(ranked.candidates.find((a: {agentId: string})=>a.agentId===peer.agent.agentId).sampleSize, 0);
     const stored = await runtime.db.pool.query('SELECT document FROM experiment_matching_decisions WHERE id=$1',[ranked.id]);
     assert.deepEqual(stored.rows[0].document, ranked);
+    assert.deepEqual(await api(`/tasks/${next.taskId}/matching`), ranked);
     const readBack = await call('get_collaboration_task', { taskId: task.taskId });
     assert.equal(readBack.handoffs.find((value: {handoffId: string})=>value.handoffId===good.handoffId).status, 'ACCEPTED');
   } finally {

@@ -27,6 +27,12 @@ export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>
   http.get(`${prefix}/tasks`,async c=>c.json(await service.tasks(c.req.query())));
   http.post(`${prefix}/tasks`,async c=>c.json(await service.createTask(c.get('principal'),await c.req.json()),201));
   http.get(`${prefix}/tasks/:id`,async c=>c.json(await service.taskDetails(id(c.req.param('id')))));
+  http.get(`${prefix}/tasks/:id/matching`,async c=>{
+    const taskId=id(c.req.param('id'));
+    await service.task(taskId);
+    const {rows}=await app.db.pool.query('SELECT document FROM experiment_matching_decisions WHERE task_id=$1 ORDER BY created_at DESC,id DESC LIMIT 1',[taskId]);
+    return c.json(rows[0]?.document??null);
+  });
   http.post(`${prefix}/tasks/:id/matching`,async c=>c.json(await snapshotMatching(service,c.get('principal'),id(c.req.param('id'))),201));
   http.get(`${prefix}/tasks/:id/evidence`,async c=>{
     const taskId=id(c.req.param('id'));
