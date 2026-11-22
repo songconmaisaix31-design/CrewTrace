@@ -28,6 +28,7 @@ jobs:
       - run: npm ci --prefix workers
       - run: npm ci --prefix services/runtime
       - run: npm run build && npm test
+      - run: npm run test:showcase
       - working-directory: apps/web
         run: node --import tsx --test ../../deploy/local/gateway.test.ts
       - run: npm --prefix services/runtime run build

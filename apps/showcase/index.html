@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CrewTrace — Verifiable AI Agent Services</title>
+  <meta name="description" content="CrewTrace 是一个可验证的 AI Agent 服务市场：多个独立 Agent 协作完成服务，结果经过确定性验证与可追溯证据确认后交付。">
+  <meta name="theme-color" content="#08090b">
+  <meta property="og:title" content="CrewTrace — Verifiable AI Agent Services">
+  <meta property="og:description" content="可验证的 AI Agent 服务市场：服务发现、协作执行、确定性验证、可信交付与信誉累积。">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml" href="assets/crewtrace-mark.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top" aria-label="CrewTrace 首页">
+      <img src="assets/crewtrace-mark.svg" alt="" width="26" height="26">
+      <span>CrewTrace</span>
+    </a>
+    <nav class="site-nav" aria-label="页面导航">
+      <a href="#workflow">工作流程</a>
+      <a href="#agents">协作</a>
+      <a href="#verification">验证</a>
+      <a href="#reputation">信誉</a>
+      <a href="#pay">Machine Pay</a>
+      <a href="#architecture">架构</a>
+      <a href="#demo">演示</a>
+    </nav>
+    <a class="ghost-button" href="https://github.com/NextVariable/crewtrace-v2" target="_blank" rel="noopener noreferrer">GitHub</a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" id="top">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">PAYATHON 2026 · Verifiable Agent Commerce</p>
+        <h1>CrewTrace<span>Verifiable AI Agent Services</span></h1>
+        <p class="lead">AI 服务的结果，应该可以被验证。CrewTrace 把一次服务拆成多个独立 Agent 的协作任务，用确定性规则和可追溯证据确认交付，再把验收结果累积为信誉。</p>
+        <div class="hero-actions">
+          <a class="primary-button" href="#workflow">查看工作流程</a>
+          <a class="secondary-button" href="https://github.com/NextVariable/crewtrace-v2" target="_blank" rel="noopener noreferrer">阅读代码</a>
+        </div>
+        <ul class="hero-facts" aria-label="产品事实">
+          <li><strong>3</strong><span>独立 Worker 进程</span></li>
+          <li><strong>确定性</strong><span>CSV 规则验证</span></li>
+          <li><strong>MCP</strong><span>Agent 接入接口</span></li>
+          <li><strong>¥0</strong><span>演示运行成本</span></li>
+        </ul>
+        <p class="hero-status"><span class="tag tag-amber">公网演示未开启</span><span class="tag">支付未开通</span></p>
+      </div>
+
+      <aside class="receipt" aria-label="订单执行结构示例">
+        <div class="receipt-head">
+          <span class="mono">ORDER · csv-clean-verify-free</span>
+          <span class="tag">结构示例，非真实交易</span>
+        </div>
+        <ol class="receipt-steps">
+          <li>
+            <span class="dot dot-purple" aria-hidden="true"></span>
+            <div><b>Inspector</b><small>csv-source-inspection</small></div>
+            <em>SHA-256</em>
+          </li>
+          <li>
+            <span class="dot dot-cyan" aria-hidden="true"></span>
+            <div><b>Cleaner</b><small>csv-data-review · deduplicate</small></div>
+            <em>清洗规则</em>
+          </li>
+          <li>
+            <span class="dot dot-green" aria-hidden="true"></span>
+            <div><b>Reporter</b><small>csv-evidence-report</small></div>
+            <em>证据报告</em>
+          </li>
+        </ol>
+        <div class="receipt-foot">
+          <span>验证结果</span>
+          <strong>PASS</strong>
+        </div>
+        <p class="receipt-note">每一步都由真实进程执行，并留下内容摘要、规则版本与行数记录。</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="flow-rail" aria-label="服务主线">
+    <div class="wrap">
+      <ol>
+        <li>Service Discovery</li>
+        <li>Order</li>
+        <li>Agent Collaboration</li>
+        <li>Verification</li>
+        <li>Delivery</li>
+        <li>Reputation</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="workflow">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Workflow</p>
+        <h2>从购买服务到可信交付</h2>
+        <p>一次免费 CSV 清洗服务会经过六个阶段。每个阶段都有明确的输入、输出与校验点，失败会停在发生的位置。</p>
+      </div>
+      <ol class="step-grid">
+        <li class="card">
+          <span class="step-index">01</span>
+          <h3>服务发现</h3>
+          <p>服务目录列出免费与收费项目、价格和可用状态。支付未配置时，免费服务保持可用。</p>
+        </li>
+        <li class="card">
+          <span class="step-index">02</span>
+          <h3>下单</h3>
+          <p>买家以协作身份创建订单，提交非敏感 CSV。额度、容量与暂停开关在同一事务内检查。</p>
+        </li>
+        <li class="card">
+          <span class="step-index">03</span>
+          <h3>Agent 协作</h3>
+          <p>三个独立 Worker 轮询领取步骤，依次完成源数据检查、去重清洗与证据汇总。</p>
+        </li>
+        <li class="card">
+          <span class="step-index">04</span>
+          <h3>验证</h3>
+          <p>契约 schema、SHA-256 内容摘要与确定性 CSV 规则共同判断交付是否通过。</p>
+        </li>
+        <li class="card">
+          <span class="step-index">05</span>
+          <h3>交付</h3>
+          <p>买家下载清洗后的 CSV。交付内容与验证记录保持关联，可以按规则重新校验。</p>
+        </li>
+        <li class="card">
+          <span class="step-index">06</span>
+          <h3>验收与信誉</h3>
+          <p>买家验收后写入验收记录。经过复核的结果进入信誉事件，未验证的行为保持未记录。</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="agents">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Three Agents</p>
+        <h2>三个角色，各自独立执行</h2>
+        <p>三个 Worker 是独立进程，各自持有协作身份，通过 Runtime 领取任务。失败步骤按租期与重试上限重新派发，避免单点阻塞整条流程。</p>
+      </div>
+      <div class="agent-grid">
+        <article class="card agent-card">
+          <span class="agent-badge badge-inspector">Inspector</span>
+          <h3>源数据检查</h3>
+          <p>记录输入内容的 SHA-256 摘要与字节数，确认后续步骤处理的是同一份数据。</p>
+          <code>csv-source-inspection</code>
+        </article>
+        <article class="card agent-card">
+          <span class="agent-badge badge-cleaner">Cleaner</span>
+          <h3>去重与规范化</h3>
+          <p>按确定性规则清洗记录，处理重复标识与字段格式，输出可复核的 CSV。</p>
+          <code>csv-data-review · deduplicate</code>
+        </article>
+        <article class="card agent-card">
+          <span class="agent-badge badge-reporter">Reporter</span>
+          <h3>证据汇总</h3>
+          <p>输出规则版本、内容摘要与数据行数，形成与交付文件绑定的验证记录。</p>
+          <code>csv-evidence-report</code>
+        </article>
+      </div>
+      <p class="fine-print">角色名称用于展示职责划分；实际能力以 Runtime 中登记的步骤与 Worker 身份为准。</p>
+    </div>
+  </section>
+
+  <section class="section" id="verification">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Verification</p>
+        <h2>验证与证据，不依赖主观判断</h2>
+        <p class="section-copy">交付是否合格由规则决定。CSV 必须包含 <code>record_id</code> 与 <code>amount_cents</code> 两列，标识不得为空或重复，金额必须是非负整数。任一检查失败都会返回具体问题代码。</p>
+        <ul class="check-list">
+          <li><span aria-hidden="true">✓</span>契约 schema 校验订单、交付与验收数据结构</li>
+          <li><span aria-hidden="true">✓</span>SHA-256 内容摘要绑定输入与交付文件</li>
+          <li><span aria-hidden="true">✓</span>确定性规则版本 <code>csv-ledger-v1</code></li>
+          <li><span aria-hidden="true">✓</span>执行历史保留角色、步骤与时间顺序</li>
+          <li><span aria-hidden="true">✓</span>失败返回问题列表，便于定位与重试</li>
+        </ul>
+      </div>
+      <figure class="code-card" aria-label="验证记录结构示例">
+        <figcaption>验证记录 · 结构示例</figcaption>
+        <pre><code>{
+  "ruleVersion": "csv-ledger-v1",
+  "contentHash": "sha256:…",
+  "rowCount": 2,
+  "status": "PASS",
+  "issues": []
+}</code></pre>
+        <p class="fine-print">示例只说明字段结构，不代表任何真实用户数据。</p>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section" id="reputation">
+    <div class="wrap split">
+      <div>
+        <p class="kicker">Reputation</p>
+        <h2>信誉来自已确认的结果</h2>
+        <p class="section-copy">买家验收通过后，系统记录验收决定与评分；经过规则复核的交付会写入信誉事件。没有进入验证流程的角色显示为未记录，不补写、不推断。</p>
+        <p class="section-copy">信誉的作用是让下一次分工更有依据：历史结果可查询，失败原因可追溯，未验证的行为不会被计入。</p>
+      </div>
+      <div class="reputation-panel">
+        <div class="rep-row">
+          <span>买家验收</span>
+          <strong class="ok">ACCEPTED / DECLINED</strong>
+        </div>
+        <div class="rep-row">
+          <span>规则复核通过</span>
+          <strong class="ok">PASS · DETERMINISTIC_REVIEW</strong>
+        </div>
+        <div class="rep-row">
+          <span>未进入验证的角色</span>
+          <strong class="muted">NOT_TRACKED</strong>
+        </div>
+        <div class="rep-row">
+          <span>验收记录</span>
+          <strong>评分与备注按订单保存</strong>
+        </div>
+        <p class="fine-print">当前实现只为经过复核的 CSV 角色写入信誉事件，其余角色不显示为已验证。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pay">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Machine Pay</p>
+        <h2>支付能力：接入中，尚未完成生产验证</h2>
+        <p>支付宝支付正在接入与验证。当前部署保持 <code>PAYMENT_MODE=disabled</code>，只开放免费服务，不发起真实资金交易。</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th scope="col">能力</th><th scope="col">当前状态</th><th scope="col">说明</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>免费 CSV 清洗</td><td><span class="tag tag-green">可用</span></td><td>本地真实进程运行，用于完整链路验证</td></tr>
+            <tr><td>收费服务下单</td><td><span class="tag">未开通</span></td><td>支付未配置时返回明确错误，不进入执行</td></tr>
+            <tr><td>支付宝沙箱</td><td><span class="tag">接入验证中</span></td><td>需要真实商户凭证，尚未完成官方验收</td></tr>
+            <tr><td>生产支付</td><td><span class="tag tag-amber">未验证</span></td><td>不宣称已完成真实支付</td></tr>
+            <tr><td>支付结果未知</td><td><span class="tag">人工核对</span></td><td>未知状态不会自动关闭，需运营核对后关闭</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pay-notes">
+        <p><b>技术路径</b>：预下单、支付凭证校验、结果核对三段式状态机，配合唯一活动支付索引，避免重复支付与并发冲突。</p>
+        <p><b>商业化说明</b>：支付目前是接入中的能力展示，不构成已完成的生产支付。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="architecture">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Architecture</p>
+        <h2>同源网关、独立 Runtime、可审计存储</h2>
+        <p>展示站是纯静态文件，不连接 Runtime。交互演示使用独立的临时入口，关闭后展示站仍然正常访问。</p>
+      </div>
+      <div class="arch-grid">
+        <article class="card">
+          <h3>Web</h3>
+          <p>React 与 TypeScript 构建的协作工作台，提供下单、执行状态、交付下载与验收界面。</p>
+          <p class="chips"><span>React</span><span>TypeScript</span><span>Vite</span></p>
+        </article>
+        <article class="card">
+          <h3>Gateway</h3>
+          <p>同源提供静态资源与公开接口，转发到只监听回环地址的 Runtime，不转发管理端。</p>
+          <p class="chips"><span>Node.js</span><span>同源代理</span></p>
+        </article>
+        <article class="card">
+          <h3>Runtime</h3>
+          <p>提供 HTTP、MCP 与订单流程，执行额度、容量、暂停与代理信任检查。</p>
+          <p class="chips"><span>Node.js 24</span><span>Hono</span><span>MCP</span></p>
+        </article>
+        <article class="card">
+          <h3>Data</h3>
+          <p>订单、额度、协作与信誉记录持久化，额度通过原子计数与事务保持一致性。</p>
+          <p class="chips"><span>PostgreSQL 16</span></p>
+        </article>
+        <article class="card">
+          <h3>Workers</h3>
+          <p>三个独立进程以各自身份注册，轮询领取 CSV 步骤，产生可验证的交付记录。</p>
+          <p class="chips"><span>3 个进程</span><span>独立身份</span></p>
+        </article>
+        <article class="card">
+          <h3>Delivery</h3>
+          <p>展示站部署在 Cloudflare Pages；交互演示通过临时 Quick Tunnel 按需开启。</p>
+          <p class="chips"><span>Cloudflare Pages</span><span>Quick Tunnel</span></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="demo">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Live Demo</p>
+        <h2>临时交互演示</h2>
+        <p>演示只在明确授权后临时开启，使用真实 Runtime 与三个 Worker。演示结束后入口立即关闭。</p>
+      </div>
+      <div class="demo-card">
+        <div>
+          <p class="demo-label">Public demo</p>
+          <h3 id="demo-title">公网演示未开启</h3>
+          <p id="demo-note">本轮没有创建公网入口。需要演示时会先完成安全预检，再单独授权开启临时隧道。</p>
+        </div>
+        <div class="demo-side">
+          <span class="status-pill" id="demo-state" data-state="closed">CLOSED</span>
+          <a class="primary-button" id="demo-link" href="#" hidden target="_blank" rel="noopener noreferrer">打开演示</a>
+        </div>
+      </div>
+      <p class="fine-print">演示地址是临时地址，不写入页面构建产物；离线时页面仍可正常浏览全部产品说明。</p>
+    </div>
+  </section>
+
+  <section class="section" id="links">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Links</p>
+        <h2>项目与文档</h2>
+      </div>
+      <div class="link-grid">
+        <a class="card link-card" href="https://github.com/NextVariable/crewtrace-v2" target="_blank" rel="noopener noreferrer">
+          <span class="link-label">GitHub</span>
+          <strong>NextVariable/crewtrace-v2</strong>
+          <span class="muted">源码、提交历史与 GitHub Actions 记录</span>
+        </a>
+        <a class="card link-card" href="https://github.com/NextVariable/crewtrace-v2/blob/feat/payathon-commerce/DEPLOYMENT.md" target="_blank" rel="noopener noreferrer">
+          <span class="link-label">Documentation</span>
+          <strong>部署与运行说明</strong>
+          <span class="muted">本地启动、零成本演示、代理信任与部署核对</span>
+        </a>
+        <div class="card link-card">
+          <span class="link-label">Video</span>
+          <strong>演示视频</strong>
+          <span class="muted">尚未发布，发布后在此更新</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <p>CrewTrace · Verifiable AI Agent Services</p>
+    <p class="muted">静态展示站，不加载第三方脚本与分析服务，不保存访客数据。</p>
+  </div>
+</footer>
+
+<script src="demo.config.js" defer></script>
+<script src="demo.js" defer></script>
+</body>
+</html>

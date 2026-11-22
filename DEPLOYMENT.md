@@ -176,3 +176,41 @@ DATABASE_URL=... ADMIN_TOKEN=... PUBLIC_BASE_URL=https://... \
 7. 核对个人 URL、Git SHA、数据库连通、MCP、日志与回滚路径，运行 `npm run preflight:deploy` 确认没有失败项。
 
 当前没有个人云资源授权，本轮未执行上述云端步骤，状态为 `BLOCKED`。
+
+## Cloudflare Pages 固定展示站
+
+长期展示站位于 `apps/showcase`，由 `index.html`、`styles.css`、`demo.config.js` 与本地 SVG 组成。它不连接 Runtime、不发起任何网络请求、不加载第三方脚本或分析服务，Runtime 离线时仍可完整浏览。构建产物就是该目录本身，不需要构建命令与输出目录配置。
+
+本地验证使用 `npm run test:showcase` 检查板块完整性、支付状态表述、演示入口默认关闭、内部地址与密钥泄漏以及外部脚本。桌面与移动端渲染另用本地静态服务器和 Playwright 检查横向溢出与演示状态。
+
+本地预览命令：
+
+```bash
+npx --yes wrangler@4 pages dev apps/showcase --port 8090
+```
+
+授权后创建并发布：
+
+```bash
+npx wrangler whoami
+npx wrangler pages project create crewtrace-showcase --production-branch main
+npx wrangler pages deploy apps/showcase --project-name crewtrace-showcase --branch main
+```
+
+项目名以平台可用性为准。选择 Pages Free，不绑定自定义域名，不启用付费功能，不创建 R2、KV、D1 或 Workers 资源。部署方式为直接上传静态目录，因此不需要把私有仓库授权给 Cloudflare GitHub App；若改用 Git 集成，需要单独确认仓库访问权限。
+
+云资源变更清单与费用：
+
+| 资源 | 变更 | 费用 |
+| --- | --- | --- |
+| Cloudflare Pages 项目 | 新建 1 个，Free 计划 | ¥0 |
+| Pages 部署 | 静态文件上传 | ¥0 |
+| 域名与 DNS | 不创建，使用 `*.pages.dev` | ¥0 |
+| 环境变量与构建 | 无 | ¥0 |
+| 其他 Cloudflare 资源 | 不创建 | ¥0 |
+
+回滚使用控制台保留的历史部署切回上一版本，或重新上传上一提交的 `apps/showcase` 目录。删除 Pages 项目即可完全撤销，不保留计费资源。
+
+演示入口由 `apps/showcase/demo.config.js` 控制，默认 `status: 'closed'` 且 `url: ''`，页面显示“公网演示未开启”。只有在 Quick Tunnel 已确认在线时，才临时把状态改为 `live` 并填入当次地址后重新部署；演示结束立即改回 `closed` 并重新部署。真实隧道地址不写入仓库，仓库内测试会检查页面与配置中不存在 `trycloudflare.com` 实例地址。
+
+当前状态：展示站本地完成并通过内容检查与桌面、移动端渲染验证；Pages 项目尚未创建，等待账户登录与云资源变更确认。
