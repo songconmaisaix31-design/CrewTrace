@@ -49,7 +49,7 @@ test('真实 HTTP 服务关闭旧演示接口，仅公开协作配置且不暴�
     const legacyStatus=await fetch(`${base}?action=status`);assert.equal(legacyStatus.status,405);
     for(const path of ['/api/runs/closed-entry','/api/artifacts/closed-entry','/api/template','/api/criteria']){const response=await fetch(`${base}?path=${encodeURIComponent(path)}`);assert.equal(response.status,405,path);}
     const publicStatus=await fetch(`${base}?action=collaboration-config`);const text=await publicStatus.text();assert(!text.includes(process.env.ADMIN_TOKEN));assert(!text.includes(process.env.DEMO_ACCESS_CODE));
-    const collaborationConfig=await fetch(`${base}?action=collaboration-config`);assert.equal(collaborationConfig.status,200);assert.deepEqual(await collaborationConfig.json(),{configured:true,mcpURL:'https://mcp.davidwang.space/mcp'});
+    const collaborationConfig=await fetch(`${base}?action=collaboration-config`);assert.equal(collaborationConfig.status,200);assert.deepEqual(await collaborationConfig.json(),{configured:true,mcpURL:'http://127.0.0.1:1/mcp'});
     const invalid=await fetch(`${base}?path=${encodeURIComponent('/admin/nodes')}`);assert.equal(invalid.status,405);
   }finally{
     await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));

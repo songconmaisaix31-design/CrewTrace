@@ -5,6 +5,7 @@ const configSchema = z.object({
   ADMIN_TOKEN: z.string().min(32),
   PUBLIC_BASE_URL: z.url(),
   PUBLIC_MCP_URL: z.url().optional(),
+  PUBLIC_WEB_URL: z.url().optional(),
   PORT: z.coerce.number().int().min(0).max(65535).default(3000),
   CHAIN_ADAPTER_MODULE: z.string().min(1).optional(),
   CHAIN_ID: z.coerce.number().int().positive().default(10143),
