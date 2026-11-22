@@ -1,6 +1,6 @@
 # PAYATHON 部署预检报告
 
-分支 `feat/payathon-commerce`，已审核远程 HEAD `ebf0947`。本轮未创建云资源、未发起支付；临时公网入口已完成验收并关闭。
+分支 `feat/payathon-commerce`。本轮创建 1 个 Pages Free 项目，未发起支付，临时公网入口已完成验收并关闭。
 
 ## 环境与基线
 
@@ -64,16 +64,23 @@
 | 额度归属 | 订单与注册额度只记入 `127.0.0.1` 桶 |
 | 关闭 | `stop.sh --pg` 后无 cloudflared、网关、Runtime、Worker、PostgreSQL 进程，3000、8080、55481 无监听，隧道地址文件已删除，公网地址返回 530 |
 
-## 待授权的外部操作
+## Pages 固定展示站
 
-Cloudflare Pages 固定展示站，当前阻塞于 Cloudflare 登录。完成 `wrangler login` 或提供具备 Pages 权限的 `CLOUDFLARE_API_TOKEN` 后执行：
+Cloudflare 个人账号 `yunhe.liu68@gmail.com`（账号 ID `85ca1ef1341b94900d45646838c238f3`）下创建 Pages Free 项目 `crewtrace-showcase`，使用 GitHub 集成，生产分支 `feat/payathon-commerce`，框架预设无、构建命令留空、输出目录 `apps/showcase`，未绑定自定义域名。
 
-```bash
-npx wrangler pages project create crewtrace-showcase --production-branch main
-npx wrangler pages deploy apps/showcase --project-name crewtrace-showcase --branch main
-```
-
-将新建 1 个 Pages Free 项目，使用平台分配的 `*.pages.dev` 地址，不绑定域名，不创建其他云资源，预计费用 ¥0。采用 Direct Upload，不启用 GitHub 集成，避免授予私有仓库访问权限；Direct Upload 项目创建后不能原地切换为 Git 集成。
+| 检查 | 结果 |
+| --- | --- |
+| 固定地址 | https://crewtrace-showcase.pages.dev |
+| 首次部署 | 生产环境，分支 `feat/payathon-commerce`，提交 `0f95b43` |
+| HTTPS 与首页 | HTTP 200，`content-type: text/html; charset=utf-8` |
+| 安全响应头 | CSP `default-src 'self'; script-src 'self'; connect-src 'none'; frame-ancestors 'none'`，`X-Frame-Options: DENY`，`X-Content-Type-Options: nosniff`，`Referrer-Policy: no-referrer`，`Permissions-Policy` 限制设备权限 |
+| 静态资源 | `styles.css`、`demo.js`、`demo.config.js`、`assets/crewtrace-mark.svg` 均 200 |
+| 桌面与移动 | 1440×900 与 390×844 均无横向滚动，9 个板块齐全，浏览器错误 0 |
+| 演示状态 | 页头与演示区均为 CLOSED，无演示外链 |
+| 隐私与链接 | 无 `github.com` 外链、无 `trycloudflare` 地址、无本机路径、无内部地址或密钥 |
+| 支付标注 | 明确显示“支付宝正式支付尚未验证”与“不代表真实客户交易” |
+| 本机依赖 | 本机 Runtime、数据库与隧道均已停止，展示站仍正常访问 |
+| 现有项目 | `crewtrace`（https://crewtrace.pages.dev）保持原样，未修改 |
 
 ## 状态
 
@@ -82,7 +89,7 @@ npx wrangler pages deploy apps/showcase --project-name crewtrace-showcase --bran
 | CODE_READY | 完成 |
 | LOCAL_VERIFIED | 完成 |
 | PUBLIC_VERIFIED | 完成，公网验收通过，隧道已关闭 |
-| PAGES_DEPLOYED | 未完成，阻塞于 Cloudflare 登录 |
+| PAGES_DEPLOYED | 完成，GitHub 集成与生产分支自动部署 |
 | OFFICIAL_PAYMENT_VERIFIED | 未完成，缺少真实商户凭证，支付保持 `disabled` |
 
 ## 费用
@@ -91,4 +98,4 @@ npx wrangler pages deploy apps/showcase --project-name crewtrace-showcase --bran
 
 ## 剩余风险
 
-临时隧道已关闭，Quick Tunnel 的真实请求头行为已验证：Cloudflare 边缘拒绝伪造 `CF-Connecting-IP`，网关未启用 `GATEWAY_TRUST_CF_HEADER`。Pages 项目尚未创建，固定地址与移动网络可达性未验证。支付宝官方支付未验证，展示站明确标注尚未验证。
+临时隧道已关闭，Quick Tunnel 的真实请求头行为已验证：Cloudflare 边缘拒绝伪造 `CF-Connecting-IP`，网关未启用 `GATEWAY_TRUST_CF_HEADER`。Pages 展示站仅承载静态内容，不连接 Runtime，也不包含演示入口。支付宝官方支付未验证，展示站明确标注尚未验证。
