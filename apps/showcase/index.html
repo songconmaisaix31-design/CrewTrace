@@ -30,7 +30,7 @@
       <a href="#architecture">架构</a>
       <a href="#demo">演示</a>
     </nav>
-    <a class="ghost-button" href="https://github.com/NextVariable/crewtrace-v2" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <span class="status-pill" id="header-demo-state" data-state="closed">DEMO CLOSED</span>
   </div>
 </header>
 
@@ -43,7 +43,7 @@
         <p class="lead">AI 服务的结果，应该可以被验证。CrewTrace 把一次服务拆成多个独立 Agent 的协作任务，用确定性规则和可追溯证据确认交付，再把验收结果累积为信誉。</p>
         <div class="hero-actions">
           <a class="primary-button" href="#workflow">查看工作流程</a>
-          <a class="secondary-button" href="https://github.com/NextVariable/crewtrace-v2" target="_blank" rel="noopener noreferrer">阅读代码</a>
+          <a class="secondary-button" href="#verification">查看验证方式</a>
         </div>
         <ul class="hero-facts" aria-label="产品事实">
           <li><strong>3</strong><span>独立 Worker 进程</span></li>
@@ -317,7 +317,7 @@
           <a class="primary-button" id="demo-link" href="#" hidden target="_blank" rel="noopener noreferrer">打开演示</a>
         </div>
       </div>
-      <p class="fine-print">演示地址是临时地址，不写入页面构建产物；离线时页面仍可正常浏览全部产品说明。</p>
+      <p class="fine-print">演示使用非敏感测试数据，不代表真实客户交易。演示状态由发布时人工核对，不进行实时探测。</p>
     </div>
   </section>
 
@@ -328,22 +328,23 @@
         <h2>项目与文档</h2>
       </div>
       <div class="link-grid">
-        <a class="card link-card" href="https://github.com/NextVariable/crewtrace-v2" target="_blank" rel="noopener noreferrer">
-          <span class="link-label">GitHub</span>
-          <strong>NextVariable/crewtrace-v2</strong>
-          <span class="muted">源码、提交历史与 GitHub Actions 记录</span>
-        </a>
-        <a class="card link-card" href="https://github.com/NextVariable/crewtrace-v2/blob/feat/payathon-commerce/DEPLOYMENT.md" target="_blank" rel="noopener noreferrer">
+        <div class="card link-card">
+          <span class="link-label">Repository</span>
+          <strong>代码仓库</strong>
+          <span class="muted">当前为私有仓库，暂不公开；开源后在此补充链接</span>
+        </div>
+        <div class="card link-card">
           <span class="link-label">Documentation</span>
           <strong>部署与运行说明</strong>
-          <span class="muted">本地启动、零成本演示、代理信任与部署核对</span>
-        </a>
+          <span class="muted">随项目交付提供，暂不公开</span>
+        </div>
         <div class="card link-card">
           <span class="link-label">Video</span>
           <strong>演示视频</strong>
           <span class="muted">尚未发布，发布后在此更新</span>
         </div>
       </div>
+      <p class="fine-print">仓库与文档当前为私有，页面不提供可点击的代码或文档外链。</p>
     </div>
   </section>
 </main>
@@ -352,6 +353,7 @@
   <div class="wrap footer-inner">
     <p>CrewTrace · Verifiable AI Agent Services</p>
     <p class="muted">静态展示站，不加载第三方脚本与分析服务，不保存访客数据。</p>
+    <p class="muted">免费 Demo 使用测试数据，不代表真实客户交易；支付宝正式支付尚未验证。</p>
   </div>
 </footer>
 

@@ -62,8 +62,20 @@ test('Pages 安全响应头限制脚本、连接与嵌入', () => {
   assert.match(headers, /X-Content-Type-Options: nosniff/);
 });
 
-test('项目链接指向个人仓库与部署文档', () => {
-  assert.ok(html.includes('https://github.com/NextVariable/crewtrace-v2'));
-  assert.ok(html.includes('blob/feat/payathon-commerce/DEPLOYMENT.md'));
+test('私有仓库不提供误导性外链', () => {
+  assert.doesNotMatch(html, /https:\/\/github\.com/i);
+  assert.doesNotMatch(html, /blob\/feat\//);
+  assert.ok(html.includes('私有仓库'));
+  assert.ok(html.includes('页面不提供可点击的代码或文档外链'));
   assert.ok(html.includes('尚未发布'));
+});
+
+test('明确标记演示数据与支付状态', () => {
+  assert.ok(html.includes('不代表真实客户交易'));
+  assert.ok(html.includes('支付宝正式支付尚未验证'));
+  assert.ok(html.includes('不进行实时探测'));
+  assert.match(html, /id="header-demo-state"/);
+  const demoJs = readFileSync(join(root, 'demo.js'), 'utf8');
+  assert.match(demoJs, /DEMO LIVE/);
+  assert.match(demoJs, /DEMO CLOSED/);
 });

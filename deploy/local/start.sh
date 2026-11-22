@@ -11,7 +11,7 @@ TUNNEL=false
 for arg in "$@"; do
   case "$arg" in
     --tunnel) TUNNEL=true ;;
-    *) echo "未知参数 $arg，可用参数：--tunnel" >&2; exit 2 ;;
+    *) echo "未知参数 ${arg}，可用参数：--tunnel" >&2; exit 2 ;;
   esac
 done
 
@@ -184,5 +184,5 @@ fi
 SUCCESS=1
 log "演示已启动"
 log "  本机地址 http://127.0.0.1:${GATEWAY_PORT}"
-if $TUNNEL; then log "  公网地址 $PUBLIC_BASE_URL（用完立即执行 ./deploy/local/stop.sh）"; fi
+if $TUNNEL; then log "  公网地址 ${PUBLIC_BASE_URL}（用完立即执行 ./deploy/local/stop.sh）"; fi
 log "  在线 Worker ${online}/3，暂停状态 $(admin_get /admin/demo | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).deployment.paused)}catch{console.log("unknown")}})')"

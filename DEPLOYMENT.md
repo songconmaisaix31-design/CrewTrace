@@ -197,7 +197,7 @@ npx wrangler pages project create crewtrace-showcase --production-branch main
 npx wrangler pages deploy apps/showcase --project-name crewtrace-showcase --branch main
 ```
 
-项目名以平台可用性为准。选择 Pages Free，不绑定自定义域名，不启用付费功能，不创建 R2、KV、D1 或 Workers 资源。部署方式为直接上传静态目录，因此不需要把私有仓库授权给 Cloudflare GitHub App；若改用 Git 集成，需要单独确认仓库访问权限。
+项目名以平台可用性为准。选择 Pages Free，不绑定自定义域名，不启用付费功能，不创建 R2、KV、D1 或 Workers 资源。部署方式为直接上传静态目录，因此不需要把私有仓库授权给 Cloudflare GitHub App。Direct Upload 项目创建后不能原地切换为 Git 集成；如需 Git 自动部署，必须新建项目并授予 Cloudflare GitHub App 对私有仓库的访问权限。该权限与仓库访问令牌不写入展示站或本仓库。
 
 云资源变更清单与费用：
 
