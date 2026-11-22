@@ -5,6 +5,8 @@ import { AppError } from './errors.js';
 type Queryable = Pick<PoolClient, 'query'>;
 
 const DEMO_PAUSE_KEY = 'demo_pause';
+/** 容量专用事务级 advisory lock，所有连接与进程按同一键串行核对活动订单数。 */
+const DEMO_CAPACITY_LOCK = 83521002;
 
 export interface OrderReservation {
   agentId: string;
@@ -62,6 +64,8 @@ export class DemoGuard {
   /** 在创建订单事务内预占额度。调用方必须已确认订单是新建而非幂等重放。 */
   async reserveOrder(client: Queryable, input: OrderReservation): Promise<void> {
     if (!this.enabled) return;
+    // 容量核对与订单插入必须在同一事务内持有同一把锁，事务结束自动释放。
+    await client.query('SELECT pg_advisory_xact_lock($1::bigint)', [DEMO_CAPACITY_LOCK]);
     if (await this.paused(client)) {
       throw new AppError(503, 'DEMO_PAUSED', '免费 Demo 已暂停接受新订单，请稍后再试');
     }

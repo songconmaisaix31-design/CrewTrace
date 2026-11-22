@@ -1,6 +1,6 @@
 # 独立开发与部署
 
-当前开发仓库为个人仓库 `NextVariable/crewtrace-v2`，RC3 分支为 `feat/payathon-commerce`。团队远程 `songconmaisaix31-design/CrewTrace` 只读同步，不合并 V2 基线，不改动团队 main、团队域名、团队数据库、团队密钥和团队部署。个人 Web、Runtime 与 PostgreSQL 使用个人账户，Runtime 提供独立 MCP。
+当前开发仓库为个人仓库 `NextVariable/crewtrace-v2`，RC4 分支为 `feat/payathon-commerce`。团队远程 `songconmaisaix31-design/CrewTrace` 只读同步，不合并 V2 基线，不改动团队 main、团队域名、团队数据库、团队密钥和团队部署。个人 Web、Runtime 与 PostgreSQL 使用个人账户或本机资源，Runtime 提供独立 MCP。
 
 本地构建使用 `npm ci`、`npm ci --prefix workers`、`npm ci --prefix services/runtime`、`npm run build && npm test` 和 `npm --prefix services/runtime run build`。Runtime 在 Node 24 构建和部署。启动前向独立数据库运行 `npm --prefix services/runtime run migrate`。
 
@@ -60,13 +60,27 @@ Runtime 只有在直接连接来自 `TRUSTED_PROXY_CIDRS` 中的代理时才读�
 | 单 Agent 每日订单 | 5 | 数据库共享计数 |
 | 单地址每日 Agent 注册 | 5 | 数据库共享计数 |
 | 每日协作任务 | 100 | 数据库共享计数 |
-| 同时执行订单 | 10 | 创建前统计 `READY` 与 `IN_PROGRESS`，超限返回 `503 DEMO_CAPACITY_REACHED` |
+| 同时执行订单 | 10 | 事务级 advisory lock 内统计 `READY` 与 `IN_PROGRESS`，超限返回 `503 DEMO_CAPACITY_REACHED` |
 | 单次输入 | 80,000 字符 / 2,000 行 | 超限返回 `422 INPUT_TOO_LARGE` |
 | Worker 重试 | 3 次，租约 300 秒 | 超过重试上限标记工作流失败，租约到期允许其他 Worker 重新领取 |
 
 额度耗尽返回 `429 DEMO_QUOTA_EXCEEDED`，响应包含超限范围、限额与已用量。管理员可通过 `POST /admin/demo/pause` 设置 `{"paused":true}` 立即停止新订单、新注册与新协作任务，恢复时提交 `false`。
 
 公开部署下，非管理员不能通过 HTTP 或 MCP 创建、修改协作任务，不能认领、交付或验收，也不能创建运行；这些入口返回 `403 PUBLIC_DEMO_READ_ONLY`，MCP 工具列表直接隐藏对应工具。免费清洗服务仍可正常下单。
+
+## 并发容量
+
+`reserveOrder` 在事务内先执行 `pg_advisory_xact_lock(83521002)`，再统计活动订单并递增额度；订单插入与额度占用在同一事务中，提交或回滚时锁自动释放。所有写入还会先持有 `store.write` 的全局 advisory lock `83521001`，两个键的顺序固定为 `83521001`、`83521002`，不存在反向获取。
+
+由此保证多连接、多进程看到相同的活动订单数：50 个并发请求分配到两个独立连接池，只有等于 `DEMO_MAX_ACTIVE_ORDERS` 的订单成功，其余返回 `503 DEMO_CAPACITY_REACHED`。幂等重放命中已有订单时不进入额度递增；额度超限时整笔事务回滚，先前递增的计数不会残留；订单进入 `COMPLETED`、`FAILED` 或 `CANCELED` 后不再计入容量。
+
+## 零成本本地演示
+
+演示使用本机 Node 24、本地 PostgreSQL、现有 Web 构建、三个独立 Worker 进程和入口网关，全部监听 `127.0.0.1`。入口网关同源提供 `apps/web/dist`，把 `/api`、`/mcp`、`/health` 转发到 Runtime，不转发 `/admin`。公网入口仅在显式授权时通过 Cloudflare Quick Tunnel 开启，不创建云主机、域名或付费服务。
+
+启动与故障处理见 `deploy/local/README.md`。常用命令为 `./deploy/local/start.sh`、`./deploy/local/status.sh`、`./deploy/local/pause.sh`、`./deploy/local/resume.sh`、`./deploy/local/stop.sh`，开启公网入口使用 `CREWTRACE_TUNNEL_AUTHORIZED=yes ./deploy/local/start.sh --tunnel`。
+
+Quick Tunnel 兼容性结论：`/mcp` 使用无状态 Streamable HTTP 与 JSON 响应，不依赖会话粘滞或长连接；Quick Tunnel 保留原始 Host，Runtime 的 Host 校验以同一隧道地址的 `PUBLIC_BASE_URL` 通过。入口网关把 `CF-Connecting-IP` 覆写为 `X-Forwarded-For`，Runtime 以 `PROXY_TRUST_MODE=cidr` 只信任 `127.0.0.1/32` 与 `::1/128`，客户端自带的转发头不生效。隧道域名每次启动变化，因此启动顺序固定为网关、隧道、解析地址、Runtime，隧道地址变化后需要重启 Runtime。以上机制由 `deploy/local/gateway.test.ts` 覆盖；真实公网域名验证需要显式授权后执行 `.local/rc4-tunnel-check.sh`。
 
 ## 支付结果未知与人工核对
 
@@ -100,7 +114,7 @@ DATABASE_URL=... ADMIN_TOKEN=... PUBLIC_BASE_URL=https://... \
   EXPERIMENT_WORKER_AGENT_IDS=id1,id2,id3 npm run preflight:deploy
 ```
 
-脚本只读检查 Node 24、Runtime 与 Worker 依赖、Web 构建产物、运行配置、代理信任、全局额度、输入上限、部署 SHA、数据库连通与权限、迁移 `001` 至 `015`、额度表、暂停开关、Worker 在线状态表、支付唯一活动索引、免费与收费服务状态和公开部署安全约束，不创建云资源。未设置 `RC3_DEPLOY_AUTHORIZED=yes` 时云端状态固定为 `BLOCKED`。预检通过只代表本地和配置就绪，不代表公网部署成功。
+脚本只读检查 Node 24、Runtime 与 Worker 依赖、Web 构建产物、入口网关与启停脚本、运行配置、代理信任、全局额度、输入上限、部署 SHA、数据库连通与权限、`listen_addresses`、迁移 `001` 至 `015`、额度表、暂停开关、Worker 在线状态表、支付唯一活动索引、免费与收费服务状态、回环监听、链上写入关闭、公网入口授权与管理员令牌文件权限，不创建云资源。未设置 `RC3_DEPLOY_AUTHORIZED=yes` 时云端状态固定为 `BLOCKED`；未设置 `CREWTRACE_TUNNEL_AUTHORIZED=yes` 时隧道状态固定为 `CLOSED`。预检通过只代表本地和配置就绪，不代表公网部署成功。
 
 ## 部署目标与现状
 
@@ -114,6 +128,7 @@ DATABASE_URL=... ADMIN_TOKEN=... PUBLIC_BASE_URL=https://... \
 | Worker 主机 | 与 Runtime 同机的三个常驻进程，分别具有三项 CSV 能力 | 本地已验证，云主机 BLOCKED |
 | 日志 | journald 或轮转文件，至少保留 7 天 | 方案已确认，未部署 |
 | 恢复 | Runtime 回滚到上一已验证部署，数据库迁移单独评估后执行 | 方案已确认，未演练 |
+| 零成本公网入口 | Cloudflare Quick Tunnel 指向本机网关，仅演示期间开启 | CLOSED，等待显式授权 |
 
 三个 Worker 常驻会持续轮询 `/api/collaboration/csv-worker/poll`，轮询间隔约 1.5 秒。常驻成本主要来自 VPS 运行时长，Runtime 请求量在同一台主机上不产生额外调用费。
 

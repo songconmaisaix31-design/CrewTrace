@@ -218,3 +218,15 @@ Playwright 免费 Demo 端到端测试使用隔离 schema、真实 Runtime 与�
 ## 支付宝验收
 
 支付保持 `disabled`，未扩展 Machine Pay，未使用真实商户密钥，未发起资金交易。沙箱验收脚本在缺少确认标记或商户凭证时仍输出 `BLOCKED`，退出码 2，`PRECREATE_OK` 与 `VERIFIED` 未取得。
+
+## RC4 并发容量与零成本部署
+
+容量核对改为在创建订单事务内先获取 `pg_advisory_xact_lock(83521002)`，再统计 `READY` 与 `IN_PROGRESS` 并递增额度，订单插入、额度占用与容量检查同事务提交或回滚。写入路径继续先持有全局 advisory lock `83521001`，两个键顺序固定，不存在反向获取。
+
+`test/demo-quotas.test.ts` 新增三项验证。50 个并发请求分配到两个独立 `Application` 连接池，10 个订单成功、40 个返回 `503 DEMO_CAPACITY_REACHED`，数据库活动订单数与 `order:global` 已用量均为 10。同一幂等键重放返回相同 `orderId`，`order:global` 保持 1；随后因单地址额度超限被拒，先前递增的全局计数回滚为 1，订单表只有 1 条记录。订单改为 `COMPLETED` 后，新的请求重新获得容量。
+
+Node 24 下 Runtime 测试 64 项全部通过，入口网关测试 3 项全部通过，Web 测试 3 项通过，Worker 测试 7 项通过。Playwright `browser-portfolio.spec.ts` 使用隔离 schema、真实 Runtime 与三个真实 Worker，在 Node 24 下 1 项通过，耗时 11.1 秒。
+
+部署预检在 Node 24 下 36 项全部通过，输出 `LOCAL_READY`。新增检查包括入口网关与启停脚本存在、Runtime 与网关仅回环监听、链上写入关闭、公网入口显式授权、管理员令牌文件权限，以及 PostgreSQL `listen_addresses` 为 `127.0.0.1`。云端 `BLOCKED`，隧道 `CLOSED`，没有创建云资源，也没有开启公网入口。
+
+`deploy/local/gateway.test.ts` 验证网关只提供 `apps/web/dist`、拒绝路径穿越与 `/admin`、转发 Host 与请求体、以 `CF-Connecting-IP` 覆写 `X-Forwarded-For`，并通过 `/api/web` 返回公网 MCP 地址。Quick Tunnel 的真实域名验证需要显式授权后执行 `.local/rc4-tunnel-check.sh`，本轮未开启。

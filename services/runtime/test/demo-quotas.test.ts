@@ -46,6 +46,29 @@ async function withApp(overrides: Record<string, unknown>, run: (context: { base
   }
 }
 
+/** 两个独立 Application 各持连接池，等价于两个 Runtime 进程共享同一数据库。 */
+async function withApps(count: number, overrides: Record<string, unknown>, run: (context: { bases: string[]; apps: Application[] }) => Promise<void>) {
+  const apps = Array.from({ length: count }, () => new Application(runtime.db, { ...runtime.config, ...PUBLIC, ...overrides } as typeof runtime.config));
+  const servers = apps.map(app => serve({ fetch: createHttp(app).fetch, hostname: '127.0.0.1', port: 0 }));
+  for (const server of servers) if (!server.listening) await once(server, 'listening');
+  const bases = servers.map((server, index) => {
+    const address = server.address();
+    assert.ok(address && typeof address !== 'string');
+    const base = `http://127.0.0.1:${address.port}`;
+    apps[index].config.PUBLIC_BASE_URL = base;
+    apps[index].config.PUBLIC_MCP_URL = `${base}/mcp`;
+    return base;
+  });
+  try {
+    await run({ bases, apps });
+  } finally {
+    for (const server of servers) {
+      (server as unknown as { closeAllConnections(): void }).closeAllConnections();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  }
+}
+
 async function reset(): Promise<void> {
   await runtime.db.pool.query('DELETE FROM demo_usage_counters');
   await runtime.db.pool.query("UPDATE runtime_settings SET value='{\"paused\":false}'::jsonb WHERE key='demo_pause'");
@@ -62,11 +85,11 @@ async function register(base: string, name: string, ip: string): Promise<{ agent
   return JSON.parse(text) as { agentId: string; credential: string };
 }
 
-function order(base: string, credential: string, ip: string, input = INPUT) {
+function order(base: string, credential: string, ip: string, input = INPUT, idempotencyKey = randomUUID()) {
   return fetch(`${base}/api/commerce/orders`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${credential}`, 'Content-Type': 'application/json', 'X-Forwarded-For': ip },
-    body: JSON.stringify({ serviceId: 'csv-clean-verify-free', expectedServiceVersion: 1, idempotencyKey: randomUUID(), inputCsv: input }),
+    body: JSON.stringify({ serviceId: 'csv-clean-verify-free', expectedServiceVersion: 1, idempotencyKey, inputCsv: input }),
   });
 }
 
@@ -128,6 +151,68 @@ test('同时执行上限在创建订单前生效', async () => {
     const second = await order(base, buyer.credential, '203.0.113.40');
     assert.equal(second.status, 503);
     assert.equal((await second.json() as { error: { code: string } }).error.code, 'DEMO_CAPACITY_REACHED');
+  });
+});
+
+test('订单进入终态后释放执行容量', async () => {
+  await reset();
+  await withApp({ DEMO_MAX_ACTIVE_ORDERS: 1 }, async ({ base }) => {
+    const buyer = await register(base, 'Release buyer', '198.51.100.12');
+    assert.equal((await order(base, buyer.credential, '203.0.113.60')).status, 201);
+    assert.equal((await order(base, buyer.credential, '203.0.113.60')).status, 503);
+    await runtime.db.pool.query("UPDATE commerce_orders SET status='COMPLETED' WHERE status IN ('READY','IN_PROGRESS')");
+    assert.equal((await order(base, buyer.credential, '203.0.113.60')).status, 201);
+  });
+});
+
+test('50 个并发请求跨两个连接池不突破执行容量上限', async () => {
+  await reset();
+  await withApps(2, { DEMO_MAX_ACTIVE_ORDERS: 10 }, async ({ bases }) => {
+    const buyer = await register(bases[0], 'Stress buyer', '198.51.100.8');
+    const responses = await Promise.all(Array.from({ length: 50 }, (_, index) => order(
+      bases[index % 2], buyer.credential, `203.0.113.${100 + index}`,
+    )));
+    const statuses = responses.map(response => response.status);
+    assert.equal(statuses.filter(status => status === 201).length, 10, JSON.stringify(statuses));
+    assert.equal(statuses.filter(status => status === 503).length, 40, JSON.stringify(statuses));
+    for (const response of responses.filter(item => item.status === 503)) {
+      assert.equal((await response.json() as { error: { code: string } }).error.code, 'DEMO_CAPACITY_REACHED');
+    }
+    const active = (await runtime.db.pool.query(
+      "SELECT count(*)::int AS count FROM commerce_orders WHERE status IN ('READY','IN_PROGRESS')",
+    )).rows[0].count;
+    assert.equal(active, 10);
+    const counters = (await runtime.db.pool.query("SELECT scope,bucket,used FROM demo_usage_counters")).rows;
+    assert.equal(Number(counters.find(row => row.scope === 'order:global')?.used ?? 0), 10);
+  });
+});
+
+test('幂等重放不重复消耗额度，超限时额度递增整体回滚', async () => {
+  await reset();
+  await withApp({ DEMO_IP_ORDERS_PER_DAY: 1, DEMO_GLOBAL_ORDERS_PER_DAY: 50 }, async ({ base }) => {
+    const buyer = await register(base, 'Replay buyer', '198.51.100.9');
+    const key = randomUUID();
+    const first = await order(base, buyer.credential, '203.0.113.200', INPUT, key);
+    assert.equal(first.status, 201);
+    const firstBody = await first.json() as { orderId: string };
+    const replay = await order(base, buyer.credential, '203.0.113.200', INPUT, key);
+    assert.equal(replay.status, 201);
+    assert.equal((await replay.json() as { orderId: string }).orderId, firstBody.orderId);
+    const globalAfterReplay = (await runtime.db.pool.query(
+      "SELECT used FROM demo_usage_counters WHERE scope='order:global'",
+    )).rows[0]?.used;
+    assert.equal(Number(globalAfterReplay), 1);
+    const blocked = await order(base, buyer.credential, '203.0.113.200');
+    assert.equal(blocked.status, 429);
+    assert.equal((await blocked.json() as { error: { details: { scope: string } } }).error.details.scope, 'order:ip');
+    const globalAfterBlocked = (await runtime.db.pool.query(
+      "SELECT used FROM demo_usage_counters WHERE scope='order:global'",
+    )).rows[0]?.used;
+    assert.equal(Number(globalAfterBlocked), 1);
+    const orders = (await runtime.db.pool.query(
+      'SELECT count(*)::int AS count FROM commerce_orders WHERE idempotency_key=$1', [key],
+    )).rows[0].count;
+    assert.equal(orders, 1);
   });
 });
 

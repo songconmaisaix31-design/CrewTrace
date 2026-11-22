@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { Database } from '../src/db.js';
@@ -28,6 +28,9 @@ for (const [name, path] of [
   ['Runtime 依赖', 'services/runtime/node_modules/tsx'],
   ['Worker 依赖', 'workers/node_modules/tsx'],
   ['Web 构建产物', 'apps/web/dist/index.html'],
+  ['本地入口网关', 'deploy/local/gateway.ts'],
+  ['启动脚本', 'deploy/local/start.sh'],
+  ['停止脚本', 'deploy/local/stop.sh'],
 ] as const) {
   check(name, existsSync(resolve(root, path)), path);
 }
@@ -35,6 +38,8 @@ for (const [name, path] of [
 function env(name: string) {
   return process.env[name]?.trim();
 }
+
+const tunnelAuthorized = env('CREWTRACE_TUNNEL_AUTHORIZED') === 'yes';
 
 const databaseUrl = env('DATABASE_URL');
 if (!databaseUrl) {
@@ -134,6 +139,26 @@ if (publicDeployment) {
   check('公开部署版本 SHA', Boolean(deploymentSha), deploymentSha ?? '未设置');
 }
 
+for (const [name, path, pattern] of [
+  ['Runtime 仅回环监听', 'services/runtime/src/local.ts', /hostname:\s*'127\.0\.0\.1'/],
+  ['入口网关仅回环监听', 'deploy/local/gateway.ts', /listen\([^)]*'127\.0\.0\.1'/],
+] as const) {
+  try {
+    check(name, pattern.test(readFileSync(resolve(root, path), 'utf8')), path);
+  } catch (error) {
+    check(name, false, error instanceof Error ? error.message : String(error));
+  }
+}
+check('链上写入关闭', env('EXPERIMENT_CHAIN_WRITES') !== 'TESTNET' && !env('CHAIN_ADAPTER_MODULE') && !env('COLLABORATION_CHAIN_CONTRACT'),
+  `EXPERIMENT_CHAIN_WRITES=${env('EXPERIMENT_CHAIN_WRITES') ?? '未设置'}`);
+check('公网入口需显式授权', !publicDeployment || tunnelAuthorized,
+  publicDeployment ? `CREWTRACE_TUNNEL_AUTHORIZED=${env('CREWTRACE_TUNNEL_AUTHORIZED') ?? '未设置'}` : '当前未开启公开部署');
+const adminTokenFile = resolve(root, '.local/admin-token');
+if (existsSync(adminTokenFile)) {
+  const mode = statSync(adminTokenFile).mode & 0o777;
+  check('管理员令牌文件权限', (mode & 0o077) === 0, mode.toString(8));
+}
+
 check('免费服务可用', true, 'csv-clean-verify-free 不依赖支付配置');
 check('收费服务默认禁用', mode === 'disabled', `PAYMENT_MODE=${mode}`);
 check('三个 Worker 常驻', Boolean(env('EXPERIMENT_WORKER_AGENT_IDS')?.split(',').filter(Boolean).length && env('EXPERIMENT_WORKER_AGENT_IDS')!.split(',').filter(Boolean).length >= 3),
@@ -148,6 +173,9 @@ if (databaseUrl) {
       SELECT has_database_privilege(current_database(), 'CONNECT') AS connect,
              has_schema_privilege(current_schema(), 'CREATE') AS create_schema`);
     check('数据库权限', rights.rows[0].connect === true, `CONNECT=${rights.rows[0].connect} CREATE_SCHEMA=${rights.rows[0].create_schema}`);
+    const listen = await database.pool.query('SHOW listen_addresses');
+    const listenAddresses = String(listen.rows[0].listen_addresses);
+    check('PostgreSQL 不监听公网', ['127.0.0.1', 'localhost', '127.0.0.1,::1'].includes(listenAddresses), listenAddresses);
     const applied = await database.pool.query('SELECT version FROM runtime_migrations ORDER BY version');
     const versions = applied.rows.map(row => String(row.version));
     const required = ['001','002','003','004','005','006','007','008','009','010','011','012','013','014','015'];
@@ -183,14 +211,24 @@ const localReady = checks.every(item => item.ok);
 const cloud = authorized
   ? { status: 'AUTHORIZED', next: '按 DEPLOYMENT.md 的 RC3 清单执行独立云部署' }
   : { status: 'BLOCKED', reason: '未取得个人云资源授权，未创建或修改任何云项目', action: '获得 VPS、Neon、域名与支付宝沙箱授权并确认费用后设置 RC3_DEPLOY_AUTHORIZED=yes' };
+const tunnelUrlFile = resolve(root, '.local/tunnel-url');
+const tunnel = tunnelAuthorized
+  ? {
+      status: publicDeployment ? 'AUTHORIZED_ACTIVE' : 'AUTHORIZED_IDLE',
+      url: existsSync(tunnelUrlFile) ? readFileSync(tunnelUrlFile, 'utf8').trim() : null,
+      next: publicDeployment ? '演示结束执行 ./deploy/local/stop.sh 立即关闭入口' : '执行 ./deploy/local/start.sh --tunnel 开启入口',
+    }
+  : { status: 'CLOSED', reason: '未授权开启公网入口，Tunnel 不会启动', action: '设置 CREWTRACE_TUNNEL_AUTHORIZED=yes 后执行 start.sh --tunnel' };
 
 console.log(JSON.stringify({
   status: localReady ? 'LOCAL_READY' : 'LOCAL_BLOCKED',
   checks,
   cloud,
+  tunnel,
   notes: [
     '本脚本只读检查，不创建云资源，不发起真实支付。',
     '代理信任、全局额度与暂停开关只做配置和数据库结构检查，不代表公网部署成功。',
+    '本地零成本入口使用 Cloudflare Quick Tunnel，临时域名每次启动变化，关闭入口执行 stop.sh。',
     '正式支付宝支付缺少真实商户凭证，状态为 BLOCKED。',
   ],
 }, null, 2));

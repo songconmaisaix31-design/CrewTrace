@@ -15,8 +15,9 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
     const url = new URL(req.url ?? '/', 'http://localhost');
     if(url.searchParams.get('action')==='translate'){await translate(req,res);return;}
     if(req.method==='GET'&&url.searchParams.get('action')==='collaboration-config'){
-      if(!config.RUNTIME_URL){json(200,{configured:false,mcpURL:null});return;}
-      const base=new URL(config.RUNTIME_URL);
+      const displayBase=config.PUBLIC_RUNTIME_URL??config.RUNTIME_URL;
+      if(!displayBase){json(200,{configured:false,mcpURL:null});return;}
+      const base=new URL(displayBase);
       if(!['http:','https:'].includes(base.protocol)||base.username||base.password)throw new Error('服务地址无效');
       json(200,{configured:true,mcpURL:new URL('/mcp',base).href});return;
     }
