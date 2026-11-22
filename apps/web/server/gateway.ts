@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { translate } from './translation.ts';
 const publicRoutes:Record<string,RegExp[]>={
-  GET:[/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:evidence|matching|csv-workflow)$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/,/^\/api\/collaboration\/commitments(?:\?[^#]*)?$/,/^\/api\/collaboration\/commitments\/[^/?#]+$/],
+  GET:[/^\/api\/collaboration\/tasks\/[^/?#]+\/matching\/[^/?#]+$/,/^\/api\/collaboration\/csv-runs(?:\?[^#]*)?$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/csv-replay$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:evidence|matching|csv-workflow)$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/,/^\/api\/collaboration\/commitments(?:\?[^#]*)?$/,/^\/api\/collaboration\/commitments\/[^/?#]+$/],
   POST:[/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:matching|csv-workflow)$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|credentials\/rotate)$/,/^\/api\/collaboration\/agents\/me\/heartbeat$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:claims|proposals|handoffs)$/,/^\/api\/collaboration\/claims\/[^/?#]+\/(?:release|expire-csv)$/,/^\/api\/collaboration\/proposals\/[^/?#]+\/decision$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/review$/],
   PATCH:[/^\/api\/collaboration\/(?:agents\/me|tasks\/[^/?#]+|notes\/[^/?#]+)$/],
 };
