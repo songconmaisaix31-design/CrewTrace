@@ -94,7 +94,7 @@ async function translate(request: Request, env: Env) {
         method: 'POST',
         headers: { Authorization: `Bearer ${env.STEP_API_KEY}`, 'Content-Type': 'application/json' },
         signal: AbortSignal.timeout(45000),
-        redirect: 'error',
+        redirect: 'manual',
         body: JSON.stringify({
           model: env.STEP_MODEL,
           temperature: 0.2,
@@ -106,7 +106,7 @@ async function translate(request: Request, env: Env) {
           ],
         }),
       });
-      if (!response.ok) return json({ error: 'The translation service could not complete the request.' }, 502);
+      if (response.status >= 300) return json({ error: 'The translation service could not complete the request.' }, 502);
       const completion = z.object({ choices: z.array(z.object({ finish_reason: z.string(), message: z.object({ content: z.string() }) })).min(1) }).parse(await response.json());
       if (completion.choices[0].finish_reason !== 'stop') throw new Error('Incomplete translation');
       const output = z.object({ translations: z.array(z.string().min(1)) }).parse(JSON.parse(completion.choices[0].message.content));
@@ -179,8 +179,11 @@ export async function onRequest(context: { request: Request; env: Env }): Promis
       headers,
       body,
       signal: AbortSignal.timeout(20000),
-      redirect: 'error',
+      redirect: 'manual',
     });
+    if (upstream.status >= 300 && upstream.status < 400) {
+      return json({ error: { message: '协作服务暂时无法访问，请稍后重试；提交可能已送达，请先查询最新记录。' } }, 502);
+    }
     const responseHeaders = new Headers({
       'Content-Type': upstream.headers.get('Content-Type') ?? 'text/plain; charset=utf-8',
       'Cache-Control': 'no-store',
@@ -193,7 +196,7 @@ export async function onRequest(context: { request: Request; env: Env }): Promis
     const paymentLink = upstream.headers.get('amtPaymentLink');
     if (paymentLink) responseHeaders.set('amtPaymentLink', paymentLink);
     return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
-  } catch (error) {
-    return json({ error: { message: '协作服务暂时无法访问，请稍后重试；提交可能已送达，请先查询最新记录。' }, debug: error instanceof Error ? `${error.name}: ${error.message}` : String(error) }, 502);
+  } catch {
+    return json({ error: { message: '协作服务暂时无法访问，请稍后重试；提交可能已送达，请先查询最新记录。' } }, 502);
   }
 }
