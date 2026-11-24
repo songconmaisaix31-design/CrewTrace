@@ -193,7 +193,7 @@ export async function onRequest(context: { request: Request; env: Env }): Promis
     const paymentLink = upstream.headers.get('amtPaymentLink');
     if (paymentLink) responseHeaders.set('amtPaymentLink', paymentLink);
     return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
-  } catch {
-    return json({ error: { message: '协作服务暂时无法访问，请稍后重试；提交可能已送达，请先查询最新记录。' } }, 502);
+  } catch (error) {
+    return json({ error: { message: '协作服务暂时无法访问，请稍后重试；提交可能已送达，请先查询最新记录。' }, debug: error instanceof Error ? `${error.name}: ${error.message}` : String(error) }, 502);
   }
 }
