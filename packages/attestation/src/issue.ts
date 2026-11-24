@@ -4,6 +4,7 @@ import type { Hex } from 'viem';
 import { z } from 'zod';
 import { attestationDigest, contentDigest, saltedRef } from './canonical.js';
 import { evaluateCsv } from './csv.js';
+import { compareCsvTransformation, transformCsv } from './transform.js';
 import { anchorAttestation } from './chain.js';
 import { signDigest } from './sign.js';
 import {
@@ -65,13 +66,14 @@ export interface IssueInput {
   attestationId?: string;
 }
 
-function checkJournal(path: string | undefined, attestationId: string, eventId: string): void {
+function checkJournal(path: string | undefined, attestationId: string, issuerId: string, eventId: string): void {
   if (!path || !existsSync(path)) return;
   for (const line of readFileSync(path, 'utf8').split('\n')) {
     if (!line.trim()) continue;
-    const entry = JSON.parse(line) as { attestationId?: string; reputationEventId?: string };
+    const entry = JSON.parse(line) as { attestationId?: string; reputationEventId?: string; issuerId?: string };
     if (entry.attestationId === attestationId) throw new Error('DUPLICATE_ATTESTATION_ID');
-    if (entry.reputationEventId === eventId) throw new Error('DUPLICATE_REPUTATION_EVENT');
+    const sameNamespace = entry.issuerId === undefined || entry.issuerId === issuerId;
+    if (sameNamespace && entry.reputationEventId === eventId) throw new Error('DUPLICATE_REPUTATION_EVENT');
   }
 }
 
@@ -82,8 +84,14 @@ export async function issueAttestation(input: IssueInput): Promise<FulfillmentAt
   const deliveryEval = evaluateCsv(input.deliveryContent);
   if (inputEval.ruleVersion !== facts.rules.ruleVersion) throw new Error('INPUT_RULE_VERSION_MISMATCH');
   if (deliveryEval.ruleVersion !== facts.rules.ruleVersion) throw new Error('DELIVERY_RULE_VERSION_MISMATCH');
+  const transformed = transformCsv(input.inputContent);
+  if (!transformed.transformable) throw new Error(`INPUT_NOT_TRANSFORMABLE:${transformed.issues.join(',')}`);
+  const comparison = compareCsvTransformation(input.inputContent, input.deliveryContent);
+  if (comparison.status !== 'MATCH') {
+    throw new Error(`TRANSFORM_MISMATCH:${comparison.reasons.join(',')}`);
+  }
   const attestationId = input.attestationId ?? randomUUID();
-  checkJournal(input.journalPath, attestationId, facts.reputation.eventId);
+  checkJournal(input.journalPath, attestationId, input.issuerId, facts.reputation.eventId);
 
   const now = input.now ?? new Date();
   const expires = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
@@ -175,7 +183,7 @@ export async function issueAttestation(input: IssueInput): Promise<FulfillmentAt
   const attestation = FulfillmentAttestationSchema.parse(payload);
   if (input.journalPath) {
     appendFileSync(input.journalPath, `${JSON.stringify({
-      attestationId, reputationEventId: facts.reputation.eventId, digest,
+      attestationId, reputationEventId: facts.reputation.eventId, issuerId: input.issuerId, digest,
       digestEngine: deliveryEval.engineContentHash, issuedAt: attestation.issuedAt,
     })}\n`);
   }

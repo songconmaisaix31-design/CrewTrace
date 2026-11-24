@@ -28,6 +28,8 @@ const deployed = await deployLocalLedger({
 
 const allowlist = {
   version: 'ct-issuer-allowlist-v1',
+  issuedAt: new Date(Date.now() - 60_000).toISOString(),
+  expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
   issuers: [{
     issuerId: 'crewtrace-experiment',
     keyId: 'issuer-2026-11',
@@ -38,7 +40,12 @@ const allowlist = {
   }],
 };
 writeFileSync(resolve(outDir, 'allowlist.json'), `${JSON.stringify(allowlist, null, 2)}\n`);
-writeFileSync(resolve(outDir, 'revocations.json'), `${JSON.stringify({ version: 'ct-revocation-list-v1', entries: [] }, null, 2)}\n`);
+writeFileSync(resolve(outDir, 'revocations.json'), `${JSON.stringify({
+  version: 'ct-revocation-list-v1',
+  issuedAt: new Date(Date.now() - 60_000).toISOString(),
+  expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+  entries: [],
+}, null, 2)}\n`);
 
 const config = {
   rpcUrl: values.rpc,

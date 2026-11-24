@@ -11,6 +11,9 @@ const { values } = parseArgs({
     allowlist: { type: 'string' },
     revocations: { type: 'string' },
     delivery: { type: 'string' },
+    input: { type: 'string' },
+    recorder: { type: 'string', multiple: true },
+    'min-confirmations': { type: 'string' },
     rpc: { type: 'string' },
     'chain-id': { type: 'string' },
     contract: { type: 'string' },
@@ -30,6 +33,7 @@ const attestation = JSON.parse(readFileSync(required('attestation'), 'utf8'));
 const allowlist = loadAllowlist(required('allowlist'));
 const revocations = values.revocations ? loadRevocations(values.revocations) : null;
 const deliveryContent = values.delivery ? readFileSync(values.delivery, 'utf8') : null;
+const inputContent = values.input ? readFileSync(values.input, 'utf8') : null;
 const chain = values.rpc && values['chain-id'] && values.contract
   ? makeChainReader({
     rpcUrl: values.rpc, chainId: Number(values['chain-id']),
@@ -38,7 +42,10 @@ const chain = values.rpc && values['chain-id'] && values.contract
   : null;
 
 const report = await verifyAttestation({
-  attestation, allowlist, revocations, deliveryContent, chain,
+  attestation, allowlist, revocations, inputContent, deliveryContent, chain,
+  chainPolicy: values.recorder?.length
+    ? { authorizedRecorders: values.recorder, minConfirmations: Number(values['min-confirmations'] ?? 1) }
+    : undefined,
   expectedBinding: values.environment && values.deployment
     ? { environment: values.environment as 'local' | 'staging' | 'production', deployment: values.deployment }
     : undefined,

@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "csv-parse": "^7.0.3",
     "viem": "^2.57.7",
     "zod": "^4.6.7"
   }

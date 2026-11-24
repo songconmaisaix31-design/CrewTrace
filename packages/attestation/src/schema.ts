@@ -138,6 +138,8 @@ export const IssuerEntrySchema = z.strictObject({
 
 export const IssuerAllowlistSchema = z.strictObject({
   version: z.literal('ct-issuer-allowlist-v1'),
+  issuedAt: IsoTimeSchema.optional(),
+  expiresAt: IsoTimeSchema.nullable().optional(),
   issuers: z.array(IssuerEntrySchema).min(1),
 });
 
@@ -149,6 +151,8 @@ export const RevocationEntrySchema = z.strictObject({
 
 export const RevocationListSchema = z.strictObject({
   version: z.literal('ct-revocation-list-v1'),
+  issuedAt: IsoTimeSchema.optional(),
+  expiresAt: IsoTimeSchema.nullable().optional(),
   entries: z.array(RevocationEntrySchema),
 });
 

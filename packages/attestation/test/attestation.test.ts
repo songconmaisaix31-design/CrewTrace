@@ -9,8 +9,26 @@ import { canonicalJson } from '../../chain/src/collaboration.js';
 import { verifyAttestation } from '../src/verify.js';
 import { aggregateReputation } from '../src/reputation.js';
 import { signDigest } from '../src/sign.js';
+import { contentDigest } from '../src/canonical.js';
+import { evaluateCsv } from '../src/csv.js';
+import { compareCsvTransformation } from '../src/transform.js';
 import { issueFixture, resign } from './helpers.js';
 import type { FulfillmentAttestation } from '../src/schema.js';
+
+const OFFLINE_POLICY = {
+  acceptedOutcomes: ['VERIFIED_OFFLINE' as const],
+  allowOffline: true,
+  minOfflineEvidence: 'FULFILLMENT_RECALCULATED' as const,
+};
+
+async function verifiedOffline() {
+  const issued = await issueFixture();
+  const report = await verifyAttestation({
+    attestation: issued.attestation, allowlist: issued.allowlist, revocations: issued.revocations,
+    inputContent: issued.input, deliveryContent: issued.delivery,
+  });
+  return { ...issued, report };
+}
 
 test('用例 1：原始凭证在 B 模式离线核验通过', async () => {
   const { attestation, allowlist, revocations } = await issueFixture();
@@ -85,10 +103,24 @@ test('用例 7：未知规则版本返回不确定', async () => {
 });
 
 test('用例 10：提供交付物后完成质量复算', async () => {
-  const { attestation, allowlist, revocations, delivery } = await issueFixture();
-  const report = await verifyAttestation({ attestation, allowlist, revocations, deliveryContent: delivery });
+  const { attestation, allowlist, revocations, input, delivery } = await issueFixture();
+  const report = await verifyAttestation({
+    attestation, allowlist, revocations, inputContent: input, deliveryContent: delivery,
+  });
+  assert.equal(report.input, 'MATCH');
   assert.equal(report.content, 'MATCH');
   assert.equal(report.quality, 'RECALCULATED_PASS');
+  assert.equal(report.transformation, 'MATCH');
+  assert.equal(report.fulfillment, 'RECALCULATED_PASS');
+  assert.equal(report.outcome, 'VERIFIED_OFFLINE');
+});
+
+test('缺少原始输入时保留输出质量检查但不宣称端到端复算', async () => {
+  const { attestation, allowlist, revocations, delivery } = await issueFixture();
+  const report = await verifyAttestation({ attestation, allowlist, revocations, deliveryContent: delivery });
+  assert.equal(report.quality, 'RECALCULATED_PASS');
+  assert.equal(report.transformation, 'NOT_ASSERTED');
+  assert.equal(report.fulfillment, 'NOT_ASSERTED');
   assert.equal(report.outcome, 'VERIFIED_OFFLINE');
 });
 
@@ -109,17 +141,143 @@ test('缺少实际交付物时不得宣称质量已复算', async () => {
 });
 
 test('用例 12：重复凭证不会重复产生信誉', async () => {
-  const { attestation } = await issueFixture();
-  const result = aggregateReputation([attestation, structuredClone(attestation)]);
-  assert.equal(result.buckets.length, 1);
-  assert.equal(result.buckets[0].pass, 1);
-  assert.equal(result.buckets[0].sampleSize, 1);
-  assert.equal(result.ignored.filter((item) => item.reason === 'DUPLICATE_ATTESTATION').length, 1);
+  const first = await verifiedOffline();
+  const duplicate = aggregateReputation(
+    [{ attestation: first.attestation, report: first.report }, { attestation: structuredClone(first.attestation), report: first.report }],
+    { policy: OFFLINE_POLICY },
+  );
+  assert.equal(duplicate.buckets.length, 1);
+  assert.equal(duplicate.buckets[0].pass, 1);
+  assert.equal(duplicate.buckets[0].sampleSize, 1);
+  assert.equal(duplicate.ignored.filter((item) => item.reason === 'DUPLICATE_ATTESTATION').length, 1);
 
-  const second = await issueFixture();
-  const merged = aggregateReputation([attestation, second.attestation]);
+  const second = await verifiedOffline();
+  const merged = aggregateReputation(
+    [{ attestation: first.attestation, report: first.report }, { attestation: second.attestation, report: second.report }],
+    { policy: OFFLINE_POLICY },
+  );
   assert.equal(merged.buckets[0].sampleSize, 1);
-  assert.equal(merged.ignored.some((item) => item.reason === 'DUPLICATE_REPUTATION_EVENT'), true);
+  assert.equal(merged.ignored.some((item) => item.reason === 'CONSUMED_REPUTATION_EVENT'), true);
+});
+
+test('未经核验的凭证不得进入信誉聚合', async () => {
+  const { attestation } = await issueFixture();
+  const result = aggregateReputation([{ attestation, report: null }], { policy: OFFLINE_POLICY });
+  assert.equal(result.buckets.length, 0);
+  assert.equal(result.decisions[0].admitted, false);
+  assert.ok(result.decisions[0].reasons.includes('NOT_VERIFIED'));
+  assert.equal(result.decisions[0].evidenceLevel, 'UNVERIFIED');
+});
+
+test('VERIFIED_OFFLINE 默认不允许计分', async () => {
+  const { attestation, report } = await verifiedOffline();
+  const result = aggregateReputation([{ attestation, report }]);
+  assert.equal(result.buckets.length, 0);
+  assert.ok(result.decisions[0].reasons.includes('OUTCOME_NOT_ACCEPTED'));
+});
+
+test('允许离线但证据等级不足时仍不计分', async () => {
+  const { attestation, allowlist, revocations } = await issueFixture();
+  const signatureOnly = await verifyAttestation({ attestation, allowlist, revocations });
+  assert.equal(signatureOnly.outcome, 'VERIFIED_OFFLINE');
+  const result = aggregateReputation([{ attestation, report: signatureOnly }], { policy: OFFLINE_POLICY });
+  assert.equal(result.buckets.length, 0);
+  assert.ok(result.decisions[0].reasons.includes('OFFLINE_EVIDENCE_INSUFFICIENT'));
+});
+
+test('信誉聚合与输入顺序无关', async () => {
+  const first = await verifiedOffline();
+  const second = await verifiedOffline();
+  const forward = aggregateReputation([
+    { attestation: first.attestation, report: first.report },
+    { attestation: second.attestation, report: second.report },
+  ], { policy: OFFLINE_POLICY });
+  const backward = aggregateReputation([
+    { attestation: second.attestation, report: second.report },
+    { attestation: first.attestation, report: first.report },
+  ], { policy: OFFLINE_POLICY });
+  assert.deepEqual(forward.buckets, backward.buckets);
+});
+
+test('同一信誉事件出现冲突结论时不计分', async () => {
+  const first = await verifiedOffline();
+  const conflicting = await resign(first.attestation, first.privateKey, (copy) => {
+    copy.validation.result = 'FAIL';
+    copy.review.decision = 'REJECTED';
+  });
+  const conflictingReport = await verifyAttestation({
+    attestation: conflicting, allowlist: first.allowlist, revocations: first.revocations,
+  });
+  const result = aggregateReputation([
+    { attestation: first.attestation, report: first.report },
+    { attestation: conflicting, report: conflictingReport },
+  ], { policy: OFFLINE_POLICY });
+  assert.equal(result.buckets.length, 0);
+  assert.equal(result.decisions.every((decision) => decision.reasons.includes('CONFLICTING_EVENT')), true);
+});
+
+test('同一履约的 B/C 凭证只计一次', async () => {
+  const first = await verifiedOffline();
+  const secondCredential = await issueFixture({
+    facts: first.facts, attestationId: '11111111-1111-4111-8111-111111111111',
+  });
+  const secondReport = await verifyAttestation({
+    attestation: secondCredential.attestation, allowlist: secondCredential.allowlist,
+    revocations: secondCredential.revocations,
+    inputContent: secondCredential.input, deliveryContent: secondCredential.delivery,
+  });
+  const result = aggregateReputation([
+    { attestation: first.attestation, report: first.report },
+    { attestation: secondCredential.attestation, report: secondReport },
+  ], { policy: OFFLINE_POLICY });
+  assert.equal(result.buckets[0].sampleSize, 1);
+  assert.equal(result.decisions.filter((decision) => decision.admitted).length, 1);
+});
+
+test('跨环境重放同一事件只计一次', async () => {
+  const first = await verifiedOffline();
+  const replay = await issueFixture({
+    facts: first.facts, attestationId: '22222222-2222-4222-8222-222222222222',
+  });
+  const replayAttestation = structuredClone(replay.attestation);
+  replayAttestation.binding.deployment = 'another-deployment';
+  const resigned = await resign(replayAttestation, replay.privateKey);
+  const replayReport = await verifyAttestation({
+    attestation: resigned, allowlist: replay.allowlist, revocations: replay.revocations,
+    inputContent: replay.input, deliveryContent: replay.delivery,
+  });
+  const result = aggregateReputation([
+    { attestation: first.attestation, report: first.report },
+    { attestation: resigned, report: replayReport },
+  ], { policy: OFFLINE_POLICY });
+  assert.equal(result.buckets[0].sampleSize, 1);
+});
+
+test('不同签发者使用相同事件标识时按命名空间区分', async () => {
+  const first = await verifiedOffline();
+  const other = await issueFixture({
+    facts: first.facts, attestationId: '33333333-3333-4333-8333-333333333333',
+  });
+  const otherAttestation = structuredClone(other.attestation);
+  otherAttestation.issuer.issuerId = 'second-issuer';
+  const resigned = await resign(otherAttestation, other.privateKey);
+  const allowlist = {
+    ...other.allowlist,
+    issuers: [...other.allowlist.issuers, {
+      issuerId: 'second-issuer', keyId: 'issuer-2026-11', address: other.address,
+      validFrom: '2020-01-01T00:00:00.000Z', validTo: null, revokedAt: null,
+    }],
+  };
+  const otherReport = await verifyAttestation({
+    attestation: resigned, allowlist, revocations: other.revocations,
+    inputContent: other.input, deliveryContent: other.delivery,
+  });
+  assert.equal(otherReport.issuer, 'KNOWN');
+  const result = aggregateReputation([
+    { attestation: first.attestation, report: first.report },
+    { attestation: resigned, report: otherReport },
+  ], { policy: OFFLINE_POLICY });
+  assert.equal(result.buckets[0].sampleSize, 2);
 });
 
 test('用例 13：跨部署与签名域不得重放', async () => {
@@ -238,4 +396,37 @@ test('未知规则与缺失交付物组合返回不确定而非通过', async ()
   });
   assert.equal(report.quality, 'NOT_ASSERTED');
   assert.equal(report.outcome, 'INDETERMINATE');
+});
+
+test('输出 CSV 合法但遗漏有效输入记录时不得通过完整履约验证', async () => {
+  const inputContent = 'record_id,amount_cents\nmcp-a,5\nmcp-b,7\n';
+  const completeDelivery = inputContent;
+  const missingRecordDelivery = 'record_id,amount_cents\nmcp-a,5\n';
+
+  const direct = compareCsvTransformation(inputContent, missingRecordDelivery);
+  assert.equal(direct.status, 'MISMATCH');
+  assert.ok(direct.reasons.includes('OUTPUT_MISSING_RECORDS'));
+
+  const issued = await issueFixture({ inputContent, deliveryContent: completeDelivery });
+  const incomplete = evaluateCsv(missingRecordDelivery);
+  const forgedDelivery = await resign(issued.attestation, issued.privateKey, (copy) => {
+    copy.delivery.contentHash = contentDigest(missingRecordDelivery);
+    copy.delivery.rowCount = incomplete.rowCount;
+    copy.validation.ruleVersion = incomplete.ruleVersion;
+    copy.validation.result = incomplete.result;
+    copy.validation.checkCodes = incomplete.checkCodes;
+    copy.validation.checksDigest = incomplete.checksDigest;
+  });
+  const report = await verifyAttestation({
+    attestation: forgedDelivery, allowlist: issued.allowlist, revocations: issued.revocations,
+    inputContent, deliveryContent: missingRecordDelivery,
+  });
+  assert.equal(report.signature, 'VALID');
+  assert.equal(report.input, 'MATCH');
+  assert.equal(report.content, 'MATCH');
+  assert.equal(report.quality, 'RECALCULATED_PASS');
+  assert.equal(report.transformation, 'MISMATCH');
+  assert.equal(report.fulfillment, 'RECALCULATED_FAIL');
+  assert.ok(report.reasons.includes('OUTPUT_MISSING_RECORDS'));
+  assert.equal(report.outcome, 'REJECTED');
 });

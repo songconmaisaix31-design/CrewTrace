@@ -1,17 +1,26 @@
 import { readFileSync } from 'node:fs';
 import {
-  createPublicClient, createWalletClient, defineChain, encodeAbiParameters, http, keccak256,
+  createPublicClient, createWalletClient, defineChain, http, keccak256,
   type Address, type Hex,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { collaborationLedgerAbi } from '../../chain/src/collaboration.js';
 import {
-  collaborationLedgerAbi, deriveCollaborationRecordId,
-} from '../../chain/src/collaboration.js';
-import type { ChainCommitmentRecord, ChainReader } from './verify.js';
+  ATTESTATION_MAPPING_KIND, ATTESTATION_VERSION, attestationRecordId, attestationUri,
+  commitmentKey, type ChainEvidence, type ChainEvidenceRecord, type ChainReader,
+} from './chain-verify.js';
 
-export const ATTESTATION_MAPPING_KIND = 4;
-export const ATTESTATION_VERSION = 1;
+export { ATTESTATION_MAPPING_KIND, ATTESTATION_VERSION, attestationRecordId, attestationUri, commitmentKey };
+export type { ChainEvidence, ChainReader };
+
 const ARTIFACT_URL = new URL('../../../contracts/artifacts/src/CollaborationLedger.sol/CollaborationLedger.json', import.meta.url);
+const LOCAL_EXPERIMENT_CHAIN_ID = 31337;
+
+export function assertLocalExperimentChain(chainId: number): void {
+  if (chainId !== LOCAL_EXPERIMENT_CHAIN_ID) {
+    throw new Error(`NON_LOCAL_CHAIN_FORBIDDEN:${chainId}`);
+  }
+}
 
 function chainFor(rpcUrl: string, chainId: number) {
   return defineChain({
@@ -22,24 +31,10 @@ function chainFor(rpcUrl: string, chainId: number) {
   });
 }
 
-export function attestationRecordId(attestationId: string): Hex {
-  return deriveCollaborationRecordId('ATTESTATION', attestationId);
-}
-
-export function commitmentKey(recordId: Hex, version = ATTESTATION_VERSION): Hex {
-  return keccak256(encodeAbiParameters(
-    [{ type: 'uint8' }, { type: 'bytes32' }, { type: 'uint32' }],
-    [ATTESTATION_MAPPING_KIND, recordId, version],
-  ));
-}
-
-export function attestationUri(attestationId: string): string {
-  return `urn:ct:attestation:${attestationId}`;
-}
-
 export async function deployLocalLedger(input: {
   rpcUrl: string; chainId: number; deployerKey: Hex; recorder: Address;
 }): Promise<{ contract: Address; txHash: Hex; blockNumber: string }> {
+  assertLocalExperimentChain(input.chainId);
   const artifact = JSON.parse(readFileSync(ARTIFACT_URL, 'utf8')) as { abi: unknown[]; bytecode: Hex };
   const chain = chainFor(input.rpcUrl, input.chainId);
   const account = privateKeyToAccount(input.deployerKey);
@@ -60,6 +55,7 @@ export async function anchorAttestation(input: {
   recordId: Hex; commitmentKey: Hex; uri: string;
   receipt: { txHash: Hex; blockNumber: string; signer: Address };
 }> {
+  assertLocalExperimentChain(input.chainId);
   const chain = chainFor(input.rpcUrl, input.chainId);
   const account = privateKeyToAccount(input.recorderKey);
   const publicClient = createPublicClient({ chain, transport: http(input.rpcUrl) });
@@ -89,21 +85,55 @@ export function makeChainReader(input: { rpcUrl: string; chainId: number; contra
   return {
     chainId: input.chainId,
     contract: input.contract.toLowerCase(),
-    async read({ kind, recordId, version }) {
+    async inspect({ attestationId, version }) {
+      const rpcChainId = await publicClient.getChainId();
+      const recordId = attestationRecordId(attestationId);
       const commitment = await publicClient.readContract({
         address: input.contract, abi: collaborationLedgerAbi, functionName: 'getCommitment',
-        args: [kind as 0 | 1 | 2 | 3 | 4, recordId as Hex, version],
+        args: [ATTESTATION_MAPPING_KIND, recordId, version],
       }) as {
-        contentHash: string; uri: string; recorder: string; recordedAt: bigint;
+        kind: number; recordId: string; version: number; contentHash: string; uri: string;
+        recorder: string; recordedAt: bigint;
       };
-      if (commitment.recordedAt === 0n) return null;
-      const record: ChainCommitmentRecord = {
-        contentHash: commitment.contentHash.toLowerCase(),
-        uri: commitment.uri,
-        recorder: commitment.recorder.toLowerCase(),
-        recordedAt: commitment.recordedAt,
+      const latestBlock = Number(await publicClient.getBlockNumber());
+      const record = commitment.recordedAt === 0n ? null : {
+        kind: Number(commitment.kind), recordId: commitment.recordId,
+        version: Number(commitment.version), contentHash: commitment.contentHash.toLowerCase(),
+        uri: commitment.uri, recorder: commitment.recorder.toLowerCase(),
+        recordedAt: commitment.recordedAt, blockNumber: 0, txHash: '',
+      } satisfies ChainEvidenceRecord;
+      const evidence: ChainEvidence = {
+        rpcChainId, contract: input.contract.toLowerCase(), commitment: record,
+        receipt: null, event: null, latestBlock,
       };
-      return record;
+      if (!record) return evidence;
+      const events = await publicClient.getContractEvents({
+        address: input.contract, abi: collaborationLedgerAbi, eventName: 'CommitmentRecorded',
+        args: { recordId }, fromBlock: 0n,
+      });
+      const matched = events.filter((event) => Number(event.args.version) === version);
+      if (matched.length !== 1) {
+        if (matched.length > 1) throw new Error('DUPLICATE_COMMITMENT_EVENTS');
+        return evidence;
+      }
+      const event = matched[0];
+      const txHash = event.transactionHash;
+      const receipt = await publicClient.getTransactionReceipt({ hash: txHash });
+      const eventRecord: ChainEvidenceRecord = {
+        kind: Number(event.args.kind), recordId: String(event.args.recordId),
+        version: Number(event.args.version), contentHash: String(event.args.contentHash).toLowerCase(),
+        uri: String(event.args.uri), recorder: String(event.args.recorder).toLowerCase(),
+        recordedAt: 0n, blockNumber: Number(event.blockNumber), txHash,
+      };
+      evidence.commitment = {
+        ...record, blockNumber: eventRecord.blockNumber, txHash,
+      };
+      evidence.event = eventRecord;
+      evidence.receipt = {
+        txHash, blockNumber: Number(receipt.blockNumber), from: receipt.from,
+        to: receipt.to, status: receipt.status,
+      };
+      return evidence;
     },
   };
 }

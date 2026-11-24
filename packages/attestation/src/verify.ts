@@ -4,6 +4,8 @@ import { attestationDigest, contentDigest } from './canonical.js';
 import { evaluateCsv } from './csv.js';
 import { findIssuer } from './allowlist.js';
 import { recoverDigestSigner } from './sign.js';
+import { compareCsvTransformation } from './transform.js';
+import { verifyChainEvidence, type ChainReader, type ChainVerificationPolicy } from './chain-verify.js';
 import {
   FulfillmentAttestationSchema,
   type FulfillmentAttestation,
@@ -11,25 +13,16 @@ import {
   type RevocationList,
 } from './schema.js';
 
-export interface ChainCommitmentRecord {
-  contentHash: string;
-  uri: string;
-  recorder: string;
-  recordedAt: bigint;
-}
-
-export interface ChainReader {
-  chainId: number;
-  contract: string;
-  read(input: { chainId: number; contract: string; kind: number; recordId: string; version: number }): Promise<ChainCommitmentRecord | null>;
-}
+export type { ChainReader };
 
 export interface VerifyInput {
   attestation: unknown;
   allowlist: IssuerAllowlist | null;
   revocations: RevocationList | null;
+  inputContent?: string | null;
   deliveryContent?: string | null;
   chain?: ChainReader | null;
+  chainPolicy?: ChainVerificationPolicy;
   now?: Date;
   recognizedRuleVersions?: string[];
   expectedBinding?: { environment: 'local' | 'staging' | 'production'; deployment: string };
@@ -41,23 +34,36 @@ export interface VerificationReport {
   digest: string | null;
   issuer: 'KNOWN' | 'UNKNOWN' | 'KEY_MISMATCH';
   keyStatus: 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'NOT_YET_VALID' | 'UNKNOWN';
-  revocation: 'NOT_CHECKED' | 'CLEAR' | 'REVOKED';
+  allowlist: 'FRESH' | 'STALE' | 'UNVERIFIED' | 'NOT_PROVIDED';
+  revocation: 'NOT_CHECKED' | 'CLEAR' | 'REVOKED' | 'STALE';
+  revocationFreshness: 'FRESH' | 'STALE' | 'UNVERIFIED' | 'NOT_PROVIDED';
   ruleVersion: 'RECOGNIZED' | 'UNKNOWN';
   chainCommitment: 'NOT_BOUND' | 'PRESENT_MATCH' | 'PRESENT_MISMATCH' | 'ABSENT' | 'UNAVAILABLE';
+  input: 'NOT_PROVIDED' | 'MATCH' | 'MISMATCH';
   content: 'NOT_PROVIDED' | 'MATCH' | 'MISMATCH';
+  transformation: 'NOT_ASSERTED' | 'MATCH' | 'MISMATCH';
   quality: 'NOT_ASSERTED' | 'RECALCULATED_PASS' | 'RECALCULATED_FAIL';
+  fulfillment: 'NOT_ASSERTED' | 'RECALCULATED_PASS' | 'RECALCULATED_FAIL';
   outcome: 'VERIFIED' | 'VERIFIED_OFFLINE' | 'INDETERMINATE' | 'REJECTED';
   reasons: string[];
 }
 
 const DEFAULT_RULES = ['csv-ledger-v1'];
+const CLOCK_SKEW_MS = 5 * 60 * 1000;
 
 function baseReport(): VerificationReport {
   return {
     schema: 'INVALID', signature: 'INVALID', digest: null, issuer: 'UNKNOWN', keyStatus: 'UNKNOWN',
-    revocation: 'NOT_CHECKED', ruleVersion: 'UNKNOWN', chainCommitment: 'NOT_BOUND',
-    content: 'NOT_PROVIDED', quality: 'NOT_ASSERTED', outcome: 'REJECTED', reasons: [],
+    allowlist: 'NOT_PROVIDED', revocation: 'NOT_CHECKED', revocationFreshness: 'NOT_PROVIDED',
+    ruleVersion: 'UNKNOWN', chainCommitment: 'NOT_BOUND',
+    input: 'NOT_PROVIDED', content: 'NOT_PROVIDED', transformation: 'NOT_ASSERTED',
+    quality: 'NOT_ASSERTED', fulfillment: 'NOT_ASSERTED', outcome: 'REJECTED', reasons: [],
   };
+}
+
+function freshness(expiresAt: string | null | undefined, now: Date): 'FRESH' | 'STALE' | 'UNVERIFIED' {
+  if (!expiresAt) return 'UNVERIFIED';
+  return now.getTime() > new Date(expiresAt).getTime() ? 'STALE' : 'FRESH';
 }
 
 export async function verifyAttestation(input: VerifyInput): Promise<VerificationReport> {
@@ -75,6 +81,7 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
   }
   const attestation: FulfillmentAttestation = parsed.data;
   report.schema = 'VALID';
+  const now = input.now ?? new Date();
 
   let computed: Hex;
   try {
@@ -97,6 +104,10 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
   if (!signerMatches) report.reasons.push('SIGNER_MISMATCH');
   report.signature = digestMatches && signerMatches ? 'VALID' : 'INVALID';
 
+  if (input.allowlist) {
+    report.allowlist = freshness(input.allowlist.expiresAt, now);
+    if (report.allowlist === 'STALE') report.reasons.push('ALLOWLIST_STALE');
+  }
   const entry = input.allowlist ? findIssuer(input.allowlist, attestation.issuer.issuerId, attestation.issuer.keyId) : null;
   if (!entry) {
     report.issuer = 'UNKNOWN';
@@ -126,22 +137,50 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
     }
   }
 
-  if (attestation.expiresAt && (input.now ?? new Date()).getTime() > new Date(attestation.expiresAt).getTime()) {
+  const issuedAtMs = new Date(attestation.issuedAt).getTime();
+  const reviewedAtMs = new Date(attestation.review.reviewedAt).getTime();
+  if (issuedAtMs > now.getTime() + CLOCK_SKEW_MS) report.reasons.push('ISSUED_IN_FUTURE');
+  if (reviewedAtMs > issuedAtMs) report.reasons.push('REVIEW_AFTER_ISSUE');
+  if (attestation.expiresAt && new Date(attestation.expiresAt).getTime() <= issuedAtMs) {
+    report.reasons.push('EXPIRY_BEFORE_ISSUE');
+  }
+  if (attestation.expiresAt && now.getTime() > new Date(attestation.expiresAt).getTime()) {
     report.reasons.push('ATTESTATION_EXPIRED');
   }
 
   if (!input.revocations) {
     report.revocation = 'NOT_CHECKED';
-  } else if (input.revocations.entries.some((item) => item.attestationId === attestation.attestationId)) {
-    report.revocation = 'REVOKED';
-    report.reasons.push('ATTESTATION_REVOKED');
+    report.revocationFreshness = 'NOT_PROVIDED';
   } else {
-    report.revocation = 'CLEAR';
+    report.revocationFreshness = freshness(input.revocations.expiresAt, now);
+    if (report.revocationFreshness === 'STALE') {
+      report.revocation = 'STALE';
+      report.reasons.push('REVOCATION_LIST_STALE');
+    } else if (input.revocations.entries.some((item) => item.attestationId === attestation.attestationId)) {
+      report.revocation = 'REVOKED';
+      report.reasons.push('ATTESTATION_REVOKED');
+    } else {
+      report.revocation = 'CLEAR';
+    }
   }
 
   const recognized = input.recognizedRuleVersions ?? DEFAULT_RULES;
   report.ruleVersion = recognized.includes(attestation.validation.ruleVersion) ? 'RECOGNIZED' : 'UNKNOWN';
   if (report.ruleVersion === 'UNKNOWN') report.reasons.push('RULE_VERSION_UNKNOWN');
+
+  if (input.inputContent != null) {
+    const inputHash = contentDigest(input.inputContent);
+    if (inputHash !== attestation.input.contentHash) {
+      report.input = 'MISMATCH';
+      report.reasons.push('INPUT_HASH_MISMATCH');
+    } else {
+      report.input = 'MATCH';
+      const evaluatedInput = evaluateCsv(input.inputContent);
+      if (evaluatedInput.rowCount !== attestation.input.rowCount) {
+        report.reasons.push('INPUT_ROW_COUNT_MISMATCH');
+      }
+    }
+  }
 
   if (input.deliveryContent != null) {
     const contentHash = contentDigest(input.deliveryContent);
@@ -164,6 +203,23 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
       } else {
         report.reasons.push('RULE_NOT_IMPLEMENTED');
       }
+    }
+  }
+
+  if (input.inputContent != null && input.deliveryContent != null && report.input === 'MATCH' && report.content === 'MATCH') {
+    if (attestation.validation.ruleVersion === 'csv-ledger-v1') {
+      const comparison = compareCsvTransformation(input.inputContent, input.deliveryContent);
+      report.transformation = comparison.status;
+      if (comparison.status === 'MISMATCH') report.reasons.push('TRANSFORM_MISMATCH', ...comparison.reasons);
+      if (comparison.status === 'NOT_ASSERTED') report.reasons.push(...comparison.reasons);
+      if (comparison.status === 'MATCH' && report.quality === 'RECALCULATED_PASS'
+        && attestation.validation.result === 'PASS') {
+        report.fulfillment = 'RECALCULATED_PASS';
+      } else {
+        report.fulfillment = 'RECALCULATED_FAIL';
+      }
+    } else {
+      report.reasons.push('TRANSFORM_RULE_NOT_IMPLEMENTED');
     }
   }
 
@@ -190,47 +246,64 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
     report.reasons.push('CHAIN_RECEIPT_MISSING');
   } else if (!input.chain) {
     report.chainCommitment = 'UNAVAILABLE';
-  } else if (input.chain.chainId !== attestation.chain.chainId || input.chain.contract !== attestation.chain.contract) {
+  } else if (input.chain.chainId !== attestation.chain.chainId
+    || input.chain.contract.toLowerCase() !== attestation.chain.contract.toLowerCase()) {
     report.chainCommitment = 'PRESENT_MISMATCH';
     report.reasons.push('CHAIN_NETWORK_MISMATCH');
+  } else if (!input.chainPolicy || input.chainPolicy.authorizedRecorders.length === 0) {
+    report.chainCommitment = 'PRESENT_MISMATCH';
+    report.reasons.push('CHAIN_RECORDER_POLICY_MISSING');
   } else {
-    let record: ChainCommitmentRecord | null = null;
     try {
-      record = await input.chain.read({
-        chainId: attestation.chain.chainId, contract: attestation.chain.contract,
-        kind: attestation.chain.mappingKind, recordId: attestation.chain.recordId,
-        version: attestation.chain.version,
+      const evidence = await input.chain.inspect({
+        attestationId: attestation.attestationId, version: attestation.chain.version,
       });
+      const result = verifyChainEvidence({
+        attestationId: attestation.attestationId,
+        binding: attestation.chain,
+        digest: computed,
+        policy: {
+          authorizedRecorders: input.chainPolicy.authorizedRecorders,
+          minConfirmations: input.chainPolicy.minConfirmations,
+        },
+        evidence,
+      });
+      report.chainCommitment = result.status;
+      report.reasons.push(...result.reasons);
     } catch {
       report.chainCommitment = 'UNAVAILABLE';
       report.reasons.push('CHAIN_READ_FAILED');
-    }
-    if (record) {
-      const matches = record.contentHash.toLowerCase() === computed
-        && record.uri === `urn:ct:attestation:${attestation.attestationId}`;
-      report.chainCommitment = matches ? 'PRESENT_MATCH' : 'PRESENT_MISMATCH';
-      if (!matches) report.reasons.push('CHAIN_COMMITMENT_MISMATCH');
-    } else if (report.chainCommitment === 'NOT_BOUND') {
-      report.chainCommitment = 'ABSENT';
-      report.reasons.push('CHAIN_RECORD_NOT_FOUND');
     }
   }
 
   const fatal = new Set([
     'DIGEST_MISMATCH', 'SIGNER_MISMATCH', 'SIGNATURE_MALFORMED', 'CANONICALIZATION_FAILED',
     'ISSUER_UNKNOWN', 'KEY_ID_ADDRESS_MISMATCH', 'KEY_REVOKED', 'KEY_EXPIRED', 'KEY_NOT_YET_VALID',
-    'ATTESTATION_REVOKED', 'ATTESTATION_EXPIRED', 'DELIVERY_HASH_MISMATCH', 'QUALITY_MISMATCH',
+    'ATTESTATION_REVOKED', 'ATTESTATION_EXPIRED', 'EXPIRY_BEFORE_ISSUE', 'REVIEW_AFTER_ISSUE',
+    'DELIVERY_HASH_MISMATCH', 'INPUT_HASH_MISMATCH', 'INPUT_ROW_COUNT_MISMATCH',
+    'QUALITY_MISMATCH', 'TRANSFORM_MISMATCH',
+    'OUTPUT_HEADER_MISMATCH', 'OUTPUT_PARSE_FAILED', 'OUTPUT_ROW_INVALID', 'OUTPUT_MISSING_RECORDS',
+    'OUTPUT_EXTRA_RECORDS', 'OUTPUT_DUPLICATE_RECORDS', 'OUTPUT_VALUE_MISMATCH', 'OUTPUT_ORDER_MISMATCH',
     'SELF_REVIEW', 'REVIEWER_IS_SUBJECT', 'IDENTITY_SIGNER_MISMATCH', 'DEPLOYMENT_MISMATCH',
-    'CHAIN_NETWORK_MISMATCH', 'CHAIN_COMMITMENT_MISMATCH', 'CHAIN_RECORD_NOT_FOUND',
+    'CHAIN_NETWORK_MISMATCH', 'CHAIN_CONTRACT_MISMATCH', 'CHAIN_RECORD_ID_MISMATCH',
+    'CHAIN_COMMITMENT_KEY_MISMATCH', 'CHAIN_KIND_MISMATCH', 'CHAIN_VERSION_MISMATCH',
+    'CHAIN_COMMITMENT_MISMATCH', 'CHAIN_URI_MISMATCH', 'CHAIN_RECORDER_UNAUTHORIZED',
+    'CHAIN_RECORDER_POLICY_MISSING', 'CHAIN_RECEIPT_MISSING', 'CHAIN_RECEIPT_MISMATCH',
+    'CHAIN_RECEIPT_SIGNER_MISMATCH', 'CHAIN_TX_FAILED', 'CHAIN_BLOCK_MISMATCH',
+    'CHAIN_NOT_FINAL', 'CHAIN_EVENT_MISSING', 'CHAIN_EVENT_MISMATCH', 'CHAIN_RECORD_NOT_FOUND',
   ]);
   const hasFatal = report.reasons.some((reason) => fatal.has(reason));
 
   if (hasFatal) {
     report.outcome = 'REJECTED';
-  } else if (report.revocation === 'NOT_CHECKED') {
+  } else if (report.revocation === 'NOT_CHECKED' || report.revocation === 'STALE') {
     report.outcome = 'INDETERMINATE';
-    report.reasons.push('REVOCATION_STATUS_UNKNOWN');
+    if (report.revocation === 'NOT_CHECKED') report.reasons.push('REVOCATION_STATUS_UNKNOWN');
+  } else if (report.allowlist === 'STALE') {
+    report.outcome = 'INDETERMINATE';
   } else if (report.ruleVersion === 'UNKNOWN') {
+    report.outcome = 'INDETERMINATE';
+  } else if (report.reasons.includes('ISSUED_IN_FUTURE')) {
     report.outcome = 'INDETERMINATE';
   } else if (attestation.chain && !attestation.chain.receipt) {
     report.outcome = 'INDETERMINATE';
@@ -239,6 +312,8 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
     report.reasons.push('CHAIN_NOT_VERIFIED');
   } else if (attestation.chain && report.chainCommitment === 'PRESENT_MATCH') {
     report.outcome = 'VERIFIED';
+  } else if (attestation.chain && report.chainCommitment === 'PRESENT_MISMATCH') {
+    report.outcome = 'REJECTED';
   } else {
     report.outcome = 'VERIFIED_OFFLINE';
   }

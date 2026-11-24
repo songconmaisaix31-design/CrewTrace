@@ -19,6 +19,7 @@ function loadConfig() {
     rpcUrl: config.rpcUrl as string,
     chainId: config.chainId as number,
     contract: config.contract as `0x${string}`,
+    recorder: config.recorder as string,
     deploymentBlock: BigInt(config.deploymentBlock),
     issuerKey: readFileSync(resolve('.local/attestation/keys/issuer.key'), 'utf8').trim() as Hex,
     recorderKey: readFileSync(resolve('.local/attestation/keys/recorder.key'), 'utf8').trim() as Hex,
@@ -37,10 +38,13 @@ test('用例 2：带链上承诺的凭证核验通过', { skip }, async () => {
   const reader = makeChainReader({ rpcUrl: c.rpcUrl, chainId: c.chainId, contract: c.contract });
   const report = await verifyAttestation({
     attestation: issued.attestation, allowlist: issued.allowlist, revocations: issued.revocations,
-    deliveryContent: issued.delivery, chain: reader,
+    inputContent: issued.input, deliveryContent: issued.delivery, chain: reader,
+    chainPolicy: { authorizedRecorders: [c.recorder], minConfirmations: 1 },
   });
   assert.equal(report.chainCommitment, 'PRESENT_MATCH');
   assert.equal(report.quality, 'RECALCULATED_PASS');
+  assert.equal(report.transformation, 'MATCH');
+  assert.equal(report.fulfillment, 'RECALCULATED_PASS');
   assert.equal(report.outcome, 'VERIFIED');
 
   const dir = resolve('.local/attestation/chain-evidence');
@@ -84,7 +88,8 @@ test('用例 8：链上摘要与凭证不一致时拒绝', { skip }, async () =>
   const reader = makeChainReader({ rpcUrl: c.rpcUrl, chainId: c.chainId, contract: c.contract });
   const report = await verifyAttestation({
     attestation: mismatched, allowlist: plain.allowlist, revocations: plain.revocations,
-    deliveryContent: plain.delivery, chain: reader,
+    inputContent: plain.input, deliveryContent: plain.delivery, chain: reader,
+    chainPolicy: { authorizedRecorders: [c.recorder], minConfirmations: 1 },
   });
   assert.equal(report.chainCommitment, 'PRESENT_MISMATCH');
   assert.equal(report.outcome, 'REJECTED');
@@ -147,6 +152,59 @@ test('公开链上记录不含私有数据', { skip }, async () => {
   }
 });
 
+test('未授权记录账户不得核验为链上成功', { skip }, async () => {
+  const c = loadConfig();
+  const issued = await issueFixture({
+    privateKey: c.issuerKey,
+    chain: { rpcUrl: c.rpcUrl, chainId: c.chainId, contract: c.contract, recorderKey: c.recorderKey },
+  });
+  const reader = makeChainReader({ rpcUrl: c.rpcUrl, chainId: c.chainId, contract: c.contract });
+  const report = await verifyAttestation({
+    attestation: issued.attestation, allowlist: issued.allowlist, revocations: issued.revocations,
+    inputContent: issued.input, deliveryContent: issued.delivery, chain: reader,
+    chainPolicy: { authorizedRecorders: ['0x0000000000000000000000000000000000000002'], minConfirmations: 1 },
+  });
+  assert.equal(report.chainCommitment, 'PRESENT_MISMATCH');
+  assert.ok(report.reasons.includes('CHAIN_RECORDER_UNAUTHORIZED'));
+  assert.equal(report.outcome, 'REJECTED');
+});
+
+test('确认数不足时不得核验为链上成功', { skip }, async () => {
+  const c = loadConfig();
+  const issued = await issueFixture({
+    privateKey: c.issuerKey,
+    chain: { rpcUrl: c.rpcUrl, chainId: c.chainId, contract: c.contract, recorderKey: c.recorderKey },
+  });
+  const reader = makeChainReader({ rpcUrl: c.rpcUrl, chainId: c.chainId, contract: c.contract });
+  const report = await verifyAttestation({
+    attestation: issued.attestation, allowlist: issued.allowlist, revocations: issued.revocations,
+    inputContent: issued.input, deliveryContent: issued.delivery, chain: reader,
+    chainPolicy: { authorizedRecorders: [c.recorder], minConfirmations: 1_000_000 },
+  });
+  assert.equal(report.chainCommitment, 'PRESENT_MISMATCH');
+  assert.ok(report.reasons.includes('CHAIN_NOT_FINAL'));
+  assert.equal(report.outcome, 'REJECTED');
+});
+
+test('RPC 不可达时不得误报链上成功', { skip }, async () => {
+  const c = loadConfig();
+  const issued = await issueFixture({
+    privateKey: c.issuerKey,
+    chain: { rpcUrl: c.rpcUrl, chainId: c.chainId, contract: c.contract, recorderKey: c.recorderKey },
+  });
+  const deadReader = makeChainReader({
+    rpcUrl: 'http://127.0.0.1:1', chainId: c.chainId, contract: c.contract,
+  });
+  const report = await verifyAttestation({
+    attestation: issued.attestation, allowlist: issued.allowlist, revocations: issued.revocations,
+    inputContent: issued.input, deliveryContent: issued.delivery, chain: deadReader,
+    chainPolicy: { authorizedRecorders: [c.recorder], minConfirmations: 1 },
+  });
+  assert.equal(report.chainCommitment, 'UNAVAILABLE');
+  assert.notEqual(report.outcome, 'VERIFIED');
+  assert.equal(report.outcome, 'VERIFIED_OFFLINE');
+});
+
 test('独立验证器命令行不依赖数据库与环境令牌', { skip }, async () => {
   const c = loadConfig();
   const dir = resolve('.local/attestation/chain-evidence');
@@ -158,13 +216,16 @@ test('独立验证器命令行不依赖数据库与环境令牌', { skip }, asyn
     '--attestation', resolve(dir, 'attestation.json'),
     '--allowlist', resolve(dir, 'allowlist.json'),
     '--revocations', resolve(dir, 'revocations.json'),
+    '--input', 'experiments/verifiable-trust/fixtures/input.csv',
     '--delivery', resolve(dir, 'delivery.csv'),
     '--rpc', c.rpcUrl,
     '--chain-id', String(c.chainId),
     '--contract', c.contract,
+    '--recorder', c.recorder,
   ], { env, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
   const report = JSON.parse(result.stdout);
   assert.equal(report.outcome, 'VERIFIED');
   assert.equal(report.quality, 'RECALCULATED_PASS');
+  assert.equal(report.fulfillment, 'RECALCULATED_PASS');
 });

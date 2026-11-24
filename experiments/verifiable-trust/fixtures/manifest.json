@@ -1,0 +1,24 @@
+{
+  "classification": "CONTROLLED_SYNTHETIC_EXPERIMENT",
+  "containsPersonalData": false,
+  "containsRealOrders": false,
+  "description": "Trust Core V0.1 受控实验数据，订单号、买方、Agent 与交易标识均为合成值。",
+  "files": {
+    "input.csv": {
+      "sha256": "28b6b1e20280d5c407a0bd1b82b68a228e3f518ecfa188e439162181150d9a37",
+      "role": "原始输入，包含一条重复记录"
+    },
+    "delivery.csv": {
+      "sha256": "53699ce6b96f1cbc761852a9109c2b975fec1ac19b15e08e4d65a7dd8dc460a1",
+      "role": "按 csv-dedupe-first-v1 去重后的交付物"
+    },
+    "facts.json": {
+      "sha256": "2d4f6cb8d9b5770bda62a4723e84fc7a6a4d97bfaf019ff8ebb77851288bc64d",
+      "role": "签发事实样本"
+    },
+    "evidence.json": {
+      "sha256": "071c4cfba3beb1ca4e87f16d2723b4fe6df5c0ef9c5bc7b8b3538c7c5ad33279",
+      "role": "确定性审核结果样本"
+    }
+  }
+}

@@ -20,12 +20,14 @@ export interface IssuedFixture {
   revocations: RevocationList;
   privateKey: Hex;
   address: `0x${string}`;
+  input: string;
   delivery: string;
   facts: IssueFacts;
 }
 
 export async function issueFixture(options: {
   facts?: Partial<IssueFacts>;
+  inputContent?: string;
   deliveryContent?: string;
   now?: Date;
   attestationId?: string;
@@ -38,11 +40,14 @@ export async function issueFixture(options: {
 } = {}): Promise<IssuedFixture> {
   const facts = IssueFactsSchema.parse(JSON.parse(fixture('facts.json')));
   const merged = { ...facts, ...options.facts } as IssueFacts;
+  const input = options.inputContent ?? fixture('input.csv');
   const delivery = options.deliveryContent ?? fixture('delivery.csv');
   const privateKey = options.privateKey ?? generatePrivateKey();
   const address = privateKeyToAccount(privateKey).address;
   const allowlist: IssuerAllowlist = {
     version: 'ct-issuer-allowlist-v1',
+    issuedAt: '2026-01-01T00:00:00.000Z',
+    expiresAt: '2027-12-31T23:59:59.000Z',
     issuers: [{
       issuerId: 'crewtrace-experiment',
       keyId: 'issuer-2026-11',
@@ -52,10 +57,15 @@ export async function issueFixture(options: {
       revokedAt: options.keyRevokedAt ?? null,
     }],
   };
-  const revocations: RevocationList = { version: 'ct-revocation-list-v1', entries: [] };
+  const revocations: RevocationList = {
+    version: 'ct-revocation-list-v1',
+    issuedAt: '2026-01-01T00:00:00.000Z',
+    expiresAt: '2027-12-31T23:59:59.000Z',
+    entries: [],
+  };
   const attestation = await issueAttestation({
     facts: merged,
-    inputContent: fixture('input.csv'),
+    inputContent: input,
     deliveryContent: delivery,
     privateKey,
     issuerId: 'crewtrace-experiment',
@@ -68,7 +78,7 @@ export async function issueFixture(options: {
     journalPath: options.journalPath,
     chain: options.chain,
   });
-  return { attestation, allowlist, revocations, privateKey, address, delivery, facts: merged };
+  return { attestation, allowlist, revocations, privateKey, address, input, delivery, facts: merged };
 }
 
 export async function resign(
