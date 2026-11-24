@@ -22,8 +22,8 @@
 ## 收尾
 
 - [x] 运行 `npm --prefix apps/web run check` 确认文档提交不引入类型问题（前端代码未改）。
-- [ ] 提交文档，推送 `portfolio feat/payathon-commerce`。
-- [ ] 报告最终 HEAD、CI 与部署状态。
+- [x] 提交文档，推送 `portfolio feat/payathon-commerce`。
+- [x] 报告最终 HEAD、CI 与部署状态。
 
 ## 验证命令
 
