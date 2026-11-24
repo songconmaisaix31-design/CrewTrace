@@ -1,0 +1,15 @@
+{
+  "name": "@co-vibe/attestation",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --import tsx --test test/*.test.ts",
+    "test:chain": "node --import tsx --test test/chain.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "viem": "^2.57.7",
+    "zod": "^4.6.7"
+  }
+}

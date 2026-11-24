@@ -1,0 +1,49 @@
+{
+  "source": {
+    "kind": "crewtrace-local-order",
+    "orderId": "e1d9e295-eb6a-4e6c-ae9e-8457b47de4bc",
+    "buyerAgentId": "82d7c1ba-990e-4a65-9840-91e6b094f022",
+    "taskId": "e57c31ad-55a0-4ff5-b9b2-3212cd593cb8",
+    "attempt": 1,
+    "workflowVersion": "csv-workflow-v1"
+  },
+  "service": {
+    "serviceId": "csv-clean-verify-free",
+    "serviceVersion": 1
+  },
+  "subject": {
+    "agentId": "ea2dbb8a-b74f-432c-a28c-b9379d08cd5c",
+    "identity": {
+      "namespace": "ct-local",
+      "value": "ea2dbb8a-b74f-432c-a28c-b9379d08cd5c"
+    },
+    "signingAddress": null,
+    "role": "csv-data-review"
+  },
+  "input": {
+    "path": "input.csv",
+    "schemaVersion": "csv-ledger-v1"
+  },
+  "delivery": {
+    "path": "delivery.csv",
+    "deliveryVersion": 1
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "reviewerId": "crewtrace-runtime-system",
+    "reviewerAddress": null,
+    "reviewedAt": "2026-11-24T03:22:56.583Z"
+  },
+  "reputation": {
+    "eventId": "e57c31ad-55a0-4ff5-b9b2-3212cd593cb8:csv-data-review:PASS",
+    "outcome": "PASS",
+    "source": "DETERMINISTIC_REVIEW"
+  },
+  "payment": {
+    "status": "NOT_REQUIRED"
+  },
+  "rules": {
+    "ruleId": "csv-ledger",
+    "ruleVersion": "csv-ledger-v1"
+  }
+}

@@ -418,6 +418,58 @@ PRD 中“真实交易”与“链上回执”在当前 Beta 均未达成：`cha
 
 不修改团队仓库 `songconmaisaix31-design/CrewTrace`。不修改 Cloudflare 部署与固定站配置。不开启支付宝支付，`PAYMENT_MODE` 保持 `disabled`。不重构现有前端。不创建实验分支，不新增智能合约，不产生链上交易。
 
-## 十、待评审决定
+## 十、实施前补充设计
+
+### 10.1 签发者信任模型与可信名单
+
+实验采用固定名单作为唯一信任根。名单文件包含 `issuerId`、`keyId`、`address`、`validFrom`、`validTo`、`revokedAt`，随核验工具一同分发，核验时不从 CrewTrace 服务获取。名单的权限来源是实验发起人，变更通过仓库提交记录留痕；实验阶段不引入多签或链上治理。
+
+核验端只承认同时满足以下条件的签发者：`issuer.issuerId` 与 `keyId` 在名单中存在且组合唯一；签名恢复地址等于名单中的 `address`；`issuedAt` 落在 `[validFrom, validTo]`；`revokedAt` 为空。名单缺失、组合重复或地址不一致都返回不可信，不按“最接近匹配”继续。
+
+### 10.2 keyId、签名地址与身份的绑定
+
+`keyId` 是密钥轮换标识，`address` 是 secp256k1 地址，两者在名单内一对一绑定。核验端同时校验三者：名单中的 `keyId`、名单中的 `address`、签名恢复出的地址。只校验地址会允许攻击者复用合法 `keyId`；只校验 `keyId` 会允许替换密钥。
+
+`subject.agentId` 是 Runtime 内部 UUID，`subject.identity.namespace` 区分 `ct-local` 与 `eip155`。`ct-local` 表示本地身份，不可跨平台解读；`eip155` 表示链上地址，`identity.value` 为该地址。`signingAddress` 为可选字段，只有履约者持有签名密钥时才填写。验收人使用 `reviewerId` 与可选的 `reviewerAddress`，核验端要求验收人与履约主体不同。
+
+### 10.3 有效期、撤销与密钥轮换
+
+凭证包含 `expiresAt`，为空表示长期有效。实验签发的凭证有效期为签发后 365 天。核验端在 `issuedAt > expiresAt` 时返回过期。
+
+撤销通过独立撤销名单完成，条目为 `attestationId`、`revokedAt`、`reasonCode`。名单由签发方维护并按需分发，核验端把它作为可选输入。未提供撤销名单时报告 `revocation: NOT_CHECKED`，结论不得为完全可信。
+
+密钥轮换通过新增 `keyId` 完成，旧条目保留并设置 `validTo`。密钥被撤销时，该密钥签发的全部凭证返回 `KEY_REVOKED`。实验阶段不实现“撤销前签发仍然有效”的细化规则，避免给出无法验证的安全承诺。
+
+### 10.4 attestationId 与 reputationEventId 的独立唯一性
+
+`attestationId` 为 UUIDv4，由签发端生成并写入签发日志。`reputation.eventId` 来自 Runtime 的信誉事件，与本字段分属两个命名空间，不允许互相代替。签发日志按 `attestationId` 与 `reputation.eventId` 分别建立唯一约束，同一信誉事件不得签发第二份有效凭证。
+
+信誉聚合按 `reputation.eventId` 去重，重复凭证只计一次。该约束在聚合函数中实现，并通过测试验证。
+
+### 10.5 跨平台身份与本地 agentId
+
+本轮只使用 `ct-local` 身份。跨平台身份映射涉及外部命名空间、所有权证明与争议处理，当前没有实现，也不在凭证中宣称。`subject.agentId` 只在本 Runtime 内有意义，外部核验方应把 `identity` 字段当作不透明标识。若后续引入 `eip155` 身份，需要新增地址所有权签名，不能仅凭字段声明。
+
+### 10.6 规范化序列化、签名域隔离与防重放
+
+规范化规则为 `ct-canonical-json-v1`：对象键按字典序、数组保持原序、不保留空白、拒绝 `undefined`。摘要为 `keccak256(UTF8("ct-attestation-v1:" + canonicalJson(payload)))`，`payload` 排除 `integrity` 与 `chain.receipt`。版本字符串同时进入摘要与凭证字段，用于隔离凭证签名与其他消息签名。
+
+签名域隔离依靠两层结构。第一层是凭证版本 `ct-attestation-v1`，写入被签名内容；第二层是 `binding.environment` 与 `binding.deployment`，区分本地、预发布与生产部署。签名消息使用 EIP-191 前缀，签名用途与支付、链上交易签名分开。
+
+防重放依靠 `attestationId` 唯一、`expiresAt` 有效期、`chain.chainId` 与 `chain.contract` 进入摘要。跨网络重放会改变摘要或导致链上合约不匹配；跨部署重放会改变 `binding.deployment`。`chain.receipt` 不进入签名，因为它由链上事件独立核验，伪造回执会在读取阶段失败。
+
+### 10.7 链上承诺的网络、合约与记录绑定
+
+链上部分固定绑定 `chainId`、`contract`、`mappingKind`、`recordId`、`version` 与 `commitmentKey`。实验复用 `CollaborationLedger`，`mappingKind` 取合约现有枚举中的 `HANDOFF`（数值 4），并在凭证中显式写出该映射，避免核验端猜测。`recordId` 为 `keccak256(UTF8("co-vibe:collaboration:ATTESTATION:" + attestationId))`。`version` 固定为 1。`uri` 为 `urn:ct:attestation:<attestationId>`，不指向可下载内容。
+
+核验端重算 `recordId` 与 `commitmentKey`，读取链上承诺，要求 `contentHash` 等于凭证摘要、`recordId`、`version`、`kind` 与合约地址一致。任何一项不符返回 `PRESENT_MISMATCH`。
+
+### 10.8 加盐摘要的隐私与关联风险
+
+`orderRef` 与 `buyerRef` 使用 `keccak256(UTF8(salt + ":" + value))`，盐值为 32 字节随机数，按签发周期轮换，只保存在链下。凭证不包含盐值，因此未授权方无法反推订单号与买家标识。
+
+风险有三点。盐值泄露会让同一周期内的全部引用可关联；订单号若为低熵值，攻击者可在拿到盐值后枚举；同一盐值跨周期复用会扩大关联范围。控制方式是每周期新盐、盐值仅通过受控通道交给审计方、凭证不包含任何可枚举的原始标识。
+
+## 十一、待评审决定
 
 需要产品评审确认三件事：履约凭证的字段白名单是否覆盖商业核验需要；是否接受“链上承诺按外部需求启用”的默认策略；最小实验的十一条用例与验收标准是否足够。确认后再创建 `experiment/verifiable-trust-layer`，按第六节范围实施。
