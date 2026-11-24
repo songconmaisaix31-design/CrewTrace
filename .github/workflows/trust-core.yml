@@ -28,6 +28,9 @@ jobs:
       - name: Install attestation dependencies
         run: npm ci --prefix packages/attestation
 
+      - name: Install shared CSV rule dependencies
+        run: npm ci --prefix workers
+
       - name: Install contract dependencies
         run: npm ci --prefix contracts
 
