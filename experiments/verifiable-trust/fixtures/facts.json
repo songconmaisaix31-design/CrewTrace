@@ -1,9 +1,9 @@
 {
   "source": {
-    "kind": "crewtrace-local-order",
-    "orderId": "e1d9e295-eb6a-4e6c-ae9e-8457b47de4bc",
-    "buyerAgentId": "82d7c1ba-990e-4a65-9840-91e6b094f022",
-    "taskId": "e57c31ad-55a0-4ff5-b9b2-3212cd593cb8",
+    "kind": "synthetic-experiment",
+    "orderId": "00000000-0000-4000-8000-000000000001",
+    "buyerAgentId": "00000000-0000-4000-8000-000000000002",
+    "taskId": "00000000-0000-4000-8000-000000000003",
     "attempt": 1,
     "workflowVersion": "csv-workflow-v1"
   },
@@ -12,10 +12,10 @@
     "serviceVersion": 1
   },
   "subject": {
-    "agentId": "ea2dbb8a-b74f-432c-a28c-b9379d08cd5c",
+    "agentId": "00000000-0000-4000-8000-000000000004",
     "identity": {
       "namespace": "ct-local",
-      "value": "ea2dbb8a-b74f-432c-a28c-b9379d08cd5c"
+      "value": "00000000-0000-4000-8000-000000000004"
     },
     "signingAddress": null,
     "role": "csv-data-review"
@@ -30,12 +30,12 @@
   },
   "review": {
     "decision": "ACCEPTED",
-    "reviewerId": "crewtrace-runtime-system",
+    "reviewerId": "synthetic-reviewer",
     "reviewerAddress": null,
     "reviewedAt": "2026-11-24T03:22:56.583Z"
   },
   "reputation": {
-    "eventId": "e57c31ad-55a0-4ff5-b9b2-3212cd593cb8:csv-data-review:PASS",
+    "eventId": "00000000-0000-4000-8000-000000000003:csv-data-review:PASS",
     "outcome": "PASS",
     "source": "DETERMINISTIC_REVIEW"
   },

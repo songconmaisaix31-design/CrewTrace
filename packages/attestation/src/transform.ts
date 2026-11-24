@@ -1,7 +1,10 @@
 import { parse } from 'csv-parse/sync';
+import { CsvConflictError, CsvError, executeCsvCleanup } from './runtime-csv.js';
 
-export const CSV_TRANSFORM_RULE_ID = 'csv-dedupe-first';
-export const CSV_TRANSFORM_RULE_VERSION = 'csv-dedupe-first-v1';
+// 转换规则直接复用 Runtime 的去重清洗契约（workers/src/csv-cleanup.ts 的 deduplicate 模式），
+// 而不是另写一套仅适配固定样本的规则。输入是否可转换、期望输出行序都来自同一实现。
+export const CSV_TRANSFORM_RULE_ID = 'csv-cleanup-deduplicate';
+export const CSV_TRANSFORM_RULE_VERSION = 'csv-cleanup-deduplicate-v1';
 const HEADER = ['record_id', 'amount_cents'] as const;
 
 export interface CsvTransformResult {
@@ -9,6 +12,7 @@ export interface CsvTransformResult {
   ruleVersion: string;
   transformable: boolean;
   expectedRows: string[][];
+  expectedContent: string | null;
   issues: string[];
 }
 
@@ -25,50 +29,44 @@ function parseRows(content: string): string[][] {
   }) as string[][];
 }
 
+function transformFailure(issues: string[]): CsvTransformResult {
+  return {
+    ruleId: CSV_TRANSFORM_RULE_ID, ruleVersion: CSV_TRANSFORM_RULE_VERSION,
+    transformable: false, expectedRows: [], expectedContent: null, issues,
+  };
+}
+
 export function transformCsv(inputContent: string): CsvTransformResult {
-  const issues: string[] = [];
+  let expectedContent: string;
+  try {
+    expectedContent = executeCsvCleanup(inputContent, 'deduplicate');
+  } catch (error) {
+    if (error instanceof CsvConflictError) return transformFailure(['INPUT_DUPLICATE_CONFLICT']);
+    if (error instanceof CsvError) return transformFailure([`INPUT_PARSE_FAILED:${error.code ?? 'INVALID_CSV'}`]);
+    if (error instanceof TypeError) return transformFailure(['INPUT_ROW_SHAPE_INVALID']);
+    throw error;
+  }
+
   let rows: string[][];
   try {
-    rows = parseRows(inputContent);
-  } catch {
-    return {
-      ruleId: CSV_TRANSFORM_RULE_ID, ruleVersion: CSV_TRANSFORM_RULE_VERSION,
-      transformable: false, expectedRows: [], issues: ['INPUT_PARSE_FAILED'],
-    };
+    rows = parseRows(expectedContent);
+  } catch (error) {
+    if (error instanceof CsvError) return transformFailure([`INPUT_PARSE_FAILED:${error.code ?? 'INVALID_CSV'}`]);
+    throw error;
   }
+
+  const issues: string[] = [];
   const header = rows.shift() ?? [];
   if (header.length !== HEADER.length || header[0] !== HEADER[0] || header[1] !== HEADER[1]) {
     issues.push('INPUT_HEADER_MISMATCH');
   }
-  const seen = new Map<string, string>();
-  const expectedRows: string[][] = [];
   for (const [index, row] of rows.entries()) {
-    const rowNumber = index + 2;
-    if (row.length !== 2) {
-      issues.push(`INPUT_ROW_${rowNumber}:FIELD_COUNT`);
-      continue;
-    }
-    const [id, amount] = row;
-    if (!id || id !== id.trim()) {
-      issues.push(`INPUT_ROW_${rowNumber}:INVALID_ID`);
-      continue;
-    }
-    if (!amount || !/^(0|[1-9][0-9]{0,11})$/.test(amount)) {
-      issues.push(`INPUT_ROW_${rowNumber}:INVALID_AMOUNT_CENTS`);
-      continue;
-    }
-    const previous = seen.get(id);
-    if (previous !== undefined) {
-      if (previous !== amount) issues.push(`INPUT_CONFLICT:${id}`);
-      continue;
-    }
-    seen.set(id, amount);
-    expectedRows.push([id, amount]);
+    if (row.length !== 2) issues.push(`INPUT_ROW_${index + 2}:FIELD_COUNT`);
   }
-  if (!expectedRows.length) issues.push('INPUT_NO_VALID_ROWS');
+  if (!rows.length) issues.push('INPUT_NO_VALID_ROWS');
   return {
     ruleId: CSV_TRANSFORM_RULE_ID, ruleVersion: CSV_TRANSFORM_RULE_VERSION,
-    transformable: issues.length === 0, expectedRows, issues,
+    transformable: issues.length === 0, expectedRows: rows, expectedContent, issues,
   };
 }
 

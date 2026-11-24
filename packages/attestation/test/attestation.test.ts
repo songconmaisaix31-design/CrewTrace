@@ -201,16 +201,19 @@ test('信誉聚合与输入顺序无关', async () => {
 
 test('同一信誉事件出现冲突结论时不计分', async () => {
   const first = await verifiedOffline();
-  const conflicting = await resign(first.attestation, first.privateKey, (copy) => {
-    copy.validation.result = 'FAIL';
-    copy.review.decision = 'REJECTED';
+  const alternate = await issueFixture({
+    facts: first.facts,
+    attestationId: '44444444-4444-4444-8444-444444444444',
+    inputContent: 'record_id,amount_cents\nmcp-z,9\n',
+    deliveryContent: 'record_id,amount_cents\nmcp-z,9\n',
   });
-  const conflictingReport = await verifyAttestation({
-    attestation: conflicting, allowlist: first.allowlist, revocations: first.revocations,
+  const alternateReport = await verifyAttestation({
+    attestation: alternate.attestation, allowlist: alternate.allowlist, revocations: alternate.revocations,
+    inputContent: alternate.input, deliveryContent: alternate.delivery,
   });
   const result = aggregateReputation([
     { attestation: first.attestation, report: first.report },
-    { attestation: conflicting, report: conflictingReport },
+    { attestation: alternate.attestation, report: alternateReport },
   ], { policy: OFFLINE_POLICY });
   assert.equal(result.buckets.length, 0);
   assert.equal(result.decisions.every((decision) => decision.reasons.includes('CONFLICTING_EVENT')), true);
@@ -277,7 +280,8 @@ test('不同签发者使用相同事件标识时按命名空间区分', async ()
     { attestation: first.attestation, report: first.report },
     { attestation: resigned, report: otherReport },
   ], { policy: OFFLINE_POLICY });
-  assert.equal(result.buckets[0].sampleSize, 2);
+  assert.equal(result.buckets.length, 2);
+  assert.equal(result.buckets.reduce((sum, bucket) => sum + bucket.sampleSize, 0), 2);
 });
 
 test('用例 13：跨部署与签名域不得重放', async () => {

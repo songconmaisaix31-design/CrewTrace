@@ -2,22 +2,34 @@
   "classification": "CONTROLLED_SYNTHETIC_EXPERIMENT",
   "containsPersonalData": false,
   "containsRealOrders": false,
-  "description": "Trust Core V0.1 受控实验数据，订单号、买方、Agent 与交易标识均为合成值。",
+  "derivedFromHistoricalOrders": false,
+  "description": "Trust SDK V0.1 受控实验样本。全部标识由确定性合成生成器产生，不来自 CrewTrace 数据库、历史测试订单或真实客户。",
+  "generation": {
+    "source": "DETERMINISTIC_SYNTHETIC_GENERATOR",
+    "script": "experiments/verifiable-trust/generate-fixtures.ts",
+    "generatedAt": "2026-11-25T00:00:00.000Z",
+    "databaseUsed": false
+  },
+  "transformRule": {
+    "ruleId": "csv-cleanup-deduplicate",
+    "ruleVersion": "csv-cleanup-deduplicate-v1",
+    "runtimeContract": "workers/src/csv-cleanup.ts#deduplicate"
+  },
   "files": {
     "input.csv": {
-      "sha256": "28b6b1e20280d5c407a0bd1b82b68a228e3f518ecfa188e439162181150d9a37",
+      "sha256": "968910eccbaab40c38e29aa6b4d4d36e56717f9adfc33be3faeadc5f0f8d1e2e",
       "role": "原始输入，包含一条重复记录"
     },
     "delivery.csv": {
-      "sha256": "53699ce6b96f1cbc761852a9109c2b975fec1ac19b15e08e4d65a7dd8dc460a1",
-      "role": "按 csv-dedupe-first-v1 去重后的交付物"
+      "sha256": "45f04ef8e60f222c81a4ace5a41650c9bfc3c61e713fe7c87da17d78295f4848",
+      "role": "按 Runtime 去重清洗契约生成的交付物"
     },
     "facts.json": {
-      "sha256": "2d4f6cb8d9b5770bda62a4723e84fc7a6a4d97bfaf019ff8ebb77851288bc64d",
-      "role": "签发事实样本"
+      "sha256": "df3d9f82435fe7d37341ae8034c2466056f8a722ad1558d03d8514ff602c573e",
+      "role": "确定性合成签发事实"
     },
     "evidence.json": {
-      "sha256": "071c4cfba3beb1ca4e87f16d2723b4fe6df5c0ef9c5bc7b8b3538c7c5ad33279",
+      "sha256": "e66da0deb65691a3db5d2453954b174158677758bcfe08b94f875aedcd239477",
       "role": "确定性审核结果样本"
     }
   }

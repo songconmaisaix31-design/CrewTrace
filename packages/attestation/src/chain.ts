@@ -4,7 +4,7 @@ import {
   type Address, type Hex,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { collaborationLedgerAbi } from '../../chain/src/collaboration.js';
+import { collaborationLedgerAbi } from './ledger-abi.js';
 import {
   ATTESTATION_MAPPING_KIND, ATTESTATION_VERSION, attestationRecordId, attestationUri,
   commitmentKey, type ChainEvidence, type ChainEvidenceRecord, type ChainReader,
@@ -13,7 +13,6 @@ import {
 export { ATTESTATION_MAPPING_KIND, ATTESTATION_VERSION, attestationRecordId, attestationUri, commitmentKey };
 export type { ChainEvidence, ChainReader };
 
-const ARTIFACT_URL = new URL('../../../contracts/artifacts/src/CollaborationLedger.sol/CollaborationLedger.json', import.meta.url);
 const LOCAL_EXPERIMENT_CHAIN_ID = 31337;
 
 export function assertLocalExperimentChain(chainId: number): void {
@@ -32,10 +31,10 @@ function chainFor(rpcUrl: string, chainId: number) {
 }
 
 export async function deployLocalLedger(input: {
-  rpcUrl: string; chainId: number; deployerKey: Hex; recorder: Address;
+  rpcUrl: string; chainId: number; deployerKey: Hex; recorder: Address; artifactPath: string;
 }): Promise<{ contract: Address; txHash: Hex; blockNumber: string }> {
   assertLocalExperimentChain(input.chainId);
-  const artifact = JSON.parse(readFileSync(ARTIFACT_URL, 'utf8')) as { abi: unknown[]; bytecode: Hex };
+  const artifact = JSON.parse(readFileSync(input.artifactPath, 'utf8')) as { abi: unknown[]; bytecode: Hex };
   const chain = chainFor(input.rpcUrl, input.chainId);
   const account = privateKeyToAccount(input.deployerKey);
   const publicClient = createPublicClient({ chain, transport: http(input.rpcUrl) });

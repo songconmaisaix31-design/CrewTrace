@@ -62,6 +62,15 @@ jobs:
       - name: Credential unit tests
         run: node --import tsx --test packages/attestation/test/attestation.test.ts
 
+      - name: SDK trust boundary tests
+        run: node --import tsx --test packages/attestation/test/sdk.test.ts
+
+      - name: Runtime CSV contract tests
+        run: node --import tsx --test packages/attestation/test/runtime-csv.test.ts
+
+      - name: Experiment data provenance tests
+        run: node --import tsx --test packages/attestation/test/fixtures.test.ts
+
       - name: Isolation and privacy tests
         run: node --import tsx --test packages/attestation/test/isolation.test.ts
 
@@ -77,6 +86,9 @@ jobs:
             --input experiments/verifiable-trust/fixtures/input.csv \
             --delivery .local/attestation/chain-evidence/delivery.csv \
             --out .local/attestation/chain-evidence/chain-inspection.json
+
+      - name: Independent SDK consumer install and run
+        run: bash examples/sdk-consumer/verify-install.sh
 
       - name: Upload experiment evidence
         if: always()

@@ -14,7 +14,7 @@ import {
 
 export const IssueFactsSchema = z.strictObject({
   source: z.strictObject({
-    kind: z.literal('crewtrace-local-order'),
+    kind: z.enum(['crewtrace-local-order', 'synthetic-experiment']),
     orderId: UuidSchema,
     buyerAgentId: UuidSchema.nullable(),
     taskId: UuidSchema,

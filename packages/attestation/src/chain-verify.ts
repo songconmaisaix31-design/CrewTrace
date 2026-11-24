@@ -1,5 +1,5 @@
-import { encodeAbiParameters, keccak256, toBytes, type Hex } from 'viem';
-import { deriveCollaborationRecordId } from '../../chain/src/collaboration.js';
+import { encodeAbiParameters, keccak256, type Hex } from 'viem';
+import { deriveCollaborationRecordId } from './ledger-abi.js';
 import type { ChainBinding } from './schema.js';
 
 export const ATTESTATION_MAPPING_KIND = 4;

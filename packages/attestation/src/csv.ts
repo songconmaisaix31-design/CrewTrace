@@ -1,4 +1,4 @@
-import { verifyCsvDelivery } from '../../../workers/src/csv-delivery.js';
+import { verifyCsvDelivery } from './runtime-csv.js';
 import { checksDigest } from './canonical.js';
 
 export const CSV_RULE_ID = 'csv-ledger';

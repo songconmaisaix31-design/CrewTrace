@@ -1,11 +1,12 @@
 import type { Hex } from 'viem';
-import { canonicalJson } from '../../chain/src/collaboration.js';
+import { canonicalJson } from './canonical-json.js';
 import { attestationDigest, contentDigest } from './canonical.js';
 import { evaluateCsv } from './csv.js';
 import { findIssuer } from './allowlist.js';
 import { recoverDigestSigner } from './sign.js';
 import { compareCsvTransformation } from './transform.js';
 import { verifyChainEvidence, type ChainReader, type ChainVerificationPolicy } from './chain-verify.js';
+import { registerVerification } from './verified-registry.js';
 import {
   FulfillmentAttestationSchema,
   type FulfillmentAttestation,
@@ -66,7 +67,7 @@ function freshness(expiresAt: string | null | undefined, now: Date): 'FRESH' | '
   return now.getTime() > new Date(expiresAt).getTime() ? 'STALE' : 'FRESH';
 }
 
-export async function verifyAttestation(input: VerifyInput): Promise<VerificationReport> {
+async function runVerification(input: VerifyInput): Promise<VerificationReport> {
   const report = baseReport();
   const raw = input.attestation;
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
@@ -284,6 +285,8 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
     'QUALITY_MISMATCH', 'TRANSFORM_MISMATCH',
     'OUTPUT_HEADER_MISMATCH', 'OUTPUT_PARSE_FAILED', 'OUTPUT_ROW_INVALID', 'OUTPUT_MISSING_RECORDS',
     'OUTPUT_EXTRA_RECORDS', 'OUTPUT_DUPLICATE_RECORDS', 'OUTPUT_VALUE_MISMATCH', 'OUTPUT_ORDER_MISMATCH',
+    'INPUT_DUPLICATE_CONFLICT', 'INPUT_ROW_SHAPE_INVALID', 'INPUT_HEADER_MISMATCH', 'INPUT_NO_VALID_ROWS',
+    'INPUT_PARSE_FAILED',
     'SELF_REVIEW', 'REVIEWER_IS_SUBJECT', 'IDENTITY_SIGNER_MISMATCH', 'DEPLOYMENT_MISMATCH',
     'CHAIN_NETWORK_MISMATCH', 'CHAIN_CONTRACT_MISMATCH', 'CHAIN_RECORD_ID_MISMATCH',
     'CHAIN_COMMITMENT_KEY_MISMATCH', 'CHAIN_KIND_MISMATCH', 'CHAIN_VERSION_MISMATCH',
@@ -292,7 +295,7 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
     'CHAIN_RECEIPT_SIGNER_MISMATCH', 'CHAIN_TX_FAILED', 'CHAIN_BLOCK_MISMATCH',
     'CHAIN_NOT_FINAL', 'CHAIN_EVENT_MISSING', 'CHAIN_EVENT_MISMATCH', 'CHAIN_RECORD_NOT_FOUND',
   ]);
-  const hasFatal = report.reasons.some((reason) => fatal.has(reason));
+  const hasFatal = report.reasons.some((reason) => fatal.has(reason) || reason.startsWith('INPUT_PARSE_FAILED'));
 
   if (hasFatal) {
     report.outcome = 'REJECTED';
@@ -302,6 +305,8 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
   } else if (report.allowlist === 'STALE') {
     report.outcome = 'INDETERMINATE';
   } else if (report.ruleVersion === 'UNKNOWN') {
+    report.outcome = 'INDETERMINATE';
+  } else if (report.reasons.includes('TRANSFORM_RULE_NOT_IMPLEMENTED')) {
     report.outcome = 'INDETERMINATE';
   } else if (report.reasons.includes('ISSUED_IN_FUTURE')) {
     report.outcome = 'INDETERMINATE';
@@ -317,5 +322,11 @@ export async function verifyAttestation(input: VerifyInput): Promise<Verificatio
   } else {
     report.outcome = 'VERIFIED_OFFLINE';
   }
+  return report;
+}
+
+export async function verifyAttestation(input: VerifyInput): Promise<VerificationReport> {
+  const report = await runVerification(input);
+  registerVerification(input, report);
   return report;
 }

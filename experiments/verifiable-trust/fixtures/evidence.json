@@ -1,7 +1,7 @@
 {
-  "issues": [],
+  "ruleVersion": "csv-ledger-v1",
+  "contentHash": "45f04ef8e60f222c81a4ace5a41650c9bfc3c61e713fe7c87da17d78295f4848",
+  "rowCount": 2,
   "status": "PASS",
-  "rowCount": 1,
-  "contentHash": "53699ce6b96f1cbc761852a9109c2b975fec1ac19b15e08e4d65a7dd8dc460a1",
-  "ruleVersion": "csv-ledger-v1"
+  "issues": []
 }

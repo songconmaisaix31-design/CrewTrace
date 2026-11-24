@@ -24,6 +24,7 @@ writeFileSync(resolve(outDir, 'keys/recorder.key'), `${HARDHAT_ACCOUNTS.recorder
 const deployed = await deployLocalLedger({
   rpcUrl: values.rpc!, chainId: Number(values['chain-id']!),
   deployerKey: HARDHAT_ACCOUNTS.deployer, recorder: hardhatAddress(HARDHAT_ACCOUNTS.recorder),
+  artifactPath: resolve('contracts/artifacts/src/CollaborationLedger.sol/CollaborationLedger.json'),
 });
 
 const allowlist = {

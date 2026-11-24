@@ -1,5 +1,5 @@
 import { keccak256, toBytes } from 'viem';
-import { canonicalJson } from '../../chain/src/collaboration.js';
+import { canonicalJson } from './canonical-json.js';
 
 export const ATTESTATION_DOMAIN = 'ct-attestation-v1';
 
