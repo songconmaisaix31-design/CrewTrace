@@ -35,7 +35,7 @@
 
 预下单前确认订单金额等于服务目录价格，付费服务为 100 分。`amount` 不超过 50 元，`out_trade_no` 由服务端生成并满足 1 至 32 位字母、数字、下划线或连字符，重复请求复用同一 `out_trade_no`。预下单调用强制验签，超时 8 秒，结果未知时不得用新的商户订单号重新下单。
 
-验付阶段确认 `active=true`、`trade_no` 与凭证一致、`out_trade_no` 属于本订单、`amount` 等于订单价格，同一 `trade_no` 与凭证哈希不能用于第二笔订单。官方还要求校验 `resource_id` 与本次访问资源一致；当前代码未使用该字段，接入真实服务前需要补齐并测试。
+验付阶段确认 `active=true`、`trade_no` 与凭证一致、`out_trade_no` 属于本订单、`amount` 等于订单价格，同一 `trade_no` 与凭证哈希不能用于第二笔订单。官方产品指南仍列出 `resource_id`，但《商户支付凭证验证接口》（https://aipay.alipay.com/docs/ai-receive/api-list/alipay-aipay-agent-payment-verify.html，2026-10-28 核对）已标注该字段废弃，当前代码不校验不构成阻断；若商户后台后续重新启用该字段，再补齐校验与测试。
 
 ## 最低金额测试方案
 

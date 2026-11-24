@@ -49,7 +49,7 @@
 
 **service_id 获取路径。** 打开一站式开通服务工具 `https://b.alipay.com/page/home/open-ai-pay`，填写服务信息并提交，审核成功后获得 service_id。该值长度为 1 至 32 位，写入仓库的 `ALIPAY_SERVICE_IDS`，例如 `{"csv-clean-verify":"API2094383984"}`。
 
-**官方验收步骤。** 在一站式接入页完成线上密钥替换并部署到生产服务器；发起一笔真实支付请求，官方允许使用 0.01 元的小金额；使用支付宝 APP 扫码或账号密码完成支付；异步通知与退款为可选项；回到接入页粘贴支付宝交易号点击「验证交易」，页面显示接入成功才算完成。服务端验付除接口返回成功外，还必须检查 `active=true`、`amount` 等于本次资源价格、`out_trade_no` 为商户订单号、`resource_id` 与访问资源一致，并保证同一 `trade_no` 不被重复履约。
+**官方验收步骤。** 在一站式接入页完成线上密钥替换并部署到生产服务器；发起一笔真实支付请求，官方允许使用 0.01 元的小金额；使用支付宝 APP 扫码或账号密码完成支付；异步通知与退款为可选项；回到接入页粘贴支付宝交易号点击「验证交易」，页面显示接入成功才算完成。服务端验付除接口返回成功外，还必须检查 `active=true`、`amount` 等于本次资源价格、`out_trade_no` 为商户订单号，并保证同一 `trade_no` 不被重复履约。官方产品指南仍列出 `resource_id`，但《商户支付凭证验证接口》（https://aipay.alipay.com/docs/ai-receive/api-list/alipay-aipay-agent-payment-verify.html，2026-10-28 核对）已把该字段标注为废弃；当前实现以 `out_trade_no` 归属、`amount`、`active` 与 `trade_no` 唯一性作为验付依据，若商户后台后续重新启用 `resource_id` 再补充校验。
 
 ## 步骤分工
 

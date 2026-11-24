@@ -48,7 +48,11 @@ try {
   writeFileSync(envTemporary, envBody, { mode: 0o600 });
   chmodSync(envTemporary, 0o600);
   renameSync(envTemporary, envPath);
-  console.log(envBody);
+  // 只输出身份摘要，凭证仅保留在 .local 下 0600 的文件中，避免进入终端记录或日志。
+  console.log(JSON.stringify({
+    event: 'workers_prepared',
+    workers: workers.map(worker => ({ role: worker.role, agentId: worker.agentId })),
+  }));
 } finally {
   await db.close();
 }
