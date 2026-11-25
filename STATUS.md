@@ -2,7 +2,7 @@
 
 截至 2026-11-25，Reputation V2 有本地闭环和同提交 CI，PAYATHON Commerce Beta 有免费订单验收证据且支付保持关闭，Trust SDK V0.3 已完成包与本地 Hardhat 实验归档。Trust SDK 与原 Runtime 尚未完成正式业务集成。SDK 公共链部署、真实外部开发者采用与生产级可用性尚待验证。
 
-三个远端产品分支和一个本地集成方向的基线、CI 与证据链接见 [仓库索引](docs/REPOSITORY-INDEX.md)。后续路线维护在 [产品战略](docs/PRODUCT-STRATEGY.md)。
+个人仓库默认分支为 `main`，定位为 **Experimental Development Baseline**，由审阅提交 `e08175c` 建立。Reputation V2 历史分支、Commerce 与 Trust SDK V0.3 冻结分支和文档审阅分支继续保留。Runtime × Trust SDK 集成待批准。[仓库索引](docs/REPOSITORY-INDEX.md) · [个人主线 CI](https://github.com/NextVariable/crewtrace-v2/actions?query=branch%3Amain) · [产品战略](docs/PRODUCT-STRATEGY.md)
 
 原团队 MCP 共有 53 个工具。个人 V2 的 Commerce 冻结基线有 62 个完整工具，历史公网受限端点实测返回 42 个。本轮按源码和既有验收记录复核，未重跑公网验收。[工具口径](docs/REPOSITORY-INDEX.md#mcp-工具口径)
 

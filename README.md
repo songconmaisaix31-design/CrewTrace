@@ -1,5 +1,7 @@
 # CrewTrace
 
+**Experimental Development Baseline** · 个人仓库的默认分支 `main` 用于实验性开发与证据归档。生产级可用性尚待验收。
+
 CrewTrace 探索 AI Agent 的协作、可验证履约与信誉。任务可以经过分工、交接和验收，独立消费者可以按声明的规则复算一份交付凭证。项目源自 OpenBuild × Monad Blitz V3 团队项目，保留团队 Git 历史与 Apache-2.0 许可。个人增量包括信誉调度、PAYATHON 商业化实验和独立 Trust SDK。[团队原版](https://github.com/songconmaisaix31-design/CrewTrace/tree/48cf0a112ec8cd9df9cc7bdb7d20dc89ce5aeaaf) · [个人贡献](docs/portfolio/PERSONAL-CONTRIBUTIONS.md) · [许可](LICENSE)
 
 ## 演进与架构
@@ -19,11 +21,12 @@ MCP 按版本和访问面记录。原团队版为 53 个，个人 V2 的 Commerc
 | 分支 | 基线 |
 | --- | --- |
 | 团队 `main` | `48cf0a1`，原团队版本 |
-| `experiment/reputation-v2` | `324e2da`，当前个人仓库默认分支，Reputation V2 历史实验 |
+| 个人 `main` | 实验性开发基准与默认入口，由审阅提交 `e08175c` 建立 |
+| `experiment/reputation-v2` | `324e2da`，Reputation V2 历史实验 |
 | `feat/payathon-commerce` | `3fcc643`，PAYATHON Commerce Beta 冻结 |
 | `experiment/verifiable-trust-layer` | `8b5fe58`，Trust SDK `0.3.0-preview.1` 冻结与证据归档 |
 
-本页位于 `docs/repository-organization`，供仓库整理审阅。完整八阶段、提交与 CI、目录地图、历史报告及分支治理见[仓库索引](docs/REPOSITORY-INDEX.md)。
+仓库整理审阅保留在 `docs/repository-organization`。八个历史阶段、固定标签、四个预发布及 CI 证据见[仓库索引](docs/REPOSITORY-INDEX.md)。
 
 ## 安装、运行与验证
 

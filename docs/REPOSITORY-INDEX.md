@@ -1,14 +1,15 @@
 # 仓库索引与版本资产
 
-远端盘点日期为 2026-11-25。个人仓库为私有，默认分支为 `experiment/reputation-v2`。盘点覆盖三个产品分支及一个远端文档分支，Tags、GitHub Releases 和 PR 均为零。
+个人仓库为私有，默认分支为 `main`。远端分支、固定版本和预发布见下表。
 
 | 分支 | HEAD | 用途 |
 | --- | --- | --- |
-| `experiment/reputation-v2` | `324e2da64ae2888e408f0041cbe9917a570594d3` | 当前默认分支，Reputation V2 历史实验 |
+| `main` | [GitHub 当前 HEAD](https://github.com/NextVariable/crewtrace-v2/commits/main/) | 默认入口，Experimental Development Baseline |
+| `experiment/reputation-v2` | `324e2da64ae2888e408f0041cbe9917a570594d3` | Reputation V2 历史实验 |
 | `feat/payathon-commerce` | `3fcc643d1b87e7803e2f28ceecc56ace7b08e296` | PAYATHON Commerce Beta 冻结 |
 | `experiment/verifiable-trust-layer` | `8b5fe58e80450561829e62572aef128465492aa0` | Trust SDK V0.3 冻结及证据归档 |
 | `feat/trust-native-collaboration` | 本地 `8b5fe58e80450561829e62572aef128465492aa0` | 后续集成方向，远端无同名分支 |
-| `docs/repository-organization` | 整理分支，以 GitHub 分支 HEAD 为准 | 从 `8b5fe58` 派生的审阅入口 |
+| `docs/repository-organization` | `e08175ca54ed56a1535aaaef68d6c3ea748b8943` | 从 `8b5fe58` 派生的治理审阅归档 |
 
 原团队仓库默认 `main`，HEAD 为 `48cf0a112ec8cd9df9cc7bdb7d20dc89ce5aeaaf`，共 14 个远端分支，Tags 和 Releases 均为零。PR #1 已合并，PR #2 仍开着。团队 `feat/alipay-payathon` 的 HEAD 为 `987a37106c1635f81dcbdcc1bf319752fef4a39a`，是另一条团队实现线。团队 Actions 可见两个成功运行均对应 `987a371`，本次未找到团队 main 的同 SHA CI。[团队分支](https://github.com/songconmaisaix31-design/CrewTrace/branches) · [团队 PR](https://github.com/songconmaisaix31-design/CrewTrace/pulls?q=is%3Apr) · [团队 CI](https://github.com/songconmaisaix31-design/CrewTrace/actions/runs/40051118808)
 
@@ -54,28 +55,23 @@ Commerce 分支增加 `apps/showcase`、`deploy`、`functions` 与 Commerce 文�
 
 在 `PUBLIC_DEPLOYMENT=true` 下，非管理员且非获准 Worker 的连接隐藏八个协作写入与十二个 Runtime 工具。完整工具数是注册口径，单个工具仍执行自己的权限校验。公网 42 来自冻结时 `tools/list` 验收。[兼容性核查](beta-freeze/compatibility-review.md) · [Beta 验收记录](beta-freeze/beta-acceptance.md)
 
-## Actions 与治理建议
+## Actions 与治理
 
-个人仓库登记了 `CrewTrace portfolio checks` 和 `Trust Core checks`。在整理分支继承的工作流里，前者只对 Reputation 与 Commerce 分支的 push 运行，后者针对信任层分支的 push 或以该分支为目标的 PR。文档分支的独立 push 不触发上述匹配规则。
+`CrewTrace portfolio checks` 和 `Trust Core checks` 均覆盖 `main` 和预定的 `feat/trust-native-collaboration` 分支的 push 和目标 PR。旧分支的触发范围和测试步骤保留。CI 是否通过以对应分支和提交的 GitHub 运行结论为准。[主线 Actions](https://github.com/NextVariable/crewtrace-v2/actions?query=branch%3Amain)
 
-### 个人主线迁移待审批方案
+### 个人主线与固定版本
 
-目标仅为私有仓库 `NextVariable/crewtrace-v2`。建议按以下顺序审批和执行。
+个人 `main` 从审阅提交 `e08175ca54ed56a1535aaaef68d6c3ea748b8943` 创建，初始 Git 树与该提交一致。GitHub 默认分支随后从 Reputation 实验分支切换为个人 `main`。主线定位为 Experimental Development Baseline，生产可用性尚待验收。若需要恢复旧入口，经批准后可切回 `experiment/reputation-v2`，保留两个分支上的提交。
 
-1. 审阅并记录 `docs/repository-organization` 的确切批准 SHA。重新核验远端 `main` 是否为空缺、默认分支和三个产品分支的 HEAD、拟议 tag 是否已存在。发生差异则暂停核对。
-2. 从批准的 SHA 创建个人 `main` 并验证与整理分支树一致。将其定位为**实验性开发基准**和统一项目入口。现有 CI 分支过滤不覆盖新 main。若要建立 main 的 PR 与 CI 门槛，需另批工作流及仓库规则。
-3. 核对新 main 的 README、索引、冻结版本链接后，将个人仓库默认分支从 `experiment/reputation-v2` 切到 `main`，再核验默认入口与各引用。经批准更新 README、STATUS、AGENTS 和索引里的默认分支状态，并保留本次迁移的源 SHA。若迁移验收失败，可按批准范围把默认分支恢复为 `experiment/reputation-v2`。
-4. 在个人仓库建立下列带注释的历史 Tags。逐一校验经解引用的目标 SHA，保留既有引用，碰到同名异指则暂停。建立四项 GitHub Pre-release，发布说明写明目标、实验和 CI、未验收范围，标为 Pre-release 且不设为 Latest。
-
-| 拟议 Tag | 固定提交 | 拟议 GitHub Pre-release |
+| 带注释的 Tag | 固定提交 | GitHub Pre-release |
 | --- | --- | --- |
-| `archive/monad-team-v1` | `48cf0a112ec8cd9df9cc7bdb7d20dc89ce5aeaaf` | 历史 Tag |
-| `reputation-v2-rc` | `324e2da64ae2888e408f0041cbe9917a570594d3` | Reputation V2 RC |
-| `payathon-commerce-beta` | `3fcc643d1b87e7803e2f28ceecc56ace7b08e296` | PAYATHON Commerce Beta |
-| `archive/verifiable-trust-poc` | `d153310c75b14c68090fa3329bf33cca3dbeef3a` | 历史 Tag |
-| `archive/trust-core-v0.1` | `066b9120da28ab97d752ba6da416f9f394fb059e` | 历史 Tag，指向 V0.1 的成功 CI 基线 |
-| `trust-sdk-v0.1.0-preview.1` | `19a23334b34a0b67440423126cf8d18c186104e2` | 历史 Tag |
-| `trust-sdk-v0.2.0-preview.1` | `f1e3c4ebfcecbcba82b962ccc31c7d119dad00a9` | Trust SDK V0.2 Preview |
-| `trust-sdk-v0.3.0-preview.1` | `8b5fe58e80450561829e62572aef128465492aa0` | Trust SDK V0.3 Preview |
+| [`archive/monad-team-v1`](https://github.com/NextVariable/crewtrace-v2/tree/archive/monad-team-v1) | `48cf0a112ec8cd9df9cc7bdb7d20dc89ce5aeaaf` | 历史归档 |
+| [`reputation-v2-rc`](https://github.com/NextVariable/crewtrace-v2/tree/reputation-v2-rc) | `324e2da64ae2888e408f0041cbe9917a570594d3` | [Reputation V2 RC](https://github.com/NextVariable/crewtrace-v2/releases/tag/reputation-v2-rc) |
+| [`payathon-commerce-beta`](https://github.com/NextVariable/crewtrace-v2/tree/payathon-commerce-beta) | `3fcc643d1b87e7803e2f28ceecc56ace7b08e296` | [PAYATHON Commerce Beta](https://github.com/NextVariable/crewtrace-v2/releases/tag/payathon-commerce-beta) |
+| [`archive/verifiable-trust-poc`](https://github.com/NextVariable/crewtrace-v2/tree/archive/verifiable-trust-poc) | `d153310c75b14c68090fa3329bf33cca3dbeef3a` | 历史归档 |
+| [`archive/trust-core-v0.1`](https://github.com/NextVariable/crewtrace-v2/tree/archive/trust-core-v0.1) | `066b9120da28ab97d752ba6da416f9f394fb059e` | 历史归档 |
+| [`trust-sdk-v0.1.0-preview.1`](https://github.com/NextVariable/crewtrace-v2/tree/trust-sdk-v0.1.0-preview.1) | `19a23334b34a0b67440423126cf8d18c186104e2` | 历史归档 |
+| [`trust-sdk-v0.2.0-preview.1`](https://github.com/NextVariable/crewtrace-v2/tree/trust-sdk-v0.2.0-preview.1) | `f1e3c4ebfcecbcba82b962ccc31c7d119dad00a9` | [Trust SDK V0.2 Preview](https://github.com/NextVariable/crewtrace-v2/releases/tag/trust-sdk-v0.2.0-preview.1) |
+| [`trust-sdk-v0.3.0-preview.1`](https://github.com/NextVariable/crewtrace-v2/tree/trust-sdk-v0.3.0-preview.1) | `8b5fe58e80450561829e62572aef128465492aa0` | [Trust SDK V0.3 Preview](https://github.com/NextVariable/crewtrace-v2/releases/tag/trust-sdk-v0.3.0-preview.1) |
 
-Tag 与 GitHub Pre-release 用于版本索引。本次操作范围止于文档审阅分支，等待明确批准。
+四项已发布资产均为 GitHub Pre-release。历史验收范围见各自的发布说明。Latest、npm 发布和 Runtime × Trust SDK 正式集成尚未启用。

@@ -13,12 +13,12 @@ CrewTrace 是面向 AI Agent 的实验性 AI × Web3 基础设施，围绕协作
 | 分支 | 职责 |
 | --- | --- |
 | 原团队仓库 `main` | 只读参考和归属证据。保护团队分支、标签、部署、配置和数据 |
-| `experiment/reputation-v2` | Reputation V2 历史实验。当前个人仓库默认入口 |
+| 个人仓库 `main` | 默认入口与实验性开发基准（Experimental Development Baseline），见 [个人主线与固定版本](docs/REPOSITORY-INDEX.md#个人主线与固定版本) |
+| `experiment/reputation-v2` | Reputation V2 历史实验 |
 | `feat/payathon-commerce` | 支付宝商业化冻结，保留免费订单演示和支付关闭状态 |
 | `experiment/verifiable-trust-layer` | Trust SDK V0.3 冻结和历史归档。SDK 为 `0.3.0-preview.1` |
 | `feat/trust-native-collaboration` | Runtime × Trust SDK 后续集成方向。以远端核查与用户批准为准 |
 | `docs/repository-organization` | 仓库治理和文档审阅 |
-| 拟议个人 `main` | 经批准后作为实验性开发基准，见 [迁移方案](docs/REPOSITORY-INDEX.md#个人主线迁移待审批方案) |
 
 冻结分支只读保留，解除冻结需产品负责人明确授权。Trust SDK 冻结包括合约、验证器、协议集成、npm 发版及 Monad Testnet 部署。Commerce 冻结包括业务与支付配置、Cloudflare 部署及支付关闭状态。保护团队资源，所有私钥和凭证使用专用本地测试值或已获授权的隔离环境。新增现金支出为零，禁止使用团队私钥和真实资金参与开发或验收。
 

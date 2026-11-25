@@ -1,7 +1,9 @@
 name: CrewTrace portfolio checks
 on:
   push:
-    branches: [experiment/reputation-v2, feat/payathon-commerce]
+    branches: [experiment/reputation-v2, feat/payathon-commerce, main, feat/trust-native-collaboration]
+  pull_request:
+    branches: [main, feat/trust-native-collaboration]
   workflow_dispatch:
 permissions:
   contents: read
