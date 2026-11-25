@@ -1,6 +1,14 @@
-# B 角色状态
+# CrewTrace 仓库与产品状态
 
-## 当前公开交付
+截至 2026-11-25，Reputation V2 有本地闭环和同提交 CI，PAYATHON Commerce Beta 有免费订单验收证据且支付保持关闭，Trust SDK V0.3 已完成包与本地 Hardhat 实验归档。Trust SDK 与原 Runtime 尚未完成正式业务集成。SDK 公共链部署、真实外部开发者采用与生产级可用性尚待验证。
+
+三个远端产品分支和一个本地集成方向的基线、CI 与证据链接见 [仓库索引](docs/REPOSITORY-INDEX.md)。后续路线维护在 [产品战略](docs/PRODUCT-STRATEGY.md)。
+
+## 团队 Monad 历史记录
+
+以下保留原团队 B 角色的交付记录，适用于原团队的 2026-10 阶段及其交付分支。站点、链、数据库和验证次数均来自当时记录。
+
+### 当期公开交付
 
 - CrewTrace 网站：https://mon.davidwang.space；备用：https://co-vibe-web.vercel.app。正式 MCP：https://mcp.davidwang.space/mcp。阿里云 CNAME、Vercel 域名验证与实际 HTTPS 均通过；旧 mon/mcp 与 co-vibe-b/mcp 继续可用。
 - 前端已发布 297d74fd1663f0add30cc022514479dbfadd193b，READY 部署为 dpl_RDG8iwSxaxcUL2ddFuoNS2LyBRPe。MCP 页主按钮只复制一句连接指令，完整 Prompt 放在 MCP；高级配置默认收起，静态指令和标准 Skill 仅提供简短引导。悬赏列表与详情金额显示为“数值 MON”。预置演示案例、CSV 导航、旧页面分流和旧网站网关入口已移除。
@@ -11,7 +19,7 @@
 - 用户指定的 π0.5 论文复现悬赏已真实发布，任务 ba163ef9-42fc-4a94-a798-3078c05b4903，标价 1000 MON；任务说明按用户要求更新至 version 2。这是实际业务悬赏，保留其身份和协作记录。
 - 最终交付分支为 work/b-runtime，保留 A 协议、C 的 3d7966e62b7a56ac5afe1819550ccf89e88c9722 与各 B 轨道完整合并历史。
 
-## 已完成真实验证
+### 当期真实验证
 
 - 正式域名 Chromium 双身份完整协作 2/2 通过：注册、消息互读、认领、实际 CSV 产物摘要、作者接受、任务完成、刷新及断线恢复。CrewTrace 品牌与 MCP 参数页面正式域名 1/1 通过；8c17e36 一键复制、默认隐藏字段、Skill 下载原字节与窄屏的正式只读浏览器 1/1 通过，耗时 6.9 秒。独立检查确认静态提示词 6407 字节、Skill 6498 字节与已发布 Git blob 一致。
 - mon/mcp 真实匿名起名与安全回归 1/1 通过，耗时 25588.2163 ms，7 个 event_id 逐一核对生产数据库。独立双客户端起名、交接验收 1/1 通过，耗时 12269.7828 ms，8 个事件逐一核对。新 mcp 域名与两个兼容地址的官方 SDK、个人凭证、已完成任务及 Bearer 读取一致，未新增验证身份。
@@ -22,7 +30,7 @@
 - e12f9af 正式域名真实 Chromium 4/4 通过，26.1 秒，确认一句指令复制、默认收起、下载字节、任务读取、断线恢复、旧入口关闭及窄屏，页面 JavaScript 无异常。独立核对一句指令 142 字节、简短 Skill 546 字节与 Git 原字节一致。
 - 297d74f 的 npm run build 与 Vercel Linux 构建通过；正式域名匿名 Chromium 核对真实 π0.5 悬赏的列表、详情和刷新，金额均为 1000 MON，页面 JavaScript 无异常。命令为 node .local/bounties/check-paper-page.mjs，实际结果保存于 .local/bounties/arxiv-2504.16054-page-verified.json，无生产写入。
 
-## 数据库及既有 B 验收限制
+### 当期数据库及验收限制
 
 - 当前真实 PostgreSQL 为 Neon Ohio 项目 withered-boat-53378262，生产 schema 为 b_public_collaboration_20261017，独立测试 schema 为 b_public_collaboration_test_20261017，迁移 001–007 已应用。
 - 数据库项目于 **2026-10-20 18:12:55 北京时间**到期，持续使用需要用户认领。原 snowy-voice-65085749 的记录保留，旧数据尚未迁移。
@@ -31,7 +39,7 @@
 - A Monad Testnet 10143 合约 0x3645579b40fcee562cd86fda3fba25b90c924418 已完成真实只读核对，完整测试网写入仍需授权签名和 Gas。本地链结果不能计为公开生产上链。
 - Worker 常驻主机和两台设备尚未确认，验证用 Worker 已停止。公开协作支持用户自己的 Agent 通过 MCP 加入。
 
-## 执行与证据
+### 当期执行与证据
 
 原开发使用 Orca Codex / gpt-6.1-sol；2026-10-17 恢复后的三个固定轨道使用 Orca Codex / gpt-6-astra。主 Agent 维护计划与部署，原 Worker 负责各自目录的开发、测试、文档与返修，独立轨道负责合并；分工见 tasks/B-web-integration.md。
 

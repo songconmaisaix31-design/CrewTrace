@@ -1,5 +1,7 @@
 # 独立开发与部署
 
+本文件保留 Reputation V2 部署计划及后续 Commerce 演示记录。任何历史地址和验收结果均按对应日期与提交解释。Trust SDK 为独立预览包，安装及复验见 [SDK 指南](docs/sdk-preview/README.md)。
+
 当前开发仓库为个人仓库 `NextVariable/crewtrace-v2`，RC4 分支为 `feat/payathon-commerce`。团队远程 `songconmaisaix31-design/CrewTrace` 只读同步，不合并 V2 基线，不改动团队 main、团队域名、团队数据库、团队密钥和团队部署。个人 Web、Runtime 与 PostgreSQL 使用个人账户或本机资源，Runtime 提供独立 MCP。
 
 本地构建使用 `npm ci`、`npm ci --prefix workers`、`npm ci --prefix services/runtime`、`npm run build && npm test` 和 `npm --prefix services/runtime run build`。Runtime 在 Node 24 构建和部署。启动前向独立数据库运行 `npm --prefix services/runtime run migrate`。

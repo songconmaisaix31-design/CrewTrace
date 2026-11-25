@@ -47,7 +47,9 @@ V0.2 在不重写信任核心的前提下增加代码交付与固定测试集合
 
 ## V0.3 — 多主体信任与链上独立核验
 
-最终 HEAD：`9bb00f867a30d6390fad4e1e6d5401102e9cc07d`
+验收记录：`9bb00f867a30d6390fad4e1e6d5401102e9cc07d`
+
+冻结归档 HEAD：`8b5fe58e80450561829e62572aef128465492aa0`，归档 CI [45568182070](https://github.com/NextVariable/crewtrace-v2/actions/runs/45568182070)。
 验证提交：`ce893702a32a185f2a4684efabfce6acbb40dba0`
 SDK：`@crewtrace/trust-sdk 0.3.0-preview.1`
 Final CI：`45566951198`

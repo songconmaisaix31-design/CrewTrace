@@ -1,6 +1,18 @@
-# CrewTrace V2 实验变更
+# CrewTrace 变更记录
 
-## Release Candidate 工作
+## 仓库治理 · 2026-11-25
+
+统一 README、产品状态、产品战略和版本证据入口。分支基线、实验、成功与失败 CI 均见 [仓库索引](docs/REPOSITORY-INDEX.md)。
+
+## Trust Layer 与 Trust SDK 历史
+
+PoC、Trust Core V0.1 与 SDK V0.1–V0.3 的独立记录见 [版本历史](docs/evidence/verifiable-trust/version-history.md)。V0.3 的验收记录和后续归档提交各自保留。
+
+## PAYATHON Commerce Beta 历史
+
+[冻结验收](docs/beta-freeze/beta-acceptance.md) 和 [兼容性终审](docs/beta-freeze/compatibility-review.md) 记录免费订单、交接、历史展示与支付关闭状态。
+
+## Reputation V2 Release Candidate 历史
 
 - 增加自动分工与三位独立 Worker 的 HTTP 执行，绑定角色、在线状态、负载和决策快照。
 - 增加有界重试、超时重派、旧租期拒绝和提交幂等；作者审核后自动继续。
