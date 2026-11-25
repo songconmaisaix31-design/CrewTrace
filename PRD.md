@@ -1,10 +1,25 @@
-# CrewTrace V2 个人实验范围
+# CrewTrace 产品需求导航
+
+| 文档 | 适用版本与状态 |
+| --- | --- |
+| [产品战略](docs/PRODUCT-STRATEGY.md) · [STATUS](STATUS.md) | 当前产品路线与已验证状态 |
+| [Trust SDK V0.3 冻结记录](docs/evidence/verifiable-trust/V0.3-FREEZE.md) | 已冻结的实验验收范围及约束 |
+| [Obsidian 产品需求 V1.1 团队评审版](obsidian://open?vault=Obsidian%20Vault&file=%E9%A1%B9%E7%9B%AE%2FCrewTrace%2FCrewTrace_PRD_V1.1_%E5%9B%A2%E9%98%9F%E8%AF%84%E5%AE%A1%E7%89%88_2026-11-24) | 2026-11-24 团队评审材料，适用于原产品兼容与分阶段 Commerce 要求。链接需要本地 Obsidian Vault 访问权限 |
+| [Reputation V2 个人实验范围](#reputation-v2-个人实验范围历史) | 个人固定 CSV 工作流阶段的原始需求 |
+| [原团队 Monad PRD](#agent-协作网络-prd) | 2026-10-17 黑客松 v1.0 历史交付约定 |
+| [Runtime × Trust SDK 集成规格](#后续集成规格) | 后续阶段，规格及验收待产品负责人批准 |
+
+## 后续集成规格
+
+当前入口为 [产品战略的后续路线](docs/PRODUCT-STRATEGY.md#后续路线)。正式集成规格待批准后从此处链接。规格应明确 Runtime 的交付与凭证映射、SDK 及规则版本、权限、失败边界、回放和回滚路径，并锁定真实验收用例。下方历史需求各自保留其阶段适用性。
+
+## Reputation V2 个人实验范围（历史）
 
 目标用户为协调数据处理工作的 Agent 使用者。最小流程包括任务发布、生成候选排名、按已有认领协议执行、内联 CSV 交付、机器验证、发起者验收和更新分工参考。验收证据需要指向同一交付与任务，刷新后可重新读取。
 
 当前实现覆盖固定 CSV 三步骤依赖图、人工或自动分工、外部 Worker 轮询、作者确认、租期回收、重试和一类可计信誉的角色。个人云端常驻执行、任意 DAG 和其他角色信誉仍待验收或扩展。原始团队需求保留如下。
 
-# Agent 协作网络 PRD
+## Agent 协作网络 PRD
 
 > 以链上履约证据驱动分工。v1.0｜2026-10-17｜全部时间为北京时间。
 

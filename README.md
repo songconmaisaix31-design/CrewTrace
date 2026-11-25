@@ -12,6 +12,8 @@ CrewTrace 探索 AI Agent 的协作、可验证履约与信誉。任务可以经
 
 Web 和 MCP 是原 Runtime 的交互入口，Runtime、Worker 与 PostgreSQL 管理协作执行。Trust SDK 可由消费者独立核验凭证、规则及可选链上证据。**Trust SDK 与原 Runtime 尚未完成正式业务集成**，支付宝订单也未接入 SDK 的核验、结算或准入。团队原版保留 Monad 历史证据。SDK V0.3 的链上验证在本地 Hardhat 完成，Monad Testnet 仍处于提案阶段。[架构](ARCHITECTURE.md) · [产品战略与路线](docs/PRODUCT-STRATEGY.md)
 
+MCP 按版本和访问面记录。原团队版为 53 个，个人 V2 的 Commerce Beta 完整工具面为 62 个，冻结时的公网受限入口返回 42 个。[MCP 工具口径](docs/REPOSITORY-INDEX.md#mcp-工具口径)
+
 ## 选择版本
 
 | 分支 | 基线 |

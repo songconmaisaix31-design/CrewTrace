@@ -18,6 +18,8 @@ CrewTrace 面向 Agent 的可验证协作。Runtime 负责工作如何完成，T
 
 Commerce Beta 复用原 Runtime 的协作、验收与信誉记录。Trust SDK 当前为可独立消费的预览包，尚未正式进入原 Runtime 业务路径。潜在集成将订单或协作交付绑定到凭证和规则版本，在授权、状态一致性、回放与回滚验收后，再评估是否使用 SDK 结果影响信誉或准入。支付宝是商业化渠道，SDK 是独立核验组件。
 
+原团队 MCP 为 53 个工具，个人 Commerce V2 的完整工具面为 62 个，公网受限入口为 42 个。这些口径对应不同版本与权限条件。[注册和公网验收口径](REPOSITORY-INDEX.md#mcp-工具口径)
+
 ## 后续路线
 
 1. 由产品负责人批准 `feat/trust-native-collaboration` 的远端建立、目标与验收标准。先验证 Runtime 交付到 SDK 凭证的只读核验、身份映射、版本固定、失败保护和回滚。
