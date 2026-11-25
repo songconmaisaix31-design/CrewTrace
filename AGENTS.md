@@ -14,13 +14,9 @@ CrewTrace 是面向 AI Agent 的实验性 AI × Web3 基础设施，围绕协作
 | --- | --- |
 | 原团队仓库 `main` | 只读参考和归属证据。保护团队分支、标签、部署、配置和数据 |
 | 个人仓库 `main` | 默认入口，V3 MVP 交付基线（合并提交 `8dd8134`），见 [个人主线与固定版本](docs/REPOSITORY-INDEX.md#个人主线与固定版本) |
-| `experiment/reputation-v2` | Reputation V2 历史实验 |
 | `feat/payathon-commerce` | 支付宝商业化冻结，保留免费订单演示和支付关闭状态 |
-| `experiment/verifiable-trust-layer` | Trust SDK V0.3 冻结和历史归档。SDK 为 `0.3.0-preview.1` |
-| `feat/trust-native-collaboration` | V3 集成开发分支，`31b2a81`，已通过 PR #1 合并到个人 `main` 并冻结 |
-| `docs/repository-organization` | 仓库治理和文档审阅 |
 
-冻结分支只读保留，解除冻结需产品负责人明确授权。Trust SDK 冻结包括合约、验证器、协议集成、npm 发版及 Monad Testnet 部署。Commerce 冻结包括业务与支付配置、Cloudflare 部署及支付关闭状态。保护团队资源，所有私钥和凭证使用专用本地测试值或已获授权的隔离环境。新增现金支出为零，禁止使用团队私钥和真实资金参与开发或验收。
+从 [历史引用](docs/REPOSITORY-INDEX.md#历史引用) 和固定标签查阅 Reputation V2、Trust SDK V0.3、V3 集成及治理审阅。冻结版本只读保留，解除冻结需产品负责人明确授权。Trust SDK 冻结包括合约、验证器、协议集成、npm 发版及 Monad Testnet 部署。Commerce 冻结包括业务与支付配置、Cloudflare 部署及支付关闭状态。保护团队资源，所有私钥和凭证使用专用本地测试值或已获授权的隔离环境。新增现金支出为零，禁止使用团队私钥和真实资金参与开发或验收。
 
 ## 授权、验收与停止
 

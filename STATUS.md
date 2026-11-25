@@ -4,7 +4,7 @@
 
 Trust SDK 与 Runtime 已完成最小业务集成，SDK 保持 `0.3.0-preview.1`，未新增验证器。集成验证使用本地 Runtime、真实 PostgreSQL 与受控 CSV 数据；链上部分只在本地 Hardhat 完成，Monad Testnet 未部署；支付宝与真实支付保持关闭；外部开发者采用与真实市场采用未验证。四策略对照使用单一随机种子与人工构造的 60 任务负载，只说明该负载下的表现。
 
-个人仓库默认分支为 `main`，V3 起承载 Runtime × Trust SDK 的最小集成。Reputation V2、Commerce 与 Trust SDK V0.3 冻结分支、文档审阅分支及八个历史 Tag 继续保留。V4 未启动。
+个人仓库默认分支为 `main`，Commerce Beta 单独冻结在 `feat/payathon-commerce`。Reputation V2、Trust SDK V0.3、V3 集成及治理审阅由主线历史和固定版本索引追溯。V4 未启动。[分支与版本索引](docs/REPOSITORY-INDEX.md)
 
 ## V3 MVP 交付
 

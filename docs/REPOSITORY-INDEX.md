@@ -1,17 +1,24 @@
 # 仓库索引与版本资产
 
-个人仓库为私有，默认分支为 `main`。远端分支、固定版本和预发布见下表。
+个人仓库为私有，默认分支为 `main`。下表列出保留维护职责的分支。[GitHub 远端分支](https://github.com/NextVariable/crewtrace-v2/branches)
 
 | 分支 | HEAD | 用途 |
 | --- | --- | --- |
 | `main` | [GitHub 当前 HEAD](https://github.com/NextVariable/crewtrace-v2/commits/main/) | 默认入口，V3 MVP 交付基线（Experimental MVP） |
-| `experiment/reputation-v2` | `324e2da64ae2888e408f0041cbe9917a570594d3` | Reputation V2 历史实验 |
 | `feat/payathon-commerce` | `3fcc643d1b87e7803e2f28ceecc56ace7b08e296` | PAYATHON Commerce Beta 冻结 |
-| `experiment/verifiable-trust-layer` | `8b5fe58e80450561829e62572aef128465492aa0` | Trust SDK V0.3 冻结及证据归档 |
-| `feat/trust-native-collaboration` | `31b2a81a76c37646b39e434db59f4107fb8a519a` | V3 集成开发分支，已通过 PR #1 合并到 `main`（合并提交 `8dd8134`）并冻结 |
-| `docs/repository-organization` | `e08175ca54ed56a1535aaaef68d6c3ea748b8943` | 从 `8b5fe58` 派生的治理审阅归档 |
 
 原团队仓库默认 `main`，HEAD 为 `48cf0a112ec8cd9df9cc7bdb7d20dc89ce5aeaaf`，共 14 个远端分支，Tags 和 Releases 均为零。PR #1 已合并，PR #2 仍开着。团队 `feat/alipay-payathon` 的 HEAD 为 `987a37106c1635f81dcbdcc1bf319752fef4a39a`，是另一条团队实现线。团队 Actions 可见两个成功运行均对应 `987a371`，本次未找到团队 main 的同 SHA CI。[团队分支](https://github.com/songconmaisaix31-design/CrewTrace/branches) · [团队 PR](https://github.com/songconmaisaix31-design/CrewTrace/pulls?q=is%3Apr) · [团队 CI](https://github.com/songconmaisaix31-design/CrewTrace/actions/runs/40051118808)
+
+## 历史引用
+
+以下四个提交均可从个人 `main` 追溯。版本和证据链接使用固定引用。
+
+| 历史分支名 | 固定入口 |
+| --- | --- |
+| `docs/repository-organization` | [治理审阅提交](https://github.com/NextVariable/crewtrace-v2/commit/e08175ca54ed56a1535aaaef68d6c3ea748b8943) |
+| `experiment/reputation-v2` | [`reputation-v2-rc`](https://github.com/NextVariable/crewtrace-v2/tree/reputation-v2-rc) |
+| `experiment/verifiable-trust-layer` | [`trust-sdk-v0.3.0-preview.1`](https://github.com/NextVariable/crewtrace-v2/tree/trust-sdk-v0.3.0-preview.1) |
+| `feat/trust-native-collaboration` | [V3 集成签核提交](https://github.com/NextVariable/crewtrace-v2/commit/31b2a81a76c37646b39e434db59f4107fb8a519a) · [已合并 PR #1](https://github.com/NextVariable/crewtrace-v2/pull/1) |
 
 ## 八个阶段
 
@@ -73,7 +80,7 @@ Commerce 分支增加 `apps/showcase`、`deploy`、`functions` 与 Commerce 文�
 
 ### 个人主线与固定版本
 
-个人 `main` 从审阅提交 `e08175ca54ed56a1535aaaef68d6c3ea748b8943` 创建，初始 Git 树与该提交一致。GitHub 默认分支随后从 Reputation 实验分支切换为个人 `main`。V3 通过 PR #1 合并到 `main` 后，主线承载 Runtime × Trust SDK 的最小业务集成，定位为 Experimental MVP，生产可用性尚待验收。若需要恢复旧入口，经批准后可切回 `experiment/reputation-v2`，保留两个分支上的提交。
+个人 `main` 从审阅提交 `e08175ca54ed56a1535aaaef68d6c3ea748b8943` 创建，初始 Git 树与该提交一致。GitHub 默认分支随后从 Reputation 实验分支切换为个人 `main`。V3 通过 PR #1 合并到 `main` 后，主线承载 Runtime × Trust SDK 的最小业务集成，定位为 Experimental MVP，生产可用性尚待验收。Reputation V2 的历史入口为 `reputation-v2-rc` 标签。
 
 | 带注释的 Tag | 固定提交 | GitHub Pre-release |
 | --- | --- | --- |
@@ -85,6 +92,6 @@ Commerce 分支增加 `apps/showcase`、`deploy`、`functions` 与 Commerce 文�
 | [`trust-sdk-v0.1.0-preview.1`](https://github.com/NextVariable/crewtrace-v2/tree/trust-sdk-v0.1.0-preview.1) | `19a23334b34a0b67440423126cf8d18c186104e2` | 历史归档 |
 | [`trust-sdk-v0.2.0-preview.1`](https://github.com/NextVariable/crewtrace-v2/tree/trust-sdk-v0.2.0-preview.1) | `f1e3c4ebfcecbcba82b962ccc31c7d119dad00a9` | [Trust SDK V0.2 Preview](https://github.com/NextVariable/crewtrace-v2/releases/tag/trust-sdk-v0.2.0-preview.1) |
 | [`trust-sdk-v0.3.0-preview.1`](https://github.com/NextVariable/crewtrace-v2/tree/trust-sdk-v0.3.0-preview.1) | `8b5fe58e80450561829e62572aef128465492aa0` | [Trust SDK V0.3 Preview](https://github.com/NextVariable/crewtrace-v2/releases/tag/trust-sdk-v0.3.0-preview.1) |
-| [`v3.0.0-mvp.1`](https://github.com/NextVariable/crewtrace-v2/tree/v3.0.0-mvp.1) | 本索引更新后的 `main` 最终验收提交 | [CrewTrace V3 — Trust-native Collaboration MVP](https://github.com/NextVariable/crewtrace-v2/releases/tag/v3.0.0-mvp.1) |
+| [`v3.0.0-mvp.1`](https://github.com/NextVariable/crewtrace-v2/tree/v3.0.0-mvp.1) | `03b9578253fd7f58c81e25409c4841e794e986bd` | [CrewTrace V3 — Trust-native Collaboration MVP](https://github.com/NextVariable/crewtrace-v2/releases/tag/v3.0.0-mvp.1) |
 
 五项已发布资产均为 GitHub Pre-release。历史验收范围见各自的发布说明。Latest、npm 发布和公共链部署尚未启用。

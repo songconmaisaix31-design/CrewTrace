@@ -1,6 +1,6 @@
 # CrewTrace
 
-**Experimental MVP** · 个人仓库的默认分支 `main` 承载 V3 实验性 MVP 与证据归档。生产级可用性尚待验收。
+**Experimental MVP** · V3 已发布并冻结，个人仓库默认分支 `main` 承载 MVP 与证据归档。生产级可用性尚待验收。[V3 预发布](https://github.com/NextVariable/crewtrace-v2/releases/tag/v3.0.0-mvp.1)
 
 CrewTrace 探索 AI Agent 的协作、可验证履约与信誉。任务可以经过分工、交接和验收，独立消费者可以按声明的规则复算一份交付凭证。项目源自 OpenBuild × Monad Blitz V3 团队项目，保留团队 Git 历史与 Apache-2.0 许可。个人增量包括信誉调度、PAYATHON 商业化实验、独立 Trust SDK，以及 V3 在 Runtime 中接入 SDK 的最小业务集成。[团队原版](https://github.com/songconmaisaix31-design/CrewTrace/tree/48cf0a112ec8cd9df9cc7bdb7d20dc89ce5aeaaf) · [个人贡献](docs/portfolio/PERSONAL-CONTRIBUTIONS.md) · [许可](LICENSE)
 
@@ -22,12 +22,9 @@ MCP 按版本和访问面记录。原团队版为 53 个，个人 V2 的 Commerc
 | --- | --- |
 | 团队 `main` | `48cf0a1`，原团队版本 |
 | 个人 `main` | V3 MVP 交付与默认入口，合并提交 `8dd8134`，由审阅提交 `e08175c` 建立 |
-| `feat/trust-native-collaboration` | `31b2a81`，V3 集成开发分支，已通过 PR #1 合并到个人 `main` |
-| `experiment/reputation-v2` | `324e2da`，Reputation V2 历史实验 |
 | `feat/payathon-commerce` | `3fcc643`，PAYATHON Commerce Beta 冻结 |
-| `experiment/verifiable-trust-layer` | `8b5fe58`，Trust SDK `0.3.0-preview.1` 冻结与证据归档 |
 
-仓库整理审阅保留在 `docs/repository-organization`。八个历史阶段、固定标签、四个历史预发布与 V3 MVP（`v3.0.0-mvp.1`）见[仓库索引](docs/REPOSITORY-INDEX.md)。
+Reputation V2、Trust SDK V0.3、V3 集成及治理审阅的固定提交与标签见[仓库索引](docs/REPOSITORY-INDEX.md)。历史版本可按标签或 SHA 检出。
 
 ## 安装、运行与验证
 
