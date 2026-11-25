@@ -1,0 +1,49 @@
+{
+  "source": {
+    "kind": "synthetic-experiment",
+    "orderId": "00000000-0000-4000-8000-000000000001",
+    "buyerAgentId": "00000000-0000-4000-8000-000000000002",
+    "taskId": "00000000-0000-4000-8000-000000000003",
+    "attempt": 1,
+    "workflowVersion": "csv-workflow-v1"
+  },
+  "service": {
+    "serviceId": "csv-clean-verify-free",
+    "serviceVersion": 1
+  },
+  "subject": {
+    "agentId": "00000000-0000-4000-8000-000000000004",
+    "identity": {
+      "namespace": "ct-local",
+      "value": "00000000-0000-4000-8000-000000000004"
+    },
+    "signingAddress": null,
+    "role": "csv-data-review"
+  },
+  "input": {
+    "path": "input.csv",
+    "schemaVersion": "csv-ledger-v1"
+  },
+  "delivery": {
+    "path": "delivery.csv",
+    "deliveryVersion": 1
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "reviewerId": "synthetic-reviewer",
+    "reviewerAddress": null,
+    "reviewedAt": "2026-11-24T03:22:56.583Z"
+  },
+  "reputation": {
+    "eventId": "00000000-0000-4000-8000-000000000003:csv-data-review:PASS",
+    "outcome": "PASS",
+    "source": "DETERMINISTIC_REVIEW"
+  },
+  "payment": {
+    "status": "NOT_REQUIRED"
+  },
+  "rules": {
+    "ruleId": "csv-ledger",
+    "ruleVersion": "csv-ledger-v1"
+  }
+}

@@ -3,7 +3,7 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {dirname,isAbsolute,relative,resolve} from 'node:path';
 import {parseArgs} from 'node:util';
 import {z} from 'zod';
-import type {PoolClient} from '@neondatabase/serverless';
+import type {PoolClient} from 'pg';
 import {Database} from '../db.js';
 
 const inputSchema=z.strictObject({

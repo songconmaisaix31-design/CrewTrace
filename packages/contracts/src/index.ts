@@ -3,3 +3,4 @@ export * from "./errors.ts";
 export * from "./ports.ts";
 export * from "./hash.ts";
 export * from "./collaboration.ts";
+export * from "./commerce.ts";

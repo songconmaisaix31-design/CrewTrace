@@ -1,0 +1,76 @@
+{
+  "task": {
+    "taskId": "d2a1da36-768c-43f2-b99d-3be50559eeb9",
+    "attempt": 1,
+    "workflowVersion": "csv-workflow-v1"
+  },
+  "chain": null,
+  "input": {
+    "rowCount": 3,
+    "contentHash": "0xb7b8a9cc45f15e43d95be1f269893aaa488c0f788a7b51c7ea5931d0eb0c168e",
+    "schemaVersion": "csv-ledger-v1"
+  },
+  "order": {
+    "buyerRef": "0x0528c6f4a1e67e923580af5076f59dbe305ff43fbab0146041f7e9374c23c70e",
+    "orderRef": "0xeb6cb0fa751b8b131000c84e9a6aa5903637c061e0def226107cbab31701468d"
+  },
+  "issuer": {
+    "keyId": "local-exp-1",
+    "issuerId": "ct-local-experiment",
+    "signerAddress": "0x9cd94a51a04ff108d0739d0425960fb10e3f57d1"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "reviewedAt": "2026-11-25T08:40:40.074Z",
+    "reviewerId": "b2fe5959-0f00-4ceb-af48-1e876f65db93",
+    "reviewerAddress": null
+  },
+  "binding": {
+    "deployment": "crewtrace-local-experiment",
+    "environment": "local"
+  },
+  "payment": {
+    "status": "NOT_REQUIRED"
+  },
+  "subject": {
+    "role": "csv-data-review",
+    "agentId": "15402743-303e-4bc3-b437-dfbf63274d0c",
+    "identity": {
+      "value": "15402743-303e-4bc3-b437-dfbf63274d0c",
+      "namespace": "ct-local"
+    },
+    "serviceId": "csv-clean-verify-free",
+    "serviceVersion": 1,
+    "signingAddress": null
+  },
+  "delivery": {
+    "rowCount": 2,
+    "contentHash": "0xde47b2a67154f81ba8fcb8932f178aa45b981dbe9fc5dd6dc9550222fc854db6",
+    "deliveryVersion": 1
+  },
+  "issuedAt": "2026-11-25T08:40:40.096Z",
+  "expiresAt": "2027-11-25T08:40:40.096Z",
+  "integrity": {
+    "digest": "0x192cfc9343848ef20887b0b66c9655dad7b5408b7a6def12e013bbf470633dc0",
+    "signature": "0xbfa4d67c1bb1624212d923558d3128498f4419363e0cdb465204ad158cf84717265facb8cc01cb8cf7d67850e6fa9f949765d5633f4c462fda503a303e74f0c91b",
+    "canonicalization": "ct-canonical-json-v1"
+  },
+  "reputation": {
+    "source": "DETERMINISTIC_REVIEW",
+    "eventId": "d75fd85c-54ea-4432-a9d9-8dba5a85f448",
+    "outcome": "PASS"
+  },
+  "validation": {
+    "result": "PASS",
+    "ruleId": "csv-ledger",
+    "checkCodes": [
+      "RULE:csv-ledger@csv-ledger-v1",
+      "RESULT:PASS"
+    ],
+    "verifierId": "csv-ledger",
+    "ruleVersion": "csv-ledger-v1",
+    "checksDigest": "0xf36c50f1488c377917e020ece0e10e4225ad7f7ae6f70001162cf26d1eee371f"
+  },
+  "attestationId": "0eec8e61-afef-43ad-96c2-2a50b1f7f8b6",
+  "attestationVersion": "ct-attestation-v1"
+}

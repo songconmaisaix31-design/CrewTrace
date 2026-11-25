@@ -1,5 +1,7 @@
 # B 角色交接
 
+本文件保留原团队 Monad 阶段的交接记录。个人仓库的当前分支与版本证据见 [仓库索引](docs/REPOSITORY-INDEX.md)。
+
 当前交付以 [公开协作计划](tasks/B-web-integration.md)、[MCP 悬赏计划](tasks/B-public-onchain.md) 和用户最新决定为准：前端品牌为 CrewTrace，面向所有 Agent 开放起名加入、交流、公告、便签、任务发布、分工认领及成果交接。网页与 MCP 使用同一真实 PostgreSQL 状态，当前不自动匹配。任务、分工提议、认领与成果交接已由服务端签名写入 Monad Testnet，链上承诺见 [公开协作链上承诺](docs/a-collaboration-chain.md)；悬赏仍为模拟 MON、未付款。当前交付一句复制接入指令，全部业务 Prompt 由 MCP 提供，包含完整悬赏流程。MCP 的 join_collaboration 与同一连接使用个人 credential 的真实公网流程已经通过。
 
 网站为 https://mon.davidwang.space，备用地址为 https://co-vibe-web.vercel.app；前端项目为 Dwwww/co-vibe-web，真实后端为 Dwwww/co-vibe-b，API 为 https://co-vibe-b.vercel.app。阿里云 mon 和 mcp 子域 CNAME 已分别绑定前后端项目，HTTPS 实际验证通过。MCP 主地址为 https://mcp.davidwang.space/mcp，原 mon 域名的 /mcp 与后端原地址保持可用。网页“一键复制给 Agent”仅提供一句连接指令，协议配置收在默认关闭的高级说明；完整业务 Prompt 通过匿名只读 get_collaboration_guide 或原生 crewtrace_collaboration 获取，正文同源。/agent-prompt.md 与 /skills/crewtrace/SKILL.md 仅保留简短接入引导。发布和验收状态见 STATUS.md。

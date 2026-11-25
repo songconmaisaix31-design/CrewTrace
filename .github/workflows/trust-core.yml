@@ -1,0 +1,128 @@
+name: Trust Core checks
+
+on:
+  push:
+    branches: [experiment/verifiable-trust-layer, main, feat/trust-native-collaboration]
+  pull_request:
+    branches: [experiment/verifiable-trust-layer, main, feat/trust-native-collaboration]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trust-core:
+    name: Trust Core V0.3
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install root workspace dependencies
+        run: npm ci
+
+      - name: Install attestation dependencies
+        run: npm ci --prefix packages/attestation
+
+      - name: Install shared CSV rule dependencies
+        run: npm ci --prefix workers
+
+      - name: Install contract dependencies
+        run: npm ci --prefix contracts
+
+      - name: Compile local ledger contract
+        working-directory: contracts
+        run: npm run build
+
+      - name: TypeScript typecheck
+        run: npx tsc -p packages/attestation --noEmit
+
+      - name: Start local Hardhat node
+        working-directory: contracts
+        run: |
+          npx hardhat node --port 8545 > hardhat-node.log 2>&1 &
+          for _ in $(seq 1 30); do
+            if curl -s -X POST -H 'Content-Type: application/json' \
+              --data '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' \
+              http://127.0.0.1:8545 | grep -q '0x7a69'; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat hardhat-node.log
+          exit 1
+
+      - name: Bootstrap local experiment deployment
+        run: node --import tsx experiments/verifiable-trust/bootstrap.ts
+
+      - name: Credential unit tests
+        run: node --import tsx --test packages/attestation/test/attestation.test.ts
+
+      - name: SDK trust boundary tests
+        run: node --import tsx --test packages/attestation/test/sdk.test.ts
+
+      - name: Runtime CSV contract tests
+        run: node --import tsx --test packages/attestation/test/runtime-csv.test.ts
+
+      - name: Experiment data provenance tests
+        run: node --import tsx --test packages/attestation/test/fixtures.test.ts
+
+      - name: Isolation and privacy tests
+        run: node --import tsx --test packages/attestation/test/isolation.test.ts
+
+      - name: Chain verification tests
+        run: node --import tsx --test packages/attestation/test/chain.test.ts
+
+      - name: Code artifact verifier tests
+        run: node --import tsx --test packages/attestation/test/code-task.test.ts
+
+      - name: Cross-task reputation isolation tests
+        run: node --import tsx --test packages/attestation/test/cross-task.test.ts
+
+      - name: Cross-process credential exchange test
+        run: node --import tsx --test packages/attestation/test/cross-agent.test.ts
+
+      - name: Verifiable trust config tests
+        run: node --import tsx --test packages/attestation/test/trust-config.test.ts
+
+      - name: Multi-issuer isolation tests
+        run: node --import tsx --test packages/attestation/test/multi-issuer.test.ts
+
+      - name: Code execution authorization tests
+        run: node --import tsx --test packages/attestation/test/code-execution-auth.test.ts
+
+      - name: Multi-issuer process experiment
+        run: node --import tsx --test packages/attestation/test/multi-issuer-experiment.test.ts
+
+      - name: On-chain multi-issuer verification tests
+        run: node --import tsx --test packages/attestation/test/onchain-multi-issuer.test.ts
+
+      - name: Inspect chain evidence
+        run: |
+          node --import tsx experiments/verifiable-trust/inspect-chain.ts \
+            --config .local/attestation/config.json \
+            --attestation .local/attestation/chain-evidence/attestation.json \
+            --facts experiments/verifiable-trust/fixtures/facts.json \
+            --input experiments/verifiable-trust/fixtures/input.csv \
+            --delivery .local/attestation/chain-evidence/delivery.csv \
+            --out .local/attestation/chain-evidence/chain-inspection.json
+
+      - name: Independent SDK consumer install and run
+        run: bash examples/sdk-consumer/verify-install.sh
+
+      - name: Upload experiment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trust-core-evidence
+          path: |
+            .local/attestation/chain-evidence/
+            .local/attestation/config.json
+            .local/attestation/allowlist.json
+            .local/attestation/revocations.json
+            .local/multi-issuer-experiment/
+          if-no-files-found: warn

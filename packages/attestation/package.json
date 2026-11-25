@@ -1,0 +1,41 @@
+{
+  "name": "@crewtrace/trust-sdk",
+  "private": true,
+  "version": "0.3.0-preview.1",
+  "description": "CrewTrace Trust SDK V0.3 预览：多签发主体信任配置、代码执行授权、凭证核验与信誉准入",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "npm run build",
+    "test": "node --import tsx --test test/*.test.ts",
+    "test:chain": "node --import tsx --test test/chain.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "csv-parse": "^7.0.3",
+    "csv-stringify": "^6.9.0",
+    "viem": "^2.57.7",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

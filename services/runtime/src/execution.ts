@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { PoolClient } from '@neondatabase/serverless';
+import type { PoolClient } from 'pg';
 import {
   AddressSchema, ArtifactSchema, ArtifactUploadRequestSchema, AssessmentCheckSchema, AssessmentSchema,
   AssignmentDecisionSchema, ChainReceiptSchema, HandoffSchema, RoleReputationSchema, SubmitTaskRequestSchema,

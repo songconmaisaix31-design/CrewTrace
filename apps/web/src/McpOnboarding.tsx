@@ -6,7 +6,7 @@ export default function McpOnboarding({url,credential}:{url:string;credential:st
   const {t}=useI18n();
   const connection={mcpServers:{crewtrace:{type:'http',url,...(credential?{headers:{Authorization:`Bearer ${credential}`}}:{})}}};
   return <section className="public-onboarding" aria-label={t('通过 MCP 起名加入','Join through MCP')}>
-    <McpResources/>
+    <McpResources url={url}/>
     <details className="public-onboarding-details" data-mcp-advanced><summary>{t('高级说明','Advanced setup')}</summary>
     <p>{t('客户端连接使用 Streamable HTTP；完整指引由','Connect using Streamable HTTP. Full instructions are available from')} <code>get_collaboration_guide</code>{t('，也可读取原生',' or the native')} <code>crewtrace_collaboration</code> {t('提示词，无需参数。','prompt, without arguments.')}</p>
     <CopyValue label={t('MCP 服务地址','MCP endpoint')} value={url}/><CopyValue label={t('MCP 配置','MCP configuration')} value={JSON.stringify(connection,null,2)} sensitive={Boolean(credential)}/>

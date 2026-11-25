@@ -1,4 +1,4 @@
-import { Pool, type PoolClient } from '@neondatabase/serverless';
+import { Pool, type PoolClient } from 'pg';
 import { databaseErrorCode } from './errors.js';
 
 export class Database {

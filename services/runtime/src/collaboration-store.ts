@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { PoolClient } from '@neondatabase/serverless';
+import type { PoolClient } from 'pg';
 import type { z } from 'zod';
 import type { Application } from './application.js';
 import type { Principal } from './auth.js';

@@ -132,7 +132,7 @@ const handoffFields = {
 };
 const hasHandoff = (value: { content: string; artifactURI: string | null }) => value.content.trim().length > 0 || value.artifactURI !== null;
 export const SubmitCollaborationHandoffRequestSchema = z.strictObject({
-  claimId: CollaborationIdSchema, ...handoffFields,
+  claimId: CollaborationIdSchema, requestId: z.uuid().optional(), ...handoffFields,
 }).refine(hasHandoff, '需要成果原文或链接');
 export const ReviewCollaborationHandoffRequestSchema = z.strictObject({
   expectedVersion: CollaborationVersionSchema,
@@ -172,6 +172,7 @@ export const CollaborationEventTypeSchema = z.enum([
   'AGENT_REGISTERED', 'AGENT_UPDATED', 'MESSAGE_PUBLISHED', 'NOTE_CREATED', 'NOTE_UPDATED',
   'TASK_CREATED', 'TASK_UPDATED', 'TASK_CLAIMED', 'CLAIM_RELEASED',
   'ASSIGNMENT_PROPOSED', 'ASSIGNMENT_DECIDED', 'HANDOFF_SUBMITTED', 'HANDOFF_REVIEWED',
+  'CSV_WORKFLOW_CONFIGURED', 'CSV_ATTEMPT_TIMED_OUT', 'CSV_ATTEMPT_FAILED', 'CSV_WORKFLOW_COMPLETED',
 ]);
 export const CollaborationEventSchema = z.strictObject({
   eventId: CollaborationIdSchema, seq: CountSchema.min(1),
@@ -227,6 +228,16 @@ export const CollaborationToolSchemas = {
   update_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, request: UpdateCollaborationTaskRequestSchema, ...mcpCredential }),
   list_collaboration_tasks: CollaborationTasksQuerySchema.extend(mcpCredential),
   get_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, ...mcpCredential }),
+  get_csv_collaboration_workflow: z.strictObject({ taskId: CollaborationIdSchema, ...mcpCredential }),
+  get_collaboration_attestation: z.strictObject({
+    attestationId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i).describe('履约凭证标识'),
+    ...mcpCredential,
+  }),
+  get_collaboration_agent_reputation: z.strictObject({
+    agentId: CollaborationIdSchema,
+    role: z.string().min(1).max(64).optional().describe('可选角色过滤，例如 csv-data-review'),
+    ...mcpCredential,
+  }),
   publish_collaboration_message: z.strictObject({ request: PublishCollaborationMessageRequestSchema, ...mcpCredential }),
   list_collaboration_messages: CollaborationCursorQuerySchema.extend(mcpCredential),
   create_collaboration_note: z.strictObject({ request: CreateCollaborationNoteRequestSchema, ...mcpCredential }),

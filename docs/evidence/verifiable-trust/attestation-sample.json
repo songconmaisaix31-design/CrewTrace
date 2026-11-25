@@ -1,0 +1,76 @@
+{
+  "attestationVersion": "ct-attestation-v1",
+  "attestationId": "00000000-0000-4000-8000-000000000001",
+  "issuedAt": "2026-11-24T14:13:18.434Z",
+  "expiresAt": "2027-11-24T14:13:18.434Z",
+  "binding": { "environment": "local", "deployment": "experiment-local" },
+  "issuer": {
+    "issuerId": "crewtrace-experiment",
+    "keyId": "issuer-2026-11",
+    "signerAddress": "0x1111111111111111111111111111111111111111"
+  },
+  "subject": {
+    "agentId": "00000000-0000-4000-8000-000000000002",
+    "identity": { "namespace": "ct-local", "value": "00000000-0000-4000-8000-000000000002" },
+    "signingAddress": null,
+    "role": "csv-data-review",
+    "serviceId": "csv-clean-verify-free",
+    "serviceVersion": 1
+  },
+  "task": {
+    "taskId": "00000000-0000-4000-8000-000000000003",
+    "attempt": 1,
+    "workflowVersion": "csv-workflow-v1"
+  },
+  "order": {
+    "orderRef": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "buyerRef": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "input": {
+    "contentHash": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "rowCount": 2,
+    "schemaVersion": "csv-ledger-v1"
+  },
+  "delivery": {
+    "contentHash": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "deliveryVersion": 1,
+    "rowCount": 1
+  },
+  "validation": {
+    "ruleId": "csv-ledger",
+    "ruleVersion": "csv-ledger-v1",
+    "result": "PASS",
+    "checkCodes": ["RULE:csv-ledger@csv-ledger-v1", "RESULT:PASS"],
+    "checksDigest": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "reviewerId": "crewtrace-runtime-system",
+    "reviewerAddress": null,
+    "reviewedAt": "2026-11-24T03:22:56.583Z"
+  },
+  "reputation": {
+    "eventId": "00000000-0000-4000-8000-000000000003:csv-data-review:PASS",
+    "outcome": "PASS",
+    "source": "DETERMINISTIC_REVIEW"
+  },
+  "payment": { "status": "NOT_REQUIRED" },
+  "chain": {
+    "chainId": 31337,
+    "contract": "0x2222222222222222222222222222222222222222",
+    "mappingKind": 4,
+    "recordId": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "version": 1,
+    "commitmentKey": "0x9999999999999999999999999999999999999999999999999999999999999999",
+    "receipt": {
+      "txHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+      "blockNumber": "7",
+      "signer": "0x4444444444444444444444444444444444444444"
+    }
+  },
+  "integrity": {
+    "canonicalization": "ct-canonical-json-v1",
+    "digest": "0x5555555555555555555555555555555555555555555555555555555555555555",
+    "signature": "0x6666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666"
+  }
+}

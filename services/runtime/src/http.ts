@@ -2,14 +2,19 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { bodyLimit } from 'hono/body-limit';
 import { z } from 'zod';
-import { Auth, type Principal } from './auth.js';
+import { Auth, admin, type Principal } from './auth.js';
 import { AppError, errorBody } from './errors.js';
 import type { Application } from './service.js';
 import { mcpResponse } from './mcp.js';
 import { Board } from './board.js';
 import { Execution } from './execution.js';
 import { mountCollaboration } from './collaboration-http.js';
+import { mountCommerce } from './commerce-http.js';
+import { Commerce } from './commerce.js';
+import { createPaymentProvider } from './payment.js';
 import { publicMcpURL } from './config.js';
+import { requestClientAddress } from './client-address.js';
+import { publicDemoGuard } from './public-guard.js';
 import {
   AcceptTaskRequestSchema, AddressSchema, AssignTaskRequestSchema, CreateRunWithInputRequestSchema,
   HandoffUpdateRequestSchema, InterruptRequestSchema, ModelCallRequestSchema, NodeEnrollmentRequestSchema,
@@ -20,9 +25,11 @@ export function createHttp(app: Application) {
   const auth = new Auth(app.db, app.config.ADMIN_TOKEN);
   const board = new Board(app);
   const execution = new Execution(app);
+  const commerce = new Commerce(app, createPaymentProvider(app.config));
+  app.commerce = commerce;
   const origins = app.config.ALLOWED_ORIGINS.split(',').filter(Boolean);
   const ownOrigin = new URL(app.config.PUBLIC_BASE_URL).origin;
-  http.use('*', cors({ origin: origins, allowHeaders: ['Authorization', 'Content-Type', 'mcp-protocol-version'], allowMethods: ['GET','POST','PATCH','DELETE','OPTIONS'] }));
+  http.use('*', cors({ origin: origins, allowHeaders: ['Authorization', 'Content-Type', 'mcp-protocol-version', 'Payment-Proof'], exposeHeaders: ['amtPaymentLink'], allowMethods: ['GET','POST','PATCH','DELETE','OPTIONS'] }));
   http.use('*', bodyLimit({ maxSize: 2 * 1024 * 1024, onError: () => { throw new AppError(413, 'BODY_TOO_LARGE', '请求内容超过 2 MiB'); } }));
   http.use('*', async (c, next) => {
     c.header('Cache-Control','no-store');
@@ -36,10 +43,22 @@ export function createHttp(app: Application) {
     c.set('principal', await auth.authenticate(c.req.header('Authorization')));
     await next();
   });
-  http.onError((error,c) => { const body = errorBody(error); return c.json({ error: body.error }, body.status as 400); });
+  if (app.config.PUBLIC_DEPLOYMENT) http.use('*', publicDemoGuard(app));
+  http.onError((error,c) => {
+    const body = errorBody(error);
+    if (error instanceof AppError) for (const [name, value] of Object.entries(error.headers ?? {})) c.header(name, value);
+    return c.json({ error: body.error }, body.status as 400);
+  });
   http.notFound(c => c.json({ error: { code: 'NOT_FOUND', message: '端点不存在' } },404));
   mountCollaboration(http,app);
+  mountCommerce(http,app,commerce);
   http.get('/health', async c => c.json(await app.health()));
+  http.get('/admin/demo', async c => { admin(c.get('principal')); return c.json(await app.demo.ops()); });
+  http.post('/admin/demo/pause', async c => {
+    admin(c.get('principal'));
+    const request = z.strictObject({ paused: z.boolean() }).parse(await c.req.json());
+    return c.json(await app.demo.setPaused(request.paused));
+  });
   http.get('/api/template',c=>c.json(app.template()));
   http.get('/api/criteria',()=>new Response(new Uint8Array(app.criteria()),{ headers: { 'Content-Type': 'application/json; charset=utf-8' } }));
   http.get('/api/agents',async c=>c.json({ agents: await app.agents() }));
@@ -95,6 +114,6 @@ export function createHttp(app: Application) {
   http.post('/api/notes',async c=>c.json(await board.createNote(c.get('principal'),await c.req.json()),201));
   http.get('/api/notes/:id',async c=>c.json(await board.note(c.req.param('id'))));
   http.patch('/api/notes/:id',async c=>c.json(await board.updateNote(c.get('principal'),c.req.param('id'),await c.req.json())));
-  http.all('/mcp', c => mcpResponse(app,c.get('principal'),c.req.raw));
+  http.all('/mcp', c => mcpResponse(app,c.get('principal'),c.req.raw,requestClientAddress(c,app.config)));
   return http;
 }

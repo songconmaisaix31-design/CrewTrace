@@ -1,0 +1,44 @@
+{
+  "format": "ct-code-test-report-v1",
+  "suiteDigest": "0xb218c5a85bd62913f62f2b90f15bfd93d7a12fcc39be79f9b8943d5bafcbe28d",
+  "taskSpecDigest": "0xf2a2d8c8fb27a62155676eb01e5e649a57f3183ae348e4b8da09c11383f6884b",
+  "artifactDigest": "0x7f841aa89cd14ace2aa495cae111c80bf18cbc73a1c3bd6a49f3b70ce813fb7d",
+  "environmentId": "ct-code-runner-v1:node-26.10.0:child-process-vm",
+  "total": 6,
+  "passed": 6,
+  "failed": 0,
+  "skipped": 0,
+  "exitCode": 0,
+  "cases": [
+    {
+      "name": "保留已有前缀",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "补全缺失前缀",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "统一大写",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "空字符串",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "仅符号",
+      "status": "PASS",
+      "detail": null
+    },
+    {
+      "name": "混合分隔符",
+      "status": "PASS",
+      "detail": null
+    }
+  ]
+}

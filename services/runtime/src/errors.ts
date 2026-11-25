@@ -1,9 +1,18 @@
 import { ZodError } from 'zod';
 import { ApplicationError,ErrorCodeSchema } from '../../../packages/contracts/src/index.ts';
 
+export interface AppErrorOptions {
+  details?: Record<string, unknown>;
+  headers?: Record<string, string>;
+}
+
 export class AppError extends Error {
-  constructor(public readonly status: number, public readonly code: string, message: string) {
+  readonly details?: Record<string, unknown>;
+  readonly headers?: Record<string, string>;
+  constructor(public readonly status: number, public readonly code: string, message: string, options: AppErrorOptions = {}) {
     super(message);
+    this.details = options.details;
+    this.headers = options.headers;
   }
 }
 
@@ -14,7 +23,7 @@ export function databaseErrorCode(error: unknown): string | null {
 
 export function errorBody(error: unknown) {
   if (error instanceof ApplicationError) return { status: error.status, error: error.toJSON() };
-  if (error instanceof AppError) return { status: error.status, error: { code: error.code, message: error.message } };
+  if (error instanceof AppError) return { status: error.status, error: { code: error.code, message: error.message, ...(error.details ? { details: error.details } : {}) } };
   if (error instanceof Error && error.name==='ChainError' && 'code' in error) {
     const parsed = ErrorCodeSchema.safeParse(error.code);
     if (parsed.success) {

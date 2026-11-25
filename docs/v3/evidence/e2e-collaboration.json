@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-11-25T14:06:56.076Z",
+  "round1": {
+    "taskId": "ed8195a8-13eb-47ca-8876-dabb7a56463c",
+    "attestationId": "119f1d73-f7de-459e-b78f-c33d8cefc0b7",
+    "digest": "0xb8f0411f92cd945fa7c6c08d0805bebd2f81b3ed15a0b5de72aea23cb3852c19",
+    "verification": {
+      "outcome": "VERIFIED_OFFLINE",
+      "fulfillment": "RECALCULATED_PASS",
+      "signature": "VALID"
+    }
+  },
+  "round2": {
+    "taskId": "c3a6e11c-27e4-4242-bef9-0b02683df9bb",
+    "attestationId": "8bb9540f-f542-47c6-905a-865ac2749435",
+    "decision": {
+      "strategy": "D_VERIFIED_REPUTATION",
+      "policyVersion": "csv-verified-reputation-v1",
+      "selectedAgentId": "f18a01d1-ea37-47b4-92ea-d247e3a06cc6",
+      "evidence": {
+        "attestationIds": [
+          "119f1d73-f7de-459e-b78f-c33d8cefc0b7"
+        ],
+        "sampleSize": 1
+      },
+      "coldStartCandidate": {
+        "agentId": "c9d84605-6eb5-4121-8cac-45f09d399381",
+        "coldStart": true
+      }
+    }
+  },
+  "reputation": {
+    "sampleSizeAfterRound2": 2,
+    "sampleSizeAfterRevocation": 1
+  },
+  "negatives": {
+    "forged": {
+      "sampleSize": 0,
+      "selectedAgentId": "f18a01d1-ea37-47b4-92ea-d247e3a06cc6"
+    },
+    "revoked": {
+      "attestationIds": [
+        "8bb9540f-f542-47c6-905a-865ac2749435"
+      ]
+    },
+    "duplicateAcceptance": {
+      "status": 409,
+      "jobs": 1,
+      "events": 2
+    },
+    "verificationFailure": {
+      "status": "INSUFFICIENT_EVIDENCE",
+      "reasons": [
+        "DELIVERY_HASH_MISMATCH"
+      ]
+    },
+    "capabilityGate": {
+      "selectedAgentId": "c9d84605-6eb5-4121-8cac-45f09d399381",
+      "excluded": [
+        "MISSING_SKILLS"
+      ]
+    },
+    "regression": {
+      "replayPassed": true,
+      "taskStatus": "IN_PROGRESS",
+      "events": [
+        "TASK_CREATED",
+        "CSV_WORKFLOW_CONFIGURED",
+        "TASK_CLAIMED",
+        "HANDOFF_SUBMITTED",
+        "HANDOFF_REVIEWED",
+        "TASK_CLAIMED",
+        "HANDOFF_SUBMITTED",
+        "HANDOFF_REVIEWED",
+        "TASK_CLAIMED",
+        "HANDOFF_SUBMITTED",
+        "HANDOFF_REVIEWED"
+      ]
+    }
+  }
+}

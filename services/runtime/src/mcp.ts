@@ -13,27 +13,46 @@ import {
 import { Board } from './board.js';
 import { Execution } from './execution.js';
 import { collaborationTools } from './collaboration-tools.js';
+import { commerceTools } from './commerce-tools.js';
+import { Commerce } from './commerce.js';
+import { createPaymentProvider } from './payment.js';
 import { publicMcpURL } from './config.js';
-import { collaborationPrompt,collaborationPromptName,collaborationPromptURL,collaborationSkillURL } from './collaboration-prompt.js';
+import { collaborationPrompt,collaborationPromptName,collaborationResourceLinks } from './collaboration-prompt.js';
 
-export async function mcpResponse(app: Application, principal: Principal, request: Request) {
+export async function mcpResponse(app: Application, principal: Principal, request: Request, clientAddress = 'unknown') {
+  const mcpURL = publicMcpURL(app.config);
+  const resourceLinks = collaborationResourceLinks(app.config.PUBLIC_WEB_URL);
+  const configuredWorkers = new Set((app.config.EXPERIMENT_WORKER_AGENT_IDS ?? '').split(',').filter(Boolean));
+  const trustedWorker = 'agentId' in principal && configuredWorkers.has(principal.agentId);
+  const restricted = app.config.PUBLIC_DEPLOYMENT && principal.kind !== 'admin' && !trustedWorker;
+  const blocked = restricted ? new Set([
+    'create_collaboration_task', 'update_collaboration_task', 'propose_collaboration_assignment',
+    'decide_collaboration_assignment', 'claim_collaboration_task', 'release_collaboration_claim',
+    'submit_collaboration_handoff', 'review_collaboration_handoff',
+    'advance_work', 'accept_task', 'reserve_model_call', 'upload_artifact', 'submit_task',
+    'report_interruption', 'update_handoff', 'create_run', 'assign_task', 'assess_task', 'advance_run', 'control_run',
+  ]) : new Set<string>();
   const server = new McpServer({ name: 'crewtrace-runtime', version: '0.1.0' }, {
     maxToolInputElements: 1000,
-    instructions: `连接 ${publicMcpURL(app.config)}（Streamable HTTP），先调用匿名只读 get_collaboration_guide({})，或通过 prompts/get 读取无参数提示词 ${collaborationPromptName}，按用户需求使用 join_collaboration 加入协作、发布或参与悬赏。实际参数在 tools/list；凭证保持私密，悬赏当前为 MOCK。简短接入引导：${collaborationSkillURL}；${collaborationPromptURL}。`,
+    instructions: `连接 ${mcpURL}（Streamable HTTP），先调用匿名只读 get_collaboration_guide({})，或通过 prompts/get 读取无参数提示词 ${collaborationPromptName}，按用户需求使用 join_collaboration 加入协作、发布或参与悬赏。实际参数在 tools/list；凭证保持私密，悬赏当前为 MOCK。${resourceLinks}`,
   });
   server.registerPrompt(collaborationPromptName,{
     title:'CrewTrace 协作与悬赏流程',description:'起名加入、私密凭证、悬赏发布查询改价、分工认领、真实交付、退回重交、验收完成与释放取消；当前 MOCK，无需参数',
-  },async()=>({messages:[{role:'user',content:{type:'text',text:collaborationPrompt(publicMcpURL(app.config))}}]}));
+  },async()=>({messages:[{role:'user',content:{type:'text',text:collaborationPrompt(mcpURL, resourceLinks)}}]}));
   server.registerTool('get_collaboration_guide',{
     description:'开始协作 / Read guide：匿名只读、无参数，返回起名加入与完整 MOCK 悬赏流程；正文与原生 crewtrace_collaboration 提示词相同，适用于只支持 tools 的客户端',
     inputSchema:z.strictObject({}),
     annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false},
-  },async()=>({content:[{type:'text',text:JSON.stringify(CollaborationGuideResponseSchema.parse({promptName:collaborationPromptName,text:collaborationPrompt(publicMcpURL(app.config))}))}]}));
+  },async()=>({content:[{type:'text',text:JSON.stringify(CollaborationGuideResponseSchema.parse({promptName:collaborationPromptName,text:collaborationPrompt(mcpURL, resourceLinks)}))}]}));
   const board = new Board(app);
   const execution = new Execution(app);
   const register = (name: string,description: string,schema: z.ZodObject<any>,operation: (input: any)=>Promise<unknown>) => {
+    if (blocked.has(name)) return;
     server.registerTool(name,{ description,inputSchema: schema },async input=>{
       try {
+        if (restricted && (name === 'join_collaboration' || name === 'register_collaboration_agent')) {
+          await app.store.write(client => app.demo.reserveRegistration(client, clientAddress));
+        }
         const result = await operation(input);
         return { content: [{ type: 'text' as const,text: JSON.stringify(result) }] };
       } catch (error) {
@@ -44,6 +63,9 @@ export async function mcpResponse(app: Application, principal: Principal, reques
   const contextFilter = z.strictObject({ runId: IdSchema.optional(),taskId: HashSchema.optional() });
   const taskKey = z.strictObject({ taskId: HashSchema });
   for (const tool of collaborationTools(app,principal)) register(tool.name,tool.description,tool.schema,tool.operation);
+  const commerce = new Commerce(app, createPaymentProvider(app.config));
+  for (const tool of commerceTools(commerce,app,principal,clientAddress)) register(tool.name,tool.description,tool.schema,tool.operation);
+  app.commerce = commerce;
   register('health','读取真实数据库与链依赖状态',z.strictObject({}),()=>app.health());
   register('get_template','读取固定三角色流程与真实规则原文地址',z.strictObject({}),async()=>app.template());
   register('list_agents','读取节点身份与实际心跳',z.strictObject({}),async()=>({ agents: await app.agents() }));

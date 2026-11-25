@@ -1,11 +1,15 @@
 import type { Hono } from 'hono';
 import { z } from 'zod';
-import { CollaborationCommitmentKeySchema, CollaborationIdSchema } from '../../../packages/contracts/src/index.ts';
+import { CollaborationCommitmentKeySchema, CollaborationIdSchema,CollaborationPageQuerySchema } from '../../../packages/contracts/src/index.ts';
 import type { Application } from './application.js';
 import { admin,type Principal } from './auth.js';
 import { Collaboration } from './collaboration.js';
 import { collaborationTools } from './collaboration-tools.js';
 import { publicMcpURL } from './config.js';
+import { snapshotMatching } from './experiment-matching.js';
+import { exportAttestation, getAttestation, listAgentAttestations, processAttestationJobQueue, revokeAttestation } from './trust/attestation-api.js';
+import { agentReputationPassport } from './trust/verified-reputation.js';
+import { replayCsvDelivery } from '../../../workers/src/csv-delivery.ts';
 
 export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>,app: Application) {
   const service=new Collaboration(app),prefix='/api/collaboration';
@@ -13,7 +17,7 @@ export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>
   http.get(prefix,async c=>{
     await app.db.pool.query('SELECT 1');
     const chain=app.collaborationChain?.info??{configured:false,chainId:null,contract:null,explorer:null};
-    return c.json({status:'ok',database:'connected',registration:'public',automaticMatching:false,bountyMode:'MOCK',commitmentRecording:chain.configured?'MONAD_TESTNET':'UNDECIDED',commitmentChain:chain,mcpURL:publicMcpURL(app.config),toolsURL:`${app.config.PUBLIC_BASE_URL}${prefix}/tools`});
+    return c.json({status:'ok',database:'connected',registration:'public',automaticMatching:service.workerIds().length>0,bountyMode:'MOCK',commitmentRecording:chain.configured?'MONAD_TESTNET':'UNDECIDED',commitmentChain:chain,mcpURL:publicMcpURL(app.config),toolsURL:`${app.config.PUBLIC_BASE_URL}${prefix}/tools`});
   });
   http.get(`${prefix}/tools`,c=>c.json({mcpURL:publicMcpURL(app.config),tools:collaborationTools(app,{kind:'public'}).map(tool=>({name:tool.name,description:tool.description,inputSchema:z.toJSONSchema(tool.schema,{io:'input'})}))}));
   http.post(`${prefix}/agents`,async c=>c.json(await service.register(await c.req.json()),201));
@@ -23,9 +27,77 @@ export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>
   http.post(`${prefix}/agents/me/heartbeat`,async c=>{z.strictObject({}).parse(await c.req.json());return c.json(await service.heartbeat(c.get('principal')));});
   http.post(`${prefix}/credentials/rotate`,async c=>{z.strictObject({}).parse(await c.req.json());return c.json(await service.rotate(c.get('principal')));});
   http.get(`${prefix}/agents/:id`,async c=>c.json(await service.agent(id(c.req.param('id')))));
+  http.get(`${prefix}/agents/:id/attestations`,async c=>{
+    const agentId=id(c.req.param('id'));
+    await service.agent(agentId);
+    return c.json(await listAgentAttestations(app,agentId,c.req.query('role')??null));
+  });
+  http.get(`${prefix}/agents/:id/reputation`,async c=>{
+    const agentId=id(c.req.param('id'));
+    await service.agent(agentId);
+    return c.json(await agentReputationPassport(app,agentId,c.req.query('role')??null));
+  });
+  http.get(`${prefix}/attestations/:id`,async c=>c.json(await getAttestation(app,c.get('principal'),c.req.param('id'))));
+  http.get(`${prefix}/attestations/:id/export`,async c=>{
+    const result=await exportAttestation(app,c.get('principal'),c.req.param('id'));
+    return c.body(JSON.stringify(result.document,null,2),200,{
+      'content-type':'application/json',
+      'content-disposition':`attachment; filename="${result.filename}"`,
+    });
+  });
+  http.post(`${prefix}/attestations/:id/revoke`,async c=>c.json(await revokeAttestation(app,c.get('principal'),c.req.param('id'),await c.req.json())));
+  http.post(`${prefix}/attestation-jobs/process`,async c=>c.json(await processAttestationJobQueue(app,c.get('principal'),await c.req.json())));
+  http.get(`${prefix}/csv-runs`,async c=>{
+    const {limit,offset}=CollaborationPageQuerySchema.parse(c.req.query());
+    const {rows}=await app.db.pool.query(`SELECT t.id AS "taskId",t.document->>'title' AS title,mode,
+      CASE WHEN w.failed_at IS NOT NULL THEN 'FAILED' ELSE t.document->>'status' END AS status,t.created_at AS "createdAt",
+      (SELECT count(*)::int FROM experiment_csv_attempts a WHERE a.task_id=t.id) AS attempts
+      FROM experiment_csv_workflows w JOIN collaboration_tasks t ON t.id=w.task_id
+      ORDER BY t.created_at DESC,t.id LIMIT $1 OFFSET $2`,[limit+1,offset]);
+    return c.json({runs:rows.slice(0,limit),nextOffset:rows.length>limit?offset+limit:null});
+  });
   http.get(`${prefix}/tasks`,async c=>c.json(await service.tasks(c.req.query())));
   http.post(`${prefix}/tasks`,async c=>c.json(await service.createTask(c.get('principal'),await c.req.json()),201));
   http.get(`${prefix}/tasks/:id`,async c=>c.json(await service.taskDetails(id(c.req.param('id')))));
+  http.get(`${prefix}/tasks/:id/matching`,async c=>{
+    const taskId=id(c.req.param('id'));
+    await service.task(taskId);
+    const {rows}=await app.db.pool.query('SELECT document FROM experiment_matching_decisions WHERE task_id=$1 ORDER BY created_at DESC,id DESC LIMIT 1',[taskId]);
+    return c.json(rows[0]?.document??null);
+  });
+  http.post(`${prefix}/tasks/:id/matching`,async c=>c.json(await snapshotMatching(service,c.get('principal'),id(c.req.param('id'))),201));
+  http.get(`${prefix}/tasks/:id/matching/:decision`,async c=>{
+    const taskId=id(c.req.param('id')),decision=id(c.req.param('decision'));
+    const {rows:[record]}=await app.db.pool.query('SELECT document FROM experiment_matching_decisions WHERE id=$1 AND task_id=$2',[decision,taskId]);
+    if(!record)return c.json({error:{code:'NOT_FOUND',message:'未找到该任务的分工快照'}},404);
+    return c.json(record.document);
+  });
+  http.get(`${prefix}/tasks/:id/csv-workflow`,async c=>c.json(await service.csvWorkflow(id(c.req.param('id')))));
+  http.post(`${prefix}/tasks/:id/csv-workflow`,async c=>c.json(await service.createCsvWorkflow(c.get('principal'),id(c.req.param('id')),await c.req.json()),201));
+  http.post(`${prefix}/csv-worker/poll`,async c=>{z.strictObject({}).parse(await c.req.json());return c.json(await service.pollCsvWorker(c.get('principal')));});
+  http.post(`${prefix}/claims/:id/worker-failure`,async c=>{z.strictObject({}).parse(await c.req.json());return c.json(await service.failCsvWorker(c.get('principal'),id(c.req.param('id'))));});
+  http.post(`${prefix}/claims/:id/expire-csv`,async c=>{
+    const {expectedVersion}=z.strictObject({expectedVersion:z.number().int().positive()}).parse(await c.req.json());
+    return c.json(await service.expireCsvClaim(c.get('principal'),id(c.req.param('id')),expectedVersion));
+  });
+  http.get(`${prefix}/tasks/:id/evidence`,async c=>{
+    const taskId=id(c.req.param('id'));
+    await service.task(taskId);
+    const {rows}=await app.db.pool.query(`SELECT h.id AS "handoffId", e.role, e.document AS result, e.checked_at AS "checkedAt",
+      h.document->>'status' AS "reviewStatus",
+      r.outcome AS "reputationOutcome"
+      FROM experiment_csv_evidence e JOIN collaboration_handoffs h ON h.id=e.handoff_id
+      LEFT JOIN experiment_reputation_events r ON r.handoff_id=e.handoff_id
+      WHERE h.task_id=$1 ORDER BY e.checked_at,h.id`, [taskId]);
+    return c.json({ records: rows });
+  });
+  http.get(`${prefix}/handoffs/:id/csv-replay`,async c=>{
+    const handoffId=id(c.req.param('id'));
+    const {rows:[record]}=await app.db.pool.query(`SELECT e.document AS stored,h.document->>'content' AS content
+      FROM experiment_csv_evidence e JOIN collaboration_handoffs h ON h.id=e.handoff_id WHERE h.id=$1`,[handoffId]);
+    if(!record)return c.json({error:{code:'NOT_FOUND',message:'没有可复算的 CSV 交付'}},404);
+    return c.json(replayCsvDelivery(record.content,record.stored));
+  });
   http.patch(`${prefix}/tasks/:id`,async c=>c.json(await service.updateTask(c.get('principal'),id(c.req.param('id')),await c.req.json())));
   http.get(`${prefix}/messages`,async c=>c.json(await service.messages(c.req.query())));
   http.post(`${prefix}/messages`,async c=>c.json(await service.publishMessage(c.get('principal'),await c.req.json()),201));

@@ -1,8 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { translate } from './translation.ts';
 const publicRoutes:Record<string,RegExp[]>={
-  GET:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/,/^\/api\/collaboration\/commitments(?:\?[^#]*)?$/,/^\/api\/collaboration\/commitments\/[^/?#]+$/],
-  POST:[/^\/api\/collaboration\/(?:agents|tasks|messages|notes|credentials\/rotate)$/,/^\/api\/collaboration\/agents\/me\/heartbeat$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:claims|proposals|handoffs)$/,/^\/api\/collaboration\/claims\/[^/?#]+\/release$/,/^\/api\/collaboration\/proposals\/[^/?#]+\/decision$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/review$/],
+  GET:[/^\/api\/commerce(?:\/services|\/orders(?:\?[^#]*)?)?$/,/^\/api\/commerce\/orders\/[^/?#]+(?:\/(?:delivery|execution))?$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/matching\/[^/?#]+$/,/^\/api\/collaboration\/csv-runs(?:\?[^#]*)?$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/csv-replay$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:evidence|matching|csv-workflow)$/,/^\/api\/collaboration\/agents\/[^/?#]+\/(?:attestations|reputation)(?:\?[^#]*)?$/,/^\/api\/collaboration\/attestations\/[^/?#]+$/,/^\/api\/collaboration\/attestations\/[^/?#]+\/export$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|events)(?:\?[^#]*)?$/,/^\/api\/collaboration\/(?:agents|tasks|notes)\/[^/?#]+$/,/^\/api\/collaboration\/commitments(?:\?[^#]*)?$/,/^\/api\/collaboration\/commitments\/[^/?#]+$/],
+  POST:[/^\/api\/commerce\/orders$/,/^\/api\/commerce\/orders\/[^/?#]+\/(?:payment|payment-proof|acceptance)$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:matching|csv-workflow)$/,/^\/api\/collaboration\/(?:agents|tasks|messages|notes|credentials\/rotate)$/,/^\/api\/collaboration\/agents\/me\/heartbeat$/,/^\/api\/collaboration\/tasks\/[^/?#]+\/(?:claims|proposals|handoffs)$/,/^\/api\/collaboration\/claims\/[^/?#]+\/(?:release|expire-csv)$/,/^\/api\/collaboration\/proposals\/[^/?#]+\/decision$/,/^\/api\/collaboration\/handoffs\/[^/?#]+\/review$/],
   PATCH:[/^\/api\/collaboration\/(?:agents\/me|tasks\/[^/?#]+|notes\/[^/?#]+)$/],
 };
 export function allowedPublicPath(method:string,path:string){return !/%2f|%5c|%2e|\.\.|\\|#/i.test(path)&&Boolean(publicRoutes[method]?.some(rule=>rule.test(path)));}
@@ -15,10 +15,11 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
     const url = new URL(req.url ?? '/', 'http://localhost');
     if(url.searchParams.get('action')==='translate'){await translate(req,res);return;}
     if(req.method==='GET'&&url.searchParams.get('action')==='collaboration-config'){
-      if(!config.RUNTIME_URL){json(200,{configured:false,mcpURL:null});return;}
-      const base=new URL(config.RUNTIME_URL);
+      const displayBase=config.PUBLIC_RUNTIME_URL??config.RUNTIME_URL;
+      if(!displayBase){json(200,{configured:false,mcpURL:null});return;}
+      const base=new URL(displayBase);
       if(!['http:','https:'].includes(base.protocol)||base.username||base.password)throw new Error('服务地址无效');
-      json(200,{configured:true,mcpURL:'https://mcp.davidwang.space/mcp'});return;
+      json(200,{configured:true,mcpURL:new URL('/mcp',base).href});return;
     }
     const path = url.searchParams.get('path') ?? '';
     if(!allowedPublicPath(req.method??'',path)){json(405,{error:{code:'METHOD_NOT_ALLOWED',message:'不支持的协作操作'}});return;}
@@ -28,6 +29,7 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
     let body: string | undefined;
     const headers: Record<string,string> = {};
     if(req.headers.authorization)headers.Authorization=req.headers.authorization;
+    if(req.headers['payment-proof'])headers['Payment-Proof']=String(req.headers['payment-proof']);
     if(req.method!=='GET'){
       let parsed:unknown=(req as IncomingMessage&{body?:unknown}).body;
       if(parsed===undefined){
@@ -44,6 +46,8 @@ export async function gateway(req: IncomingMessage, res: ServerResponse) {
     if (disposition) res.setHeader('Content-Disposition', disposition);
     const contentHash = upstream.headers.get('X-Content-Hash');
     if(contentHash)res.setHeader('X-Content-Hash',contentHash);
+    const paymentLink = upstream.headers.get('amtPaymentLink');
+    if (paymentLink) res.setHeader('amtPaymentLink', paymentLink);
     res.end(Buffer.from(await upstream.arrayBuffer()));
   } catch (error) {
     if (error instanceof SyntaxError) json(400,{error:{message:'请求字段不符合接口约定'}});

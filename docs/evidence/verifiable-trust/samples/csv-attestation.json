@@ -1,0 +1,76 @@
+{
+  "attestationVersion": "ct-attestation-v1",
+  "attestationId": "c0c0c0c0-c0c0-4c0c-8c0c-c0c0c0c0c0c0",
+  "issuedAt": "2026-11-24T04:00:00.000Z",
+  "expiresAt": "2027-11-24T04:00:00.000Z",
+  "binding": {
+    "environment": "local",
+    "deployment": "documentation-samples"
+  },
+  "issuer": {
+    "issuerId": "crewtrace-samples",
+    "keyId": "samples-key-2026-11",
+    "signerAddress": "0x1563915e194d8cfba1943570603f7606a3115508"
+  },
+  "subject": {
+    "agentId": "00000000-0000-4000-8000-000000000004",
+    "identity": {
+      "namespace": "ct-local",
+      "value": "00000000-0000-4000-8000-000000000004"
+    },
+    "signingAddress": null,
+    "role": "csv-data-review",
+    "serviceId": "csv-clean-verify-free",
+    "serviceVersion": 1
+  },
+  "task": {
+    "taskId": "00000000-0000-4000-8000-000000000003",
+    "attempt": 1,
+    "workflowVersion": "csv-workflow-v1"
+  },
+  "order": {
+    "orderRef": "0x896c1ed78a9ac31cb9a8f580ade866586a308e570ec5680c3710cfa9bae633d2",
+    "buyerRef": "0x3289fecd4bbf587ee9b831dd13c473ce5da3b767f055ff9d20194f53e759a118"
+  },
+  "input": {
+    "contentHash": "0x918043c8dd92f9c37a376345e66e393b35f188857ba55979d7602394388c834b",
+    "rowCount": 3,
+    "schemaVersion": "csv-ledger-v1"
+  },
+  "delivery": {
+    "contentHash": "0xc81615198c37825ef89403c1e06ff3440ae1b889bc3fd26c9deba6c27f0316f6",
+    "deliveryVersion": 1,
+    "rowCount": 2
+  },
+  "validation": {
+    "verifierId": "csv-ledger",
+    "ruleId": "csv-ledger",
+    "ruleVersion": "csv-ledger-v1",
+    "result": "PASS",
+    "checkCodes": [
+      "RULE:csv-ledger@csv-ledger-v1",
+      "RESULT:PASS"
+    ],
+    "checksDigest": "0xf36c50f1488c377917e020ece0e10e4225ad7f7ae6f70001162cf26d1eee371f"
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "reviewerId": "synthetic-reviewer",
+    "reviewerAddress": null,
+    "reviewedAt": "2026-11-24T03:22:56.583Z"
+  },
+  "reputation": {
+    "eventId": "00000000-0000-4000-8000-000000000003:csv-data-review:PASS",
+    "outcome": "PASS",
+    "source": "DETERMINISTIC_REVIEW"
+  },
+  "payment": {
+    "status": "NOT_REQUIRED"
+  },
+  "chain": null,
+  "integrity": {
+    "canonicalization": "ct-canonical-json-v1",
+    "digest": "0x977c5123690f99765c181c5b683a653ebcefbd1f4ab629e3929bd375f8a8b25a",
+    "signature": "0x7e4adb4e0f6a907bf43ce9ea15a901217b6a46734f5ad6b1ec6511af415f461879c9b4341d7b61524a2349ae3fcd794f791205cc3ccde5ba084d736d856f70c11b"
+  }
+}

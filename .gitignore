@@ -8,3 +8,7 @@ dist/
 coverage/
 *.tsbuildinfo
 .DS_Store
+examples/sdk-consumer/.pack/
+examples/sdk-consumer/data/
+examples/sdk-consumer/attestations/
+examples/sdk-consumer/trust-policy.json

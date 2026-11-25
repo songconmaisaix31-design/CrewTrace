@@ -205,3 +205,34 @@ html:has(.experience-shell),body:has(.experience-shell){overflow:hidden;height:1
 @media(max-width:760px){.experience-shell .stage-window{height:clamp(260px,var(--panel-height,480px),min(64svh,590px));min-height:0}.experience-shell .stage-card-scroll{padding:18px}.experience-shell .public-record{padding-left:16px}.experience-shell .public-record h3{font-size:18px}.experience-shell[data-screen="1"] .orbit-thread{top:204px;left:16px}.experience-shell .lens-stream{opacity:.8}}
 @media(prefers-reduced-motion:reduce){.hover-preview{animation:none}.orbit-thread{transition:none}}
 @media(prefers-reduced-motion:reduce){.experience-home,.experience-shell .public-workspace>.public-content,.experience-shell .stage-card{animation:none!important;transition:none;filter:none!important;transform:none!important}.experience-shell .stage-card[aria-hidden=true]{visibility:hidden}.lens-caption h1,.lens-caption h1 span{background:none;color:#d9c9ef}}
+/* 服务入口保持单行紧凑，协作舞台维持原有主要视觉区域。 */
+.experience-shell .commerce-showcase{display:flex;align-items:center;gap:14px;padding:10px 16px;border-radius:14px;flex:none;overflow:hidden}
+.experience-shell .commerce-showcase>.public-section-head{flex:0 0 auto;margin:0;display:flex;align-items:center;gap:12px}
+.experience-shell .commerce-showcase>.public-section-head h2{font-size:16px;font-weight:460;white-space:nowrap}
+.experience-shell .commerce-showcase>.public-section-head .public-muted{display:none}
+.experience-shell .commerce-showcase>.public-section-head .primary{min-height:34px;padding:6px 14px;font-size:12px;white-space:nowrap}
+.experience-shell .commerce-showcase>.notice{margin:0;padding:5px 9px;font-size:11px;line-height:1.4;max-width:330px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
+.experience-shell .commerce-showcase>.public-record{display:flex;align-items:center;gap:8px;padding:0 0 0 10px;margin:0;border-top:0;border-left:1px solid #b395d52a;min-width:0}
+.experience-shell .commerce-showcase>.public-record::before{display:none}
+.experience-shell .commerce-showcase>.public-record .public-pill{flex:none}
+.experience-shell .commerce-showcase>.public-record strong{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.experience-shell .commerce-showcase>.public-record p,.experience-shell .commerce-showcase>.public-record .secondary{display:none}
+.experience-shell .commerce-showcase>.public-muted{display:none}
+/* 舞台占据剩余高度，内容超出时在各自容器内滚动，避免被固定视口裁剪后无法操作。 */
+.experience-shell .collaboration-sticky{overflow-y:auto;overscroll-behavior:contain}
+.experience-shell .stage-window{flex:1 1 auto;height:auto;min-height:200px;transition:none}
+/* 移动端四个入口按两列排布，避免原有按钮被压缩到无法阅读。 */
+@media(max-width:760px){
+ .experience-shell .task-panel-head .message-panel-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .experience-shell .task-panel-head .message-panel-actions button{width:100%}
+ .experience-shell .commerce-showcase{flex-wrap:wrap;gap:8px 12px;padding:10px 12px}
+ .experience-shell .commerce-showcase>.public-section-head{width:100%;justify-content:space-between}
+ .experience-shell .commerce-showcase>.notice{flex:1 1 100%;max-width:none}
+ .experience-shell .commerce-showcase>.public-record{flex:1 1 44%;border-left:0;padding-left:0}
+}
+@media(max-height:560px){
+ .experience-shell .commerce-showcase{padding:8px 12px;gap:4px 12px}
+ .experience-shell .commerce-showcase>.public-section-head h2{font-size:14px}
+ .experience-shell .commerce-showcase>.notice{display:none}
+ .experience-shell .stage-window{min-height:120px}
+}

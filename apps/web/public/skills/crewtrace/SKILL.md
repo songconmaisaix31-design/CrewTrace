@@ -5,7 +5,7 @@ description: 用户需要在 CrewTrace 加入协作、发布或参与悬赏时�
 
 # CrewTrace
 
-连接 `https://mcp.davidwang.space/mcp`（Streamable HTTP），调用 `get_collaboration_guide` 获取指引，按用户需求加入协作、发布或参与悬赏。
+使用当前 CrewTrace 网站「接入 MCP」中显示的服务地址（Streamable HTTP），调用 `get_collaboration_guide` 获取指引，按用户需求加入协作、发布或参与悬赏。
 
 支持 MCP 提示词的客户端也可通过 `prompts/get` 读取 `crewtrace_collaboration`，无需参数。
 

@@ -36,6 +36,8 @@ export default function JourneyTrace(){
           if(start===1&&screen===1&&previous[index])return {x:previous[index].x+(target.x-previous[index].x)*eased,y:previous[index].y+(target.y-previous[index].y)*eased};
           return {x:point.x+(target.x-point.x)*p,y:point.y+(target.y-point.y)*p};
         });
+        const valid=points.every(point=>Number.isFinite(point.x)&&Number.isFinite(point.y));
+        if(!valid)return;
         path.current!.setAttribute('d',points.map((point,index)=>`${index?'L':'M'}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' '));
         svg.current!.style.opacity=String(p===0?0:Math.min(1,p*5)*.85);
         lastPoints.current=points;

@@ -1,0 +1,2844 @@
+{
+  "seed": "crewtrace-load-v1-2026-11-22",
+  "simulation": true,
+  "clockUnit": "tick",
+  "lease": 6,
+  "maxAttempts": 3,
+  "horizon": 180,
+  "workers": [
+    {
+      "id": "copy",
+      "mode": "copy",
+      "skill": 1,
+      "join": 0,
+      "outages": [
+        [
+          16,
+          32
+        ]
+      ]
+    },
+    {
+      "id": "standard",
+      "mode": "normalize",
+      "skill": 2,
+      "join": 0,
+      "outages": [
+        [
+          24,
+          49
+        ]
+      ]
+    },
+    {
+      "id": "specialist",
+      "mode": "deduplicate",
+      "skill": 3,
+      "join": 0,
+      "outages": [
+        [
+          36,
+          58
+        ]
+      ]
+    },
+    {
+      "id": "new-agent",
+      "mode": "deduplicate",
+      "skill": 2,
+      "join": 20,
+      "outages": [
+        [
+          71,
+          80
+        ]
+      ]
+    }
+  ],
+  "history": [
+    {
+      "id": "history-0",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-1",
+      "release": 0,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "history-2",
+      "release": 0,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "history-3",
+      "release": 0,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "history-4",
+      "release": 0,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "history-5",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-6",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-7",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-8",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-9",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-10",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-11",
+      "release": 0,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "history-12",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-13",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "history-14",
+      "release": 0,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "history-15",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    }
+  ],
+  "training": [
+    {
+      "workerId": "copy",
+      "inputId": "history-0",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-1",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-2",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-3",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-4",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-5",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-6",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-7",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-8",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-9",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-10",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-11",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-12",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-13",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-14",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "copy",
+      "inputId": "history-15",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-0",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-1",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-2",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-3",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-4",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-5",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-6",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-7",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-8",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-9",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-10",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-11",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-12",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-13",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-14",
+      "outcome": "FAIL"
+    },
+    {
+      "workerId": "standard",
+      "inputId": "history-15",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-0",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-1",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-2",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-3",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-4",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-5",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-6",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-7",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-8",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-9",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-10",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-11",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-12",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-13",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-14",
+      "outcome": "PASS"
+    },
+    {
+      "workerId": "specialist",
+      "inputId": "history-15",
+      "outcome": "PASS"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "holdout-0",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-1",
+      "release": 0,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-2",
+      "release": 0,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-3",
+      "release": 3,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-4",
+      "release": 3,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-5",
+      "release": 3,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-6",
+      "release": 6,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-7",
+      "release": 6,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-8",
+      "release": 6,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-9",
+      "release": 9,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-10",
+      "release": 9,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-11",
+      "release": 9,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-12",
+      "release": 12,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-13",
+      "release": 12,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-14",
+      "release": 12,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-15",
+      "release": 15,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-16",
+      "release": 15,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-17",
+      "release": 15,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-18",
+      "release": 18,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-19",
+      "release": 18,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-20",
+      "release": 18,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-21",
+      "release": 21,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-22",
+      "release": 21,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-23",
+      "release": 21,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-24",
+      "release": 24,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-25",
+      "release": 24,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-26",
+      "release": 24,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-27",
+      "release": 27,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-28",
+      "release": 27,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-29",
+      "release": 27,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-30",
+      "release": 30,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-31",
+      "release": 30,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-32",
+      "release": 30,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-33",
+      "release": 33,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-34",
+      "release": 33,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-35",
+      "release": 33,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-36",
+      "release": 36,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-37",
+      "release": 36,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-38",
+      "release": 36,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-39",
+      "release": 39,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-40",
+      "release": 39,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-41",
+      "release": 39,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-42",
+      "release": 42,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-43",
+      "release": 42,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-44",
+      "release": 42,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-45",
+      "release": 45,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-46",
+      "release": 45,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-47",
+      "release": 45,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-48",
+      "release": 48,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-49",
+      "release": 48,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-50",
+      "release": 48,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-51",
+      "release": 51,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-52",
+      "release": 51,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-53",
+      "release": 51,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-54",
+      "release": 54,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-55",
+      "release": 54,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-56",
+      "release": 54,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-57",
+      "release": 57,
+      "defect": "spacing",
+      "csv": "record_id,amount_cents\n record-1 , 23 \nrecord-2,71\n"
+    },
+    {
+      "id": "holdout-58",
+      "release": 57,
+      "defect": "duplicate",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-1,23\n"
+    },
+    {
+      "id": "holdout-59",
+      "release": 57,
+      "defect": "clean",
+      "csv": "record_id,amount_cents\nrecord-1,23\nrecord-2,71\n"
+    }
+  ],
+  "runs": [
+    {
+      "strategy": "random",
+      "metrics": {
+        "tasks": 60,
+        "accepted": 59,
+        "firstPass": 47,
+        "retried": 13,
+        "timeouts": 4,
+        "unfinished": 0,
+        "meanCompletionTicks": 13.033898305084746,
+        "assignmentConcentration": 0.2504406345136997,
+        "costPerSuccessfulTask": null,
+        "byWorker": [
+          {
+            "id": "copy",
+            "attempts": 21,
+            "onlineTicks": 165,
+            "busyOnlineTicks": 63,
+            "utilization": 0.38181818181818183
+          },
+          {
+            "id": "standard",
+            "attempts": 19,
+            "onlineTicks": 156,
+            "busyOnlineTicks": 57,
+            "utilization": 0.36538461538461536
+          },
+          {
+            "id": "specialist",
+            "attempts": 20,
+            "onlineTicks": 159,
+            "busyOnlineTicks": 59,
+            "utilization": 0.3710691823899371
+          },
+          {
+            "id": "new-agent",
+            "attempts": 19,
+            "onlineTicks": 152,
+            "busyOnlineTicks": 51,
+            "utilization": 0.3355263157894737
+          }
+        ]
+      },
+      "attempts": [
+        {
+          "taskId": "holdout-0",
+          "workerId": "copy",
+          "started": 0,
+          "finished": 2,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-1",
+          "workerId": "specialist",
+          "started": 0,
+          "finished": 2,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-2",
+          "workerId": "standard",
+          "started": 0,
+          "finished": 4,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-3",
+          "workerId": "specialist",
+          "started": 3,
+          "finished": 5,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-4",
+          "workerId": "copy",
+          "started": 3,
+          "finished": 5,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-5",
+          "workerId": "standard",
+          "started": 4,
+          "finished": 6,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-6",
+          "workerId": "standard",
+          "started": 6,
+          "finished": 9,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-7",
+          "workerId": "specialist",
+          "started": 6,
+          "finished": 9,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-8",
+          "workerId": "copy",
+          "started": 6,
+          "finished": 10,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-9",
+          "workerId": "specialist",
+          "started": 9,
+          "finished": 11,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-10",
+          "workerId": "standard",
+          "started": 9,
+          "finished": 11,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-11",
+          "workerId": "copy",
+          "started": 10,
+          "finished": 12,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-12",
+          "workerId": "specialist",
+          "started": 12,
+          "finished": 15,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-13",
+          "workerId": "standard",
+          "started": 12,
+          "finished": 16,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-14",
+          "workerId": "copy",
+          "started": 12,
+          "finished": 15,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-14",
+          "workerId": "specialist",
+          "started": 15,
+          "finished": 19,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-15",
+          "workerId": "copy",
+          "started": 15,
+          "finished": 21,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-15",
+          "workerId": "new-agent",
+          "started": 22,
+          "finished": 24,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-16",
+          "workerId": "standard",
+          "started": 16,
+          "finished": 20,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-17",
+          "workerId": "specialist",
+          "started": 19,
+          "finished": 23,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-18",
+          "workerId": "standard",
+          "started": 20,
+          "finished": 23,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-19",
+          "workerId": "new-agent",
+          "started": 20,
+          "finished": 22,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-20",
+          "workerId": "standard",
+          "started": 23,
+          "finished": 29,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-20",
+          "workerId": "new-agent",
+          "started": 30,
+          "finished": 34,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-21",
+          "workerId": "specialist",
+          "started": 23,
+          "finished": 26,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-22",
+          "workerId": "new-agent",
+          "started": 24,
+          "finished": 27,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-23",
+          "workerId": "specialist",
+          "started": 26,
+          "finished": 28,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-24",
+          "workerId": "new-agent",
+          "started": 27,
+          "finished": 30,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-25",
+          "workerId": "specialist",
+          "started": 28,
+          "finished": 32,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-26",
+          "workerId": "specialist",
+          "started": 32,
+          "finished": 35,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-27",
+          "workerId": "copy",
+          "started": 32,
+          "finished": 35,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-27",
+          "workerId": "specialist",
+          "started": 35,
+          "finished": 41,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-27",
+          "workerId": "new-agent",
+          "started": 41,
+          "finished": 44,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-28",
+          "workerId": "new-agent",
+          "started": 34,
+          "finished": 36,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-29",
+          "workerId": "copy",
+          "started": 35,
+          "finished": 38,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-29",
+          "workerId": "new-agent",
+          "started": 38,
+          "finished": 41,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-30",
+          "workerId": "new-agent",
+          "started": 36,
+          "finished": 38,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-31",
+          "workerId": "copy",
+          "started": 38,
+          "finished": 41,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-31",
+          "workerId": "copy",
+          "started": 41,
+          "finished": 44,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-31",
+          "workerId": "new-agent",
+          "started": 44,
+          "finished": 46,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-32",
+          "workerId": "copy",
+          "started": 44,
+          "finished": 47,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-32",
+          "workerId": "copy",
+          "started": 47,
+          "finished": 50,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-32",
+          "workerId": "copy",
+          "started": 50,
+          "finished": 53,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-33",
+          "workerId": "new-agent",
+          "started": 46,
+          "finished": 48,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-34",
+          "workerId": "new-agent",
+          "started": 48,
+          "finished": 51,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-35",
+          "workerId": "standard",
+          "started": 49,
+          "finished": 53,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-36",
+          "workerId": "new-agent",
+          "started": 51,
+          "finished": 54,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-37",
+          "workerId": "copy",
+          "started": 53,
+          "finished": 56,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-37",
+          "workerId": "new-agent",
+          "started": 56,
+          "finished": 58,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-38",
+          "workerId": "standard",
+          "started": 53,
+          "finished": 57,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-39",
+          "workerId": "new-agent",
+          "started": 54,
+          "finished": 56,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-40",
+          "workerId": "copy",
+          "started": 56,
+          "finished": 60,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-40",
+          "workerId": "standard",
+          "started": 60,
+          "finished": 62,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-41",
+          "workerId": "standard",
+          "started": 57,
+          "finished": 60,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-42",
+          "workerId": "new-agent",
+          "started": 58,
+          "finished": 61,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-43",
+          "workerId": "specialist",
+          "started": 58,
+          "finished": 61,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-44",
+          "workerId": "copy",
+          "started": 60,
+          "finished": 63,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-45",
+          "workerId": "new-agent",
+          "started": 61,
+          "finished": 64,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-46",
+          "workerId": "specialist",
+          "started": 61,
+          "finished": 64,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-47",
+          "workerId": "standard",
+          "started": 62,
+          "finished": 66,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-48",
+          "workerId": "copy",
+          "started": 63,
+          "finished": 67,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-48",
+          "workerId": "copy",
+          "started": 67,
+          "finished": 71,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-48",
+          "workerId": "standard",
+          "started": 71,
+          "finished": 75,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-49",
+          "workerId": "specialist",
+          "started": 64,
+          "finished": 66,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-50",
+          "workerId": "new-agent",
+          "started": 64,
+          "finished": 68,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-51",
+          "workerId": "specialist",
+          "started": 66,
+          "finished": 70,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-52",
+          "workerId": "standard",
+          "started": 66,
+          "finished": 68,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-52",
+          "workerId": "new-agent",
+          "started": 68,
+          "finished": 74,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-52",
+          "workerId": "specialist",
+          "started": 74,
+          "finished": 77,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-53",
+          "workerId": "standard",
+          "started": 68,
+          "finished": 71,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-54",
+          "workerId": "specialist",
+          "started": 70,
+          "finished": 74,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-55",
+          "workerId": "copy",
+          "started": 71,
+          "finished": 74,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-55",
+          "workerId": "copy",
+          "started": 74,
+          "finished": 77,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-55",
+          "workerId": "standard",
+          "started": 77,
+          "finished": 81,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-56",
+          "workerId": "standard",
+          "started": 75,
+          "finished": 77,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-57",
+          "workerId": "copy",
+          "started": 77,
+          "finished": 81,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-57",
+          "workerId": "standard",
+          "started": 81,
+          "finished": 83,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-58",
+          "workerId": "specialist",
+          "started": 77,
+          "finished": 80,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-59",
+          "workerId": "specialist",
+          "started": 80,
+          "finished": 84,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        }
+      ]
+    },
+    {
+      "strategy": "capability",
+      "metrics": {
+        "tasks": 60,
+        "accepted": 56,
+        "firstPass": 44,
+        "retried": 16,
+        "timeouts": 4,
+        "unfinished": 0,
+        "meanCompletionTicks": 13.625,
+        "assignmentConcentration": 0.25252825698988696,
+        "costPerSuccessfulTask": null,
+        "byWorker": [
+          {
+            "id": "copy",
+            "attempts": 24,
+            "onlineTicks": 165,
+            "busyOnlineTicks": 67,
+            "utilization": 0.40606060606060607
+          },
+          {
+            "id": "standard",
+            "attempts": 19,
+            "onlineTicks": 156,
+            "busyOnlineTicks": 55,
+            "utilization": 0.3525641025641026
+          },
+          {
+            "id": "specialist",
+            "attempts": 20,
+            "onlineTicks": 159,
+            "busyOnlineTicks": 60,
+            "utilization": 0.37735849056603776
+          },
+          {
+            "id": "new-agent",
+            "attempts": 19,
+            "onlineTicks": 152,
+            "busyOnlineTicks": 51,
+            "utilization": 0.3355263157894737
+          }
+        ]
+      },
+      "attempts": [
+        {
+          "taskId": "holdout-0",
+          "workerId": "specialist",
+          "started": 0,
+          "finished": 4,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-1",
+          "workerId": "standard",
+          "started": 0,
+          "finished": 3,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-1",
+          "workerId": "copy",
+          "started": 3,
+          "finished": 6,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-1",
+          "workerId": "copy",
+          "started": 6,
+          "finished": 9,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-2",
+          "workerId": "copy",
+          "started": 0,
+          "finished": 3,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-3",
+          "workerId": "standard",
+          "started": 3,
+          "finished": 7,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-4",
+          "workerId": "specialist",
+          "started": 4,
+          "finished": 7,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-5",
+          "workerId": "specialist",
+          "started": 7,
+          "finished": 10,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-6",
+          "workerId": "standard",
+          "started": 7,
+          "finished": 10,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-7",
+          "workerId": "copy",
+          "started": 9,
+          "finished": 11,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-8",
+          "workerId": "specialist",
+          "started": 10,
+          "finished": 13,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-9",
+          "workerId": "standard",
+          "started": 10,
+          "finished": 14,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-10",
+          "workerId": "copy",
+          "started": 11,
+          "finished": 15,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-11",
+          "workerId": "specialist",
+          "started": 13,
+          "finished": 17,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-12",
+          "workerId": "standard",
+          "started": 14,
+          "finished": 16,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-13",
+          "workerId": "copy",
+          "started": 15,
+          "finished": 21,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-13",
+          "workerId": "new-agent",
+          "started": 22,
+          "finished": 24,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-14",
+          "workerId": "standard",
+          "started": 16,
+          "finished": 18,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-14",
+          "workerId": "standard",
+          "started": 18,
+          "finished": 20,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-14",
+          "workerId": "new-agent",
+          "started": 20,
+          "finished": 22,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-15",
+          "workerId": "specialist",
+          "started": 17,
+          "finished": 19,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-16",
+          "workerId": "specialist",
+          "started": 19,
+          "finished": 23,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-17",
+          "workerId": "standard",
+          "started": 20,
+          "finished": 23,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-18",
+          "workerId": "specialist",
+          "started": 23,
+          "finished": 25,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-19",
+          "workerId": "standard",
+          "started": 23,
+          "finished": 29,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-19",
+          "workerId": "new-agent",
+          "started": 30,
+          "finished": 32,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-20",
+          "workerId": "new-agent",
+          "started": 24,
+          "finished": 28,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-21",
+          "workerId": "specialist",
+          "started": 25,
+          "finished": 28,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-22",
+          "workerId": "specialist",
+          "started": 28,
+          "finished": 31,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-23",
+          "workerId": "new-agent",
+          "started": 28,
+          "finished": 30,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-24",
+          "workerId": "specialist",
+          "started": 31,
+          "finished": 35,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-25",
+          "workerId": "new-agent",
+          "started": 32,
+          "finished": 34,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-26",
+          "workerId": "copy",
+          "started": 32,
+          "finished": 35,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-27",
+          "workerId": "new-agent",
+          "started": 34,
+          "finished": 37,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-28",
+          "workerId": "specialist",
+          "started": 35,
+          "finished": 41,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-28",
+          "workerId": "new-agent",
+          "started": 41,
+          "finished": 43,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-29",
+          "workerId": "copy",
+          "started": 35,
+          "finished": 38,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-29",
+          "workerId": "copy",
+          "started": 38,
+          "finished": 41,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-29",
+          "workerId": "copy",
+          "started": 41,
+          "finished": 44,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-30",
+          "workerId": "new-agent",
+          "started": 37,
+          "finished": 39,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-31",
+          "workerId": "new-agent",
+          "started": 39,
+          "finished": 41,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-32",
+          "workerId": "new-agent",
+          "started": 43,
+          "finished": 47,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-33",
+          "workerId": "copy",
+          "started": 44,
+          "finished": 46,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-34",
+          "workerId": "copy",
+          "started": 46,
+          "finished": 49,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-34",
+          "workerId": "new-agent",
+          "started": 49,
+          "finished": 52,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-35",
+          "workerId": "new-agent",
+          "started": 47,
+          "finished": 49,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-36",
+          "workerId": "standard",
+          "started": 49,
+          "finished": 53,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-37",
+          "workerId": "copy",
+          "started": 49,
+          "finished": 52,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-37",
+          "workerId": "new-agent",
+          "started": 52,
+          "finished": 54,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-38",
+          "workerId": "copy",
+          "started": 52,
+          "finished": 54,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-38",
+          "workerId": "new-agent",
+          "started": 54,
+          "finished": 58,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-39",
+          "workerId": "standard",
+          "started": 53,
+          "finished": 56,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-40",
+          "workerId": "copy",
+          "started": 54,
+          "finished": 58,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-40",
+          "workerId": "specialist",
+          "started": 58,
+          "finished": 61,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-41",
+          "workerId": "standard",
+          "started": 56,
+          "finished": 59,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-42",
+          "workerId": "new-agent",
+          "started": 58,
+          "finished": 61,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-43",
+          "workerId": "copy",
+          "started": 58,
+          "finished": 61,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-43",
+          "workerId": "specialist",
+          "started": 61,
+          "finished": 64,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-44",
+          "workerId": "standard",
+          "started": 59,
+          "finished": 62,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-45",
+          "workerId": "new-agent",
+          "started": 61,
+          "finished": 64,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-46",
+          "workerId": "copy",
+          "started": 61,
+          "finished": 63,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-46",
+          "workerId": "copy",
+          "started": 63,
+          "finished": 65,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-46",
+          "workerId": "copy",
+          "started": 65,
+          "finished": 67,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-47",
+          "workerId": "standard",
+          "started": 62,
+          "finished": 66,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-48",
+          "workerId": "specialist",
+          "started": 64,
+          "finished": 68,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-49",
+          "workerId": "new-agent",
+          "started": 64,
+          "finished": 68,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-50",
+          "workerId": "standard",
+          "started": 66,
+          "finished": 69,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-51",
+          "workerId": "copy",
+          "started": 67,
+          "finished": 69,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-51",
+          "workerId": "standard",
+          "started": 69,
+          "finished": 72,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-51",
+          "workerId": "standard",
+          "started": 72,
+          "finished": 75,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-52",
+          "workerId": "specialist",
+          "started": 68,
+          "finished": 71,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-53",
+          "workerId": "new-agent",
+          "started": 68,
+          "finished": 74,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-53",
+          "workerId": "specialist",
+          "started": 74,
+          "finished": 77,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-54",
+          "workerId": "copy",
+          "started": 69,
+          "finished": 73,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-55",
+          "workerId": "specialist",
+          "started": 71,
+          "finished": 74,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-56",
+          "workerId": "copy",
+          "started": 73,
+          "finished": 75,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-56",
+          "workerId": "standard",
+          "started": 75,
+          "finished": 77,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-57",
+          "workerId": "copy",
+          "started": 75,
+          "finished": 79,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-57",
+          "workerId": "copy",
+          "started": 79,
+          "finished": 83,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-57",
+          "workerId": "specialist",
+          "started": 83,
+          "finished": 85,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-58",
+          "workerId": "specialist",
+          "started": 77,
+          "finished": 80,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-59",
+          "workerId": "standard",
+          "started": 77,
+          "finished": 80,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        }
+      ]
+    },
+    {
+      "strategy": "reputation",
+      "metrics": {
+        "tasks": 60,
+        "accepted": 56,
+        "firstPass": 44,
+        "retried": 16,
+        "timeouts": 4,
+        "unfinished": 0,
+        "meanCompletionTicks": 13.625,
+        "assignmentConcentration": 0.25252825698988696,
+        "costPerSuccessfulTask": null,
+        "byWorker": [
+          {
+            "id": "copy",
+            "attempts": 24,
+            "onlineTicks": 165,
+            "busyOnlineTicks": 67,
+            "utilization": 0.40606060606060607
+          },
+          {
+            "id": "standard",
+            "attempts": 19,
+            "onlineTicks": 156,
+            "busyOnlineTicks": 55,
+            "utilization": 0.3525641025641026
+          },
+          {
+            "id": "specialist",
+            "attempts": 20,
+            "onlineTicks": 159,
+            "busyOnlineTicks": 60,
+            "utilization": 0.37735849056603776
+          },
+          {
+            "id": "new-agent",
+            "attempts": 19,
+            "onlineTicks": 152,
+            "busyOnlineTicks": 51,
+            "utilization": 0.3355263157894737
+          }
+        ]
+      },
+      "attempts": [
+        {
+          "taskId": "holdout-0",
+          "workerId": "specialist",
+          "started": 0,
+          "finished": 4,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-1",
+          "workerId": "standard",
+          "started": 0,
+          "finished": 3,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-1",
+          "workerId": "copy",
+          "started": 3,
+          "finished": 6,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-1",
+          "workerId": "copy",
+          "started": 6,
+          "finished": 9,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-2",
+          "workerId": "copy",
+          "started": 0,
+          "finished": 3,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-3",
+          "workerId": "standard",
+          "started": 3,
+          "finished": 7,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-4",
+          "workerId": "specialist",
+          "started": 4,
+          "finished": 7,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-5",
+          "workerId": "specialist",
+          "started": 7,
+          "finished": 10,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-6",
+          "workerId": "standard",
+          "started": 7,
+          "finished": 10,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-7",
+          "workerId": "copy",
+          "started": 9,
+          "finished": 11,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-8",
+          "workerId": "specialist",
+          "started": 10,
+          "finished": 13,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-9",
+          "workerId": "standard",
+          "started": 10,
+          "finished": 14,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-10",
+          "workerId": "copy",
+          "started": 11,
+          "finished": 15,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-11",
+          "workerId": "specialist",
+          "started": 13,
+          "finished": 17,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-12",
+          "workerId": "standard",
+          "started": 14,
+          "finished": 16,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-13",
+          "workerId": "copy",
+          "started": 15,
+          "finished": 21,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-13",
+          "workerId": "new-agent",
+          "started": 22,
+          "finished": 24,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-14",
+          "workerId": "standard",
+          "started": 16,
+          "finished": 18,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-14",
+          "workerId": "standard",
+          "started": 18,
+          "finished": 20,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-14",
+          "workerId": "new-agent",
+          "started": 20,
+          "finished": 22,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-15",
+          "workerId": "specialist",
+          "started": 17,
+          "finished": 19,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-16",
+          "workerId": "specialist",
+          "started": 19,
+          "finished": 23,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-17",
+          "workerId": "standard",
+          "started": 20,
+          "finished": 23,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-18",
+          "workerId": "specialist",
+          "started": 23,
+          "finished": 25,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-19",
+          "workerId": "standard",
+          "started": 23,
+          "finished": 29,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-19",
+          "workerId": "new-agent",
+          "started": 30,
+          "finished": 32,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-20",
+          "workerId": "new-agent",
+          "started": 24,
+          "finished": 28,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-21",
+          "workerId": "specialist",
+          "started": 25,
+          "finished": 28,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-22",
+          "workerId": "specialist",
+          "started": 28,
+          "finished": 31,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-23",
+          "workerId": "new-agent",
+          "started": 28,
+          "finished": 30,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-24",
+          "workerId": "specialist",
+          "started": 31,
+          "finished": 35,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-25",
+          "workerId": "new-agent",
+          "started": 32,
+          "finished": 34,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-26",
+          "workerId": "copy",
+          "started": 32,
+          "finished": 35,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-27",
+          "workerId": "new-agent",
+          "started": 34,
+          "finished": 37,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-28",
+          "workerId": "specialist",
+          "started": 35,
+          "finished": 41,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-28",
+          "workerId": "new-agent",
+          "started": 41,
+          "finished": 43,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-29",
+          "workerId": "copy",
+          "started": 35,
+          "finished": 38,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-29",
+          "workerId": "copy",
+          "started": 38,
+          "finished": 41,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-29",
+          "workerId": "copy",
+          "started": 41,
+          "finished": 44,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-30",
+          "workerId": "new-agent",
+          "started": 37,
+          "finished": 39,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-31",
+          "workerId": "new-agent",
+          "started": 39,
+          "finished": 41,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-32",
+          "workerId": "new-agent",
+          "started": 43,
+          "finished": 47,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-33",
+          "workerId": "copy",
+          "started": 44,
+          "finished": 46,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-34",
+          "workerId": "copy",
+          "started": 46,
+          "finished": 49,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-34",
+          "workerId": "new-agent",
+          "started": 49,
+          "finished": 52,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-35",
+          "workerId": "new-agent",
+          "started": 47,
+          "finished": 49,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-36",
+          "workerId": "standard",
+          "started": 49,
+          "finished": 53,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-37",
+          "workerId": "copy",
+          "started": 49,
+          "finished": 52,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-37",
+          "workerId": "new-agent",
+          "started": 52,
+          "finished": 54,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-38",
+          "workerId": "copy",
+          "started": 52,
+          "finished": 54,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-38",
+          "workerId": "new-agent",
+          "started": 54,
+          "finished": 58,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-39",
+          "workerId": "standard",
+          "started": 53,
+          "finished": 56,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-40",
+          "workerId": "copy",
+          "started": 54,
+          "finished": 58,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-40",
+          "workerId": "specialist",
+          "started": 58,
+          "finished": 61,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-41",
+          "workerId": "standard",
+          "started": 56,
+          "finished": 59,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-42",
+          "workerId": "new-agent",
+          "started": 58,
+          "finished": 61,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-43",
+          "workerId": "copy",
+          "started": 58,
+          "finished": 61,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-43",
+          "workerId": "specialist",
+          "started": 61,
+          "finished": 64,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-44",
+          "workerId": "standard",
+          "started": 59,
+          "finished": 62,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-45",
+          "workerId": "new-agent",
+          "started": 61,
+          "finished": 64,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-46",
+          "workerId": "copy",
+          "started": 61,
+          "finished": 63,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-46",
+          "workerId": "copy",
+          "started": 63,
+          "finished": 65,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-46",
+          "workerId": "copy",
+          "started": 65,
+          "finished": 67,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-47",
+          "workerId": "standard",
+          "started": 62,
+          "finished": 66,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-48",
+          "workerId": "specialist",
+          "started": 64,
+          "finished": 68,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-49",
+          "workerId": "new-agent",
+          "started": 64,
+          "finished": 68,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-50",
+          "workerId": "standard",
+          "started": 66,
+          "finished": 69,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-51",
+          "workerId": "copy",
+          "started": 67,
+          "finished": 69,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-51",
+          "workerId": "standard",
+          "started": 69,
+          "finished": 72,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-51",
+          "workerId": "standard",
+          "started": 72,
+          "finished": 75,
+          "outcome": "FAIL",
+          "contentHash": "1c9ae8c52093e43e7b6940203bda2e558815fe28153ed6637fdf18ba7107a184"
+        },
+        {
+          "taskId": "holdout-52",
+          "workerId": "specialist",
+          "started": 68,
+          "finished": 71,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-53",
+          "workerId": "new-agent",
+          "started": 68,
+          "finished": 74,
+          "outcome": "TIMEOUT",
+          "contentHash": null
+        },
+        {
+          "taskId": "holdout-53",
+          "workerId": "specialist",
+          "started": 74,
+          "finished": 77,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-54",
+          "workerId": "copy",
+          "started": 69,
+          "finished": 73,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-55",
+          "workerId": "specialist",
+          "started": 71,
+          "finished": 74,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-56",
+          "workerId": "copy",
+          "started": 73,
+          "finished": 75,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-56",
+          "workerId": "standard",
+          "started": 75,
+          "finished": 77,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-57",
+          "workerId": "copy",
+          "started": 75,
+          "finished": 79,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-57",
+          "workerId": "copy",
+          "started": 79,
+          "finished": 83,
+          "outcome": "FAIL",
+          "contentHash": "ca5b3c4dc850fe912b814d277befd49d394da1dbee78d3b220bcc323ccdaf328"
+        },
+        {
+          "taskId": "holdout-57",
+          "workerId": "specialist",
+          "started": 83,
+          "finished": 85,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        },
+        {
+          "taskId": "holdout-58",
+          "workerId": "specialist",
+          "started": 77,
+          "finished": 80,
+          "outcome": "PASS",
+          "contentHash": "bc0b7371e6e6ce5e3648a5970089bbf288e2bf3e21ce0ad583e415c2a306c470"
+        },
+        {
+          "taskId": "holdout-59",
+          "workerId": "standard",
+          "started": 77,
+          "finished": 80,
+          "outcome": "PASS",
+          "contentHash": "7f51377157f5151ab2a2b6ae148efd5c2ba1ea253debf9301549f9c29ccddb76"
+        }
+      ]
+    }
+  ]
+}

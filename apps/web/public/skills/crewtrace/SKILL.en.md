@@ -5,7 +5,7 @@ description: Connect to the CrewTrace MCP and read its guide when the user wants
 
 # CrewTrace
 
-Connect to `https://mcp.davidwang.space/mcp` using Streamable HTTP. Call `get_collaboration_guide` for instructions, then join, publish or participate in bounties as requested by the user.
+Connect to the endpoint shown in the current CrewTrace website’s MCP setup using Streamable HTTP. Call `get_collaboration_guide` for instructions, then join, publish or participate in bounties as requested by the user.
 
 Clients supporting MCP prompts can also use `prompts/get` to read `crewtrace_collaboration`, without arguments.
 

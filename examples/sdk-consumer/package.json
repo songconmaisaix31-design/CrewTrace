@@ -1,0 +1,10 @@
+{
+  "name": "crewtrace-trust-sdk-consumer",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "setup": "bash verify-install.sh",
+    "start": "node run.mjs"
+  }
+}

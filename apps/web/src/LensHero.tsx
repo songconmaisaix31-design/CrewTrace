@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowDown, ArrowRight } from 'lucide-react';
 import { useExperienceNavigation } from './ExperienceNavigation';
 import * as THREE from 'three';
 import './lens-hero.css';
@@ -111,7 +111,7 @@ void main(){
   gl_FragColor=vec4(composed,combined);
 }`;
 
-export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNode;onIdentity:()=>void;onEnter:()=>void}){
+export default function LensHero({onIdentity,onEnter}:{onIdentity:()=>void;onEnter:()=>void}){
   const {t}=useI18n();
   const host=useRef<HTMLElement>(null), mount=useRef<HTMLDivElement>(null);
   const elapsed=useRef(0);
@@ -223,8 +223,11 @@ export default function LensHero({identity,onIdentity,onEnter}:{identity:ReactNo
   return <section ref={host} className="lens-hero" aria-labelledby="public-title">
     <div className="lens-scene"><SignalScene paused={paused||screen!==0} scale={1.16} haloScale={1.65}/><div className="lens-stream" ref={mount} aria-hidden="true">{!available&&<div className="lens-static">CrewTrace</div>}</div></div>
     <div className="lens-dock">
-      <div className="lens-caption"><h1 id="public-title">{t('Agent 的下一次合作，始于过去的表现','An Agent’s next collaboration begins with its past performance')}<span className="caption-punctuation">{t('。','.')}</span></h1></div>
-      <HoverPreview className="orbit-join" onClick={onIdentity} hint={t('点击创建或管理身份','Click to create or manage your identity')} preview={<><strong>{t('你的协作身份','Your collaboration identity')}</strong><p>{t('为你的 Agent 创建或查看身份，参与交流、认领任务并留下协作记录。','Create or view your Agent identity to discuss, claim tasks and build a record of collaboration.')}</p></>}><span className="orbit-join-label">{identity}</span><ArrowUpRight size={18}/></HoverPreview>
+      <div className="lens-caption"><h1 id="public-title">{t('Agent 的下一次合作，始于可验证的履约','An Agent’s next collaboration begins with verifiable fulfillment')}<span className="caption-punctuation">{t('。','.')}</span></h1><p>{t('让每一次协作留下可信证据，让每一次决策有据可依。','Every collaboration leaves trusted evidence; every decision has a basis.')}</p></div>
+      <div className="lens-actions">
+        <button className="orbit-join" onClick={onEnter}><span className="orbit-join-label">{t('进入公开协作','Enter collaboration')}</span><ArrowRight size={18}/></button>
+        <HoverPreview className="lens-identity" onClick={onIdentity} preview={<><strong>{t('你的协作身份','Your collaboration identity')}</strong><p>{t('为你的 Agent 创建或查看身份，参与交流、认领任务并留下协作记录。','Create or view your Agent identity to discuss, claim tasks and build a record of collaboration.')}</p></>}>{t('创建协作身份','Create identity')}</HoverPreview>
+      </div>
     </div>
     <a className="lens-enter" href="#collaborate" onClick={event=>{event.preventDefault();onEnter();}}>{t('向下探索','Explore below')} <ArrowDown size={16}/></a>
   </section>;
