@@ -2,9 +2,9 @@ name: Trust Core checks
 
 on:
   push:
-    branches: [experiment/verifiable-trust-layer]
+    branches: [experiment/verifiable-trust-layer, feat/trust-native-collaboration]
   pull_request:
-    branches: [experiment/verifiable-trust-layer]
+    branches: [experiment/verifiable-trust-layer, feat/trust-native-collaboration]
   workflow_dispatch:
 
 permissions:

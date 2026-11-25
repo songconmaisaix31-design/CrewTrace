@@ -35,3 +35,17 @@ Concentration is the sum of squared worker assignment shares. The JSON also cont
 cd workers
 node --import tsx src/portfolio-load-benchmark.ts
 ```
+
+## Trust-native scheduling comparison
+
+The V3 trust integration adds a fourth policy to the same 60-task load simulation. `verified-reputation` first filters workers by the CSV defect each mode can actually handle, then ranks them by attested fulfillment evidence whose delivery hash is recalculated by the verifier. Training history is converted and verified before it is written as evidence. The other three policies and all inputs, arrival bursts, outage windows, leases and retry budgets are unchanged.
+
+| Policy | Accepted | First attempt passes | Retried | Timeouts | Mean completion (ticks) | Concentration | Cold-start attempts | Attestations |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Random | 59/60 | 47/60 | 13 | 4 | 13.03 | 0.2504 | 1 | — |
+| Capability | 56/60 | 44/60 | 16 | 4 | 13.63 | 0.2525 | 1 | — |
+| Reputation | 56/60 | 44/60 | 16 | 4 | 13.63 | 0.2525 | 1 | — |
+| Verified reputation | 60/60 | 57/60 | 3 | 3 | 10.50 | 0.2537 | 1 | 98 |
+
+The verified policy performs best on this workload, but it also adds a capability gate that the two existing policies do not apply, so the improvement cannot be attributed to attested reputation alone. Capability and reputation still produce identical decisions. The simulation cannot inject forged or revoked attestations; those cases are covered by the Runtime integration tests. A single seed and synthetic worker profiles give no basis for switching the production default, which remains `reputation`. Details and caveats are in [docs/v3/strategy-comparison.md](docs/v3/strategy-comparison.md); raw data is in [docs/portfolio/benchmark-trust-v1.json](docs/portfolio/benchmark-trust-v1.json).
+

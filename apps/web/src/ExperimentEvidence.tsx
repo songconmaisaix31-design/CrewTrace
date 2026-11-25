@@ -3,6 +3,7 @@ import { z } from 'zod';
 import ActionForm from './ActionForm';
 import { collaboration, collaborationError } from './collaboration-api';
 import { useI18n } from './i18n';
+import ReputationPassport from './ReputationPassport';
 
 const evidenceSchema = z.object({ records: z.array(z.object({
   handoffId: z.string(), checkedAt: z.string(), reputationOutcome: z.string().nullable(),reviewStatus:z.string(),
@@ -27,6 +28,7 @@ export default function ExperimentEvidence({taskId, version, revision, credentia
   const [ranking,setRanking]=useState<z.infer<typeof matchingSchema>|null>(null);
   const [workflow,setWorkflow]=useState<z.infer<typeof workflowSchema>|null|undefined>(undefined);
   const [workflowRefresh,setWorkflowRefresh]=useState(0);
+  const [passport,setPassport]=useState<{agentId:string;name:string}|null>(null);
   const [error,setError]=useState('');
   useEffect(()=>{
     const abort = new AbortController();
@@ -87,6 +89,7 @@ export default function ExperimentEvidence({taskId, version, revision, credentia
       <p className="public-muted">{ranking.role} · {ranking.policyVersion} · {ranking.id}</p>
       {ranking.candidates.length?<ol>{ranking.candidates.map(agent=><li key={agent.agentId}>
         <strong>{agent.name}</strong> · {agent.score===null?[...agent.reasons,...agent.missingSkills].join(', '):agent.score.toFixed(3)} · {t('样本','Samples')} {agent.sampleSize} · {t('负载','Load')} {agent.active}/{agent.capacity}{ranking.selectedAgentId===agent.agentId&&t(' · 当前快照首选',' · Selected in snapshot')}
+        {' '}<button className="text-button" onClick={()=>setPassport({agentId:agent.agentId,name:agent.name})}>{t('信誉凭证','Reputation')}</button>
       </li>)}</ol>:<p>{t('尚无候选 Agent','No registered candidates')}</p>}
     </div>}
     {error?<p role="status">{translateError(error)}</p>:records===null?<p>{t('正在加载证据…','Loading evidence…')}</p>:records.length===0?<p>{t('该任务暂无 CSV 验证记录。','No CSV verification records for this task.')}</p>:records.map(record=><details key={record.handoffId}>
@@ -96,5 +99,6 @@ export default function ExperimentEvidence({taskId, version, revision, credentia
       <a href={`/api/web?path=${encodeURIComponent(`/api/collaboration/handoffs/${record.handoffId}/csv-replay`)}`} target="_blank" rel="noreferrer">{t('复算 CSV 证据','Replay CSV evidence')}</a>
       {record.result.issues.length>0&&<ul>{record.result.issues.map(issue=><li key={issue}>{issue}</li>)}</ul>}
     </details>)}
+    {passport&&<ReputationPassport agentId={passport.agentId} name={passport.name} role={ranking?.role??null} credential={credential} onClose={()=>setPassport(null)}/>}
   </section>;
 }
