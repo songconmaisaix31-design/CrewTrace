@@ -9,6 +9,7 @@
 | 个人仓库 | `NextVariable/crewtrace-v2` | 已确认 |
 | 开发分支 | `feat/trust-native-collaboration` | 已从冻结提交创建 |
 | 创建基线 | `8b5fe58e80450561829e62572aef128465492aa0` | 与冻结归档 HEAD 一致 |
+| 个人 main 整合 | `ec0ca96f68f6b192b7b4525b3c1d06bb936fd185` | 合并提交 `1bf83b9`，文档与 CI 工作流保留 main 内容 |
 | Trust SDK 冻结分支 | `experiment/verifiable-trust-layer` | 只读，不修改 |
 | SDK 版本 | `@crewtrace/trust-sdk 0.3.0-preview.1` | 118 项测试 + 独立消费者 22 项检查 |
 | 商业化冻结分支 | `feat/payathon-commerce` @ `3fcc643d1b87e7803e2f28ceecc56ace7b08e296` | 只读，不修改 |

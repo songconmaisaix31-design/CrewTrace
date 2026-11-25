@@ -86,3 +86,16 @@
 - 写入路径：`.github/workflows/trust-core.yml`、`.github/workflows/portfolio.yml`、`services/runtime/test/trust-browser-host.ts`
 - 动作：增加分支触发、顺序运行的信任测试、Passport 浏览器检查与新基准比对，CI 内生成随机实验密钥。
 - 验证：本地全部测试通过；推送时当前 GitHub 凭据对 `NextVariable/crewtrace-v2` 只有读取权限，返回 403，尚无本次 CI 运行记录。需要仓库写权限后执行 `git push -u portfolio feat/trust-native-collaboration` 并取得 CI 结果。
+
+## T15 最新 main 整合（已完成）
+
+- 写入路径：`.github/workflows/portfolio.yml`、`.github/workflows/trust-core.yml`
+- 动作：以 `ec0ca96` 为 main 合并到开发分支，保留 README、AGENTS、PRD、STATUS、仓库索引与两套 CI 工作流；工作流触发分支合并为两侧并集。
+- 验证：合并提交 `1bf83b9`；`AGENTS.md`、`README.md`、`PRD.md`、`STATUS.md`、`docs/REPOSITORY-INDEX.md` 与 `ec0ca96` 无差异；V3 文件与功能保留。
+
+## T16 最终缺陷核查（已完成）
+
+- 写入路径：`services/runtime/test/trust-lifecycle.test.ts`、`services/runtime/test/trust-support.ts`、`services/runtime/test/trust-browser-host.ts`
+- 动作：检查核验结果与准入决策关联、重复/无效/冲突凭证、长期运行过期与重试幂等；补充生命周期回归测试。
+- 修复：实验测试清空协作表时连带删除 012 迁移写入的订单系统 Agent，导致后续 commerce 测试 500；在清空后恢复该系统 Agent 与凭证。
+- 验证：新增用例通过；常规 65 项、信任 6 项、SDK 122 项、Worker 7 项全部通过；未发现 SDK 关联或幂等缺陷，仅签发 PASS 的限制保持不变。

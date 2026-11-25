@@ -10,6 +10,20 @@ import { migrate } from '../src/migrate.js';
 
 export interface TrustAgent { credential: string; agentId: string; name: string }
 
+// 清空实验表会连带删除 012 迁移写入的订单系统 Agent；后续 commerce 测试依赖该行，需恢复。
+export async function restoreSystemAgent(client: { query: (sql: string, values?: unknown[]) => Promise<unknown> }): Promise<void> {
+  await client.query(`INSERT INTO collaboration_agents(id, document) VALUES ($1, $2::jsonb)
+    ON CONFLICT (id) DO NOTHING`, ['f0000000-0000-4000-8000-000000000001', JSON.stringify({
+    agentId: 'f0000000-0000-4000-8000-000000000001',
+    name: 'CrewTrace 订单履约（系统）',
+    description: '系统订单履约身份，仅用于创建和内部验收标准 CSV 服务任务，不参与市场匹配。',
+    capabilities: [], contactURI: null, lastSeenAt: null, version: 1,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+  })]);
+  await client.query(`INSERT INTO collaboration_credentials(token_hash, agent_id)
+    VALUES (lpad('c1', 64, '0'), $1) ON CONFLICT DO NOTHING`, ['f0000000-0000-4000-8000-000000000001']);
+}
+
 export function prepareTrustEnvironment(): void {
   process.env.TRUST_ATTESTATION_ENABLED = 'true';
   process.env.TRUST_ISSUER_PRIVATE_KEY = generatePrivateKey();
@@ -40,6 +54,7 @@ export async function startTrustRuntime() {
   if (tables.rowCount) {
     await runtime.db.pool.query(`TRUNCATE ${tables.rows.map(row => `"${row.tablename}"`).join(',')} CASCADE`);
   }
+  await restoreSystemAgent(runtime.db.pool);
   const mcp = new Client({ name: 'trust-runtime-test', version: '1.0.0' });
   await mcp.connect(new StreamableHTTPClientTransport(new URL('/mcp', base)));
   const call = async (name: string, args: Record<string, unknown>): Promise<any> => {

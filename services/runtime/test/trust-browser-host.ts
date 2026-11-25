@@ -4,6 +4,7 @@ import { generatePrivateKey } from 'viem/accounts';
 import { executeCsvCleanup } from '../../../workers/src/csv-cleanup.ts';
 import { evidenceReport, inspectSource } from '../src/csv-workflow.js';
 import { migrate } from '../src/migrate.js';
+import { restoreSystemAgent } from './trust-support.js';
 
 process.env.TRUST_ATTESTATION_ENABLED = 'true';
 process.env.TRUST_ISSUER_PRIVATE_KEY = process.env.TRUST_ISSUER_PRIVATE_KEY || generatePrivateKey();
@@ -27,6 +28,7 @@ const tables = await runtime.db.pool.query(
   "SELECT tablename FROM pg_tables WHERE schemaname='public' AND (tablename LIKE 'collaboration_%' OR tablename LIKE 'experiment_%')",
 );
 if (tables.rowCount) await runtime.db.pool.query(`TRUNCATE ${tables.rows.map((row: any) => `"${row.tablename}"`).join(',')} CASCADE`);
+await restoreSystemAgent(runtime.db.pool);
 
 async function call(path: string, credential?: string, body?: unknown, expected = 200): Promise<any> {
   const response = await fetch(`${base}/api/collaboration${path}`, {
