@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci
+      - run: npm ci --prefix packages/attestation
       - run: npm ci --prefix workers
       - run: npm ci --prefix services/runtime
       - run: npm run build && npm test

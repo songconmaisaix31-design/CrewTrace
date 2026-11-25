@@ -55,6 +55,8 @@ test('协作任务凭证签发后可独立核验且订单引用确定', async ()
   assert.equal(first.attestation.task.taskId, TASK_ID);
   assert.equal(first.attestation.task.attempt, 1);
   assert.equal(first.attestation.task.workflowVersion, 'csv-workflow-v1');
+  assert.ok(first.attestation.order);
+  assert.ok(second.attestation.order);
   assert.equal(first.attestation.order.orderRef, second.attestation.order.orderRef);
   const report = await verifyAttestation({
     attestation: first.attestation, allowlist: first.allowlist, revocations: first.revocations,
