@@ -68,6 +68,28 @@ const configSchema = z.object({
   DEMO_CSV_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(5).default(3),
   /** 公开 Demo 的 Worker 租约秒数，超时后允许重新领取。 */
   DEMO_WORKER_LEASE_SECONDS: z.coerce.number().int().min(60).max(600).default(300),
+  /** 是否启用基于协作履约事实的自动凭证签发，只在独立实验环境开启。 */
+  TRUST_ATTESTATION_ENABLED: z.enum(['true','false']).default('false').transform(value => value === 'true'),
+  /** 实验签发主体标识，与团队密钥隔离。 */
+  TRUST_ISSUER_ID: z.string().min(1).max(64).default('ct-local-experiment'),
+  /** 实验签发密钥标识。 */
+  TRUST_KEY_ID: z.string().min(1).max(64).default('local-exp-1'),
+  /** 实验签发私钥，启用签发时必填。 */
+  TRUST_ISSUER_PRIVATE_KEY: z.string().regex(/^0x[0-9a-fA-F]{64}$/).optional(),
+  /** 订单引用盐值，启用签发时必填。 */
+  TRUST_ORDER_SALT: z.string().min(32).optional(),
+  /** 买方引用盐值，启用签发时必填。 */
+  TRUST_BUYER_SALT: z.string().min(32).optional(),
+  /** 凭证绑定的环境，只允许本地实验。 */
+  TRUST_ENVIRONMENT: z.enum(['local']).default('local'),
+  /** 凭证绑定的部署标识。 */
+  TRUST_DEPLOYMENT: z.string().min(1).max(128).default('crewtrace-local-experiment'),
+  /** 单条签发任务允许的最大处理轮数。 */
+  TRUST_ATTESTATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(3),
+  /** 自动调度的显式实验策略，默认保持原 Runtime 信誉策略。 */
+  EXPERIMENT_MATCHING_POLICY: z.enum(['A_RANDOM','B_CAPABILITY','C_RUNTIME_REPUTATION','D_VERIFIED_REPUTATION']).default('C_RUNTIME_REPUTATION'),
+  /** 影子模式只记录新策略结果，不改变实际选择。 */
+  EXPERIMENT_MATCHING_MODE: z.enum(['off','shadow']).default('off'),
   PAYMENT_TTL_SECONDS: z.coerce.number().int().min(60).max(43200).default(900),
   PAYMENT_SIMULATION_SECRET: z.string().min(32).optional(),
   ALIPAY_APP_ID: z.string().min(1).optional(),
@@ -132,6 +154,27 @@ const configSchema = z.object({
     if (value.PUBLIC_RATE_LIMIT_PER_MINUTE === 0 || value.PUBLIC_ORDER_LIMIT_PER_HOUR === 0) {
       context.addIssue({ code: 'custom', path: ['PUBLIC_RATE_LIMIT_PER_MINUTE'], message: '公开部署必须启用请求限额' });
     }
+  }
+  if (value.TRUST_ATTESTATION_ENABLED) {
+    if (!value.TRUST_ISSUER_PRIVATE_KEY) {
+      context.addIssue({ code: 'custom', path: ['TRUST_ISSUER_PRIVATE_KEY'], message: '启用自动签发时必须提供独立实验私钥' });
+    }
+    if (!value.TRUST_ORDER_SALT) {
+      context.addIssue({ code: 'custom', path: ['TRUST_ORDER_SALT'], message: '启用自动签发时必须提供订单引用盐值' });
+    }
+    if (!value.TRUST_BUYER_SALT) {
+      context.addIssue({ code: 'custom', path: ['TRUST_BUYER_SALT'], message: '启用自动签发时必须提供买方引用盐值' });
+    }
+  } else {
+    if (value.EXPERIMENT_MATCHING_POLICY === 'D_VERIFIED_REPUTATION') {
+      context.addIssue({ code: 'custom', path: ['EXPERIMENT_MATCHING_POLICY'], message: '可验证信誉策略需要先启用自动签发' });
+    }
+    if (value.EXPERIMENT_MATCHING_MODE === 'shadow') {
+      context.addIssue({ code: 'custom', path: ['EXPERIMENT_MATCHING_MODE'], message: '影子模式需要先启用自动签发' });
+    }
+  }
+  if (value.PUBLIC_DEPLOYMENT && (value.EXPERIMENT_MATCHING_POLICY !== 'C_RUNTIME_REPUTATION' || value.EXPERIMENT_MATCHING_MODE !== 'off')) {
+    context.addIssue({ code: 'custom', path: ['EXPERIMENT_MATCHING_POLICY'], message: '公开部署禁止启用实验匹配策略与影子模式' });
   }
   if (value.PAYMENT_MODE === 'sandbox' || value.PAYMENT_MODE === 'production') {
     for (const key of ['ALIPAY_APP_ID','ALIPAY_PRIVATE_KEY','ALIPAY_PUBLIC_KEY'] as const) {

@@ -21,6 +21,7 @@ import { CollaborationStore,collaborator,expectedVersion,sameCollaborator } from
 import { CSV_ROLE,replayCsvDelivery,verifyCsvDelivery } from '../../../workers/src/csv-delivery.ts';
 import { acceptedStep, csvWorkflowInput, CSV_STEPS, CSV_WORKFLOW_VERSION, evidenceReport, inspectSource, normalizedDelivery, sameDelivery, workflow } from './csv-workflow.js';
 import { rankAndSave } from './experiment-matching.js';
+import { enqueueCsvAttestation, processAttestationJobs } from './trust/attestation-issuer.js';
 
 
 export class Collaboration {
@@ -210,7 +211,11 @@ export class Collaboration {
         const completed=new Set((await client.query("SELECT scope FROM collaboration_claims WHERE task_id=$1 AND document->>'status'='COMPLETED'",[task.taskId])).rows.map(item=>item.scope));
         const next=CSV_STEPS.find(step=>!completed.has(step.role));
         if(!next)continue;
-        const decision=await rankAndSave(client,task,next.role,workers,false);
+        const decision=await rankAndSave(client,task,next.role,workers,false,{
+          strategy:this.app.config.EXPERIMENT_MATCHING_POLICY,
+          shadow:this.app.config.EXPERIMENT_MATCHING_MODE==='shadow',
+          trustEnvironment:this.app.trustEnvironment,
+        });
         if(!decision.selectedAgentId)continue;
         await this.recordClaim(client,task,decision.selectedAgentId,next.role,null,row.lease_seconds,decision.id);
       }
@@ -481,6 +486,11 @@ export class Collaboration {
           !(await client.query("SELECT 1 FROM collaboration_tasks WHERE parent_task_id=$1 AND document->>'status' IN ('OPEN','IN_PROGRESS')",[task.taskId])).rowCount;
         await this.saveTask(client,{...task,status:final?'COMPLETED':task.status,version:task.version+1,updatedAt:now});
         if(final)await this.store.event(client,'CSV_WORKFLOW_COMPLETED',actor,task.taskId,{handoffId});
+        // CSV 三步全部验收后，以数据验收步骤的完成认领作为凭证主体入队；重复验收不会重复入队。
+        if(claim.scope==='csv-evidence-report') {
+          const reviewed=(await client.query("SELECT id FROM collaboration_claims WHERE task_id=$1 AND scope=$2 AND document->>'status'='COMPLETED'",[task.taskId,CSV_ROLE])).rows[0];
+          if(reviewed)await enqueueCsvAttestation(client,this.app.trustEnvironment,task.taskId,reviewed.id);
+        }
       }
       await this.store.event(client,'HANDOFF_REVIEWED',actor,task.taskId,{handoffId,status:handoff.status,claimId:claim.claimId});return handoff;
     });
@@ -488,6 +498,7 @@ export class Collaboration {
     if (handoff.status==='ACCEPTED') {
       const claim=await this.store.record('collaboration_claims',handoff.claimId,CollaborationClaimSchema);
       await this.anchor('CLAIM',claim.claimId,claim.taskId,claim.version,claim);
+      await processAttestationJobs(this.app);
     }
     return handoff;
   }

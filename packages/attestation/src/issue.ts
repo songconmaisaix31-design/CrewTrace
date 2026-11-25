@@ -13,8 +13,8 @@ import {
 
 export const IssueFactsSchema = z.strictObject({
   source: z.strictObject({
-    kind: z.enum(['crewtrace-local-order', 'synthetic-experiment']),
-    orderId: UuidSchema,
+    kind: z.enum(['crewtrace-local-order', 'synthetic-experiment', 'crewtrace-collaboration-task']),
+    orderId: UuidSchema.nullable(),
     buyerAgentId: UuidSchema.nullable(),
     taskId: UuidSchema,
     attempt: z.number().int().positive(),
@@ -45,6 +45,13 @@ export const IssueFactsSchema = z.strictObject({
   }),
   payment: z.strictObject({ status: z.enum(['NOT_REQUIRED', 'UNPAID', 'VERIFIED']) }),
   rules: z.strictObject({ ruleId: z.string().min(1).max(64), ruleVersion: z.string().min(1).max(64) }),
+}).superRefine((facts, context) => {
+  if (facts.source.kind !== 'crewtrace-collaboration-task' && facts.source.orderId === null) {
+    context.addIssue({ code: 'custom', path: ['source', 'orderId'], message: '订单来源必须提供 orderId' });
+  }
+  if (facts.source.kind === 'crewtrace-collaboration-task' && facts.source.orderId !== null) {
+    context.addIssue({ code: 'custom', path: ['source', 'orderId'], message: '协作任务来源不接受 orderId' });
+  }
 });
 
 export type IssueFacts = z.infer<typeof IssueFactsSchema>;
@@ -115,7 +122,7 @@ export async function issueAttestation(input: IssueInput): Promise<FulfillmentAt
       workflowVersion: facts.source.workflowVersion,
     },
     order: {
-      orderRef: saltedRef(input.salts.order, facts.source.orderId),
+      orderRef: saltedRef(input.salts.order, facts.source.orderId ?? facts.source.taskId),
       buyerRef: facts.source.buyerAgentId ? saltedRef(input.salts.buyer, facts.source.buyerAgentId) : null,
     },
     input: {

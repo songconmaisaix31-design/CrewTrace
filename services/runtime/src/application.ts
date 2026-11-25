@@ -18,6 +18,7 @@ import { AppError, requireValue } from './errors.js';
 import { encodeUtf8 } from './content.js';
 import { RUN_QUERY, RUN_DETAILS_QUERY, parseRunRecord } from './run-read.js';
 import { DemoGuard } from './demo-guard.js';
+import { loadTrustEnvironment, type TrustEnvironment } from './trust/trust-environment.js';
 
 export interface ValidationInput {
   task: Task; artifact: Artifact; content: string; inputContent: string;
@@ -32,8 +33,9 @@ export interface CommerceHooks {
 export class Application {
   readonly store: Store;
   readonly demo: DemoGuard;
+  readonly trustEnvironment: TrustEnvironment;
   commerce: CommerceHooks | null = null;
-  constructor(readonly db: Database, readonly config: Config, readonly chain: ChainPort | null = null, readonly validator: Validator | null = null, readonly collaborationChain: CollaborationChain | null = null) { this.store = new Store(db); this.demo = new DemoGuard(this); }
+  constructor(readonly db: Database, readonly config: Config, readonly chain: ChainPort | null = null, readonly validator: Validator | null = null, readonly collaborationChain: CollaborationChain | null = null) { this.store = new Store(db); this.demo = new DemoGuard(this); this.trustEnvironment = loadTrustEnvironment(config); }
   async health() {
     await this.db.pool.query('SELECT 1');
     const writable = Boolean(this.chain && this.config.CHAIN_COORDINATOR_PRIVATE_KEY && this.config.CHAIN_VALIDATOR_PRIVATE_KEY);
