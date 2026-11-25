@@ -87,6 +87,13 @@
 - 动作：增加分支触发、顺序运行的信任测试、Passport 浏览器检查与新基准比对，CI 内生成随机实验密钥。
 - 验证：推送 `feat/trust-native-collaboration` 后，Trust Core 与 Portfolio 的 push 与 pull_request 运行全部通过。Draft PR 为 https://github.com/NextVariable/crewtrace-v2/pull/1。
 
+## T17 审查缺陷修复（已完成）
+
+- 写入路径：`services/runtime/src/trust/trust-environment.ts`、`services/runtime/src/trust/verified-reputation.ts`、`services/runtime/src/config.ts`、`services/runtime/test/trust-clock.test.ts`、`services/runtime/.env.example`
+- 问题：签发者白名单每次以 `now - 60 秒` 作为密钥 `validFrom`，白名单刷新后向前滑动，导致签发超过一分钟的合法凭证被排除；同时拒绝原因被统一映射为业务失败。
+- 修复：密钥生效时间改为稳定的 `TRUST_ISSUER_VALID_FROM`，白名单 `issuedAt` 使用请求时刻；核验时钟可注入并同时约束策略新鲜度；业务失败只在复算结果为失败时标记，签发者、绑定、规则等拒绝归为策略拒绝；结构损坏的凭证只标记自身，不阻断整个查询。
+- 验证：`trust-clock.test.ts` 覆盖签发后 10 分钟、24 小时、364 天仍准入，366 天过期，撤销拒绝，早于密钥生效时间拒绝，Runtime 重启后仍核验，损坏凭证返回 200 且不增加失败次数。
+
 ## T15 最新 main 整合（已完成）
 
 - 写入路径：`.github/workflows/portfolio.yml`、`.github/workflows/trust-core.yml`

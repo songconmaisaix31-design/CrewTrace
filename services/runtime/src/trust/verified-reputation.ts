@@ -47,6 +47,7 @@ interface EvidenceRow {
   task_id: string;
   agent_id: string;
   role: string;
+  outcome: 'PASS' | 'FAIL';
   issued_at: Date;
   document: FulfillmentAttestation;
   input_csv: string | null;
@@ -57,7 +58,7 @@ interface EvidenceRow {
 
 function evidenceQuery(agentId: string | null, role: string | null): { text: string; values: unknown[] } {
   return {
-    text: `SELECT a.attestation_id, a.task_id, a.agent_id, a.role, a.issued_at, a.document,
+    text: `SELECT a.attestation_id, a.task_id, a.agent_id, a.role, a.outcome, a.issued_at, a.document,
       w.input_csv, h.delivery_content, r.revoked_at, r.reason_code
       FROM experiment_attestations a
       JOIN experiment_csv_workflows w ON w.task_id=a.task_id
@@ -74,6 +75,16 @@ function evidenceQuery(agentId: string | null, role: string | null): { text: str
   };
 }
 
+// 只读取展示所需字段；结构损坏的凭证交由 SDK 判定并在记录层标记，不阻断整个查询。
+function displayableDocument(value: unknown): FulfillmentAttestation | null {
+  if (!value || typeof value !== 'object') return null;
+  const document = value as Partial<FulfillmentAttestation>;
+  if (typeof document.issuedAt !== 'string') return null;
+  if (!document.integrity || typeof document.integrity.digest !== 'string') return null;
+  if (!document.reputation || (document.reputation.outcome !== 'PASS' && document.reputation.outcome !== 'FAIL')) return null;
+  return document as FulfillmentAttestation;
+}
+
 function statusOf(report: VerificationReport | null, decision: AdmissionDecision | null, revoked: boolean, expiresAt: string | null, now: Date): VerificationStatus {
   if (revoked || report?.revocation === 'REVOKED') return 'REVOKED';
   if (decision?.admitted) return 'TRUSTED';
@@ -81,12 +92,13 @@ function statusOf(report: VerificationReport | null, decision: AdmissionDecision
   if (report.keyStatus === 'EXPIRED' || (expiresAt !== null && Date.parse(expiresAt) <= now.getTime())) return 'EXPIRED';
   if (report.schema === 'INVALID' || report.signature !== 'VALID' || report.issuer !== 'KNOWN') return 'TAMPERED';
   if (report.input === 'NOT_PROVIDED' || report.quality === 'NOT_ASSERTED' || report.fulfillment === 'NOT_ASSERTED') return 'INSUFFICIENT_EVIDENCE';
-  if (report.quality === 'RECALCULATED_FAIL' || report.fulfillment === 'RECALCULATED_FAIL' || report.outcome === 'REJECTED') return 'BUSINESS_FAILURE';
-  if (report.reasons.some(reason => reason.startsWith('OUTCOME_') || reason.startsWith('QUALITY_') || reason.startsWith('FULFILLMENT_') || reason.startsWith('RULE_VERSION'))) return 'POLICY_REJECTED';
+  if (report.quality === 'RECALCULATED_FAIL' || report.fulfillment === 'RECALCULATED_FAIL') return 'BUSINESS_FAILURE';
+  const policyReasons = ['OUTCOME_', 'QUALITY_', 'FULFILLMENT_', 'RULE_VERSION', 'ISSUER_', 'ALLOWLIST_', 'BINDING_', 'REVOCATION_', 'KEY_', 'EXPECTED_'];
+  if (report.reasons.some(reason => policyReasons.some(prefix => reason.startsWith(prefix)))) return 'POLICY_REJECTED';
   return 'UNKNOWN';
 }
 
-export async function loadVerifiedReputation(client: Pick<PoolClient, 'query'>, env: TrustEnvironment, options: { agentId?: string | null; role?: string | null } = {}): Promise<VerifiedReputation> {
+export async function loadVerifiedReputation(client: Pick<PoolClient, 'query'>, env: TrustEnvironment, options: { agentId?: string | null; role?: string | null; now?: Date } = {}): Promise<VerifiedReputation> {
   const empty: VerifiedReputation = {
     source: 'VERIFIED_ATTESTATION', trustEnabled: env.enabled,
     issuer: env.enabled ? { issuerId: env.issuerId, keyId: env.keyId, address: env.address, environment: env.environment, deployment: env.deployment } : null,
@@ -96,32 +108,39 @@ export async function loadVerifiedReputation(client: Pick<PoolClient, 'query'>, 
   const query = evidenceQuery(options.agentId ?? null, options.role ?? null);
   const rows = (await client.query(query.text, query.values)).rows as EvidenceRow[];
   if (rows.length === 0) return empty;
-  const now = new Date();
+  const now = options.now ?? new Date();
   const revocations = attestationRevocations(rows.filter(row => row.revoked_at !== null).map(row => ({
     attestationId: row.attestation_id, revokedAt: row.revoked_at as Date, reasonCode: row.reason_code ?? 'REVOKED',
   })), now);
-  const policy = loadTrustPolicy(attestationTrustPolicy(env, revocations, now));
+  // 显式时钟同时约束策略新鲜度与实际核验时间，测试无需等待真实时间流逝。
+  const policy = loadTrustPolicy({
+    ...attestationTrustPolicy(env, revocations, now),
+    freshness: { maxAllowlistAgeSeconds: 86_400, maxRevocationAgeSeconds: 3_600, now: now.toISOString() },
+  });
   const evaluation = await verifyAndAggregateReputation({
     policy,
     candidates: rows.map(row => ({ attestation: row.document, inputContent: row.input_csv, deliveryContent: row.delivery_content })),
     now,
   });
   const decisions = new Map(evaluation.decisions.map(decision => [`${decision.attestationId}`, decision]));
+  const documents = rows.map(row => displayableDocument(row.document));
   const verifications = rows.map((row, index) => {
     const decision = decisions.get(row.attestation_id) ?? null;
     const report = evaluation.evaluations[index]?.report ?? null;
+    const document = documents[index];
     return {
       attestationId: row.attestation_id,
       taskId: row.task_id,
       agentId: row.agent_id,
       role: row.role,
-      outcome: row.document.reputation.outcome,
-      issuedAt: row.document.issuedAt,
-      expiresAt: row.document.expiresAt,
-      status: statusOf(report, decision, row.revoked_at !== null, row.document.expiresAt, now),
-      evidenceLevel: decision?.evidenceLevel ?? 'UNVERIFIED',
-      reasons: report?.reasons ?? [],
-      digest: row.document.integrity.digest,
+      outcome: document?.reputation.outcome ?? row.outcome,
+      issuedAt: document?.issuedAt ?? row.issued_at.toISOString(),
+      expiresAt: document?.expiresAt ?? null,
+      // 结构损坏的凭证只标记自身，不参与聚合，也不能让整个查询失败。
+      status: document ? statusOf(report, decision, row.revoked_at !== null, document.expiresAt, now) : 'TAMPERED',
+      evidenceLevel: document ? decision?.evidenceLevel ?? 'UNVERIFIED' : 'UNVERIFIED',
+      reasons: document ? report?.reasons ?? [] : ['SCHEMA_INVALID'],
+      digest: document?.integrity.digest ?? '',
     } satisfies AttestationEvidence;
   });
   const byAgent: Record<string, AgentVerifiedSummary> = {};

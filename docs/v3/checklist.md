@@ -22,5 +22,8 @@
 - [x] 重试与重复处理保持幂等：同一认领只有一张凭证与一条信誉事件，重复处理不再签发。
 - [x] 信任配置按请求重建：撤销后策略摘要变化，旧凭证立即退出可信样本。
 - [x] 实验测试清空协作表后恢复订单系统 Agent，后续 commerce 测试不再因缺失系统身份失败。
+- [x] 签发密钥使用稳定的历史生效时间，白名单刷新时间与密钥有效期分开；签发后 10 分钟、24 小时与有效期内均正常准入。
+- [x] 过期、撤销与早于密钥生效时间的凭证继续被拒绝；Runtime 重启后合法历史凭证仍可核验。
+- [x] 损坏或缺失内部字段的凭证只标记自身，不阻断整个 Agent 信誉查询，也不增加业务失败次数。
 - [x] 未恢复支付宝开发、未新增合约或验证器、未部署测试网、未发布 npm、未更新 Cloudflare、未产生支出。
 - [x] GitHub 分支推送与 CI 运行：分支已推送到 `NextVariable/crewtrace-v2`，Draft PR https://github.com/NextVariable/crewtrace-v2/pull/1 ，Trust Core 与 Portfolio 的 push 与 pull_request 运行全部通过。

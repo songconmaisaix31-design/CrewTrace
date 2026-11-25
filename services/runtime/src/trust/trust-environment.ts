@@ -9,6 +9,7 @@ export interface TrustEnvironment {
   enabled: boolean;
   issuerId: string;
   keyId: string;
+  issuerValidFrom: string;
   address: `0x${string}` | null;
   privateKey: Hex | null;
   environment: 'local';
@@ -18,16 +19,21 @@ export interface TrustEnvironment {
   maxAttempts: number;
 }
 
+export const DEFAULT_ISSUER_VALID_FROM = '2026-01-01T00:00:00.000Z';
+
 export function loadTrustEnvironment(config: Config): TrustEnvironment {
+  const issuerValidFrom = config.TRUST_ISSUER_VALID_FROM ?? DEFAULT_ISSUER_VALID_FROM;
   if (!config.TRUST_ATTESTATION_ENABLED) return {
-    enabled: false, issuerId: config.TRUST_ISSUER_ID, keyId: config.TRUST_KEY_ID, address: null, privateKey: null,
+    enabled: false, issuerId: config.TRUST_ISSUER_ID, keyId: config.TRUST_KEY_ID, issuerValidFrom,
+    address: null, privateKey: null,
     environment: config.TRUST_ENVIRONMENT, deployment: config.TRUST_DEPLOYMENT,
     orderSalt: '', buyerSalt: '', maxAttempts: config.TRUST_ATTESTATION_MAX_ATTEMPTS,
   };
   const privateKey = config.TRUST_ISSUER_PRIVATE_KEY as Hex;
   const account = privateKeyToAccount(privateKey);
   return {
-    enabled: true, issuerId: config.TRUST_ISSUER_ID, keyId: config.TRUST_KEY_ID, address: account.address, privateKey,
+    enabled: true, issuerId: config.TRUST_ISSUER_ID, keyId: config.TRUST_KEY_ID, issuerValidFrom,
+    address: account.address, privateKey,
     environment: config.TRUST_ENVIRONMENT, deployment: config.TRUST_DEPLOYMENT,
     orderSalt: config.TRUST_ORDER_SALT as string, buyerSalt: config.TRUST_BUYER_SALT as string,
     maxAttempts: config.TRUST_ATTESTATION_MAX_ATTEMPTS,
@@ -36,10 +42,12 @@ export function loadTrustEnvironment(config: Config): TrustEnvironment {
 
 export function attestationAllowlist(env: TrustEnvironment, now: Date): IssuerAllowlist {
   if (!env.enabled || !env.address) throw new Error('信任环境未启用，不能构造签发者白名单');
-  const validFrom = new Date(now.getTime() - 60_000).toISOString();
+  // 签发密钥使用稳定的历史生效时间；白名单自身的刷新时间与密钥有效期分开处理，
+  // 避免白名单每次重建时把 validFrom 向前滑动而排除一分钟前签发的合法凭证。
+  const validFrom = env.issuerValidFrom;
   return {
     version: 'ct-issuer-allowlist-v1',
-    issuedAt: validFrom,
+    issuedAt: now.toISOString(),
     expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
     issuers: [{
       issuerId: env.issuerId, keyId: env.keyId, address: env.address,

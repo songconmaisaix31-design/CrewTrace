@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-25T13:18:25.546Z",
+  "generatedAt": "2026-11-25T14:06:56.076Z",
   "round1": {
-    "taskId": "11fc72c1-0064-4780-819b-25a7ea8fba15",
-    "attestationId": "e8b3b70d-1bb4-41a5-816a-ce088cb71f82",
-    "digest": "0xd1d54fd2e995c90f11dfca3b86a73cabea6b1878d8c1555180fabbdffe83926e",
+    "taskId": "ed8195a8-13eb-47ca-8876-dabb7a56463c",
+    "attestationId": "119f1d73-f7de-459e-b78f-c33d8cefc0b7",
+    "digest": "0xb8f0411f92cd945fa7c6c08d0805bebd2f81b3ed15a0b5de72aea23cb3852c19",
     "verification": {
       "outcome": "VERIFIED_OFFLINE",
       "fulfillment": "RECALCULATED_PASS",
@@ -11,20 +11,20 @@
     }
   },
   "round2": {
-    "taskId": "040c1245-5b6e-49a7-9f13-fb5d45c98941",
-    "attestationId": "e65a3263-dd35-42dc-93de-99c5d5c95658",
+    "taskId": "c3a6e11c-27e4-4242-bef9-0b02683df9bb",
+    "attestationId": "8bb9540f-f542-47c6-905a-865ac2749435",
     "decision": {
       "strategy": "D_VERIFIED_REPUTATION",
       "policyVersion": "csv-verified-reputation-v1",
-      "selectedAgentId": "58963d07-8fdf-4d9d-b9ac-860c570ad823",
+      "selectedAgentId": "f18a01d1-ea37-47b4-92ea-d247e3a06cc6",
       "evidence": {
         "attestationIds": [
-          "e8b3b70d-1bb4-41a5-816a-ce088cb71f82"
+          "119f1d73-f7de-459e-b78f-c33d8cefc0b7"
         ],
         "sampleSize": 1
       },
       "coldStartCandidate": {
-        "agentId": "53dde82e-3590-4709-9790-6c52d11340aa",
+        "agentId": "c9d84605-6eb5-4121-8cac-45f09d399381",
         "coldStart": true
       }
     }
@@ -36,11 +36,11 @@
   "negatives": {
     "forged": {
       "sampleSize": 0,
-      "selectedAgentId": "58963d07-8fdf-4d9d-b9ac-860c570ad823"
+      "selectedAgentId": "f18a01d1-ea37-47b4-92ea-d247e3a06cc6"
     },
     "revoked": {
       "attestationIds": [
-        "e65a3263-dd35-42dc-93de-99c5d5c95658"
+        "8bb9540f-f542-47c6-905a-865ac2749435"
       ]
     },
     "duplicateAcceptance": {
@@ -55,7 +55,7 @@
       ]
     },
     "capabilityGate": {
-      "selectedAgentId": "53dde82e-3590-4709-9790-6c52d11340aa",
+      "selectedAgentId": "c9d84605-6eb5-4121-8cac-45f09d399381",
       "excluded": [
         "MISSING_SKILLS"
       ]

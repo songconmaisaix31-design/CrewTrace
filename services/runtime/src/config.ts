@@ -84,6 +84,8 @@ const configSchema = z.object({
   TRUST_ENVIRONMENT: z.enum(['local']).default('local'),
   /** 凭证绑定的部署标识。 */
   TRUST_DEPLOYMENT: z.string().min(1).max(128).default('crewtrace-local-experiment'),
+  /** 实验签发密钥的稳定生效时间，早于该时间签发的凭证被拒绝。 */
+  TRUST_ISSUER_VALID_FROM: z.string().optional(),
   /** 单条签发任务允许的最大处理轮数。 */
   TRUST_ATTESTATION_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(10).default(3),
   /** 自动调度的显式实验策略，默认保持原 Runtime 信誉策略。 */
