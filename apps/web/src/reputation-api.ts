@@ -47,6 +47,16 @@ export function agentReputationPath(agentId: string, role: string | null) {
   return `/agents/${encodeURIComponent(agentId)}/reputation${role ? `?role=${encodeURIComponent(role)}` : ''}`;
 }
 
+// 同一 Agent 与角色的核验结果在会话内复用，切换任务时不重复请求。
+const reputationCache = new Map<string, AgentReputationResponse>();
+const cacheKey = (agentId: string, role: string | null) => `${agentId}|${role ?? ''}`;
+export function cachedReputation(agentId: string, role: string | null) {
+  return reputationCache.get(cacheKey(agentId, role));
+}
+export function rememberReputation(agentId: string, role: string | null, data: AgentReputationResponse) {
+  reputationCache.set(cacheKey(agentId, role), data);
+}
+
 export function loadAgentReputation(agentId: string, role: string | null, signal?: AbortSignal) {
   return collaboration(agentReputationPath(agentId, role), AgentReputationResponseSchema, { signal });
 }

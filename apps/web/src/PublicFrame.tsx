@@ -25,7 +25,7 @@ export default function PublicFrame({children,identity,onIdentity,onMcp,mcpURL}:
     <main className="landing public-workspace" id="main">
       <div className="ambient-bridge" aria-hidden="true"/>
       <JourneyTrace/>
-      <div className="experience-home" aria-hidden={screen!==0} inert={screen!==0}><LensHero identity={identity} onIdentity={onIdentity} onEnter={enter}/></div>
+      <div className="experience-home" aria-hidden={screen!==0} inert={screen!==0}><LensHero onIdentity={onIdentity} onEnter={enter}/></div>
       <section className="public-content" id="collaborate" tabIndex={-1} aria-label={t('公开协作工作台','Public collaboration workspace')} data-active={screen===1} aria-hidden={screen!==1} inert={screen!==1}><div className="collaboration-sticky">{content}</div></section>
     </main>
     {overlays}

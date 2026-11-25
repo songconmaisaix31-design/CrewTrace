@@ -28,6 +28,7 @@ export default function SignalScene({paused:controlledPaused,scale=1,haloScale=1
     });
     const draw = (now:number) => {
       frame=0;
+      if(!(width>0&&height>0))return;
       const delta=Math.min((now-last)/1000,.05);last=now;
       const moving=!pauseRef.current && !reduced.matches && visible && !document.hidden;
       const follow=1-Math.exp(-delta*7);

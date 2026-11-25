@@ -17,6 +17,10 @@
 .lens-caption h1 span{color:#c9b9df}
 .lens-caption .caption-punctuation{position:absolute}
 .lens-caption>p:last-child{font-size:12px;line-height:1.9;letter-spacing:.04em;color:#9893a3;margin:0;text-wrap:balance}
+.lens-actions{display:flex;align-items:center;gap:22px;flex-wrap:wrap;justify-content:center}
+.lens-identity{font:inherit;font-size:12px;letter-spacing:.12em;color:#b7afc3;padding:10px 2px;border-bottom:1px solid #ffffff1a;transition:color .2s,border-color .2s}
+.lens-identity:hover{color:#eee6ff;border-color:#c4a5ff77}
+.orbit-join{font:inherit;color:inherit;cursor:pointer}
 .lens-enter{position:absolute;bottom:13px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;color:#b7afc3;font-size:11px;text-decoration:none;padding:10px;z-index:2}
 .lens-enter svg{transition:transform .25s}.lens-enter:hover svg{transform:translateY(4px)}
 .lens-pause{position:absolute;bottom:17px;right:28px;display:flex;gap:8px;align-items:center;font-size:11px;color:#a6a4b3;padding:10px;z-index:2}
@@ -36,3 +40,4 @@ html[lang=en] .lens-caption h1{letter-spacing:.01em;font-size:clamp(20px,2vw,25p
 .lens-intro p:last-child{font-size:12px;line-height:1.9;color:#8c8599;margin:0;text-wrap:balance}
 .orbit-join-label{font-size:19px}
 @media(max-width:760px){.lens-intro{left:24px;top:20px;max-width:240px}.lens-intro p:first-child{font-size:11px;margin-bottom:8px}.lens-intro p:last-child{font-size:10px}.orbit-join{min-width:220px;padding:19px 32px}.orbit-join-label{font-size:18px}.crewtrace-mark{width:50px;height:50px}}
+@media(max-width:760px){.lens-actions{flex-direction:column;gap:10px}.lens-identity{font-size:11px;padding:6px 2px}.orbit-join-label{font-size:16px}}
