@@ -7,11 +7,11 @@
 | [Obsidian 产品需求 V1.1 团队评审版](obsidian://open?vault=Obsidian%20Vault&file=%E9%A1%B9%E7%9B%AE%2FCrewTrace%2FCrewTrace_PRD_V1.1_%E5%9B%A2%E9%98%9F%E8%AF%84%E5%AE%A1%E7%89%88_2026-11-24) | 2026-11-24 团队评审材料，适用于原产品兼容与分阶段 Commerce 要求。链接需要本地 Obsidian Vault 访问权限 |
 | [Reputation V2 个人实验范围](#reputation-v2-个人实验范围历史) | 个人固定 CSV 工作流阶段的原始需求 |
 | [原团队 Monad PRD](#agent-协作网络-prd) | 2026-10-17 黑客松 v1.0 历史交付约定 |
-| [Runtime × Trust SDK 集成规格](#后续集成规格) | 后续阶段，规格及验收待产品负责人批准 |
+| [V3 集成规格](docs/v3/spec.md) | 已验收并冻结，Pre-release `v3.0.0-mvp.1` |
 
 ## 后续集成规格
 
-当前入口为 [产品战略的后续路线](docs/PRODUCT-STRATEGY.md#后续路线)。正式集成规格待批准后从此处链接。规格应明确 Runtime 的交付与凭证映射、SDK 及规则版本、权限、失败边界、回放和回滚路径，并锁定真实验收用例。下方历史需求各自保留其阶段适用性。
+集成规格见 [docs/v3/spec.md](docs/v3/spec.md)，2026-11-25 验收并冻结。规格明确 Runtime 的交付与凭证映射、SDK 及规则版本、权限、失败边界与真实验收用例。下方历史需求各自保留其阶段适用性。
 
 ## Reputation V2 个人实验范围（历史）
 

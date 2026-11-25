@@ -1,8 +1,23 @@
 # CrewTrace 仓库与产品状态
 
-截至 2026-11-25，Reputation V2 有本地闭环和同提交 CI，PAYATHON Commerce Beta 有免费订单验收证据且支付保持关闭，Trust SDK V0.3 已完成包与本地 Hardhat 实验归档。Trust SDK 与原 Runtime 尚未完成正式业务集成。SDK 公共链部署、真实外部开发者采用与生产级可用性尚待验证。
+截至 2026-11-25，V3「Trust-Native Agent Collaboration」MVP 已通过最终审查并冻结，个人 `main` 合并提交 `8dd8134`，Pre-release 为 `v3.0.0-mvp.1`。Runtime 在 CSV 三步验收后自动签发 `ct-attestation-v1`，凭证绑定任务、尝试、交付摘要、验证规则、审核记录与信誉事件；信誉查询逐张凭证实时核验，策略 D 在能力过滤后按可验证信誉排序。Reputation Passport 复用原证据弹窗展示身份、样本、核验等级与凭证状态。
 
-个人仓库默认分支为 `main`，定位为 **Experimental Development Baseline**，由审阅提交 `e08175c` 建立。Reputation V2 历史分支、Commerce 与 Trust SDK V0.3 冻结分支和文档审阅分支继续保留。Runtime × Trust SDK 集成待批准。[仓库索引](docs/REPOSITORY-INDEX.md) · [个人主线 CI](https://github.com/NextVariable/crewtrace-v2/actions?query=branch%3Amain) · [产品战略](docs/PRODUCT-STRATEGY.md)
+Trust SDK 与 Runtime 已完成最小业务集成，SDK 保持 `0.3.0-preview.1`，未新增验证器。集成验证使用本地 Runtime、真实 PostgreSQL 与受控 CSV 数据；链上部分只在本地 Hardhat 完成，Monad Testnet 未部署；支付宝与真实支付保持关闭；外部开发者采用与真实市场采用未验证。四策略对照使用单一随机种子与人工构造的 60 任务负载，只说明该负载下的表现。
+
+个人仓库默认分支为 `main`，V3 起承载 Runtime × Trust SDK 的最小集成。Reputation V2、Commerce 与 Trust SDK V0.3 冻结分支、文档审阅分支及八个历史 Tag 继续保留。V4 未启动。
+
+## V3 MVP 交付
+
+| 范围 | 状态与证据 |
+| --- | --- |
+| 自动履约凭证 | 验收事务写 outbox，提交后签发；`claim_id` 与事件键唯一约束保证重复验收不重复签发。[签发样例](docs/v3/evidence/attestation-sample.json) |
+| 可验证信誉 | 逐张凭证核验，未验证、撤销、过期、篡改与策略不符不计正面样本；历史事件单列来源。[集成规格](docs/v3/spec.md) |
+| 调度策略 D | `D_VERIFIED_REPUTATION` 先过滤能力、权限与可用性，再按凭证排序；默认策略保持 `C_RUNTIME_REPUTATION`。[四策略对照](docs/v3/strategy-comparison.md) |
+| Reputation Passport | 复用原证据弹窗展示身份、角色、样本量、核验等级、最近记录与凭证状态。[浏览器截图](docs/v3/evidence/passport.png) |
+| 两轮真实闭环 | 第二轮匹配快照实际引用第一轮凭证；伪造、撤销、重复验收、核验失败、能力不足与回归六类反例均有断言。[实验记录](docs/v3/evidence/e2e-collaboration.json) |
+| CI | 合并提交 `8dd8134` 的 Trust Core 与 Portfolio push 运行均通过。 |
+
+已知限制：签发只在 `TRUST_ATTESTATION_ENABLED` 显式开启时生效，实验策略与影子模式禁止用于 `PUBLIC_DEPLOYMENT`；链上核验为本地 Hardhat；真实市场采用、外部开发者使用与生产可用性未验证。
 
 原团队 MCP 共有 53 个工具。个人 V2 的 Commerce 冻结基线有 62 个完整工具，历史公网受限端点实测返回 42 个。本轮按源码和既有验收记录复核，未重跑公网验收。[工具口径](docs/REPOSITORY-INDEX.md#mcp-工具口径)
 

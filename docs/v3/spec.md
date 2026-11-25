@@ -1,6 +1,6 @@
 # V3 技术规格：Trust-Native Agent Collaboration
 
-状态：`PENDING_APPROVAL`
+状态：`ACCEPTED / FROZEN`（2026-11-25，Pre-release `v3.0.0-mvp.1`）
 
 适用分支：`feat/trust-native-collaboration`，基线 `8b5fe58e80450561829e62572aef128465492aa0`。
 
