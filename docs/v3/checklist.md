@@ -23,4 +23,4 @@
 - [x] 信任配置按请求重建：撤销后策略摘要变化，旧凭证立即退出可信样本。
 - [x] 实验测试清空协作表后恢复订单系统 Agent，后续 commerce 测试不再因缺失系统身份失败。
 - [x] 未恢复支付宝开发、未新增合约或验证器、未部署测试网、未发布 npm、未更新 Cloudflare、未产生支出。
-- [ ] GitHub 分支推送与 CI 运行：`NextVariable` 的 `GH_TOKEN` 无仓库写权限，keyring 账号无该仓库访问，推送返回 403；等待仓库授权或重新认证。
+- [x] GitHub 分支推送与 CI 运行：分支已推送到 `NextVariable/crewtrace-v2`，Draft PR https://github.com/NextVariable/crewtrace-v2/pull/1 ，Trust Core 与 Portfolio 的 push 与 pull_request 运行全部通过。

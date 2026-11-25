@@ -81,11 +81,11 @@
 - 动作：两轮真实协作与六类反例，保存凭证样例与结果 JSON。
 - 验证：测试通过；独立 SDK 核验通过；第二轮快照含第一轮凭证。
 
-## T14 CI 与交付（代码完成，推送受阻）
+## T14 CI 与交付（已完成）
 
 - 写入路径：`.github/workflows/trust-core.yml`、`.github/workflows/portfolio.yml`、`services/runtime/test/trust-browser-host.ts`
 - 动作：增加分支触发、顺序运行的信任测试、Passport 浏览器检查与新基准比对，CI 内生成随机实验密钥。
-- 验证：本地全部测试通过；两次推送尝试均被拒绝。`gh auth status` 显示 `NextVariable` 使用无写权限的 `GH_TOKEN`，keyring 中的 `yunheliu68-ux` 有 `repo` 与 `workflow` 范围但对该仓库返回 404。需要仓库写权限或重新授权后执行 `git push -u portfolio feat/trust-native-collaboration` 并取得 CI 结果。
+- 验证：推送 `feat/trust-native-collaboration` 后，Trust Core 与 Portfolio 的 push 与 pull_request 运行全部通过。Draft PR 为 https://github.com/NextVariable/crewtrace-v2/pull/1。
 
 ## T15 最新 main 整合（已完成）
 

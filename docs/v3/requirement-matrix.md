@@ -89,4 +89,4 @@
 | 四策略对照 | `docs/portfolio/benchmark-trust-v1.json` 与 `docs/v3/strategy-comparison.md` |
 | Passport 界面 | `docs/v3/evidence/passport.png`（实际浏览器截图）与数据来源说明 |
 | 原产品兼容性 | `npm run build && npm test`、`npm run test:showcase`、Playwright 浏览器回归 |
-| 真实 CI | 新分支 GitHub Actions 运行记录（分支已提交，推送等待仓库写权限） |
+| 真实 CI | `NextVariable/crewtrace-v2` 的 Trust Core 与 Portfolio 工作流，push 与 pull_request 运行均通过，对应 Draft PR #1 |
