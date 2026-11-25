@@ -1,12 +1,11 @@
 import type { Hex } from 'viem';
-import { canonicalJson } from './canonical-json.js';
-import { attestationDigest, contentDigest } from './canonical.js';
-import { evaluateCsv } from './csv.js';
+import { attestationDigest } from './canonical.js';
 import { findIssuer } from './allowlist.js';
 import { recoverDigestSigner } from './sign.js';
-import { compareCsvTransformation } from './transform.js';
 import { verifyChainEvidence, type ChainReader, type ChainVerificationPolicy } from './chain-verify.js';
 import { registerVerification } from './verified-registry.js';
+import { resolveVerifier } from './verifier.js';
+import type { CodeVerificationEvidence } from './code-task.js';
 import {
   FulfillmentAttestationSchema,
   type FulfillmentAttestation,
@@ -22,6 +21,7 @@ export interface VerifyInput {
   revocations: RevocationList | null;
   inputContent?: string | null;
   deliveryContent?: string | null;
+  codeEvidence?: CodeVerificationEvidence | null;
   chain?: ChainReader | null;
   chainPolicy?: ChainVerificationPolicy;
   now?: Date;
@@ -39,6 +39,10 @@ export interface VerificationReport {
   revocation: 'NOT_CHECKED' | 'CLEAR' | 'REVOKED' | 'STALE';
   revocationFreshness: 'FRESH' | 'STALE' | 'UNVERIFIED' | 'NOT_PROVIDED';
   ruleVersion: 'RECOGNIZED' | 'UNKNOWN';
+  taskType: string | null;
+  verifierId: string | null;
+  verifierStatus: 'REGISTERED' | 'UNKNOWN';
+  evidenceDigest: string | null;
   chainCommitment: 'NOT_BOUND' | 'PRESENT_MATCH' | 'PRESENT_MISMATCH' | 'ABSENT' | 'UNAVAILABLE';
   input: 'NOT_PROVIDED' | 'MATCH' | 'MISMATCH';
   content: 'NOT_PROVIDED' | 'MATCH' | 'MISMATCH';
@@ -56,7 +60,8 @@ function baseReport(): VerificationReport {
   return {
     schema: 'INVALID', signature: 'INVALID', digest: null, issuer: 'UNKNOWN', keyStatus: 'UNKNOWN',
     allowlist: 'NOT_PROVIDED', revocation: 'NOT_CHECKED', revocationFreshness: 'NOT_PROVIDED',
-    ruleVersion: 'UNKNOWN', chainCommitment: 'NOT_BOUND',
+    ruleVersion: 'UNKNOWN', taskType: null, verifierId: null, verifierStatus: 'UNKNOWN',
+    evidenceDigest: null, chainCommitment: 'NOT_BOUND',
     input: 'NOT_PROVIDED', content: 'NOT_PROVIDED', transformation: 'NOT_ASSERTED',
     quality: 'NOT_ASSERTED', fulfillment: 'NOT_ASSERTED', outcome: 'REJECTED', reasons: [],
   };
@@ -169,59 +174,31 @@ async function runVerification(input: VerifyInput): Promise<VerificationReport> 
   report.ruleVersion = recognized.includes(attestation.validation.ruleVersion) ? 'RECOGNIZED' : 'UNKNOWN';
   if (report.ruleVersion === 'UNKNOWN') report.reasons.push('RULE_VERSION_UNKNOWN');
 
-  if (input.inputContent != null) {
-    const inputHash = contentDigest(input.inputContent);
-    if (inputHash !== attestation.input.contentHash) {
-      report.input = 'MISMATCH';
-      report.reasons.push('INPUT_HASH_MISMATCH');
-    } else {
-      report.input = 'MATCH';
-      const evaluatedInput = evaluateCsv(input.inputContent);
-      if (evaluatedInput.rowCount !== attestation.input.rowCount) {
-        report.reasons.push('INPUT_ROW_COUNT_MISMATCH');
-      }
-    }
-  }
-
-  if (input.deliveryContent != null) {
-    const contentHash = contentDigest(input.deliveryContent);
-    if (contentHash !== attestation.delivery.contentHash) {
-      report.content = 'MISMATCH';
-      report.reasons.push('DELIVERY_HASH_MISMATCH');
-    } else {
-      report.content = 'MATCH';
-      if (attestation.validation.ruleId === 'csv-ledger') {
-        const evaluated = evaluateCsv(input.deliveryContent);
-        const same = evaluated.ruleVersion === attestation.validation.ruleVersion
-          && evaluated.result === attestation.validation.result
-          && evaluated.checksDigest === attestation.validation.checksDigest
-          && canonicalJson(evaluated.checkCodes) === canonicalJson(attestation.validation.checkCodes)
-          && evaluated.rowCount === attestation.delivery.rowCount;
-        report.quality = same
-          ? (evaluated.result === 'PASS' ? 'RECALCULATED_PASS' : 'RECALCULATED_FAIL')
-          : 'RECALCULATED_FAIL';
-        if (!same) report.reasons.push('QUALITY_MISMATCH');
-      } else {
-        report.reasons.push('RULE_NOT_IMPLEMENTED');
-      }
-    }
-  }
-
-  if (input.inputContent != null && input.deliveryContent != null && report.input === 'MATCH' && report.content === 'MATCH') {
-    if (attestation.validation.ruleVersion === 'csv-ledger-v1') {
-      const comparison = compareCsvTransformation(input.inputContent, input.deliveryContent);
-      report.transformation = comparison.status;
-      if (comparison.status === 'MISMATCH') report.reasons.push('TRANSFORM_MISMATCH', ...comparison.reasons);
-      if (comparison.status === 'NOT_ASSERTED') report.reasons.push(...comparison.reasons);
-      if (comparison.status === 'MATCH' && report.quality === 'RECALCULATED_PASS'
-        && attestation.validation.result === 'PASS') {
-        report.fulfillment = 'RECALCULATED_PASS';
-      } else {
-        report.fulfillment = 'RECALCULATED_FAIL';
-      }
-    } else {
-      report.reasons.push('TRANSFORM_RULE_NOT_IMPLEMENTED');
-    }
+  // 验证器只从编译期内置列表按（标识，规则版本）精确解析。未知标识或未知版本
+  // 不会回退到任何默认规则，也不会根据凭证内容动态加载执行代码。
+  const verifierId = attestation.validation.verifierId ?? attestation.validation.ruleId;
+  report.verifierId = verifierId;
+  const verifier = resolveVerifier(verifierId, attestation.validation.ruleVersion);
+  if (!verifier) {
+    report.verifierStatus = 'UNKNOWN';
+    report.reasons.push('VERIFIER_UNKNOWN');
+  } else {
+    report.verifierStatus = 'REGISTERED';
+    report.taskType = verifier.taskType;
+    const evaluation = verifier.evaluate({
+      attestation,
+      inputContent: input.inputContent ?? null,
+      deliveryContent: input.deliveryContent ?? null,
+      codeEvidence: input.codeEvidence ?? null,
+      now,
+    });
+    report.input = evaluation.input;
+    report.content = evaluation.content;
+    report.transformation = evaluation.transformation;
+    report.quality = evaluation.outputFormat;
+    report.fulfillment = evaluation.fulfillment;
+    report.evidenceDigest = evaluation.evidenceDigest;
+    report.reasons.push(...evaluation.reasons);
   }
 
   if (attestation.review.reviewerId === attestation.subject.agentId) {
@@ -294,6 +271,14 @@ async function runVerification(input: VerifyInput): Promise<VerificationReport> 
     'CHAIN_RECORDER_POLICY_MISSING', 'CHAIN_RECEIPT_MISSING', 'CHAIN_RECEIPT_MISMATCH',
     'CHAIN_RECEIPT_SIGNER_MISMATCH', 'CHAIN_TX_FAILED', 'CHAIN_BLOCK_MISMATCH',
     'CHAIN_NOT_FINAL', 'CHAIN_EVENT_MISSING', 'CHAIN_EVENT_MISMATCH', 'CHAIN_RECORD_NOT_FOUND',
+    'EVIDENCE_KIND_MISMATCH', 'CODE_EVIDENCE_MISSING', 'VERIFIER_TASK_MISMATCH',
+    'TASK_SPEC_DIGEST_MISMATCH', 'TASK_SPEC_SCHEMA_MISMATCH',
+    'TEST_SUITE_DIGEST_MISMATCH', 'TEST_SUITE_INVALID', 'RULE_VERSION_BINDING_MISMATCH',
+    'TEST_SUITE_COUNT_MISMATCH', 'ENTRYPOINT_MISMATCH', 'ENTRYPOINT_MISSING',
+    'ARTIFACT_HASH_MISMATCH', 'ARTIFACT_FILE_MISSING', 'ARTIFACT_FILE_UNEXPECTED',
+    'ARTIFACT_FILE_DIGEST_MISMATCH', 'TEST_REPORT_INVALID', 'TEST_REPORT_DIGEST_MISMATCH',
+    'TEST_REPORT_EVIDENCE_MISMATCH', 'TESTS_NOT_FULLY_EXECUTED', 'TEST_RESULT_MISMATCH',
+    'TESTS_FAILED', 'TEST_RUN_FAILED', 'TEST_RUN_TIMEOUT', 'HARNESS_OUTPUT_INVALID',
   ]);
   const hasFatal = report.reasons.some((reason) => fatal.has(reason) || reason.startsWith('INPUT_PARSE_FAILED'));
 
@@ -305,6 +290,10 @@ async function runVerification(input: VerifyInput): Promise<VerificationReport> 
   } else if (report.allowlist === 'STALE') {
     report.outcome = 'INDETERMINATE';
   } else if (report.ruleVersion === 'UNKNOWN') {
+    report.outcome = 'INDETERMINATE';
+  } else if (report.reasons.includes('VERIFIER_UNKNOWN')
+    || report.reasons.includes('CODE_EVIDENCE_NOT_PROVIDED')
+    || report.reasons.includes('ENVIRONMENT_MISMATCH')) {
     report.outcome = 'INDETERMINATE';
   } else if (report.reasons.includes('TRANSFORM_RULE_NOT_IMPLEMENTED')) {
     report.outcome = 'INDETERMINATE';

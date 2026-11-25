@@ -2,13 +2,12 @@ import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import type { Hex } from 'viem';
 import { z } from 'zod';
-import { attestationDigest, contentDigest, saltedRef } from './canonical.js';
+import { contentDigest, saltedRef } from './canonical.js';
 import { evaluateCsv } from './csv.js';
 import { compareCsvTransformation, transformCsv } from './transform.js';
-import { anchorAttestation } from './chain.js';
-import { signDigest } from './sign.js';
+import { finalizeAttestation } from './builder.js';
 import {
-  AddressSchema, FulfillmentAttestationSchema, IsoTimeSchema, UuidSchema,
+  AddressSchema, IsoTimeSchema, UuidSchema,
   type FulfillmentAttestation,
 } from './schema.js';
 
@@ -130,6 +129,7 @@ export async function issueAttestation(input: IssueInput): Promise<FulfillmentAt
       rowCount: deliveryEval.rowCount,
     },
     validation: {
+      verifierId: 'csv-ledger',
       ruleId: deliveryEval.ruleId,
       ruleVersion: deliveryEval.ruleVersion,
       result: deliveryEval.result,
@@ -149,38 +149,11 @@ export async function issueAttestation(input: IssueInput): Promise<FulfillmentAt
       receipt: null,
     } : null,
   };
-  if (input.chain) {
-    const { attestationRecordId, commitmentKey } = await import('./chain.js');
-    const chain = payload.chain as Record<string, unknown>;
-    chain.recordId = attestationRecordId(attestationId);
-    chain.commitmentKey = commitmentKey(chain.recordId as `0x${string}`);
-  }
-
-  const { privateKeyToAccount } = await import('viem/accounts');
-  payload.issuer = {
-    ...(payload.issuer as Record<string, string>),
-    signerAddress: privateKeyToAccount(input.privateKey).address.toLowerCase(),
-  };
-
-  const digest = attestationDigest(payload);
-  if (input.chain) {
-    const anchored = await anchorAttestation({
-      rpcUrl: input.chain.rpcUrl, chainId: input.chain.chainId, contract: input.chain.contract,
-      recorderKey: input.chain.recorderKey, attestationId, digest,
-    });
-    const chain = payload.chain as Record<string, unknown>;
-    chain.receipt = {
-      ...anchored.receipt,
-      signer: anchored.receipt.signer.toLowerCase(),
-    };
-    if (anchored.recordId !== chain.recordId || anchored.commitmentKey !== chain.commitmentKey) {
-      throw new Error('CHAIN_BINDING_MISMATCH');
-    }
-  }
-  const signature = await signDigest(digest, input.privateKey);
-  payload.integrity = { canonicalization: 'ct-canonical-json-v1', digest, signature };
-
-  const attestation = FulfillmentAttestationSchema.parse(payload);
+  const { attestation, digest } = await finalizeAttestation({
+    payload,
+    privateKey: input.privateKey,
+    chain: input.chain,
+  });
   if (input.journalPath) {
     appendFileSync(input.journalPath, `${JSON.stringify({
       attestationId, reputationEventId: facts.reputation.eventId, issuerId: input.issuerId, digest,

@@ -1,0 +1,17 @@
+{
+  "kind": "SYNTHETIC_CONTROLLED_CODE_TASK",
+  "dataClassification": "SYNTHETIC",
+  "description": "受控合成代码任务，用于验证通用履约验证器。不对应真实客户、真实仓库或生产数据。",
+  "taskSpec": "task-spec.md",
+  "testSuite": "tests.json",
+  "validArtifact": ["artifacts/solution.mjs", "artifacts/ticket-rules.mjs"],
+  "negativeArtifacts": {
+    "failing": "artifacts/solution-failing.mjs",
+    "hanging": "artifacts/solution-hangs.mjs"
+  },
+  "execution": {
+    "runner": "ct-code-runner-v1",
+    "isolation": "child-process-vm",
+    "notes": "测试集合为固定数据，交付代码只在子进程 vm 中执行；该隔离不是完整安全沙箱。"
+  }
+}

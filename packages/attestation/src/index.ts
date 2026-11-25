@@ -7,8 +7,25 @@ export { loadAllowlist, loadRevocations, findIssuer } from './allowlist.js';
 export { loadTrustPolicy, TrustPolicySchema } from './trust-policy.js';
 export type { TrustPolicy, LoadedTrustPolicy } from './trust-policy.js';
 
+export { TASK_TYPES, resolveVerifier, verifierCatalogue, taskTypeOf } from './verifier.js';
+export type {
+  BuiltinVerifier, TaskType, VerifierEvaluation, VerifierEvaluationInput, VerifierResult,
+} from './verifier.js';
+
+export { finalizeAttestation } from './builder.js';
+export type { ChainWriteConfig } from './builder.js';
+
 export { issueAttestation, IssueFactsSchema } from './issue.js';
 export type { IssueFacts, IssueInput } from './issue.js';
+
+export {
+  issueCodeAttestation, evaluateCodeVerification, runFixedTestSuite, artifactBundleDigest,
+  codeReportDigest, codeRunEnvironmentId, CodeIssueSchema, CodeTestSuiteSchema, CodeTestReportSchema,
+  CODE_VERIFIER_ID, CODE_VERIFIER_RULE_VERSION, CODE_RUNNER_ID, CODE_RUNNER_ISOLATION,
+} from './code-task.js';
+export type {
+  CodeIssueFacts, CodeIssueInput, CodeTestReport, CodeTestRun, CodeTestSuite, CodeVerificationEvidence,
+} from './code-task.js';
 
 export { verifyAttestation } from './verify.js';
 export type { VerifyInput, VerificationReport } from './verify.js';

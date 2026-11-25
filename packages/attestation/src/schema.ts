@@ -53,11 +53,47 @@ export const DeliverySchema = z.strictObject({
 });
 
 export const ValidationSchema = z.strictObject({
+  // verifierId 为新增可选字段，缺省时以 ruleId 作为验证器标识，V0.1 凭证无需改写。
+  verifierId: z.string().min(1).max(64).optional(),
   ruleId: z.string().min(1).max(64),
   ruleVersion: z.string().min(1).max(64),
   result: z.enum(['PASS', 'FAIL', 'UNRESOLVED']),
   checkCodes: z.array(z.string().min(1).max(128)).max(256),
   checksDigest: HashSchema,
+});
+
+// 代码交付任务的可验证证据摘要。凭证只保存摘要与执行环境标识，原始证据由持有方按需提供。
+export const CodeArtifactEvidenceSchema = z.strictObject({
+  kind: z.literal('code-artifact-test-v1'),
+  taskSpec: z.strictObject({
+    contentHash: HashSchema,
+    schemaVersion: z.string().min(1).max(64),
+  }),
+  testSuite: z.strictObject({
+    contentHash: HashSchema,
+    testCount: z.number().int().positive(),
+    ruleVersion: z.string().min(1).max(64),
+  }),
+  artifact: z.strictObject({
+    entrypoint: z.string().min(1).max(128),
+    files: z.array(z.strictObject({
+      path: z.string().min(1).max(256),
+      contentHash: HashSchema,
+    })).min(1).max(64),
+  }),
+  testRun: z.strictObject({
+    reportDigest: HashSchema,
+    total: z.number().int().nonnegative(),
+    passed: z.number().int().nonnegative(),
+    failed: z.number().int().nonnegative(),
+    skipped: z.number().int().nonnegative(),
+    exitCode: z.number().int(),
+  }),
+  environment: z.strictObject({
+    runnerId: z.string().min(1).max(128),
+    nodeVersion: z.string().min(1).max(32),
+    isolation: z.literal('child-process-vm'),
+  }),
 });
 
 export const ReviewSchema = z.strictObject({
@@ -117,6 +153,8 @@ export const FulfillmentAttestationSchema = z.strictObject({
   input: InputSchema,
   delivery: DeliverySchema,
   validation: ValidationSchema,
+  // 任务专用证据为可选字段，CSV 凭证不包含该字段，V0.1 凭证继续通过同一结构校验。
+  evidence: CodeArtifactEvidenceSchema.optional(),
   review: ReviewSchema,
   reputation: ReputationSchema,
   payment: PaymentSchema,
@@ -125,6 +163,7 @@ export const FulfillmentAttestationSchema = z.strictObject({
 });
 
 export type FulfillmentAttestation = z.infer<typeof FulfillmentAttestationSchema>;
+export type CodeArtifactEvidence = z.infer<typeof CodeArtifactEvidenceSchema>;
 export type ChainBinding = z.infer<typeof ChainBindingSchema>;
 
 export const IssuerEntrySchema = z.strictObject({

@@ -1,0 +1,15 @@
+{
+  "format": "ct-code-test-suite-v1",
+  "ruleVersion": "code-artifact-test-v1",
+  "entrypoint": "solution.mjs",
+  "exportName": "normalizeTicketCode",
+  "caseTimeoutMs": 500,
+  "cases": [
+    { "name": "保留已有前缀", "input": "  tc-1024 ", "expected": "TC-1024" },
+    { "name": "补全缺失前缀", "input": "ab 77", "expected": "TC-AB77" },
+    { "name": "统一大写", "input": "TC-9x", "expected": "TC-9X" },
+    { "name": "空字符串", "input": "", "expected": "TC-" },
+    { "name": "仅符号", "input": "  - ", "expected": "TC-" },
+    { "name": "混合分隔符", "input": "tc_88-a", "expected": "TC-88A" }
+  ]
+}

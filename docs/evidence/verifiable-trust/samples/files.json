@@ -1,0 +1,10 @@
+[
+  {
+    "path": "solution.mjs",
+    "content": "function normalizeTicketCode(value) {\n  const cleaned = String(value).toUpperCase().replace(/[^A-Z0-9]/g, '');\n  const withoutPrefix = cleaned.startsWith('TC') ? cleaned.slice(2) : cleaned;\n  return `TC-${withoutPrefix}`;\n}\n\nmodule.exports = { normalizeTicketCode };\n"
+  },
+  {
+    "path": "ticket-rules.mjs",
+    "content": "// 交付物中的辅助文件：仅提供常量，用于验证多文件交付摘要与缺失文件检测。\nconst TICKET_PREFIX = 'TC-';\n\nmodule.exports = { TICKET_PREFIX };\n"
+  }
+]

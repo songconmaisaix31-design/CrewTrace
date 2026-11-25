@@ -1,0 +1,118 @@
+{
+  "attestationVersion": "ct-attestation-v1",
+  "attestationId": "f0f0f0f0-f0f0-4f0f-8f0f-f0f0f0f0f0f0",
+  "issuedAt": "2026-11-24T04:00:00.000Z",
+  "expiresAt": "2027-11-24T04:00:00.000Z",
+  "binding": {
+    "environment": "local",
+    "deployment": "documentation-samples"
+  },
+  "issuer": {
+    "issuerId": "crewtrace-samples",
+    "keyId": "samples-key-2026-11",
+    "signerAddress": "0x1563915e194d8cfba1943570603f7606a3115508"
+  },
+  "subject": {
+    "agentId": "d0d0d0d0-d0d0-4d0d-8d0d-d0d0d0d0d0d0",
+    "identity": {
+      "namespace": "ct-local",
+      "value": "samples-code-agent"
+    },
+    "signingAddress": null,
+    "role": "code-artifact-author",
+    "serviceId": "crewtrace-code-experiment",
+    "serviceVersion": 1
+  },
+  "task": {
+    "taskId": "e0e0e0e0-e0e0-4e0e-8e0e-e0e0e0e0e0e0",
+    "attempt": 1,
+    "workflowVersion": "synthetic-code-task-v1"
+  },
+  "order": null,
+  "input": {
+    "contentHash": "0xf2a2d8c8fb27a62155676eb01e5e649a57f3183ae348e4b8da09c11383f6884b",
+    "rowCount": 0,
+    "schemaVersion": "synthetic-code-task-v1"
+  },
+  "delivery": {
+    "contentHash": "0x7f841aa89cd14ace2aa495cae111c80bf18cbc73a1c3bd6a49f3b70ce813fb7d",
+    "deliveryVersion": 1,
+    "rowCount": 0
+  },
+  "validation": {
+    "verifierId": "code-artifact-test",
+    "ruleId": "code-artifact-test",
+    "ruleVersion": "code-artifact-test-v1",
+    "result": "PASS",
+    "checkCodes": [
+      "VERIFIER:code-artifact-test@code-artifact-test-v1",
+      "SUITE:0xb218c5a85bd62913f62f2b90f15bfd93d7a12fcc39be79f9b8943d5bafcbe28d",
+      "RESULT:PASS",
+      "CASE:c0:PASS",
+      "CASE:c1:PASS",
+      "CASE:c2:PASS",
+      "CASE:c3:PASS",
+      "CASE:c4:PASS",
+      "CASE:c5:PASS"
+    ],
+    "checksDigest": "0xeef74652f146934d89b8c435cf0841038a92e2e789a088a3589d00a98ae1d812"
+  },
+  "evidence": {
+    "kind": "code-artifact-test-v1",
+    "taskSpec": {
+      "contentHash": "0xf2a2d8c8fb27a62155676eb01e5e649a57f3183ae348e4b8da09c11383f6884b",
+      "schemaVersion": "synthetic-code-task-v1"
+    },
+    "testSuite": {
+      "contentHash": "0xb218c5a85bd62913f62f2b90f15bfd93d7a12fcc39be79f9b8943d5bafcbe28d",
+      "testCount": 6,
+      "ruleVersion": "code-artifact-test-v1"
+    },
+    "artifact": {
+      "entrypoint": "solution.mjs",
+      "files": [
+        {
+          "path": "solution.mjs",
+          "contentHash": "0xbd003826d8602fde96770da704d3cdfa23c61b9f4c5af1994b1d158d1baa72be"
+        },
+        {
+          "path": "ticket-rules.mjs",
+          "contentHash": "0x8c8a2fee13af454e970037a7f3d92e7828f614fbb44d8d53e10219ca34bdbd14"
+        }
+      ]
+    },
+    "testRun": {
+      "reportDigest": "0x10a757283a294b049de1af002272931cb7192effa69fbcf9f6bc92baebdedd99",
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0
+    },
+    "environment": {
+      "runnerId": "ct-code-runner-v1",
+      "nodeVersion": "26.10.0",
+      "isolation": "child-process-vm"
+    }
+  },
+  "review": {
+    "decision": "ACCEPTED",
+    "reviewerId": "samples-reviewer",
+    "reviewerAddress": null,
+    "reviewedAt": "2026-11-24T03:55:00.000Z"
+  },
+  "reputation": {
+    "eventId": "samples-code-event-1",
+    "outcome": "PASS",
+    "source": "DETERMINISTIC_REVIEW"
+  },
+  "payment": {
+    "status": "NOT_REQUIRED"
+  },
+  "chain": null,
+  "integrity": {
+    "canonicalization": "ct-canonical-json-v1",
+    "digest": "0xe2921d05d45321c9ddfa37585fdb6df7dd050c3082beebe1cd872ac137799e47",
+    "signature": "0x159279ddd5e6f2f3b9e7d518e6b88d33d12cb8cd21a39d9f44e7455c660fbb86620a2ccfadee5bb364f4d0766a19fbf1962b08aa368a4afebc961a23a56e9daf1c"
+  }
+}

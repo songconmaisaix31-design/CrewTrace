@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   trust-core:
-    name: Trust Core V0.1
+    name: Trust Core V0.2
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -76,6 +76,15 @@ jobs:
 
       - name: Chain verification tests
         run: node --import tsx --test packages/attestation/test/chain.test.ts
+
+      - name: Code artifact verifier tests
+        run: node --import tsx --test packages/attestation/test/code-task.test.ts
+
+      - name: Cross-task reputation isolation tests
+        run: node --import tsx --test packages/attestation/test/cross-task.test.ts
+
+      - name: Cross-process credential exchange test
+        run: node --import tsx --test packages/attestation/test/cross-agent.test.ts
 
       - name: Inspect chain evidence
         run: |

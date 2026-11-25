@@ -7,12 +7,14 @@ import { FulfillmentAttestationSchema } from './schema.js';
 import { verificationPolicyDigestOf } from './verified-registry.js';
 import { verifyAttestation, type VerificationReport } from './verify.js';
 import type { ChainReader } from './chain-verify.js';
+import type { CodeVerificationEvidence } from './code-task.js';
 import { loadTrustPolicy, type LoadedTrustPolicy, type TrustPolicy } from './trust-policy.js';
 
 export interface TrustEvaluationCandidate {
   attestation: unknown;
   inputContent?: string | null;
   deliveryContent?: string | null;
+  codeEvidence?: CodeVerificationEvidence | null;
 }
 
 export interface TrustEvaluationOptions {
@@ -70,6 +72,7 @@ export async function verifyAndAggregateReputation(options: TrustEvaluationOptio
       revocations: policy.revocations,
       inputContent: candidate.inputContent ?? null,
       deliveryContent: candidate.deliveryContent ?? null,
+      codeEvidence: candidate.codeEvidence ?? null,
       chain,
       chainPolicy: policy.chain,
       now,

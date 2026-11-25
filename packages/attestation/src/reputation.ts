@@ -1,6 +1,7 @@
 import type { Hex } from 'viem';
 import { attestationDigest } from './canonical.js';
 import { lookupVerification, type SealedVerification } from './verified-registry.js';
+import { taskTypeOf } from './verifier.js';
 import type { FulfillmentAttestation } from './schema.js';
 import type { VerificationReport } from './verify.js';
 
@@ -54,12 +55,13 @@ export function reputationSubjectKey(attestation: FulfillmentAttestation): strin
   return `${namespace}:${value.toLowerCase()}`;
 }
 
-// 事件身份同时受签发来源与主体身份命名空间约束。
+// 事件身份同时受签发来源、主体身份命名空间与任务类型约束。
 export function reputationEventKey(attestation: FulfillmentAttestation): string {
-  return `${attestation.issuer.issuerId}|${reputationSubjectKey(attestation)}|${attestation.reputation.eventId}`;
+  return `${attestation.issuer.issuerId}|${reputationSubjectKey(attestation)}|${taskTypeOf(attestation)}|${attestation.reputation.eventId}`;
 }
 
 export interface ReputationBucket {
+  taskType: string;
   issuerId: string;
   subjectNamespace: string;
   subjectValue: string;
@@ -280,12 +282,14 @@ export function aggregateReputation(
     if (consumed.has(eventKey)) { reject('CONSUMED_REPUTATION_EVENT'); continue; }
     consumed.add(eventKey);
 
+    const taskType = taskTypeOf(attestation);
     const key = [
-      attestation.issuer.issuerId, reputationSubjectKey(attestation), attestation.subject.agentId,
+      taskType, attestation.issuer.issuerId, reputationSubjectKey(attestation), attestation.subject.agentId,
       attestation.subject.role, attestation.subject.serviceId, String(attestation.subject.serviceVersion),
       attestation.binding.environment, attestation.binding.deployment, attestation.validation.ruleVersion,
     ].join('|');
     const bucket = buckets.get(key) ?? {
+      taskType,
       issuerId: attestation.issuer.issuerId,
       subjectNamespace: attestation.subject.identity.namespace,
       subjectValue: attestation.subject.identity.value,
