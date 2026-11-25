@@ -130,6 +130,15 @@ async function main(): Promise<void> {
     candidates: candidates as never,
   });
 
+  // 聚合结果按凭证标识排序后返回，不能按输入下标读取。按凭证标识建立先进先出队列，
+  // 相同凭证重复提交时依次取用各自的决策，保证标签与准入结论一一对应。
+  const decisionsById = new Map<string, typeof evaluation.decisions>();
+  for (const decision of evaluation.decisions) {
+    const queue = decisionsById.get(decision.attestationId) ?? [];
+    queue.push(decision);
+    decisionsById.set(decision.attestationId, queue);
+  }
+
   const verdict = {
     accepted: true,
     scenario,
@@ -140,9 +149,7 @@ async function main(): Promise<void> {
     },
     evaluations: evaluation.evaluations.map((entry, index) => {
       const candidate = candidates[index];
-      // 决策与输入候选按顺序一一对应；相同凭证再次提交时凭证标识相同，
-      // 不能按标识查找，否则两次提交会读到同一份决策。
-      const decision = evaluation.decisions[index];
+      const decision = entry.attestationId ? decisionsById.get(entry.attestationId)?.shift() ?? null : null;
       return {
         label: candidate?.label ?? null,
         attestationId: entry.attestationId,

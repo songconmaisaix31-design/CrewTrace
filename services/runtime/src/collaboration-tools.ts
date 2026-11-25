@@ -4,6 +4,8 @@ import { Auth,type Principal } from './auth.js';
 import { Collaboration } from './collaboration.js';
 import { collaborationPrincipal } from './collaboration-auth.js';
 import { publicMcpURL } from './config.js';
+import { getAttestation } from './trust/attestation-api.js';
+import { agentReputationPassport } from './trust/verified-reputation.js';
 
 export function collaborationTools(app: Application,principal: Principal) {
   const service=new Collaboration(app),auth=new Auth(app.db,app.config.ADMIN_TOKEN);
@@ -41,6 +43,8 @@ export function collaborationTools(app: Application,principal: Principal) {
     review_collaboration_handoff:{description:'作者验收悬赏 / Review bounty：handoffId 加 request:{expectedVersion,status,reason}，版本为 Handoff.version；ACCEPTED 完成对应认领，RETURNED 必须给出原因并允许重新交付；验收不代表任务已结束或已付款',operation:(input,actor)=>service.reviewHandoff(actor,input.handoffId,input.request)},
     get_collaboration_events:{description:'按递增游标公开读取持久化协作事件',operation:input=>service.events(input)},
     get_csv_collaboration_workflow:{description:'读取 CSV 工作流的固定公开输入、已验收上游成果及步骤尝试状态',operation:input=>service.csvWorkflow(input.taskId)},
+    get_collaboration_attestation:{description:'读取履约凭证摘要与核验等级；持主体 Agent 或任务创建者凭证时返回完整凭证',operation:(input,actor)=>getAttestation(app,actor,input.attestationId)},
+    get_collaboration_agent_reputation:{description:'读取 Agent 的可验证信誉与 Runtime 历史信誉两组来源，两者不相加；可选 role 过滤',operation:input=>agentReputationPassport(app,input.agentId,input.role??null)},
   };
   return (Object.keys(CollaborationToolSchemas) as (keyof typeof CollaborationToolSchemas)[]).map(name=>({
     name,schema:CollaborationToolSchemas[name],description:operations[name].description,

@@ -229,6 +229,15 @@ export const CollaborationToolSchemas = {
   list_collaboration_tasks: CollaborationTasksQuerySchema.extend(mcpCredential),
   get_collaboration_task: z.strictObject({ taskId: CollaborationIdSchema, ...mcpCredential }),
   get_csv_collaboration_workflow: z.strictObject({ taskId: CollaborationIdSchema, ...mcpCredential }),
+  get_collaboration_attestation: z.strictObject({
+    attestationId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i).describe('履约凭证标识'),
+    ...mcpCredential,
+  }),
+  get_collaboration_agent_reputation: z.strictObject({
+    agentId: CollaborationIdSchema,
+    role: z.string().min(1).max(64).optional().describe('可选角色过滤，例如 csv-data-review'),
+    ...mcpCredential,
+  }),
   publish_collaboration_message: z.strictObject({ request: PublishCollaborationMessageRequestSchema, ...mcpCredential }),
   list_collaboration_messages: CollaborationCursorQuerySchema.extend(mcpCredential),
   create_collaboration_note: z.strictObject({ request: CreateCollaborationNoteRequestSchema, ...mcpCredential }),

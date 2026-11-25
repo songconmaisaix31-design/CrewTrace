@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci
+      - run: npm ci --prefix packages/attestation
       - run: npm ci --prefix workers
       - run: npm ci --prefix services/runtime
       - run: npm run build && npm test
@@ -43,6 +44,14 @@ jobs:
         run: |
           export ADMIN_TOKEN="$(openssl rand -hex 32)"
           node --import tsx --test test/domain/*.test.ts test/portfolio-flow.test.ts test/portfolio-auto.test.ts test/mcp-host.test.ts test/commerce-flow.test.ts test/commerce-payment.test.ts test/commerce-rc1.test.ts test/payment-config.test.ts test/alipay-proof.test.ts test/public-limits.test.ts test/proxy-trust.test.ts test/demo-quotas.test.ts test/gateway-proxy-quota.test.ts
+      - name: Trust integration tests
+        working-directory: services/runtime
+        env:
+          DATABASE_URL: postgresql://crewtrace_test:local_ci_only@127.0.0.1:5432/crewtrace_v2_test
+          PUBLIC_BASE_URL: http://127.0.0.1:3000
+        run: |
+          export ADMIN_TOKEN="$(openssl rand -hex 32)"
+          node --import tsx --test --test-concurrency=1 test/trust-attestation.test.ts test/trust-reputation.test.ts test/trust-matching.test.ts test/trust-tools.test.ts test/trust-collaboration.test.ts test/trust-lifecycle.test.ts test/trust-clock.test.ts
       - run: npx playwright install --with-deps chromium
       - name: Browser and independent workers
         env:
@@ -60,5 +69,19 @@ jobs:
           curl --retry 20 --retry-connrefused --retry-delay 1 -fsS "$RUNTIME_URL/api/collaboration" >/dev/null
           curl --retry 20 --retry-connrefused --retry-delay 1 -fsS "$WEB_BASE_URL/" >/dev/null
           (cd apps/web && ../../node_modules/.bin/playwright test browser-portfolio.spec.ts)
+      - name: Reputation passport browser check
+        env:
+          DATABASE_URL: postgresql://crewtrace_test:local_ci_only@127.0.0.1:5432/crewtrace_v2_test
+          PUBLIC_BASE_URL: http://127.0.0.1:55581
+        run: |
+          export ADMIN_TOKEN="$(openssl rand -hex 32)"
+          (cd services/runtime && exec env PORT=55581 node --import tsx test/trust-browser-host.ts) &
+          backend=$!
+          (cd apps/web && exec env RUNTIME_URL=http://127.0.0.1:55581 PUBLIC_RUNTIME_URL=http://127.0.0.1:55581 node ../../node_modules/vite/bin/vite.js --host 127.0.0.1 --port 55174 --strictPort) &
+          website=$!
+          trap 'kill "$backend" "$website" 2>/dev/null || true' EXIT
+          curl --retry 20 --retry-connrefused --retry-delay 1 -fsS "http://127.0.0.1:55581/api/collaboration" >/dev/null
+          curl --retry 20 --retry-connrefused --retry-delay 1 -fsS "http://127.0.0.1:55174/" >/dev/null
+          (cd apps/web && WEB_BASE_URL=http://127.0.0.1:55174 ../../node_modules/.bin/playwright test browser-passport.spec.ts)
       - name: Reproduce load benchmark
-        run: (cd workers && node --import tsx src/portfolio-load-benchmark.ts) | diff - docs/portfolio/benchmark-load-v1.json
+        run: (cd workers && node --import tsx src/portfolio-load-benchmark.ts) | diff - docs/portfolio/benchmark-trust-v1.json

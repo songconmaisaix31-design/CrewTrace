@@ -7,6 +7,8 @@ import { Collaboration } from './collaboration.js';
 import { collaborationTools } from './collaboration-tools.js';
 import { publicMcpURL } from './config.js';
 import { snapshotMatching } from './experiment-matching.js';
+import { exportAttestation, getAttestation, listAgentAttestations, processAttestationJobQueue, revokeAttestation } from './trust/attestation-api.js';
+import { agentReputationPassport } from './trust/verified-reputation.js';
 import { replayCsvDelivery } from '../../../workers/src/csv-delivery.ts';
 
 export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>,app: Application) {
@@ -25,6 +27,26 @@ export function mountCollaboration(http: Hono<{Variables:{principal:Principal}}>
   http.post(`${prefix}/agents/me/heartbeat`,async c=>{z.strictObject({}).parse(await c.req.json());return c.json(await service.heartbeat(c.get('principal')));});
   http.post(`${prefix}/credentials/rotate`,async c=>{z.strictObject({}).parse(await c.req.json());return c.json(await service.rotate(c.get('principal')));});
   http.get(`${prefix}/agents/:id`,async c=>c.json(await service.agent(id(c.req.param('id')))));
+  http.get(`${prefix}/agents/:id/attestations`,async c=>{
+    const agentId=id(c.req.param('id'));
+    await service.agent(agentId);
+    return c.json(await listAgentAttestations(app,agentId,c.req.query('role')??null));
+  });
+  http.get(`${prefix}/agents/:id/reputation`,async c=>{
+    const agentId=id(c.req.param('id'));
+    await service.agent(agentId);
+    return c.json(await agentReputationPassport(app,agentId,c.req.query('role')??null));
+  });
+  http.get(`${prefix}/attestations/:id`,async c=>c.json(await getAttestation(app,c.get('principal'),c.req.param('id'))));
+  http.get(`${prefix}/attestations/:id/export`,async c=>{
+    const result=await exportAttestation(app,c.get('principal'),c.req.param('id'));
+    return c.body(JSON.stringify(result.document,null,2),200,{
+      'content-type':'application/json',
+      'content-disposition':`attachment; filename="${result.filename}"`,
+    });
+  });
+  http.post(`${prefix}/attestations/:id/revoke`,async c=>c.json(await revokeAttestation(app,c.get('principal'),c.req.param('id'),await c.req.json())));
+  http.post(`${prefix}/attestation-jobs/process`,async c=>c.json(await processAttestationJobQueue(app,c.get('principal'),await c.req.json())));
   http.get(`${prefix}/csv-runs`,async c=>{
     const {limit,offset}=CollaborationPageQuerySchema.parse(c.req.query());
     const {rows}=await app.db.pool.query(`SELECT t.id AS "taskId",t.document->>'title' AS title,mode,
