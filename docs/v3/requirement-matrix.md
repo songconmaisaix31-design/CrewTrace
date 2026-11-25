@@ -61,7 +61,7 @@
 | M2-4 | 历史事件不自动升级 | 无隔离 | 历史事件只作为 `RUNTIME_HISTORICAL_EVENTS`，不进入可信分桶 |
 | M2-5 | 重复导入不重复计分 | SDK 内已按事件键去重 | 数据库唯一约束 + SDK `eventKey` 双保险 |
 | M2-6 | 失效后重算 | 无重算入口 | 每次读取实时核验，撤销表参与 |
-| M2-7 | 四类状态区分 | 无分类 | `BUSINESS_FAILURE`/`VERIFICATION_FAILED`/`INSUFFICIENT_EVIDENCE`/`UNKNOWN` |
+| M2-7 | 状态区分 | 无分类 | `TRUSTED`/`BUSINESS_FAILURE`/`REVOKED`/`EXPIRED`/`TAMPERED`/`POLICY_REJECTED`/`INSUFFICIENT_EVIDENCE`/`UNKNOWN`；M1 只签发 PASS，真实数据不产生 `BUSINESS_FAILURE` |
 | M3-1 | 可验证信誉作为排序输入 | `rankAndSave` 只有历史事件 | 扩展 `rankAndSave` |
 | M3-2 | 先过滤能力、权限、可用性 | 已实现 | 保持原过滤顺序 |
 | M3-3 | 可解释快照 | 有基础快照 | 增加 `strategy`、`policyVersion`、`evidence`、`shadow`、`selectionReason` |
@@ -82,10 +82,10 @@
 | 验收项 | 证据位置 |
 | --- | --- |
 | 118 项 SDK 测试保留 | CI `Trust Core checks` 原有步骤全绿 + 新增用例 |
-| 两轮真实 Runtime 闭环 | `services/runtime/test/trust-collaboration.test.ts`，结果 JSON 写入 `.local/trust-v3/` |
-| 自动签发凭证样例 | `.local/trust-v3/attestations/`，并脱敏复制到 `docs/v3/evidence/` |
+| 两轮真实 Runtime 闭环 | `services/runtime/test/trust-collaboration.test.ts`，结果写入 `docs/v3/evidence/e2e-collaboration.json` |
+| 自动签发凭证样例 | `docs/v3/evidence/attestation-sample.json`（真实数据库凭证文档） |
 | 可验证信誉与原信誉关系 | `/api/collaboration/agents/:id/reputation` 返回 `verified` 与 `runtimeHistorical` 两组来源 |
 | 四策略对照 | `docs/portfolio/benchmark-trust-v1.json` 与 `docs/v3/strategy-comparison.md` |
 | Passport 界面 | `docs/v3/evidence/passport.png`（实际浏览器截图）与数据来源说明 |
 | 原产品兼容性 | `npm run build && npm test`、`npm run test:showcase`、Playwright 浏览器回归 |
-| 真实 CI | 新分支 GitHub Actions 运行记录 |
+| 真实 CI | 新分支 GitHub Actions 运行记录（分支已提交，推送等待仓库写权限） |

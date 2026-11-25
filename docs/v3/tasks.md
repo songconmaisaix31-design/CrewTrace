@@ -45,7 +45,7 @@
 
 ## T7 M2 验收（已完成）
 
-- 验证：未验证、撤销、过期、篡改、业务失败、证据不足、重复导入、历史事件八类场景符合规格。通过后进入 M3。
+- 验证：未验证、撤销、过期、篡改、证据不足、重复导入、历史事件七类场景符合规格；业务失败分支保留在状态映射中，但 M1 只签发 PASS 履约，真实数据不能产生该状态，测试以核验失败归入证据不足并如实记录该限制。通过后进入 M3。
 
 ## T8 M3 匹配策略与快照（已完成）
 
@@ -65,24 +65,24 @@
 
 ## T11 M4 服务端与 MCP（已完成）
 
-- 写入路径：`services/runtime/src/collaboration-http.ts`、`services/runtime/src/collaboration-tools.ts`、`packages/contracts/src/index.ts`
+- 写入路径：`services/runtime/src/collaboration-http.ts`、`services/runtime/src/collaboration-tools.ts`、`packages/contracts/src/collaboration.ts`
 - 动作：`GET /api/collaboration/agents/:id/reputation`；MCP 只读工具两个；权限沿用现有凭证与管理员边界。
 - 验证：`npm run build`；工具 schema 单元测试。
 
-## T12 M4 前端 Passport
+## T12 M4 前端 Passport（已完成）
 
-- 写入路径：`apps/web/src/reputation-api.ts`、`apps/web/src/ReputationPassport.tsx`、`apps/web/src/ExperimentEvidence.tsx`、`apps/web/browser-passport.spec.ts`
+- 写入路径：`apps/web/src/reputation-api.ts`、`apps/web/src/ReputationPassport.tsx`、`apps/web/src/ExperimentEvidence.tsx`、`apps/web/test/browser-passport.spec.ts`、`docs/v3/evidence/passport.png`
 - 动作：候选行入口、弹窗、空状态、核验等级、授权导出、截图。
-- 验证：`npm run build`；Playwright `browser-passport.spec.ts`。
+- 验证：`npm --prefix apps/web run check`；Playwright `browser-passport.spec.ts` 对真实运行时通过。
 
-## T13 端到端两轮闭环
+## T13 端到端两轮闭环（已完成）
 
-- 写入路径：`services/runtime/test/trust-collaboration.test.ts`、`docs/v3/evidence/`
+- 写入路径：`services/runtime/test/trust-collaboration.test.ts`、`docs/v3/evidence/e2e-collaboration.json`
 - 动作：两轮真实协作与六类反例，保存凭证样例与结果 JSON。
 - 验证：测试通过；独立 SDK 核验通过；第二轮快照含第一轮凭证。
 
-## T14 CI 与交付
+## T14 CI 与交付（代码完成，推送受阻）
 
-- 写入路径：`.github/workflows/trust-core.yml`、`.github/workflows/portfolio.yml`
-- 动作：增加分支触发与新测试步骤，注入随机实验密钥。
-- 验证：推送后 `gh run watch` 全绿；整理十项交付内容与未解决限制。
+- 写入路径：`.github/workflows/trust-core.yml`、`.github/workflows/portfolio.yml`、`services/runtime/test/trust-browser-host.ts`
+- 动作：增加分支触发、顺序运行的信任测试、Passport 浏览器检查与新基准比对，CI 内生成随机实验密钥。
+- 验证：本地全部测试通过；推送时当前 GitHub 凭据对 `NextVariable/crewtrace-v2` 只有读取权限，返回 403，尚无本次 CI 运行记录。需要仓库写权限后执行 `git push -u portfolio feat/trust-native-collaboration` 并取得 CI 结果。

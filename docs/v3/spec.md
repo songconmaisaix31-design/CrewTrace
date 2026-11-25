@@ -176,13 +176,13 @@ CREATE TABLE experiment_attestation_revocations (
 新增 `services/runtime/src/trust/verified-reputation.ts`。
 
 - `loadVerifiedReputation(client, env, options)`：读取角色内全部凭证，按 `attestation_id` 关联原始输入与已验收交付内容，调用 `verifyAndAggregateReputation`，返回 `{ buckets, decisions, summary, policyDigest, source: 'VERIFIED_ATTESTATION' }`。缺少原始内容时核验结论为证据不足，不进入正面样本。
-- `classifyDecision(decision)`：映射为 `TRUSTED`、`BUSINESS_FAILURE`（`validation.result=FAIL`）、`VERIFICATION_FAILED`（摘要、签名、签发者、撤销、过期）、`INSUFFICIENT_EVIDENCE`（`FULFILLMENT_NOT_RECALCULATED`、`INPUT_NOT_PROVIDED` 等）、`UNKNOWN`。
+- `classifyDecision(decision)`：映射为 `TRUSTED`、`BUSINESS_FAILURE`（`validation.result=FAIL`）、`REVOKED`、`EXPIRED`、`TAMPERED`（摘要、签名、签发者不符）、`POLICY_REJECTED`（规则版本或绑定不符）、`INSUFFICIENT_EVIDENCE`（`FULFILLMENT_NOT_RECALCULATED`、`INPUT_NOT_PROVIDED` 等）、`UNKNOWN`。M1 只为 PASS 履约签发凭证，真实数据不会产生 `BUSINESS_FAILURE`，该分支保留给外部导入的 FAIL 凭证。
 - `legacyReputation(client, agentId, role)`：单独查询 `experiment_reputation_events`，返回 `source: 'RUNTIME_HISTORICAL_EVENTS'`。
 - `agentReputationPassport(client, env, agentId, role)`：合并两组来源但不相加，输出给 M4 与 MCP。
 
 规则：可信分桶只来自核验通过的凭证；撤销、过期、篡改、未知签发者、证据不足与业务失败都不计入正面样本；每次读取重新核验，撤销立即生效；同一事件键在 SDK 与数据库唯一约束两层去重；历史事件保持原值并明确标注来源。
 
-验收：新增 `services/runtime/test/trust-reputation.test.ts`，覆盖未验证凭证不计分、撤销后重算减少、篡改不计分、过期不计分、业务失败归入业务失败、重复导入不重复计分、历史事件不升级。
+验收：新增 `services/runtime/test/trust-reputation.test.ts`，覆盖未验证凭证不计分、撤销后重算减少、篡改不计分、交付摘要不一致归入证据不足、指定核验时刻过期不计分、规则版本不符不计分、重复导入不重复计分、历史事件不升级；业务失败分支由状态映射保留并经类型检查，真实 M1 数据无法构造该状态，作为限制记录。
 
 ## 6. M3：可信信誉驱动匹配
 
