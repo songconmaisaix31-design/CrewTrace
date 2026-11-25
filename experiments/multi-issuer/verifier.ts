@@ -140,7 +140,9 @@ async function main(): Promise<void> {
     },
     evaluations: evaluation.evaluations.map((entry, index) => {
       const candidate = candidates[index];
-      const decision = evaluation.decisions.find((item) => item.attestationId === entry.attestationId);
+      // 决策与输入候选按顺序一一对应；相同凭证再次提交时凭证标识相同，
+      // 不能按标识查找，否则两次提交会读到同一份决策。
+      const decision = evaluation.decisions[index];
       return {
         label: candidate?.label ?? null,
         attestationId: entry.attestationId,
