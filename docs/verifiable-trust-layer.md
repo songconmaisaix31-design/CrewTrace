@@ -1,5 +1,7 @@
 # 可验证信任层：原 Monad 能力复用、履约凭证与最小实验设计
 
+此文归档设计期决策。实施后的 PoC、Trust Core 与 SDK V0.1–V0.3 见 [版本资产](REPOSITORY-INDEX.md#八个阶段)。
+
 本文件是研究与技术设计，供产品评审。当前分支 `feat/payathon-commerce` 保持冻结，产品代码、团队仓库、Cloudflare 部署、支付宝支付状态均未改动。评审确认后才创建 `experiment/verifiable-trust-layer` 开展最小实验。
 
 ## 结论摘要

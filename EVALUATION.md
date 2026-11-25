@@ -1,5 +1,7 @@
 # CSV 策略实验
 
+本报告适用于 Reputation V2。PAYATHON 与 Trust SDK 的实验原件及 CI 见 [仓库索引](docs/REPOSITORY-INDEX.md#八个阶段)。
+
 使用 `workers/src/portfolio-benchmark.ts`，固定种子 `crewtrace-v2-csv-2026-11-22`。三种确定性 Worker 处理同一组受控 CSV 输入，实际运行复制、规范化与去重，再交给同一验收器。每位 Worker 先处理独立的 12 个历史输入，评分只用历史阶段，三种策略比较同一批 30 个留出任务，每个任务最多尝试两位 Worker。
 
 | 策略 | 首次通过 | 最终通过 | 重试 |

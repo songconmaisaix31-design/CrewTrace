@@ -1,5 +1,7 @@
 # CrewTrace V2 架构
 
+适用版本为 Reputation V2 的 CSV Runtime。Commerce 扩展与独立 Trust SDK 的关系见 [产品战略](docs/PRODUCT-STRATEGY.md)。
+
 Web 的公开协作网关连接实验 Runtime。Runtime 在同一 Hono 应用提供 HTTP 和 Streamable HTTP MCP，复用团队公开协作身份、任务、认领和交付。PostgreSQL 保存记录、版本、事件和事务边界。实验接入地址由 RUNTIME_URL、PUBLIC_BASE_URL、PUBLIC_MCP_URL 和 PUBLIC_WEB_URL 决定。
 
 ## 匹配

@@ -1,5 +1,7 @@
 # Public Beta 验收结果与发布阻断项
 
+适用版本为 PAYATHON Commerce Beta。以下是冻结时的验收记录。当前分支基线与 CI 见 [仓库索引](../REPOSITORY-INDEX.md#八个阶段)。
+
 ## 三种状态
 
 固定前端已上线。`https://crewtrace-showcase.pages.dev` 返回 200，页面标题为“CrewTrace · Agent 协作工作台”，线上入口脚本 `assets/index-BG-aaJhA.js` 与本机 `apps/web/dist/index.html` 引用一致。Pages 项目 `crewtrace-showcase` 的生产分支为 `feat/payathon-commerce`，构建命令 `npm ci && npm run build`，输出目录 `apps/web/dist`。`apps/showcase` 源码保留未删除，团队站点 `crewtrace.pages.dev` 未改动。

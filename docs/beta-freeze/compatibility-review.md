@@ -34,7 +34,7 @@ HTTP 接口层面，`collaboration-http.ts` 原有 29 条协作路由全部保�
 
 公网部署启用了 `PUBLIC_DEPLOYMENT=true`，`mcp.ts` 对非管理员且非实验 Worker 的调用方建立 20 个工具的隐藏集合。协作写入 8 个：`create_collaboration_task`、`update_collaboration_task`、`propose_collaboration_assignment`、`decide_collaboration_assignment`、`claim_collaboration_task`、`release_collaboration_claim`、`submit_collaboration_handoff`、`review_collaboration_handoff`。运行时工具 12 个：`advance_work`、`accept_task`、`reserve_model_call`、`upload_artifact`、`submit_task`、`report_interruption`、`update_handoff`、`create_run`、`assign_task`、`assess_task`、`advance_run`、`control_run`。
 
-因此公网 `tools/list` 返回 42 个，构成为 17 个协作读取与自助工具、1 个指南、1 个 `get_csv_collaboration_workflow`、15 个运行时与看板工具、8 个服务与订单工具。算式是 53 减 20 加 9 等于 42。现场探测的返回名称为：协作类 18 个（含指南与新增工具），服务与订单 8 个，运行时与看板 15 个，合计 42。
+因此公网 `tools/list` 返回 42 个，构成为 17 个原有协作读取与自助工具、1 个 `get_csv_collaboration_workflow`、1 个指南、15 个运行时与看板工具和 8 个服务与订单工具。协作与指南合计 19 个。《Beta 验收》保留当期公网探测记录。
 
 被隐藏的 20 个工具没有删除实现。接入真实凭证的实验 Worker 和管理员令牌仍可看到并使用这些工具，免费体验版只开放匿名可读与自助写入的部分，避免公网匿名调用直接创建运行、指派任务或控制流程。
 

@@ -6,6 +6,10 @@
 
 SDK：`@crewtrace/trust-sdk 0.1.0-preview.1`
 
+Trust Core 实现提交 `3da56ff3178ac8e4f8a5975ea6fbb628d48bb101` 的 [CI](https://github.com/NextVariable/crewtrace-v2/actions/runs/45429597264) 失败，修正共享 CSV 规则依赖安装的提交 `066b9120da28ab97d752ba6da416f9f394fb059e` 的 [CI](https://github.com/NextVariable/crewtrace-v2/actions/runs/45430723373) 通过。
+
+Trust SDK V0.1 打包与独立消费者验收提交 `19a23334b34a0b67440423126cf8d18c186104e2` 通过 [CI](https://github.com/NextVariable/crewtrace-v2/actions/runs/45444793580)。
+
 V0.1 建立 `ct-attestation-v1` 履约凭证、签发者名单与撤销列表、CSV 交付复算、五级证据等级、信誉准入与可选本地链上承诺。公开入口覆盖凭证签发、核验、策略加载、链上证据核验与信誉聚合，不依赖数据库、Web 服务或 Cloudflare。
 
 已实现能力：
@@ -47,7 +51,9 @@ V0.2 在不重写信任核心的前提下增加代码交付与固定测试集合
 
 ## V0.3 — 多主体信任与链上独立核验
 
-最终 HEAD：`9bb00f867a30d6390fad4e1e6d5401102e9cc07d`
+验收记录：`9bb00f867a30d6390fad4e1e6d5401102e9cc07d`
+
+冻结归档 HEAD：`8b5fe58e80450561829e62572aef128465492aa0`，归档 CI [45568182070](https://github.com/NextVariable/crewtrace-v2/actions/runs/45568182070)。
 验证提交：`ce893702a32a185f2a4684efabfce6acbb40dba0`
 SDK：`@crewtrace/trust-sdk 0.3.0-preview.1`
 Final CI：`45566951198`
