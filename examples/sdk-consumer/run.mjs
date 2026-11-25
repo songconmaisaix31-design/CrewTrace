@@ -24,14 +24,15 @@ const codeEvidence = {
 };
 const codeValid = readJson('attestations/code-valid.json');
 const codeTampered = readJson('attestations/code-tampered.json');
+const codeExecutionGrant = readJson('data/code/execution-grant.json');
 
 const evaluation = await verifyAndAggregateReputation({
   policy,
   candidates: [
     { attestation: valid, inputContent: input, deliveryContent: delivery },
     { attestation: tampered, inputContent: input, deliveryContent: delivery },
-    { attestation: codeValid, codeEvidence },
-    { attestation: codeTampered, codeEvidence },
+    { attestation: codeValid, codeEvidence, codeExecutionGrant },
+    { attestation: codeTampered, codeEvidence, codeExecutionGrant },
   ],
 });
 
@@ -59,6 +60,8 @@ const forgedCode = await verifyAttestation({
   allowlist: policy.policy.allowlist,
   revocations: policy.policy.revocations,
   codeEvidence: { ...codeEvidence, testReport: JSON.stringify(forgedCodeReport) },
+  codeExecutionGrant,
+  trustedGrantSigners: policy.policy.codeExecution?.trustedGrantSigners ?? [],
   recognizedRuleVersions: policy.policy.recognizedRuleVersions,
   expectedBinding: policy.policy.expectedBinding,
   now: new Date(policy.policy.freshness.now),
@@ -79,6 +82,7 @@ const checks = {
   codeValidOutputFormat: codeValidEvaluation.report.quality === 'RECALCULATED_PASS',
   codeValidFulfillment: codeValidEvaluation.report.fulfillment === 'RECALCULATED_PASS',
   codeValidAdmitted: codeDecision?.admitted === true,
+  codeValidExecutionAuthorized: codeValidEvaluation.report.codeExecution === 'AUTHORIZED',
   codeTamperedRejected: codeTamperedEvaluation.report.outcome === 'REJECTED',
   codeTamperedRejectedAtAdmission: codeTamperedDecision !== undefined,
   codeForgedReportRejected: forgedCode.outcome === 'REJECTED'

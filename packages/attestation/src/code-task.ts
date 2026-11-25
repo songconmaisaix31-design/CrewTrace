@@ -259,6 +259,12 @@ export function evaluateCodeVerification(input: VerifierEvaluationInput): Verifi
     evaluation.reasons.push('CODE_EVIDENCE_NOT_PROVIDED');
     return finalize(evaluation);
   }
+  if (!input.codeExecutionAuthorized) {
+    evaluation.reasons.push('CODE_EXECUTION_NOT_AUTHORIZED');
+    const finalized = finalize(evaluation);
+    finalized.result = 'UNRESOLVED';
+    return finalized;
+  }
 
   if (contentDigest(codeEvidence.taskSpec) !== evidence.taskSpec.contentHash
     || evidence.taskSpec.contentHash !== attestation.input.contentHash) {

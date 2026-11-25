@@ -1,7 +1,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
-import { issueAttestation, issueCodeAttestation, CodeTestSuiteSchema, runFixedTestSuite } from '@crewtrace/trust-sdk';
+import { privateKeyToAccount } from 'viem/accounts';
+import {
+  issueAttestation, issueCodeAttestation, CodeTestSuiteSchema, runFixedTestSuite,
+  authorizeCodeExecution,
+} from '@crewtrace/trust-sdk';
 
 // 独立消费者自带的输入与凭证生成脚本。只使用 SDK 与 Node 内置模块，
 // 不读取 CrewTrace 源码目录、不连接 PostgreSQL、不调用原 Web/Runtime/Worker 服务。
@@ -169,6 +173,23 @@ codeTampered.evidence.testRun.passed = 0;
 codeTampered.evidence.testRun.failed = 6;
 codeTampered.evidence.testRun.exitCode = 1;
 
+// 代码执行授权由独立审批身份签发，与凭证签发密钥分离。消费者自行决定是否
+// 信任该审批地址，SDK 不从授权本身推导信任。
+const approverKey = `0x${randomBytes(32).toString('hex')}`;
+const approverAddress = privateKeyToAccount(approverKey).address;
+const executionGrant = await authorizeCodeExecution({
+  grantId: randomUUID(),
+  artifactFiles,
+  testSuiteContent: `${JSON.stringify(testSuite, null, 2)}\n`,
+  issuedAt: now,
+  expiresAt: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+  approverKey,
+});
+writeFileSync(
+  resolve(root, 'data/code/execution-grant.json'),
+  `${JSON.stringify(executionGrant, null, 2)}\n`,
+);
+
 writeFileSync(resolve(root, 'attestations/valid.json'), `${JSON.stringify(attestation, null, 2)}\n`);
 writeFileSync(resolve(root, 'attestations/tampered.json'), `${JSON.stringify(tampered, null, 2)}\n`);
 writeFileSync(resolve(root, 'attestations/code-valid.json'), `${JSON.stringify(codeAttestation, null, 2)}\n`);
@@ -210,6 +231,7 @@ const policy = {
   },
   recognizedRuleVersions: ['csv-ledger-v1', 'code-artifact-test-v1'],
   expectedBinding: { environment: 'local', deployment: 'sdk-consumer-demo' },
+  codeExecution: { trustedGrantSigners: [approverAddress] },
   reputation: {
     acceptedOutcomes: ['VERIFIED_OFFLINE'],
     allowOffline: true,
@@ -229,7 +251,7 @@ console.log(JSON.stringify({
     issuer: attestation.issuer,
     files: [
       'data/input.csv', 'data/delivery.csv', 'data/code/task-spec.md', 'data/code/tests.json',
-      'data/code/files.json', 'data/code/report.json',
+      'data/code/files.json', 'data/code/report.json', 'data/code/execution-grant.json',
       'attestations/valid.json', 'attestations/tampered.json',
       'attestations/code-valid.json', 'attestations/code-tampered.json', 'trust-policy.json',
     ],

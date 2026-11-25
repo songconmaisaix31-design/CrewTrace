@@ -1,5 +1,5 @@
 export const SDK_PACKAGE_NAME = '@crewtrace/trust-sdk';
-export const SDK_VERSION = '0.2.0-preview.1';
+export const SDK_VERSION = '0.3.0-preview.1';
 
 // 验证等级从低到高，和信誉聚合使用的证据等级是同一套定义。
 export const VERIFICATION_LEVELS = [

@@ -27,6 +27,19 @@ export type {
   CodeIssueFacts, CodeIssueInput, CodeTestReport, CodeTestRun, CodeTestSuite, CodeVerificationEvidence,
 } from './code-task.js';
 
+export {
+  CodeExecutionGrantSchema, CODE_EXECUTION_GRANT_FORMAT, authorizeCodeExecution,
+  codeExecutionGrantDigest, signCodeExecutionGrant, verifyCodeExecutionGrant,
+} from './code-execution-grant.js';
+export type {
+  CodeExecutionGrant, CodeExecutionGrantPayload, CodeExecutionGrantVerification,
+} from './code-execution-grant.js';
+
+export {
+  TrustConfigSchema, TRUST_CONFIG_FORMAT, loadTrustConfig, signTrustConfig, trustConfigDigest,
+} from './trust-config.js';
+export type { LoadedTrustConfig, TrustConfig, TrustConfigPayload } from './trust-config.js';
+
 export { verifyAttestation } from './verify.js';
 export type { VerifyInput, VerificationReport } from './verify.js';
 

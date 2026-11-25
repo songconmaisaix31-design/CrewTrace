@@ -29,6 +29,7 @@ export function verificationPolicyDigestOf(input: VerifyInput): Hex {
     chainReader: input.chain
       ? { chainId: input.chain.chainId, contract: input.chain.contract.toLowerCase() }
       : null,
+    trustedGrantSigners: input.trustedGrantSigners ?? null,
   })));
 }
 

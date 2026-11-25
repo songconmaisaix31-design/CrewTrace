@@ -3,7 +3,9 @@ import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import type { Hex } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
+import { randomUUID } from 'node:crypto';
 import { issueCodeAttestation, CodeTestSuiteSchema, codeReportDigest, runFixedTestSuite } from '../src/code-task.js';
+import { authorizeCodeExecution } from '../src/code-execution-grant.js';
 import { verifyAttestation } from '../src/verify.js';
 import { attestationDigest } from '../src/canonical.js';
 import { attestationRecordId, commitmentKey } from '../src/chain-verify.js';
@@ -124,6 +126,24 @@ async function issueCode(options: {
   };
 }
 
+async function executionGrant(
+  suiteContent: string,
+  artifactFiles: Array<{ path: string; content: string }>,
+  options: { approverKey?: Hex; expiresAt?: Date; issuedAt?: Date } = {},
+) {
+  const approverKey = options.approverKey ?? generatePrivateKey();
+  const approverAddress = privateKeyToAccount(approverKey).address.toLowerCase();
+  const grant = await authorizeCodeExecution({
+    grantId: randomUUID(),
+    artifactFiles,
+    testSuiteContent: suiteContent,
+    issuedAt: options.issuedAt ?? new Date('2026-11-24T04:00:00.000Z'),
+    expiresAt: options.expiresAt ?? new Date('2026-11-24T05:00:00.000Z'),
+    approverKey,
+  });
+  return { grant, approverAddress, approverKey };
+}
+
 async function verifyCode(
   issued: IssuedCode,
   options: {
@@ -133,18 +153,25 @@ async function verifyCode(
     artifactFiles?: Array<{ path: string; content: string }>;
     testReport?: string;
     recognizedRuleVersions?: string[];
+    grant?: unknown;
+    trustedGrantSigners?: string[];
   } = {},
 ) {
+  const suiteContent = options.suiteContent ?? issued.suiteContent;
+  const artifactFiles = options.artifactFiles ?? issued.artifactFiles;
+  const authorized = await executionGrant(suiteContent, artifactFiles);
   return verifyAttestation({
     attestation: options.attestation ?? issued.attestation,
     allowlist: issued.allowlist,
     revocations: issued.revocations,
     codeEvidence: {
       taskSpec: options.taskSpec ?? issued.taskSpec,
-      testSuite: options.suiteContent ?? issued.suiteContent,
-      artifactFiles: options.artifactFiles ?? issued.artifactFiles,
+      testSuite: suiteContent,
+      artifactFiles,
       testReport: options.testReport ?? issued.report,
     },
+    codeExecutionGrant: options.grant === undefined ? authorized.grant : options.grant,
+    trustedGrantSigners: options.trustedGrantSigners ?? [authorized.approverAddress],
     recognizedRuleVersions: options.recognizedRuleVersions ?? ['code-artifact-test-v1'],
     now: NOW,
   });

@@ -25,8 +25,8 @@ export const TrustPolicySchema = z.strictObject({
   version: z.literal('ct-trust-policy-v1'),
   trustRoot: z.strictObject({
     kind: z.literal('CONTROLLED_LOCAL_CONFIG'),
-    issuerSource: z.enum(['LOCAL_UNSIGNED_JSON', 'CALLER_SUPPLIED_UNSIGNED']),
-    revocationSource: z.enum(['LOCAL_UNSIGNED_JSON', 'CALLER_SUPPLIED_UNSIGNED']),
+    issuerSource: z.enum(['LOCAL_UNSIGNED_JSON', 'CALLER_SUPPLIED_UNSIGNED', 'SIGNED_CONFIG_WITH_PINNED_ROOT']),
+    revocationSource: z.enum(['LOCAL_UNSIGNED_JSON', 'CALLER_SUPPLIED_UNSIGNED', 'SIGNED_CONFIG_WITH_PINNED_ROOT']),
     independentlyCertified: z.literal(false),
     notes: z.string().min(1).max(2000),
   }),
@@ -43,6 +43,10 @@ export const TrustPolicySchema = z.strictObject({
   chain: z.strictObject({
     authorizedRecorders: z.array(AddressSchema).min(1),
     minConfirmations: z.number().int().positive(),
+  }).optional(),
+  // 代码任务的执行审批地址集合。缺省为空，表示策略不允许触发任何代码执行。
+  codeExecution: z.strictObject({
+    trustedGrantSigners: z.array(AddressSchema).min(1),
   }).optional(),
   reputation: ReputationPolicySchema,
 });

@@ -1,11 +1,12 @@
 import type { Hex } from 'viem';
-import { attestationDigest } from './canonical.js';
+import { attestationDigest, contentDigest } from './canonical.js';
 import { findIssuer } from './allowlist.js';
 import { recoverDigestSigner } from './sign.js';
 import { verifyChainEvidence, type ChainReader, type ChainVerificationPolicy } from './chain-verify.js';
 import { registerVerification } from './verified-registry.js';
 import { resolveVerifier } from './verifier.js';
-import type { CodeVerificationEvidence } from './code-task.js';
+import { artifactBundleDigest, type CodeVerificationEvidence } from './code-task.js';
+import { verifyCodeExecutionGrant } from './code-execution-grant.js';
 import {
   FulfillmentAttestationSchema,
   type FulfillmentAttestation,
@@ -22,6 +23,10 @@ export interface VerifyInput {
   inputContent?: string | null;
   deliveryContent?: string | null;
   codeEvidence?: CodeVerificationEvidence | null;
+  // 代码任务的执行授权由独立审批身份签名，与凭证签发签名无关。审批地址必须由
+  // 验证方通过仓库之外的渠道预先提供，SDK 不从凭证或授权自身推导信任。
+  codeExecutionGrant?: unknown;
+  trustedGrantSigners?: string[];
   chain?: ChainReader | null;
   chainPolicy?: ChainVerificationPolicy;
   now?: Date;
@@ -43,6 +48,7 @@ export interface VerificationReport {
   verifierId: string | null;
   verifierStatus: 'REGISTERED' | 'UNKNOWN';
   evidenceDigest: string | null;
+  codeExecution: 'NOT_REQUIRED' | 'NOT_AUTHORIZED' | 'AUTHORIZED';
   chainCommitment: 'NOT_BOUND' | 'PRESENT_MATCH' | 'PRESENT_MISMATCH' | 'ABSENT' | 'UNAVAILABLE';
   input: 'NOT_PROVIDED' | 'MATCH' | 'MISMATCH';
   content: 'NOT_PROVIDED' | 'MATCH' | 'MISMATCH';
@@ -61,7 +67,7 @@ function baseReport(): VerificationReport {
     schema: 'INVALID', signature: 'INVALID', digest: null, issuer: 'UNKNOWN', keyStatus: 'UNKNOWN',
     allowlist: 'NOT_PROVIDED', revocation: 'NOT_CHECKED', revocationFreshness: 'NOT_PROVIDED',
     ruleVersion: 'UNKNOWN', taskType: null, verifierId: null, verifierStatus: 'UNKNOWN',
-    evidenceDigest: null, chainCommitment: 'NOT_BOUND',
+    evidenceDigest: null, codeExecution: 'NOT_REQUIRED', chainCommitment: 'NOT_BOUND',
     input: 'NOT_PROVIDED', content: 'NOT_PROVIDED', transformation: 'NOT_ASSERTED',
     quality: 'NOT_ASSERTED', fulfillment: 'NOT_ASSERTED', outcome: 'REJECTED', reasons: [],
   };
@@ -185,20 +191,50 @@ async function runVerification(input: VerifyInput): Promise<VerificationReport> 
   } else {
     report.verifierStatus = 'REGISTERED';
     report.taskType = verifier.taskType;
-    const evaluation = verifier.evaluate({
-      attestation,
-      inputContent: input.inputContent ?? null,
-      deliveryContent: input.deliveryContent ?? null,
-      codeEvidence: input.codeEvidence ?? null,
-      now,
-    });
-    report.input = evaluation.input;
-    report.content = evaluation.content;
-    report.transformation = evaluation.transformation;
-    report.quality = evaluation.outputFormat;
-    report.fulfillment = evaluation.fulfillment;
-    report.evidenceDigest = evaluation.evidenceDigest;
-    report.reasons.push(...evaluation.reasons);
+    let codeExecutionAuthorized = false;
+    let mayEvaluate = true;
+    if (verifier.taskType === 'code-artifact-test') {
+      if (input.codeEvidence) {
+        // 执行提交代码前必须同时满足凭证可信与独立执行授权。任一条件不满足时
+        // 只输出原因，不进入验证器的代码执行路径。
+        if (report.signature === 'VALID' && report.issuer === 'KNOWN' && report.keyStatus === 'ACTIVE'
+          && report.revocation === 'CLEAR' && report.ruleVersion === 'RECOGNIZED') {
+          const grant = await verifyCodeExecutionGrant({
+            grant: input.codeExecutionGrant ?? null,
+            artifactDigest: artifactBundleDigest(input.codeEvidence.artifactFiles),
+            suiteDigest: contentDigest(input.codeEvidence.testSuite),
+            trustedApproverAddresses: input.trustedGrantSigners ?? [],
+            now,
+          });
+          codeExecutionAuthorized = grant.authorized;
+          if (!grant.authorized) report.reasons.push(...grant.reasons);
+        } else {
+          report.reasons.push('CODE_EXECUTION_PRECONDITION_UNMET');
+        }
+        report.codeExecution = codeExecutionAuthorized ? 'AUTHORIZED' : 'NOT_AUTHORIZED';
+        if (!codeExecutionAuthorized) report.reasons.push('CODE_EXECUTION_NOT_AUTHORIZED');
+        mayEvaluate = codeExecutionAuthorized;
+      } else {
+        report.codeExecution = 'NOT_AUTHORIZED';
+      }
+    }
+    if (mayEvaluate) {
+      const evaluation = verifier.evaluate({
+        attestation,
+        inputContent: input.inputContent ?? null,
+        deliveryContent: input.deliveryContent ?? null,
+        codeEvidence: input.codeEvidence ?? null,
+        codeExecutionAuthorized,
+        now,
+      });
+      report.input = evaluation.input;
+      report.content = evaluation.content;
+      report.transformation = evaluation.transformation;
+      report.quality = evaluation.outputFormat;
+      report.fulfillment = evaluation.fulfillment;
+      report.evidenceDigest = evaluation.evidenceDigest;
+      report.reasons.push(...evaluation.reasons);
+    }
   }
 
   if (attestation.review.reviewerId === attestation.subject.agentId) {
@@ -293,6 +329,7 @@ async function runVerification(input: VerifyInput): Promise<VerificationReport> 
     report.outcome = 'INDETERMINATE';
   } else if (report.reasons.includes('VERIFIER_UNKNOWN')
     || report.reasons.includes('CODE_EVIDENCE_NOT_PROVIDED')
+    || report.reasons.includes('CODE_EXECUTION_NOT_AUTHORIZED')
     || report.reasons.includes('ENVIRONMENT_MISMATCH')) {
     report.outcome = 'INDETERMINATE';
   } else if (report.reasons.includes('TRANSFORM_RULE_NOT_IMPLEMENTED')) {

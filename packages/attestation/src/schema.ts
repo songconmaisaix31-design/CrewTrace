@@ -10,6 +10,7 @@ export const HashSchema = z.string().regex(hashPattern, '哈希必须为 32 字�
 export const AddressSchema = z.string().regex(addressPattern, '地址必须为 20 字节十六进制').transform((value) => value.toLowerCase());
 export const IsoTimeSchema = z.string().regex(isoPattern, '时间必须为带时区的 ISO-8601');
 export const UuidSchema = z.string().regex(uuidPattern, '标识必须为 UUID');
+export const SignatureSchema = z.string().regex(signaturePattern, '签名必须为 65 字节十六进制');
 
 export const IssuerSchema = z.strictObject({
   issuerId: z.string().min(1).max(64),

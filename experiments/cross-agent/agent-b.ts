@@ -29,6 +29,7 @@ async function main(): Promise<void> {
   const input = resolve(argument('--in', join(ROOT, '.local/cross-agent/a-public')));
   const out = resolve(argument('--out', join(ROOT, '.local/cross-agent/b-verdict')));
 
+  const approver = JSON.parse(read(join(input, 'approver.json'))) as { address: string };
   const policy: TrustPolicy = {
     version: 'ct-trust-policy-v1',
     trustRoot: {
@@ -48,6 +49,7 @@ async function main(): Promise<void> {
     },
     recognizedRuleVersions: ['csv-ledger-v1', 'code-artifact-test-v1'],
     expectedBinding: { environment: 'local', deployment: 'cross-agent-experiment' },
+    codeExecution: { trustedGrantSigners: [approver.address] },
     reputation: {
       acceptedOutcomes: ['VERIFIED_OFFLINE'],
       allowOffline: true,
@@ -80,7 +82,11 @@ async function main(): Promise<void> {
   };
   const code = await verifyAndAggregateReputation({
     policy: loaded,
-    candidates: [{ attestation: codeAttestation, codeEvidence }],
+    candidates: [{
+      attestation: codeAttestation,
+      codeEvidence,
+      codeExecutionGrant: JSON.parse(read(join(input, 'code/execution-grant.json'))),
+    }],
   });
 
   const tamperedFiles = artifactFiles.map((file) => (
@@ -91,6 +97,8 @@ async function main(): Promise<void> {
     allowlist: policy.allowlist,
     revocations: policy.revocations,
     codeEvidence: { ...codeEvidence, artifactFiles: tamperedFiles },
+    codeExecutionGrant: JSON.parse(read(join(input, 'code/execution-grant.json'))),
+    trustedGrantSigners: [approver.address],
     recognizedRuleVersions: policy.recognizedRuleVersions,
     expectedBinding: policy.expectedBinding,
     now: policy.freshness ? new Date(policy.freshness.now) : undefined,

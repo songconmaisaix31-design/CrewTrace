@@ -1,9 +1,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import {
   issueAttestation, issueCodeAttestation, IssueFactsSchema, CodeTestSuiteSchema, runFixedTestSuite,
+  authorizeCodeExecution,
 } from '../../packages/attestation/src/index.js';
 
 // 受控模拟的 Agent A：执行合成任务、生成交付证据并使用自己的签发密钥签发凭证。
@@ -98,6 +100,25 @@ async function main(): Promise<void> {
   });
   if (!run.report) throw new Error('CODE_TEST_RUN_FAILED');
 
+  // 执行授权由独立审批身份签发，与凭证签发密钥无关。审批私钥不导出，
+  // Agent B 只获得公开审批地址并自行决定是否信任。
+  const approverKey = generatePrivateKey();
+  const approverAddress = privateKeyToAccount(approverKey).address;
+  const executionGrant = await authorizeCodeExecution({
+    grantId: randomUUID(),
+    artifactFiles,
+    testSuiteContent: testSuite,
+    issuedAt: new Date('2026-11-24T04:10:00.000Z'),
+    expiresAt: new Date('2026-11-24T06:00:00.000Z'),
+    approverKey,
+  });
+
+  write(join(out, 'approver.json'), JSON.stringify({
+    approverId: 'cross-agent-approver',
+    address: approverAddress,
+    note: '独立于签发者的受控审批身份，私钥不导出。',
+  }, null, 2));
+
   write(join(out, 'allowlist.json'), JSON.stringify({
     version: 'ct-issuer-allowlist-v1',
     issuedAt: '2026-01-01T00:00:00.000Z',
@@ -125,10 +146,12 @@ async function main(): Promise<void> {
   write(join(out, 'code/tests.json'), testSuite);
   write(join(out, 'code/files.json'), JSON.stringify(artifactFiles, null, 2));
   write(join(out, 'code/report.json'), JSON.stringify(run.report, null, 2));
+  write(join(out, 'code/execution-grant.json'), JSON.stringify(executionGrant, null, 2));
   write(join(out, 'manifest.json'), JSON.stringify({
     experiment: 'controlled-cross-agent-simulation',
     note: '受控模拟的跨主体集成，不是真实第三方组织采用。',
     issuer,
+    approver: { approverId: 'cross-agent-approver', address: approverAddress, privateKeyExported: false },
     privateKeyExported: false,
     generatedAt: new Date().toISOString(),
     tasks: ['csv-data-review', 'code-artifact-test'],

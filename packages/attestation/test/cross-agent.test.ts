@@ -48,6 +48,8 @@ test('跨进程凭证交换：Agent B 独立核验并分任务输出信誉', asy
     verdict.tasks['csv-data-review'].buckets.map((bucket: { taskType: string }) => bucket.taskType),
     ['csv-data-review'],
   );
-  assert.equal(verdict.tamperedCode.outcome, 'REJECTED');
-  assert.ok(verdict.tamperedCode.reasons.includes('ARTIFACT_HASH_MISMATCH'));
+  // 篡改后的代码与审批授权绑定的摘要不一致，验证方不会执行该代码。
+  assert.equal(verdict.tamperedCode.outcome, 'INDETERMINATE');
+  assert.ok(verdict.tamperedCode.reasons.includes('CODE_EXECUTION_GRANT_MISMATCH'));
+  assert.ok(verdict.tamperedCode.reasons.includes('CODE_EXECUTION_NOT_AUTHORIZED'));
 });

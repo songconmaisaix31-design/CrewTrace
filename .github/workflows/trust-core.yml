@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   trust-core:
-    name: Trust Core V0.2
+    name: Trust Core V0.3
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -86,6 +86,21 @@ jobs:
       - name: Cross-process credential exchange test
         run: node --import tsx --test packages/attestation/test/cross-agent.test.ts
 
+      - name: Verifiable trust config tests
+        run: node --import tsx --test packages/attestation/test/trust-config.test.ts
+
+      - name: Multi-issuer isolation tests
+        run: node --import tsx --test packages/attestation/test/multi-issuer.test.ts
+
+      - name: Code execution authorization tests
+        run: node --import tsx --test packages/attestation/test/code-execution-auth.test.ts
+
+      - name: Multi-issuer process experiment
+        run: node --import tsx --test packages/attestation/test/multi-issuer-experiment.test.ts
+
+      - name: On-chain multi-issuer verification tests
+        run: node --import tsx --test packages/attestation/test/onchain-multi-issuer.test.ts
+
       - name: Inspect chain evidence
         run: |
           node --import tsx experiments/verifiable-trust/inspect-chain.ts \
@@ -109,4 +124,5 @@ jobs:
             .local/attestation/config.json
             .local/attestation/allowlist.json
             .local/attestation/revocations.json
+            .local/multi-issuer-experiment/
           if-no-files-found: warn

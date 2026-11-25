@@ -1,8 +1,8 @@
 {
   "name": "@crewtrace/trust-sdk",
   "private": true,
-  "version": "0.2.0-preview.1",
-  "description": "CrewTrace Trust SDK V0.2 预览：通用履约验证器、凭证核验、端到端复算与信誉准入",
+  "version": "0.3.0-preview.1",
+  "description": "CrewTrace Trust SDK V0.3 预览：多签发主体信任配置、代码执行授权、凭证核验与信誉准入",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

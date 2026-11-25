@@ -16,6 +16,9 @@ export interface VerifierEvaluationInput {
   inputContent: string | null;
   deliveryContent: string | null;
   codeEvidence: CodeVerificationEvidence | null;
+  // 代码任务必须在信任核心完成独立执行授权后才为 true。验证器自身以此为
+  // 失败关闭条件，缺少授权的直接调用不会执行任何提交的代码。
+  codeExecutionAuthorized: boolean;
   now: Date;
 }
 
@@ -41,20 +44,22 @@ export interface BuiltinVerifier {
   evaluate(input: VerifierEvaluationInput): VerifierEvaluation;
 }
 
-const BUILTIN_VERIFIERS: readonly BuiltinVerifier[] = [
-  {
+// 注册表在模块初始化时深冻结。运行时无法替换内置验证器，也无法通过
+// 取得的验证器对象改写执行逻辑；解析只按（标识，规则版本）精确匹配。
+const BUILTIN_VERIFIERS: readonly BuiltinVerifier[] = Object.freeze([
+  Object.freeze({
     verifierId: 'csv-ledger',
     ruleVersion: 'csv-ledger-v1',
-    taskType: 'csv-data-review',
+    taskType: 'csv-data-review' as TaskType,
     evaluate: evaluateCsvVerification,
-  },
-  {
+  }),
+  Object.freeze({
     verifierId: 'code-artifact-test',
     ruleVersion: 'code-artifact-test-v1',
-    taskType: 'code-artifact-test',
+    taskType: 'code-artifact-test' as TaskType,
     evaluate: evaluateCodeVerification,
-  },
-];
+  }),
+]);
 
 export function resolveVerifier(verifierId: string, ruleVersion: string): BuiltinVerifier | null {
   return BUILTIN_VERIFIERS.find(
@@ -63,7 +68,9 @@ export function resolveVerifier(verifierId: string, ruleVersion: string): Builti
 }
 
 export function verifierCatalogue(): Array<{ verifierId: string; ruleVersion: string; taskType: TaskType }> {
-  return BUILTIN_VERIFIERS.map(({ verifierId, ruleVersion, taskType }) => ({ verifierId, ruleVersion, taskType }));
+  return Object.freeze(BUILTIN_VERIFIERS.map(({ verifierId, ruleVersion, taskType }) => Object.freeze({
+    verifierId, ruleVersion, taskType,
+  }))) as unknown as Array<{ verifierId: string; ruleVersion: string; taskType: TaskType }>;
 }
 
 export function taskTypeOf(attestation: FulfillmentAttestation): TaskType | 'unknown' {

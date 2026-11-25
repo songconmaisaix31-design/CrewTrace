@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import type { Hex } from 'viem';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { verifyAttestation } from '../src/verify.js';
 import { aggregateReputation, DEFAULT_REPUTATION_POLICY } from '../src/reputation.js';
 import { issueCodeAttestation, CodeTestSuiteSchema } from '../src/code-task.js';
+import { authorizeCodeExecution } from '../src/code-execution-grant.js';
 import type { FulfillmentAttestation, IssuerAllowlist, RevocationList } from '../src/schema.js';
 import { issueFixture, resign, type IssuedFixture } from './helpers.js';
 
@@ -127,11 +129,22 @@ async function verifyCsv(issued: IssuedFixture) {
 }
 
 async function verifyCode(issued: IssuedCode, overrides: { codeEvidence?: unknown; attestation?: unknown } = {}) {
+  const approverKey = generatePrivateKey();
+  const grant = await authorizeCodeExecution({
+    grantId: randomUUID(),
+    artifactFiles: issued.codeEvidence.artifactFiles,
+    testSuiteContent: issued.codeEvidence.testSuite,
+    issuedAt: new Date('2026-11-24T04:00:00.000Z'),
+    expiresAt: new Date('2026-11-24T05:00:00.000Z'),
+    approverKey,
+  });
   return verifyAttestation({
     attestation: overrides.attestation ?? issued.attestation,
     allowlist: issued.allowlist,
     revocations: issued.revocations,
     codeEvidence: (overrides.codeEvidence === undefined ? issued.codeEvidence : overrides.codeEvidence) as never,
+    codeExecutionGrant: grant,
+    trustedGrantSigners: [privateKeyToAccount(approverKey).address],
     recognizedRuleVersions: ['csv-ledger-v1', 'code-artifact-test-v1'],
     now: NOW,
   });

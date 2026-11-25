@@ -15,6 +15,7 @@ export interface TrustEvaluationCandidate {
   inputContent?: string | null;
   deliveryContent?: string | null;
   codeEvidence?: CodeVerificationEvidence | null;
+  codeExecutionGrant?: unknown;
 }
 
 export interface TrustEvaluationOptions {
@@ -61,6 +62,7 @@ export async function verifyAndAggregateReputation(options: TrustEvaluationOptio
     expectedBinding: policy.expectedBinding,
     chainPolicy: policy.chain,
     chain,
+    trustedGrantSigners: policy.codeExecution?.trustedGrantSigners ?? [],
   });
 
   const evaluations: TrustEvaluation['evaluations'] = [];
@@ -73,6 +75,8 @@ export async function verifyAndAggregateReputation(options: TrustEvaluationOptio
       inputContent: candidate.inputContent ?? null,
       deliveryContent: candidate.deliveryContent ?? null,
       codeEvidence: candidate.codeEvidence ?? null,
+      codeExecutionGrant: candidate.codeExecutionGrant ?? null,
+      trustedGrantSigners: policy.codeExecution?.trustedGrantSigners ?? [],
       chain,
       chainPolicy: policy.chain,
       now,
